@@ -1,0 +1,4 @@
+[package]
+name = "cymbalum"
+version = "0.1.0"
+authors = ["Luthaf <luthaf@luthaf.fr>"]
