@@ -8,6 +8,7 @@
 */
 
 use std::ops::{Add, Sub, Mul, Div};
+use super::matrix::Matrix3;
 
 /// 3 dimensional vector type, implementing all usual operations
 #[derive(Copy, Clone)]
@@ -24,6 +25,27 @@ impl Vector3D {
     /// Create a new Vector3D with components `x`, `y`, `z`
     pub fn new(x: f64, y: f64, z: f64) -> Vector3D {
         Vector3D{x: x, y: y, z: z}
+    }
+    /// Return the squared euclidean norm of a Vector3D
+    #[inline]
+    pub fn norm2(&self) -> f64 {
+        (*self) * (*self)
+    }
+    /// Return the euclidean norm of a Vector3D
+    #[inline]
+    pub fn norm(&self) -> f64 {
+        f64::sqrt(self.norm2())
+    }
+    /// Normalize a Vector3D
+    #[inline]
+    pub fn normalize(&self) -> Vector3D {
+        *self / self.norm()
+    }
+    /// Tensorial product between vectors
+    pub fn tensorial(&self, other: &Vector3D) -> Matrix3 {
+        Matrix3::new(self.x * other.x, self.x * other.y, self.x * other.z,
+                     self.y * other.x, self.y * other.y, self.y * other.z,
+                     self.z * other.x, self.z * other.y, self.z * other.z)
     }
 }
 
