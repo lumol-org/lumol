@@ -7,10 +7,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/
 */
 
-#[macro_use]
-mod tests;
+mod traits;
+mod lj;
 
-pub mod types;
-
-pub mod potentials;
-pub use self::potentials::*;
+pub use self::traits::*;
+pub use self::lj::*;
