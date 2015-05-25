@@ -7,7 +7,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/
 */
 
-use std::ops::{Add, Sub, Mul};
+use std::ops::{Add, Sub, Mul, Div};
 
 /// 3 dimensional vector type, implementing all usual operations
 #[derive(Copy, Clone)]
@@ -64,6 +64,13 @@ impl Mul<Vector3D> for Vector3D {
     type Output = f64;
     fn mul(self, other: Vector3D) -> f64 {
         self.x * other.x + self.y * other.y + self.z * other.z
+    }
+}
+
+impl Div<f64> for Vector3D {
+    type Output = Vector3D;
+    fn div(self, other: f64) -> Vector3D {
+        Vector3D::new(self.x / other, self.y / other, self.z / other)
     }
 }
 
