@@ -7,13 +7,5 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/
 */
 
-#[macro_use]
-mod tests;
-
-pub mod types;
-
-pub mod potentials;
-pub use self::potentials::*;
-
-pub mod universe;
-pub use self::universe::*;
+pub mod particles;
+pub use self::particles::*;

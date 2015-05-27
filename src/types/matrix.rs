@@ -11,7 +11,7 @@ use std::ops::{Add, Sub, Mul, Index};
 use super::vectors::Vector3D;
 
 /// 3x3 dimensional matrix type, implementing all usual operations
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug)]
 pub struct Matrix3 {
     data : [[f64; 3]; 3]
 }

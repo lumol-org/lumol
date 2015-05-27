@@ -8,10 +8,11 @@
 */
 
 use std::ops::{Add, Sub, Mul, Div};
+use std::cmp::PartialEq;
 use super::matrix::Matrix3;
 
 /// 3 dimensional vector type, implementing all usual operations
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug)]
 pub struct Vector3D {
     /// First component of the vector
     pub x: f64,
@@ -89,10 +90,18 @@ impl Mul<Vector3D> for Vector3D {
     }
 }
 
+/// Dividing a vector by a scalar
 impl Div<f64> for Vector3D {
     type Output = Vector3D;
     fn div(self, other: f64) -> Vector3D {
         Vector3D::new(self.x / other, self.y / other, self.z / other)
+    }
+}
+
+/// Comparing two vectors
+impl PartialEq for Vector3D {
+    fn eq(&self, other: &Vector3D) -> bool {
+        self.x == other.x && self.y == other.y && self.z == other.z
     }
 }
 
@@ -108,9 +117,7 @@ mod tests {
         let b = Vector3D::new(6.1, -8.5, 7.3);
 
         let c = a + b;
-        assert_eq!(c.x, 8.1);
-        assert_eq!(c.y, -5.0);
-        assert_eq!(c.z, 12.1);
+        assert_eq!(c, Vector3D::new(8.1, -5.0, 12.1));
     }
 
     #[test]
@@ -119,9 +126,7 @@ mod tests {
         let b = Vector3D::new(6.1, -8.5, 7.3);
 
         let c = a - b;
-        assert_eq!(c.x, -4.1);
-        assert_eq!(c.y, 12.0);
-        assert_eq!(c.z, -2.5);
+        assert_eq!(c, Vector3D::new(-4.1, 12.0, -2.5));
     }
 
     #[test]
@@ -130,15 +135,11 @@ mod tests {
         let b = 2.0;
 
         let c = b * a;
-        assert_eq!(c.x, 4.0);
-        assert_eq!(c.y, 7.0);
-        assert_eq!(c.z, 9.6);
+        assert_eq!(c, Vector3D::new(4.0, 7.0, 9.6));
 
         let b = 1.5;
         let c = a * b;
-        assert_eq!(c.x, 3.0);
-        assert_eq!(c.y, 5.25);
-        assert_eq!(c.z, 7.199999999999999);
+        assert_eq!(c, Vector3D::new(3.0, 5.25, 7.199999999999999));
     }
 
     #[test]
