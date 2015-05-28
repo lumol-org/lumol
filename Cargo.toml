@@ -2,3 +2,11 @@
 name = "cymbalum"
 version = "0.1.0"
 authors = ["Luthaf <luthaf@luthaf.fr>"]
+documentation = "https://luthaf.github.io/cymbalum"
+repository = "https://github.com/Luthaf/cymbalum"
+readme = "README.md"
+license = "MPL-2.0"
+
+[lib]
+name = "cymbalum"
+doctest = false
