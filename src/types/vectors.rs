@@ -7,7 +7,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/
 */
 
-use std::ops::{Add, Sub, Mul, Div};
+use std::ops::{Add, Sub, Mul, Div, BitXor};
 use std::cmp::PartialEq;
 use super::matrix::Matrix3;
 
@@ -90,6 +90,17 @@ impl Mul<Vector3D> for Vector3D {
     }
 }
 
+/// Vectorial product will use the a^b notation.
+impl BitXor<Vector3D> for Vector3D {
+    type Output = Vector3D;
+    fn bitxor(self, other: Vector3D) -> Vector3D {
+        let x = self.y * other.z - self.z * other.y;
+        let y = self.z * other.x - self.x * other.z;
+        let z = self.x * other.y - self.y * other.x;
+        Vector3D::new(x, y, z)
+    }
+}
+
 /// Dividing a vector by a scalar
 impl Div<f64> for Vector3D {
     type Output = Vector3D;
@@ -149,5 +160,20 @@ mod tests {
 
         let c = a * b;
         assert_eq!(c, 18.1);
+    }
+
+    #[test]
+    fn cross_product() {
+        let a = Vector3D::new(2.1, 3.5, 4.8);
+        let b = Vector3D::new(6.1, -8.5, 7.3);
+
+        let c = a ^ b;
+        assert_eq!(c*a, 0.0);
+
+        let a = Vector3D::new(1.0, 0.0, 0.0);
+        let b = Vector3D::new(0.0, 1.0, 0.0);
+
+        let c = a ^ b;
+        assert_eq!(c, Vector3D::new(0.0, 0.0, 1.0));
     }
 }
