@@ -1,0 +1,265 @@
+/*
+ * Cymbalum, Molecular Simulation in Rust
+ * Copyright (C) 2015 Guillaume Fraux
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/
+*/
+use std::f64::consts::PI;
+
+use ::types::*;
+
+
+/// The type of a cell determine how we will be able to compute the periodic
+/// boundaries condition.
+#[derive(Clone, Copy)]
+pub enum CellType {
+    /// Infinite unit cell, with no boundaries
+    INFINITE,
+    /// Orthorombic unit cell, with cuboide shape
+    ORTHOROMBIC,
+    /// Triclinic unit cell, with arbitrary parallelepipedic shape
+    TRICLINIC,
+}
+
+/// The Universe type hold all the data about a system.
+#[derive(Clone, Copy)]
+pub struct UnitCell {
+    data: Matrix3,
+    celltype: CellType,
+}
+
+impl UnitCell {
+    /// Create an infinite unit cell
+    pub fn new() -> UnitCell {
+        UnitCell{data: Matrix3::zero(), celltype: CellType::INFINITE}
+    }
+    /// Create an orthorombic unit cell
+    pub fn ortho(a: f64, b: f64, c: f64) -> UnitCell {
+        UnitCell{data: Matrix3::new(a, 0.0, 0.0,
+                                    0.0, b, 0.0,
+                                    0.0, 0.0, c),
+                 celltype: CellType::ORTHOROMBIC}
+    }
+    /// Create a cubic unit cell
+    pub fn cubic(L: f64) -> UnitCell {
+        UnitCell{data: Matrix3::new(L, 0.0, 0.0,
+                                    0.0, L, 0.0,
+                                    0.0, 0.0, L),
+                 celltype: CellType::ORTHOROMBIC}
+    }
+    /// Create a triclinic unit cell
+    pub fn triclinic(a: f64, b: f64, c: f64, alpha: f64, beta: f64, gamma: f64) -> UnitCell {
+        let (sin_alpha, cos_alpha) = deg2rad(alpha).sin_cos();
+        let (sin_beta, cos_beta) = deg2rad(beta).sin_cos();
+        let (sin_gamma, cos_gamma) = deg2rad(gamma).sin_cos();
+
+        let b_x = b * cos_gamma;
+        let b_y = b * sin_gamma;
+
+        let c_x = c * cos_beta;
+        let c_y = c * (cos_alpha - cos_beta*cos_gamma)/sin_gamma;
+        let c_z = f64::sqrt(c*c - c_y*c_y - c_x*c_x);
+
+        UnitCell{data: Matrix3::new(a,   b_x, c_x,
+                                    0.0, b_y, c_y,
+                                    0.0, 0.0, c_z),
+                 celltype: CellType::TRICLINIC}
+    }
+
+    /// Get the cell type
+    pub fn celltype(&self) -> CellType {
+        self.celltype
+    }
+    /// Set the cell type
+    pub fn set_celltype(&mut self, ctype: CellType) {
+        self.celltype = ctype;
+    }
+
+    /// Get the first vector of the cell
+    pub fn vect_a(&self) -> Vector3D {
+        let x = self.data[(0, 0)];
+        let y = self.data[(1, 0)];
+        let z = self.data[(2, 0)];
+        Vector3D::new(x, y, z)
+    }
+    /// Get the first length of the cell
+    pub fn a(&self) -> f64 {
+        self.vect_a().norm()
+    }
+    /// Set the first length of the cell
+    pub fn set_a(&mut self, a: f64) {
+        unimplemented!()
+    }
+
+    /// Get the second length of the cell
+    pub fn vect_b(&self) -> Vector3D {
+        let x = self.data[(0, 1)];
+        let y = self.data[(1, 1)];
+        let z = self.data[(2, 1)];
+        Vector3D::new(x, y, z)
+    }
+    /// Get the second length of the cell
+    pub fn b(&self) -> f64 {
+        self.vect_b().norm()
+    }
+    /// Set the second length of the cell
+    pub fn set_b(&mut self, b: f64) {
+        unimplemented!()
+    }
+
+    /// Get the third length of the cell
+    pub fn vect_c(&self) -> Vector3D {
+        let x = self.data[(0, 2)];
+        let y = self.data[(1, 2)];
+        let z = self.data[(2, 2)];
+        Vector3D::new(x, y, z)
+    }
+    /// Get the second length of the cell
+    pub fn c(&self) -> f64 {
+        self.vect_c().norm()
+    }
+    /// Set the third length of the cell
+    pub fn set_c(&mut self, c: f64) {
+        unimplemented!()
+    }
+
+    /// Get the first angle of the cell
+    pub fn alpha(&self) -> f64 {
+        match self.celltype {
+            CellType::TRICLINIC => {
+                let b = self.vect_b();
+                let c = self.vect_c();
+                rad2deg(angle(b, c))
+            },
+            _ => 90.0,
+        }
+    }
+    /// Set the first angle of the cell
+    pub fn set_alpha(&mut self, alpha: f64) {
+        unimplemented!()
+    }
+
+    /// Get the second angle of the cell
+    pub fn beta(&self) -> f64 {
+        match self.celltype {
+            CellType::TRICLINIC => {
+                let a = self.vect_a();
+                let c = self.vect_c();
+                rad2deg(angle(a, c))
+            },
+            _ => 90.0,
+        }
+    }
+    /// Set the second angle of the cell
+    pub fn set_beta(&mut self, beta: f64) {
+        unimplemented!()
+    }
+
+    /// Get the third angle of the cell
+    pub fn gamma(&self) -> f64 {
+        match self.celltype {
+            CellType::TRICLINIC => {
+                let a = self.vect_a();
+                let b = self.vect_b();
+                rad2deg(angle(a, b))
+            },
+            _ => 90.0,
+        }
+    }
+    /// Set the third angle of the cell
+    pub fn set_gamma(&mut self, gamma: f64) {
+        unimplemented!()
+    }
+
+    /// Get the volume angle of the cell
+    pub fn volume(&self) -> f64 {
+        match self.celltype {
+            CellType::INFINITE => 0.0,
+            CellType::ORTHOROMBIC => self.a()*self.b()*self.c(),
+            CellType::TRICLINIC => {
+                // The volume is the mixed product of the three cell vectors
+                let a = self.vect_a();
+                let b = self.vect_b();
+                let c = self.vect_c();
+                a * (b ^ c)
+            },
+        }
+    }
+}
+
+fn deg2rad(x: f64) -> f64 {
+    x * PI / 180.0
+}
+
+fn rad2deg(x: f64) -> f64 {
+    x * 180.0 / PI
+}
+
+fn angle(u: Vector3D, v: Vector3D) -> f64 {
+    let un = u.normalize();
+    let vn = v.normalize();
+    f64::acos(un*vn)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn infinite() {
+        let cell = UnitCell::new();
+        assert_eq!(cell.a(), 0.0);
+        assert_eq!(cell.b(), 0.0);
+        assert_eq!(cell.c(), 0.0);
+
+        assert_eq!(cell.alpha(), 90.0);
+        assert_eq!(cell.beta(), 90.0);
+        assert_eq!(cell.gamma(), 90.0);
+
+        assert_eq!(cell.volume(), 0.0);
+    }
+
+    #[test]
+    fn cubic() {
+        let cell = UnitCell::cubic(3.0);
+        assert_eq!(cell.a(), 3.0);
+        assert_eq!(cell.b(), 3.0);
+        assert_eq!(cell.c(), 3.0);
+
+        assert_eq!(cell.alpha(), 90.0);
+        assert_eq!(cell.beta(), 90.0);
+        assert_eq!(cell.gamma(), 90.0);
+
+        assert_eq!(cell.volume(), 3.0*3.0*3.0);
+    }
+
+    #[test]
+    fn orthorombic() {
+        let cell = UnitCell::ortho(3.0, 4.0, 5.0);
+        assert_eq!(cell.a(), 3.0);
+        assert_eq!(cell.b(), 4.0);
+        assert_eq!(cell.c(), 5.0);
+
+        assert_eq!(cell.alpha(), 90.0);
+        assert_eq!(cell.beta(), 90.0);
+        assert_eq!(cell.gamma(), 90.0);
+
+        assert_eq!(cell.volume(), 3.0*4.0*5.0);
+    }
+
+    #[test]
+    fn triclinic() {
+        let cell = UnitCell::triclinic(3.0, 4.0, 5.0, 80.0, 90.0, 110.0);
+        assert_eq!(cell.a(), 3.0);
+        assert_eq!(cell.b(), 4.0);
+        assert_eq!(cell.c(), 5.0);
+
+        assert_eq!(cell.alpha(), 80.0);
+        assert_eq!(cell.beta(), 90.0);
+        assert_eq!(cell.gamma(), 110.0);
+
+        assert_approx_eq!(cell.volume(), 55.410529, 1e-6);
+    }
+}

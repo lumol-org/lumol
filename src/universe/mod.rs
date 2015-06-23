@@ -9,3 +9,6 @@
 
 pub mod particles;
 pub use self::particles::*;
+
+pub mod cells;
+pub use self::cells::*;
