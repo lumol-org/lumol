@@ -15,35 +15,44 @@ use ::types::*;
 #[derive(Clone, Debug)]
 pub struct Particle {
     /// Particle name
-    pub name: String,
+    name: String,
     /// Particle mass
-    pub mass: f64,
+    mass: f64,
     /// Particle positions
-    pub position: Vector3D,
+    position: Vector3D,
     /// Particle velocity, if needed
-    pub velocity: Vector3D,
+    velocity: Vector3D,
 }
 
 
 impl Particle {
-    pub fn new(name: &str) -> Particle {
+    pub fn new<S: Into<String>>(name: S) -> Particle {
         // TODO: get the mass here
-        Particle{name: name.to_string(),
+        Particle{name: name.into(),
                  mass: 1.0,
                  position: Vector3D::new(0.0, 0.0, 0.0),
                  velocity: Vector3D::new(0.0, 0.0, 0.0)}
     }
 
-    pub fn mass(&mut self, mass: f64) {
-        (*self).mass = mass;
+    pub fn mass(&self) -> f64 {
+        self.mass
+    }
+    pub fn set_mass(&mut self, mass: f64) {
+        self.mass = mass;
     }
 
-    pub fn position(&mut self, pos: Vector3D) {
-        (*self).position = pos;
+    pub fn position(&self) -> Vector3D {
+        self.position
+    }
+    pub fn set_position(&mut self, pos: Vector3D) {
+        self.position = pos;
     }
 
-    pub fn velocity(&mut self, vel: Vector3D) {
-        (*self).velocity = vel;
+    pub fn velocity(&self) -> Vector3D {
+        self.velocity
+    }
+    pub fn set_velocity(&mut self, vel: Vector3D) {
+        self.velocity = vel;
     }
 }
 
@@ -58,19 +67,19 @@ mod tests {
         let mut part = Particle::new("O");
         assert_eq!(part.name, "O");
 
-        part.mass(16.0);
-        assert_eq!(part.mass, 16.0);
+        part.set_mass(16.0);
+        assert_eq!(part.mass(), 16.0);
     }
 
     #[test]
     fn set_coords() {
         let mut part = Particle::new("O");
-        assert_eq!(part.position, Vector3D::new(0.0, 0.0, 0.0));
+        assert_eq!(part.position(), Vector3D::new(0.0, 0.0, 0.0));
 
-        part.position(Vector3D::new(1.0, 2.0, 3.0));
-        assert_eq!(part.position, Vector3D::new(1.0, 2.0, 3.0));
+        part.set_position(Vector3D::new(1.0, 2.0, 3.0));
+        assert_eq!(part.position(), Vector3D::new(1.0, 2.0, 3.0));
 
-        part.velocity(Vector3D::new(1.0, 2.0, 3.0));
-        assert_eq!(part.velocity, Vector3D::new(1.0, 2.0, 3.0));
+        part.set_velocity(Vector3D::new(1.0, 2.0, 3.0));
+        assert_eq!(part.velocity(), Vector3D::new(1.0, 2.0, 3.0));
     }
 }
