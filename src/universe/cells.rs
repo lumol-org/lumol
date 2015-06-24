@@ -86,7 +86,10 @@ impl UnitCell {
     }
     /// Get the first length of the cell
     pub fn a(&self) -> f64 {
-        self.vect_a().norm()
+        match self.celltype {
+            CellType::TRICLINIC => self.vect_a().norm(),
+            _ => self.data[(0, 0)],
+        }
     }
 
     /// Get the second length of the cell
@@ -98,7 +101,10 @@ impl UnitCell {
     }
     /// Get the second length of the cell
     pub fn b(&self) -> f64 {
-        self.vect_b().norm()
+        match self.celltype {
+            CellType::TRICLINIC => self.vect_b().norm(),
+            _ => self.data[(1, 1)],
+        }
     }
 
     /// Get the third length of the cell
@@ -110,7 +116,10 @@ impl UnitCell {
     }
     /// Get the second length of the cell
     pub fn c(&self) -> f64 {
-        self.vect_c().norm()
+        match self.celltype {
+            CellType::TRICLINIC => self.vect_c().norm(),
+            _ => self.data[(2, 2)],
+        }
     }
 
     /// Get the first angle of the cell
