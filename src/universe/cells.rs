@@ -173,12 +173,14 @@ impl UnitCell {
         }
     }
 
-    pub fn scale_mut<S>(&mut self, scale: S) where S: Mul<Matrix3>, <S as Mul<Matrix3>>::Output: Into<Matrix3> {
-        self.data = (scale * self.data).into();
+    /// Scale this unit cell in-place by multiplying the H matrix by `s`.
+    pub fn scale_mut(&mut self, s: Matrix3) {
+        self.data = s * self.data;
     }
 
-    pub fn scale<S>(&self, scale: S) -> UnitCell where S: Mul<Matrix3>, <S as Mul<Matrix3>>::Output: Into<Matrix3> {
-        UnitCell{data: (scale * self.data).into(), celltype: self.celltype}
+    /// Scale this unit cell by multiplying the H matrix by `s`, and return a new unit cell
+    pub fn scale(&self, s: Matrix3) -> UnitCell {
+        UnitCell{data: s * self.data, celltype: self.celltype}
     }
 
 }
@@ -263,37 +265,25 @@ mod tests {
     #[test]
     fn scale() {
         let cell = UnitCell::ortho(3.0, 4.0, 5.0);
-        let cell = cell.scale(2.0);
+        let A = 2.0 * Matrix3::one();
+        let cell = cell.scale(A);
 
         assert_eq!(cell.a(), 6.0);
         assert_eq!(cell.b(), 8.0);
         assert_eq!(cell.c(), 10.0);
-
-        let unit = Matrix3::one();
-        let A = 0.5 * unit;
-        let cell = cell.scale(A);
-
-        assert_eq!(cell.a(), 3.0);
-        assert_eq!(cell.b(), 4.0);
-        assert_eq!(cell.c(), 5.0);
     }
 
     #[test]
     fn scale_mut() {
         let mut cell = UnitCell::ortho(3.0, 4.0, 5.0);
-        cell.scale_mut(2.0);
+        let A = 2.0 * Matrix3::one();
+        cell.scale_mut(A);
 
         assert_eq!(cell.a(), 6.0);
         assert_eq!(cell.b(), 8.0);
         assert_eq!(cell.c(), 10.0);
 
-        let unit = Matrix3::one();
-        let A = 0.5 * unit;
-        cell.scale_mut(A);
 
-        assert_eq!(cell.a(), 3.0);
-        assert_eq!(cell.b(), 4.0);
-        assert_eq!(cell.c(), 5.0);
     }
 
 }
