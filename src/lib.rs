@@ -7,6 +7,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/
 */
 
+#![allow(non_snake_case)]
+
 #[macro_use]
 mod tests;
 

@@ -7,9 +7,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/
 */
 use std::f64::consts::PI;
-
+use std::ops::Mul;
+use std::convert::Into;
 use ::types::*;
-
 
 /// The type of a cell determine how we will be able to compute the periodic
 /// boundaries condition.
@@ -51,8 +51,8 @@ impl UnitCell {
     }
     /// Create a triclinic unit cell
     pub fn triclinic(a: f64, b: f64, c: f64, alpha: f64, beta: f64, gamma: f64) -> UnitCell {
-        let (sin_alpha, cos_alpha) = deg2rad(alpha).sin_cos();
-        let (sin_beta, cos_beta) = deg2rad(beta).sin_cos();
+        let cos_alpha = deg2rad(alpha).cos();
+        let cos_beta = deg2rad(beta).cos();
         let (sin_gamma, cos_gamma) = deg2rad(gamma).sin_cos();
 
         let b_x = b * cos_gamma;
@@ -88,10 +88,6 @@ impl UnitCell {
     pub fn a(&self) -> f64 {
         self.vect_a().norm()
     }
-    /// Set the first length of the cell
-    pub fn set_a(&mut self, a: f64) {
-        unimplemented!()
-    }
 
     /// Get the second length of the cell
     pub fn vect_b(&self) -> Vector3D {
@@ -103,10 +99,6 @@ impl UnitCell {
     /// Get the second length of the cell
     pub fn b(&self) -> f64 {
         self.vect_b().norm()
-    }
-    /// Set the second length of the cell
-    pub fn set_b(&mut self, b: f64) {
-        unimplemented!()
     }
 
     /// Get the third length of the cell
@@ -120,10 +112,6 @@ impl UnitCell {
     pub fn c(&self) -> f64 {
         self.vect_c().norm()
     }
-    /// Set the third length of the cell
-    pub fn set_c(&mut self, c: f64) {
-        unimplemented!()
-    }
 
     /// Get the first angle of the cell
     pub fn alpha(&self) -> f64 {
@@ -135,10 +123,6 @@ impl UnitCell {
             },
             _ => 90.0,
         }
-    }
-    /// Set the first angle of the cell
-    pub fn set_alpha(&mut self, alpha: f64) {
-        unimplemented!()
     }
 
     /// Get the second angle of the cell
@@ -152,10 +136,6 @@ impl UnitCell {
             _ => 90.0,
         }
     }
-    /// Set the second angle of the cell
-    pub fn set_beta(&mut self, beta: f64) {
-        unimplemented!()
-    }
 
     /// Get the third angle of the cell
     pub fn gamma(&self) -> f64 {
@@ -167,10 +147,6 @@ impl UnitCell {
             },
             _ => 90.0,
         }
-    }
-    /// Set the third angle of the cell
-    pub fn set_gamma(&mut self, gamma: f64) {
-        unimplemented!()
     }
 
     /// Get the volume angle of the cell
@@ -187,16 +163,27 @@ impl UnitCell {
             },
         }
     }
+
+    pub fn scale_mut<S>(&mut self, scale: S) where S: Mul<Matrix3>, <S as Mul<Matrix3>>::Output: Into<Matrix3> {
+        self.data = (scale * self.data).into();
+    }
+
+    pub fn scale<S>(&self, scale: S) -> UnitCell where S: Mul<Matrix3>, <S as Mul<Matrix3>>::Output: Into<Matrix3> {
+        UnitCell{data: (scale * self.data).into(), celltype: self.celltype}
+    }
+
 }
 
+/// Convert `x` from degrees to radians
 fn deg2rad(x: f64) -> f64 {
     x * PI / 180.0
 }
-
+/// Convert `x` from radians to degrees
 fn rad2deg(x: f64) -> f64 {
     x * 180.0 / PI
 }
 
+/// Get the angles between the vectors `u` and `v`.
 fn angle(u: Vector3D, v: Vector3D) -> f64 {
     let un = u.normalize();
     let vn = v.normalize();
@@ -206,6 +193,7 @@ fn angle(u: Vector3D, v: Vector3D) -> f64 {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use ::types::*;
 
     #[test]
     fn infinite() {
@@ -262,4 +250,41 @@ mod tests {
 
         assert_approx_eq!(cell.volume(), 55.410529, 1e-6);
     }
+
+    #[test]
+    fn scale() {
+        let cell = UnitCell::ortho(3.0, 4.0, 5.0);
+        let cell = cell.scale(2.0);
+
+        assert_eq!(cell.a(), 6.0);
+        assert_eq!(cell.b(), 8.0);
+        assert_eq!(cell.c(), 10.0);
+
+        let unit = Matrix3::one();
+        let A = 0.5 * unit;
+        let cell = cell.scale(A);
+
+        assert_eq!(cell.a(), 3.0);
+        assert_eq!(cell.b(), 4.0);
+        assert_eq!(cell.c(), 5.0);
+    }
+
+    #[test]
+    fn scale_mut() {
+        let mut cell = UnitCell::ortho(3.0, 4.0, 5.0);
+        cell.scale_mut(2.0);
+
+        assert_eq!(cell.a(), 6.0);
+        assert_eq!(cell.b(), 8.0);
+        assert_eq!(cell.c(), 10.0);
+
+        let unit = Matrix3::one();
+        let A = 0.5 * unit;
+        cell.scale_mut(A);
+
+        assert_eq!(cell.a(), 3.0);
+        assert_eq!(cell.b(), 4.0);
+        assert_eq!(cell.c(), 5.0);
+    }
+
 }
