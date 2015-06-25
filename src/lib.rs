@@ -16,3 +16,8 @@ pub mod types;
 pub mod potentials;
 pub mod universe;
 pub mod simulation;
+
+pub use types::*;
+pub use potentials::*;
+pub use universe::*;
+pub use simulation::*;
