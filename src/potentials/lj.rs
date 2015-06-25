@@ -9,6 +9,7 @@
 
 use super::traits::PairPotential;
 
+#[derive(Clone, Copy)]
 pub struct LennardJones {
     pub sigma: f64,
     pub epsilon: f64,

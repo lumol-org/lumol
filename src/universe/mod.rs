@@ -12,3 +12,8 @@ pub use self::particles::*;
 
 pub mod cells;
 pub use self::cells::*;
+
+mod interactions;
+
+pub mod universes;
+pub use self::universes::*;
