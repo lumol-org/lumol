@@ -7,12 +7,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/
 */
 
-#![allow(non_snake_case)]
+mod propagator;
+pub use self::propagator::Propagator;
 
-#[macro_use]
-mod tests;
-
-pub mod types;
-pub mod potentials;
-pub mod universe;
-pub mod simulation;
+mod simulations;
+pub use self::simulations::Simulation;
