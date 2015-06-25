@@ -183,6 +183,28 @@ impl UnitCell {
         UnitCell{data: s * self.data, celltype: self.celltype}
     }
 
+    /// Periodic boundary conditions distance between the point `u` and the point `v`
+    pub fn distance(&self, u: &Vector3D, v: &Vector3D) -> f64 {
+        let d = *v - *u;
+        match self.celltype {
+            CellType::INFINITE => d.norm(),
+            CellType::ORTHOROMBIC => {
+                let x = d.x - f64::round(d.x/self.a())*self.a();
+                let y = d.y - f64::round(d.y/self.b())*self.b();
+                let z = d.z - f64::round(d.z/self.c())*self.c();
+                return f64::sqrt(x*x + y*y + z*z);
+            },
+            CellType::TRICLINIC => {
+                let inv = self.data.inverse();
+                let s = inv * d;
+                let x = s.x - f64::round(s.x);
+                let y = s.y - f64::round(s.y);
+                let z = s.z - f64::round(s.z);
+                let res = Vector3D::new(x, y, z);
+                return (self.data*res).norm();
+            },
+        }
+    }
 }
 
 /// Convert `x` from degrees to radians
@@ -282,8 +304,22 @@ mod tests {
         assert_eq!(cell.a(), 6.0);
         assert_eq!(cell.b(), 8.0);
         assert_eq!(cell.c(), 10.0);
-
-
     }
 
+    #[test]
+    fn distances() {
+        // Orthorombic unit cell
+        let cell = UnitCell::ortho(3.0, 4.0, 5.0);
+        let u = &Vector3D::new(0.0, 0.0, 0.0);
+        let v = &Vector3D::new(1.0, 2.0, 6.0);
+        assert_eq!(cell.distance(u, v), f64::sqrt(6.0));
+
+        // Infinite unit cell
+        let cell = UnitCell::new();
+        assert_eq!(cell.distance(u, v), v.norm());
+
+        // Triclinic unit cell
+        let cell = UnitCell::triclinic(3.0, 4.0, 5.0, 90.0, 90.0, 90.0);
+        assert_eq!(cell.distance(u, v), f64::sqrt(6.0));
+    }
 }
