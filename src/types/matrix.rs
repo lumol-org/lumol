@@ -7,7 +7,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/
 */
 
-use std::ops::{Add, Sub, Mul, Index};
+use std::ops::{Add, Sub, Mul, Index, IndexMut};
 use super::vectors::Vector3D;
 
 /// 3x3 dimensional matrix type, implementing all usual operations
@@ -36,6 +36,28 @@ impl Matrix3 {
     pub fn zero() -> Matrix3 {
         Matrix3::new(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
     }
+
+    /// Computes the inverse of a matrix, which is assumed to exist
+    pub fn inverse(&self) -> Matrix3 {
+        let mut determinant = 0.0;
+        determinant += self[(0, 0)] * (self[(1, 1)] * self[(2, 2)] - self[(2, 1)] * self[(1, 2)]);
+        determinant -= self[(0, 1)] * (self[(1, 0)] * self[(2, 2)] - self[(1, 2)] * self[(2, 0)]);
+        determinant += self[(0, 2)] * (self[(1, 0)] * self[(2, 1)] - self[(1, 1)] * self[(2, 0)]);;
+
+        assert!(determinant != 0.0, "The matrix is not inversible!");
+        let invdet = 1.0 / determinant;
+        let mut res = Matrix3::zero();
+        res[(0, 0)] = (self[(1, 1)] * self[(2, 2)] - self[(2, 1)] * self[(1, 2)]) * invdet;
+        res[(0, 1)] = (self[(0, 2)] * self[(2, 1)] - self[(0, 1)] * self[(2, 2)]) * invdet;
+        res[(0, 2)] = (self[(0, 1)] * self[(1, 2)] - self[(0, 2)] * self[(1, 1)]) * invdet;
+        res[(1, 0)] = (self[(1, 2)] * self[(2, 0)] - self[(1, 0)] * self[(2, 2)]) * invdet;
+        res[(1, 1)] = (self[(0, 0)] * self[(2, 2)] - self[(0, 2)] * self[(2, 0)]) * invdet;
+        res[(1, 2)] = (self[(1, 0)] * self[(0, 2)] - self[(0, 0)] * self[(1, 2)]) * invdet;
+        res[(2, 0)] = (self[(1, 0)] * self[(2, 1)] - self[(2, 0)] * self[(1, 1)]) * invdet;
+        res[(2, 1)] = (self[(2, 0)] * self[(0, 1)] - self[(0, 0)] * self[(2, 1)]) * invdet;
+        res[(2, 2)] = (self[(0, 0)] * self[(1, 1)] - self[(1, 0)] * self[(0, 1)]) * invdet;
+        return res;
+    }
 }
 
 impl Index<usize> for Matrix3 {
@@ -51,6 +73,20 @@ impl Index<(usize, usize)> for Matrix3 {
     #[inline]
     fn index(&self, index: (usize, usize)) -> &f64 {
         &self.data[index.0][index.1]
+    }
+}
+
+impl IndexMut<usize> for Matrix3 {
+    #[inline]
+    fn index_mut<'a>(&'a mut self, index: usize) -> &'a mut [f64; 3] {
+        &mut self.data[index]
+    }
+}
+
+impl IndexMut<(usize, usize)> for Matrix3 {
+    #[inline]
+    fn index_mut<'a>(&'a mut self, index: (usize, usize)) -> &'a mut f64 {
+        &mut self.data[index.0][index.1]
     }
 }
 
@@ -227,8 +263,8 @@ mod tests {
         let mul_r = unit * a;
         let mul_l = a * unit;
 
-        for i in (0..3) {
-            for j in (0..3) {
+        for i in 0..3 {
+            for j in 0..3 {
                 // 1-Matrix is the same as (1-Matrix)*(1-Matrix)
                 assert_eq!(unit[(i, j)], unit_sq[(i, j)]);
                 // (1-Matrix)*A is the same as A and A*(1-Matrix)
@@ -240,12 +276,12 @@ mod tests {
 
     #[test]
     fn mul_vector() {
-        let a = Matrix3::new(1.0, 2.0, 3.0,
+        let A = Matrix3::new(1.0, 2.0, 3.0,
                              4.0, 5.0, 6.0,
                              8.0, 9.0, 10.0);
 
         let vec = Vector3D::new(1.0, 1.0, 1.0);
-        let mul = a * vec;
+        let mul = A * vec;
         let res = Vector3D::new(6.0, 15.0, 27.0);
 
         assert_eq!(mul.x, res.x);
@@ -260,5 +296,24 @@ mod tests {
         assert_eq!(mul.x, res.x);
         assert_eq!(mul.y, res.y);
         assert_eq!(mul.z, res.z);
+    }
+
+    #[test]
+    fn inverse() {
+        let I = Matrix3::one();
+        let res = I.inverse();
+
+        let A = Matrix3::new(1.0, 2.0, 3.0,
+                             2.0, 5.0, 3.0,
+                             1.0, 3.0, 8.0,);
+        let B = A.inverse();
+        let C = A*B;
+
+        for i in 0..3 {
+            for j in 0..3 {
+                assert_eq!(I[(i, j)], res[(i, j)]);
+                assert_eq!(I[(i, j)], C[(i, j)]);
+            }
+        }
     }
 }
