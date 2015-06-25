@@ -91,6 +91,12 @@ impl Universe {
             return index;
         }
     }
+
+    /// Compute all the forces acting on the system, and return a vector of
+    /// force acting on each particles
+    pub fn forces(&self) -> Vec<Vector3D> {
+        unimplemented!()
+    }
 }
 
 impl Index<usize> for Universe {

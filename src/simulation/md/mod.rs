@@ -7,11 +7,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/
 */
 
-mod propagator;
-pub use self::propagator::Propagator;
+mod integrators;
 
-mod simulations;
-pub use self::simulations::Simulation;
+pub use self::integrators::Integrator;
+pub use self::integrators::VelocityVerlet;
 
-mod md;
-pub use self::md::*;
+mod molecular_dynamics;
+pub use self::molecular_dynamics::MolecularDynamics;

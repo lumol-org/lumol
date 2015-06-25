@@ -27,7 +27,7 @@ impl Simulation {
     }
 
     /// Run the simulation on Universe for `nsteps` steps.
-    pub fn run(&self, universe: &mut Universe, nsteps: usize) {
+    pub fn run(&mut self, universe: &mut Universe, nsteps: usize) {
         self.propagator.setup(universe);
         for _ in 0..nsteps {
             self.propagator.propagate(universe);

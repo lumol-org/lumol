@@ -15,11 +15,11 @@ use ::universe::Universe;
 pub trait Propagator {
     /// Setup code, preparing all the meta-informations needed about the
     /// simulation
-    fn setup(&self, _: &Universe) {}
+    fn setup(&mut self, _: &Universe) {}
 
     /// Propagate the universe for one simulation step.
-    fn propagate(&self, universe: &Universe);
+    fn propagate(&mut self, universe: &mut Universe);
 
     /// Finish the simulation, and maybe output some informations about it
-    fn finish(&self, _: &Universe) {}
+    fn finish(&mut self, _: &Universe) {}
 }
