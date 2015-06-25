@@ -34,6 +34,14 @@ impl Particle {
                  velocity: Vector3D::new(0.0, 0.0, 0.0)}
     }
 
+    pub fn name<'a>(&'a self) -> &'a str {
+        &self.name
+    }
+
+    pub fn set_name<S>(&mut self, name: S) where S: Into<String> {
+        self.name = name.into();
+    }
+
     pub fn mass(&self) -> f64 {
         self.mass
     }
@@ -41,15 +49,15 @@ impl Particle {
         self.mass = mass;
     }
 
-    pub fn position(&self) -> Vector3D {
-        self.position
+    pub fn position<'a>(&'a self) -> &'a Vector3D {
+        &self.position
     }
     pub fn set_position(&mut self, pos: Vector3D) {
         self.position = pos;
     }
 
-    pub fn velocity(&self) -> Vector3D {
-        self.velocity
+    pub fn velocity<'a>(&'a self) -> &'a Vector3D {
+        &self.velocity
     }
     pub fn set_velocity(&mut self, vel: Vector3D) {
         self.velocity = vel;
@@ -74,12 +82,12 @@ mod tests {
     #[test]
     fn set_coords() {
         let mut part = Particle::new("O");
-        assert_eq!(part.position(), Vector3D::new(0.0, 0.0, 0.0));
+        assert_eq!(part.position(), &Vector3D::new(0.0, 0.0, 0.0));
 
         part.set_position(Vector3D::new(1.0, 2.0, 3.0));
-        assert_eq!(part.position(), Vector3D::new(1.0, 2.0, 3.0));
+        assert_eq!(part.position(), &Vector3D::new(1.0, 2.0, 3.0));
 
         part.set_velocity(Vector3D::new(1.0, 2.0, 3.0));
-        assert_eq!(part.velocity(), Vector3D::new(1.0, 2.0, 3.0));
+        assert_eq!(part.velocity(), &Vector3D::new(1.0, 2.0, 3.0));
     }
 }

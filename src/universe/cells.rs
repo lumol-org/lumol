@@ -7,8 +7,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/
 */
 use std::f64::consts::PI;
-use std::ops::Mul;
-use std::convert::Into;
+
 use ::types::*;
 
 /// The type of a cell determine how we will be able to compute the periodic
