@@ -55,12 +55,18 @@ impl Particle {
     pub fn set_position(&mut self, pos: Vector3D) {
         self.position = pos;
     }
+    pub fn add_position(&mut self, new_pos: Vector3D) {
+        self.position = self.position + new_pos;
+    }
 
     pub fn velocity<'a>(&'a self) -> &'a Vector3D {
         &self.velocity
     }
     pub fn set_velocity(&mut self, vel: Vector3D) {
         self.velocity = vel;
+    }
+    pub fn add_velocity(&mut self, new_vel: Vector3D) {
+        self.velocity = self.velocity + new_vel;
     }
 }
 
