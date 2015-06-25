@@ -11,6 +11,7 @@ use std::collections::HashMap;
 use std::ops::{Index, IndexMut};
 
 use ::potentials::PairPotential;
+use ::types::Vector3D;
 
 use super::Particle;
 use super::UnitCell;
@@ -37,6 +38,13 @@ impl Universe {
             interactions: Interactions::new(),
             cell: UnitCell::new(),
         }
+    }
+
+    /// Create an empty universe with a specific UnitCell
+    pub fn from_cell(cell: UnitCell) -> Universe {
+        let mut universe = Universe::new();
+        universe.set_cell(cell);
+        return universe;
     }
 
     /// Get the universe unit cell
@@ -120,16 +128,16 @@ mod tests {
 
     #[test]
     fn distances() {
-        let mut universe = Universe::new();
+        let mut universe = Universe::from_cell(UnitCell::cubic(5.0));
         universe.add_particle(Particle::new("O"));
         universe.add_particle(Particle::new("H"));
 
         universe[0].set_position(Vector3D::new(9.0, 0.0, 0.0));
         universe[1].set_position(Vector3D::new(0.0, 0.0, 0.0));
-        assert_eq!(universe.distance(0, 1), 9.0);
-
-        universe.set_cell(UnitCell::cubic(5.0));
         assert_eq!(universe.distance(0, 1), 1.0);
+
+        universe.set_cell(UnitCell::new());
+        assert_eq!(universe.distance(0, 1), 9.0);
     }
 
     #[test]
