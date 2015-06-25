@@ -10,5 +10,5 @@
 mod traits;
 mod lj;
 
-pub use self::traits::*;
-pub use self::lj::*;
+pub use self::traits::PairPotential;
+pub use self::lj::LennardJones;

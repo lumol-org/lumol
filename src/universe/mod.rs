@@ -7,13 +7,11 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/
 */
 
-pub mod particles;
-pub use self::particles::*;
-
-pub mod cells;
-pub use self::cells::*;
-
+mod particles;
+mod cells;
 mod interactions;
+mod universes;
 
-pub mod universes;
-pub use self::universes::*;
+pub use self::particles::Particle;
+pub use self::cells::UnitCell;
+pub use self::universes::Universe;

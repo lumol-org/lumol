@@ -12,8 +12,8 @@ use std::ops::{Index, IndexMut};
 
 use ::potentials::PairPotential;
 
-use super::particles::Particle;
-use super::cells::UnitCell;
+use super::Particle;
+use super::UnitCell;
 use super::interactions::Interactions;
 
 /// The Universe type hold all the data about a system.

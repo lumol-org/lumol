@@ -7,7 +7,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/
 */
 
-use ::types::*;
+use ::types::Vector3D;
+use ::types::Matrix3;
 
 pub trait PairPotential {
     fn energy(&self, r: f64) -> f64;

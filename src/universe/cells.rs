@@ -8,7 +8,8 @@
 */
 use std::f64::consts::PI;
 
-use ::types::*;
+use ::types::Vector3D;
+use ::types::Matrix3;
 
 /// The type of a cell determine how we will be able to compute the periodic
 /// boundaries condition.

@@ -7,7 +7,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/
 */
 
-use super::traits::PairPotential;
+use super::PairPotential;
 
 #[derive(Clone, Copy)]
 pub struct LennardJones {

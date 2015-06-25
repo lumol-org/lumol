@@ -13,9 +13,5 @@
 mod tests;
 
 pub mod types;
-
 pub mod potentials;
-pub use self::potentials::*;
-
 pub mod universe;
-pub use self::universe::*;

@@ -7,7 +7,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/
 */
 
-use ::types::*;
+use ::types::Vector3D;
 
 /// The Particle type hold basic data about a particle in the system. It is self
 /// contained, so that it will be easy to send data between parrallels
