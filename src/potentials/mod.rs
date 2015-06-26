@@ -7,8 +7,5 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/
 */
 
-pub mod traits;
-mod lj;
-
-pub use self::traits::PairPotential;
-pub use self::lj::LennardJones;
+pub mod pairs;
+pub use self::pairs::*;
