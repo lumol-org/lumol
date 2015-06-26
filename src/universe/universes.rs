@@ -81,6 +81,13 @@ impl Universe {
         self.cell.distance(self.particles[i].position(), self.particles[j].position())
     }
 
+    /// Get the distance between the particles at indexes `i` and `j`
+    pub fn wrap_vector(&self, i: usize, j:usize) -> Vector3D {
+        let mut res = *self.particles[i].position() - *self.particles[j].position();
+        self.cell.wrap_vector(&mut res);
+        return res;
+    }
+
     /// Get or create the usize type for the particle `name`
     fn get_type(&mut self, name: &str) -> usize {
         if self.types.contains_key(name) {
@@ -95,7 +102,23 @@ impl Universe {
     /// Compute all the forces acting on the system, and return a vector of
     /// force acting on each particles
     pub fn forces(&self) -> Vec<Vector3D> {
-        unimplemented!()
+        let mut res: Vec<Vector3D> = Vec::with_capacity(self.size());
+        for _ in 0..self.size() {
+            res.push(Vector3D::new(0.0, 0.0, 0.0));
+        }
+
+        for i in 0..self.size() {
+            for j in 0..self.size() {
+                for potential in self.pairs(i, j) {
+                    let d = self.wrap_vector(i, j);
+                    let dn = d.normalized();
+                    let f = potential.force(d.norm());
+                    res[i] = res[i] + f * dn;
+                    res[j] = res[j] - f * dn;
+                }
+            }
+        }
+        return res;
     }
 }
 
