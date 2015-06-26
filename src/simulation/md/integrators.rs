@@ -18,7 +18,7 @@ pub trait Integrator {
     /// run.
     fn setup(&mut self, _: &Universe) {}
     /// Integrate the equations of motion. This is called at every step of the
-    /// simulation. 
+    /// simulation.
     fn integrate(&mut self, universe: &mut Universe);
 }
 
@@ -42,7 +42,12 @@ impl VelocityVerlet {
 
 impl Integrator for VelocityVerlet {
     fn setup(&mut self, universe: &Universe) {
-        self.accelerations = Vec::with_capacity(universe.size());
+        // TODO(unstable): use Vec::resize here
+        self.accelerations.clear();
+        self.accelerations.reserve_exact(universe.size());
+        for _ in 0..universe.size() {
+            self.accelerations.push(Vector3D::new(0.0, 0.0, 0.0));
+        }
     }
 
     fn integrate(&mut self, universe: &mut Universe) {
