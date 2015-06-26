@@ -218,8 +218,8 @@ fn rad2deg(x: f64) -> f64 {
 
 /// Get the angles between the vectors `u` and `v`.
 fn angle(u: Vector3D, v: Vector3D) -> f64 {
-    let un = u.normalize();
-    let vn = v.normalize();
+    let un = u.normalized();
+    let vn = v.normalized();
     f64::acos(un*vn)
 }
 

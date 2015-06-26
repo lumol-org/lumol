@@ -39,7 +39,7 @@ impl Vector3D {
     }
     /// Normalize a Vector3D
     #[inline]
-    pub fn normalize(&self) -> Vector3D {
+    pub fn normalized(&self) -> Vector3D {
         *self / self.norm()
     }
     /// Tensorial product between vectors

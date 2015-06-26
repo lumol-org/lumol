@@ -16,7 +16,7 @@ pub trait PairPotential {
 
     fn virial(&self, r: &Vector3D) -> Matrix3 {
         let fact = self.force(r.norm());
-        let rn = r.normalize();
+        let rn = r.normalized();
         let force = fact * rn;
         force.tensorial(r)
     }
