@@ -183,27 +183,34 @@ impl UnitCell {
         UnitCell{data: s * self.data, celltype: self.celltype}
     }
 
-    /// Periodic boundary conditions distance between the point `u` and the point `v`
-    pub fn distance(&self, u: &Vector3D, v: &Vector3D) -> f64 {
-        let d = *v - *u;
+    /// Wrap a vector in the unit cell, obeying the periodic boundary conditions
+    pub fn wrap_vector(&self, vect: &mut Vector3D) {
         match self.celltype {
-            CellType::INFINITE => d.norm(),
+            CellType::INFINITE => (),
             CellType::ORTHOROMBIC => {
-                let x = d.x - f64::round(d.x/self.a())*self.a();
-                let y = d.y - f64::round(d.y/self.b())*self.b();
-                let z = d.z - f64::round(d.z/self.c())*self.c();
-                return f64::sqrt(x*x + y*y + z*z);
+                vect.x = vect.x - f64::round(vect.x/self.a())*self.a();
+                vect.y = vect.y - f64::round(vect.y/self.b())*self.b();
+                vect.z = vect.z - f64::round(vect.z/self.c())*self.c();
             },
             CellType::TRICLINIC => {
                 let inv = self.data.inverse();
-                let s = inv * d;
-                let x = s.x - f64::round(s.x);
-                let y = s.y - f64::round(s.y);
-                let z = s.z - f64::round(s.z);
-                let res = Vector3D::new(x, y, z);
-                return (self.data*res).norm();
+                let mut fractional = inv * (*vect);
+                fractional.x = fractional.x - f64::round(fractional.x);
+                fractional.y = fractional.y - f64::round(fractional.y);
+                fractional.z = fractional.z - f64::round(fractional.z);
+                let res = self.data * fractional;
+                vect.x = res.x;
+                vect.y = res.y;
+                vect.z = res.z;
             },
         }
+    }
+
+    /// Periodic boundary conditions distance between the point `u` and the point `v`
+    pub fn distance(&self, u: &Vector3D, v: &Vector3D) -> f64 {
+        let mut d = *v - *u;
+        self.wrap_vector(&mut d);
+        return d.norm();
     }
 }
 
