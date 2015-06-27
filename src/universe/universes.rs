@@ -108,7 +108,7 @@ impl Universe {
         }
 
         for i in 0..self.size() {
-            for j in 0..self.size() {
+            for j in (i+1)..self.size() {
                 for potential in self.pairs(i, j) {
                     let d = self.wrap_vector(i, j);
                     let dn = d.normalized();
@@ -175,8 +175,35 @@ mod tests {
         universe.add_particle(Particle::new("He"));
 
         universe.add_pair_interaction("He", "He", LennardJones{sigma: 0.3, epsilon: 2.0});
-        universe.add_pair_interaction("He", "He", LennardJones{sigma: 0.6, epsilon: 2.0});
+        universe.add_pair_interaction("He", "He", Harmonic{k: 100.0, r0: 1.1});
 
         assert_eq!(universe.pairs(0, 0).len(), 2);
+    }
+
+    #[test]
+    fn forces() {
+        let mut universe = Universe::new();
+        universe.add_particle(Particle::new("F"));
+        universe[0].set_position(Vector3D::new(0.0, 0.0, 0.0));
+        universe.add_particle(Particle::new("F"));
+        universe[1].set_position(Vector3D::new(1.3, 0.0, 0.0));
+
+        universe.add_pair_interaction("F", "F", Harmonic{k: 300.0, r0: 1.2});
+        let forces = universe.forces();
+
+        let mut forces_tot = Vector3D::new(0.0, 0.0, 0.0);
+        forces_tot.x += forces[0].x + forces[1].x;
+        forces_tot.x += forces[0].y + forces[1].y;
+        forces_tot.x += forces[0].z + forces[1].z;
+
+        assert_eq!(forces_tot, Vector3D::new(0.0, 0.0, 0.0));
+
+        assert_approx_eq!(forces[0].x, 30.0, 1e-12);
+        assert_approx_eq!(forces[0].y, 0.0, 1e-12);
+        assert_approx_eq!(forces[0].y, 0.0, 1e-12);
+
+        assert_approx_eq!(forces[1].x, -30.0, 1e-12);
+        assert_approx_eq!(forces[1].y, 0.0, 1e-12);
+        assert_approx_eq!(forces[1].y, 0.0, 1e-12);
     }
 }
