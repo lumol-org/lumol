@@ -15,3 +15,7 @@ pub use self::simulations::Simulation;
 
 mod md;
 pub use self::md::*;
+
+mod outputs;
+pub use self::outputs::Output;
+pub use self::outputs::TrajectoryOutput;
