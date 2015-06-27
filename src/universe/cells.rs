@@ -329,4 +329,28 @@ mod tests {
         let cell = UnitCell::triclinic(3.0, 4.0, 5.0, 90.0, 90.0, 90.0);
         assert_eq!(cell.distance(u, v), f64::sqrt(6.0));
     }
+
+    #[test]
+    fn wrap_vector() {
+        // Orthorombic unit cell
+        let cell = UnitCell::ortho(3.0, 4.0, 5.0);
+        let mut v = Vector3D::new(1.0, 1.5, 6.0);
+        cell.wrap_vector(&mut v);
+        assert_eq!(v, Vector3D::new(1.0, 1.5, 1.0));
+
+        // Infinite unit cell
+        let cell = UnitCell::new();
+        let mut v = Vector3D::new(1.0, 1.5, 6.0);
+        cell.wrap_vector(&mut v);
+        assert_eq!(v, Vector3D::new(1.0, 1.5, 6.0));
+
+        // Triclinic unit cell
+        let cell = UnitCell::triclinic(3.0, 4.0, 5.0, 90.0, 90.0, 90.0);
+        let mut v = Vector3D::new(1.0, 1.5, 6.0);
+        cell.wrap_vector(&mut v);
+        let res = Vector3D::new(1.0, 1.5, 1.0);
+        assert_approx_eq!(v.x, res.x, 1e-15);
+        assert_approx_eq!(v.y, res.y, 1e-15);
+        assert_approx_eq!(v.z, res.z, 1e-15);
+    }
 }
