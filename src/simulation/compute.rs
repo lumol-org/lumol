@@ -45,6 +45,48 @@ impl Compute for Forces {
     }
 }
 
+/// Compute the potential energy of the system
+pub struct PotentialEnergy;
+impl Compute for PotentialEnergy {
+    type Output = f64;
+    fn compute(&self, universe: &Universe) -> f64 {
+        let mut res = 0.0;
+        for i in 0..universe.size() {
+            for j in (i+1)..universe.size() {
+                for potential in universe.pairs(i, j) {
+                    let d = universe.wrap_vector(i, j);
+                    res += potential.force(d.norm());
+                }
+            }
+        }
+        return res;
+    }
+}
+
+/// Compute the kinetic energy of the system
+pub struct KineticEnergy;
+impl Compute for KineticEnergy {
+    type Output = f64;
+    fn compute(&self, universe: &Universe) -> f64 {
+        let mut res = 0.0;
+        for i in 0..universe.size() {
+            let part = &universe[i];
+            res += 0.5 * part.mass() * part.velocity().norm2();
+        }
+        return res;
+    }
+}
+
+/// Compute the total energy of the system
+pub struct TotalEnergy;
+impl Compute for TotalEnergy {
+    type Output = f64;
+    fn compute(&self, universe: &Universe) -> f64 {
+        let kinetic = KineticEnergy.compute(universe);
+        let potential = PotentialEnergy.compute(universe);
+        return kinetic + potential;
+    }
+}
 
 
 #[cfg(test)]
@@ -54,16 +96,24 @@ mod test {
     use ::universe::{Universe, Particle};
     use ::potentials::Harmonic;
 
-    #[test]
-    fn forces() {
+    fn testing_universe() -> Universe {
         let mut universe = Universe::new();
         universe.add_particle(Particle::new("F"));
         universe[0].set_position(Vector3D::new(0.0, 0.0, 0.0));
+        universe[0].set_velocity(Vector3D::new(-1.0, 0.0, 0.0));
+
         universe.add_particle(Particle::new("F"));
         universe[1].set_position(Vector3D::new(1.3, 0.0, 0.0));
+        universe[1].set_velocity(Vector3D::new(1.0, 0.0, 0.0));
 
         universe.add_pair_interaction("F", "F", Harmonic{k: 300.0, r0: 1.2});
-        let res = Forces.compute(&universe);
+        return universe;
+    }
+
+    #[test]
+    fn forces() {
+        let universe = &testing_universe();
+        let res = Forces.compute(universe);
 
         let mut forces_tot = Vector3D::new(0.0, 0.0, 0.0);
         forces_tot.x += res[0].x + res[1].x;
@@ -79,5 +129,17 @@ mod test {
         assert_approx_eq!(res[1].x, -30.0, 1e-12);
         assert_approx_eq!(res[1].y, 0.0, 1e-12);
         assert_approx_eq!(res[1].y, 0.0, 1e-12);
+    }
+
+    #[test]
+    fn energy() {
+        let universe = &testing_universe();
+        let kinetic = KineticEnergy.compute(universe);
+        let potential = PotentialEnergy.compute(universe);
+        let total = TotalEnergy.compute(universe);
+
+        assert_eq!(kinetic + potential, total);
+        assert_eq!(kinetic, 1.0); // FIXME: wrong value, but the masses are missing
+        assert_approx_eq!(potential, -30.0, 1e-12);
     }
 }

@@ -19,6 +19,7 @@ pub use self::md::*;
 mod compute;
 pub use self::compute::Compute;
 pub use self::compute::Forces;
+pub use self::compute::{PotentialEnergy, KineticEnergy, TotalEnergy};
 
 mod outputs;
 pub use self::outputs::Output;
