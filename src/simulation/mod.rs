@@ -16,6 +16,10 @@ pub use self::simulations::Simulation;
 mod md;
 pub use self::md::*;
 
+mod compute;
+pub use self::compute::Compute;
+pub use self::compute::Forces;
+
 mod outputs;
 pub use self::outputs::Output;
 pub use self::outputs::TrajectoryOutput;

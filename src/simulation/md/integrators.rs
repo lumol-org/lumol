@@ -7,8 +7,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/
 */
 
-use ::universe::Universe;
 use ::types::Vector3D;
+use ::simulation::{Compute, Forces};
+use ::universe::Universe;
 
 /// The Integrator trait define integrators interface for Molecular Dynamics.
 /// An integrator is an algorithm responsible for propagating the equations of
@@ -61,7 +62,7 @@ impl Integrator for VelocityVerlet {
             universe[i].add_position(new_vel);
         }
 
-        let forces = universe.forces();
+        let forces = Forces.compute(&universe);
         // Update accelerations at t + ∆t and velocities at t + ∆t
         for i in 0..natoms {
             self.accelerations[i] = forces[i] / universe[i].mass();
