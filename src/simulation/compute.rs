@@ -7,6 +7,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/
 */
 
+use ::constants::K_BOLTZMANN;
 use ::types::Vector3D;
 use ::universe::Universe;
 
@@ -88,6 +89,17 @@ impl Compute for TotalEnergy {
     }
 }
 
+/// Compute the instananeous temperature of the system
+pub struct Temperature;
+impl Compute for Temperature {
+    type Output = f64;
+    fn compute(&self, universe: &Universe) -> f64 {
+        let kinetic = KineticEnergy.compute(universe);
+        let natoms = universe.size() as f64;
+        return 1.0/K_BOLTZMANN * 2.0 * kinetic/(3.0 * natoms);
+    }
+}
+
 
 #[cfg(test)]
 mod test {
@@ -141,5 +153,12 @@ mod test {
         assert_eq!(kinetic + potential, total);
         assert_eq!(kinetic, 1.0); // FIXME: wrong value, but the masses are missing
         assert_approx_eq!(potential, -30.0, 1e-12);
+    }
+
+    #[test]
+    fn temperature() {
+        let universe = &testing_universe();
+        let T = Temperature.compute(universe);
+        assert_eq!(T, 1.0/3.0); // FIXME: wrong value, masses and K_BOLTZMANN are missing
     }
 }

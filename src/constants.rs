@@ -7,19 +7,6 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/
 */
 
-#![allow(non_snake_case)]
+// TODO: get real values and set an unit system
 
-#[macro_use]
-mod tests;
-
-pub mod constants;
-
-pub mod types;
-pub mod potentials;
-pub mod universe;
-pub mod simulation;
-
-pub use types::*;
-pub use potentials::*;
-pub use universe::*;
-pub use simulation::*;
+pub static K_BOLTZMANN: f64 = 1.0;
