@@ -7,7 +7,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/
 */
 
-mod propagator;
+pub mod propagator;
 pub use self::propagator::Propagator;
 
 mod simulations;
@@ -16,12 +16,12 @@ pub use self::simulations::Simulation;
 mod md;
 pub use self::md::*;
 
-mod compute;
+pub mod compute;
 pub use self::compute::Compute;
 pub use self::compute::Forces;
 pub use self::compute::{PotentialEnergy, KineticEnergy, TotalEnergy};
 pub use self::compute::Temperature;
 
-mod outputs;
+pub mod outputs;
 pub use self::outputs::Output;
 pub use self::outputs::TrajectoryOutput;

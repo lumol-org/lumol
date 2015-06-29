@@ -8,10 +8,15 @@
 */
 
 mod particles;
+pub use self::particles::Particle;
+
 mod cells;
+pub use self::cells::UnitCell;
+
+mod velocities;
+pub use self::velocities::InitVelocities;
+pub use self::velocities::{BoltzmanVelocities, UniformVelocities};
+
 mod interactions;
 mod universes;
-
-pub use self::particles::Particle;
-pub use self::cells::UnitCell;
 pub use self::universes::Universe;
