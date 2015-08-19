@@ -20,16 +20,16 @@ use super::interactions::Interactions;
 /// The Universe type hold all the data about a system. This data contains:
 ///   - an unit cell, containing the system;
 ///   - a list of particles in the system;
-///   - a list of interactions, associating particles types and potentials
-///   - a hash map associating particles names and particles types.
+///   - a list of interactions, associating particles kinds and potentials
+///   - a hash map associating particles names and particles kinds.
 pub struct Universe {
     /// Unit cell of the universe
     cell: UnitCell,
     /// List of particles in the system
     particles: Vec<Particle>,
-    /// Particles types, associating particles names and indexes
-    types: HashMap<String, usize>,
-    /// Interactions is a hash map associating particles types and potentials
+    /// Particles kinds, associating particles names and indexes
+    kinds: HashMap<String, usize>,
+    /// Interactions is a hash map associating particles kinds and potentials
     interactions: Interactions,
 }
 
@@ -38,7 +38,7 @@ impl Universe {
     pub fn new() -> Universe {
         Universe{
             particles: Vec::new(),
-            types: HashMap::new(),
+            kinds: HashMap::new(),
             interactions: Interactions::new(),
             cell: UnitCell::new(),
         }
@@ -57,26 +57,36 @@ impl Universe {
     pub fn set_cell(&mut self, cell: UnitCell) {self.cell = cell;}
 
     /// Insert a particle at the end of the internal list
-    pub fn add_particle(&mut self, p: Particle) {self.particles.push(p);}
+    pub fn add_particle(&mut self, p: Particle) {
+        let mut part = p;
+        if part.kind() == usize::max_value() {
+            // If no value have been precised, set one from the internal list
+            // of particles kinds.
+            let kind = self.get_kind(part.name());
+            part.set_kind(kind);
+        }
+        self.particles.push(part);
+    }
     /// Get the number of particles in this universe
     pub fn size(&self) -> usize {self.particles.len()}
 
-    /// Get the list of pair interaction betweent the atom i and the atom j
+    /// Get the list of pair interaction between the atom i and the atom j
     pub fn pairs<'a>(&'a self, i: usize, j: usize) -> &'a Vec<Box<PairPotential>> {
-        let itype = self.types[self.particles[i].name()];
-        let jtype = self.types[self.particles[j].name()];
-        &self.interactions.pairs[&(itype, jtype)]
+        let ikind = self.particles[i].kind();
+        let jkind = self.particles[j].kind();
+        &self.interactions.pairs[&(ikind, jkind)]
     }
 
     /// Add an interaction between the particles with names `names`
-    pub fn add_pair_interaction<T>(&mut self, i: &str, j: &str, pot: T) where T: PairPotential + 'static {
-        let itype = self.get_type(i);
-        let jtype = self.get_type(j);
+    pub fn add_pair_interaction<T>(&mut self, i: &str, j: &str, pot: T)
+    where T: PairPotential + 'static {
+        let ikind = self.get_kind(i);
+        let jkind = self.get_kind(j);
 
-        if !self.interactions.pairs.contains_key(&(itype, jtype)) {
-            self.interactions.pairs.insert((itype, jtype), Vec::new());
+        if !self.interactions.pairs.contains_key(&(ikind, jkind)) {
+            self.interactions.pairs.insert((ikind, jkind), Vec::new());
         }
-        let pairs = self.interactions.pairs.get_mut(&(itype, jtype)).unwrap();
+        let pairs = self.interactions.pairs.get_mut(&(ikind, jkind)).unwrap();
         pairs.push(Box::new(pot));
     }
 
@@ -92,13 +102,13 @@ impl Universe {
         return res;
     }
 
-    /// Get or create the usize type for the particle `name`
-    fn get_type(&mut self, name: &str) -> usize {
-        if self.types.contains_key(name) {
-            self.types[name]
+    /// Get or create the usize kind index for the name `name` of a particle
+    fn get_kind(&mut self, name: &str) -> usize {
+        if self.kinds.contains_key(name) {
+            self.kinds[name]
         } else {
-            let index = self.types.len();
-            self.types.insert(name.to_string(), index);
+            let index = self.kinds.len();
+            self.kinds.insert(name.to_string(), index);
             return index;
         }
     }
