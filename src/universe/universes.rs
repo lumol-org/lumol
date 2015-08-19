@@ -17,16 +17,20 @@ use super::Particle;
 use super::UnitCell;
 use super::interactions::Interactions;
 
-/// The Universe type hold all the data about a system.
+/// The Universe type hold all the data about a system. This data contains:
+///   - an unit cell, containing the system;
+///   - a list of particles in the system;
+///   - a list of interactions, associating particles types and potentials
+///   - a hash map associating particles names and particles types.
 pub struct Universe {
+    /// Unit cell of the universe
+    cell: UnitCell,
     /// List of particles in the system
     particles: Vec<Particle>,
     /// Particles types, associating particles names and indexes
     types: HashMap<String, usize>,
     /// Interactions is a hash map associating particles types and potentials
     interactions: Interactions,
-    /// Unit cell of the universe
-    cell: UnitCell,
 }
 
 impl Universe {
