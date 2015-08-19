@@ -77,16 +77,27 @@ mod tests {
     use ::types::*;
 
     #[test]
-    fn set_mass() {
+    fn name() {
         let mut part = Particle::new("O");
-        assert_eq!(part.name, "O");
+        assert_eq!(part.name(), "O");
 
+        part.set_name("H");
+        assert_eq!(part.name(), "H");
+
+        let name = "Zn";
+        part.set_name(name);
+        assert_eq!(part.name(), "Zn");
+    }
+
+    #[test]
+    fn mass() {
+        let mut part = Particle::new("O");
         part.set_mass(16.0);
         assert_eq!(part.mass(), 16.0);
     }
 
     #[test]
-    fn set_coords() {
+    fn coordinates() {
         let mut part = Particle::new("O");
         assert_eq!(part.position(), &Vector3D::new(0.0, 0.0, 0.0));
 
