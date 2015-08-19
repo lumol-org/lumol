@@ -16,6 +16,8 @@ use ::types::Vector3D;
 pub struct Particle {
     /// Particle name
     name: String,
+    /// Particle kind, an index for potentials lookup
+    kind: usize,
     /// Particle mass
     mass: f64,
     /// Particle positions
@@ -30,6 +32,7 @@ impl Particle {
         // TODO: get the mass here
         Particle{name: name.into(),
                  mass: 1.0,
+                 kind: usize::max_value(),
                  position: Vector3D::new(0.0, 0.0, 0.0),
                  velocity: Vector3D::new(0.0, 0.0, 0.0)}
     }
@@ -40,6 +43,14 @@ impl Particle {
 
     pub fn set_name<S>(&mut self, name: S) where S: Into<String> {
         self.name = name.into();
+    }
+
+    pub fn kind(&self) -> usize {
+        self.kind
+    }
+
+    pub fn set_kind(&mut self, kind: usize) {
+        self.kind = kind;
     }
 
     pub fn mass(&self) -> f64 {
@@ -94,6 +105,13 @@ mod tests {
         let mut part = Particle::new("O");
         part.set_mass(16.0);
         assert_eq!(part.mass(), 16.0);
+    }
+
+    #[test]
+    fn kind() {
+        let mut part = Particle::new("O");
+        part.set_kind(42);
+        assert_eq!(part.kind(), 42);
     }
 
     #[test]
