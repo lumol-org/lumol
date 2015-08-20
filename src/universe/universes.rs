@@ -18,6 +18,7 @@ use super::UnitCell;
 use super::interactions::Interactions;
 
 /// The Universe type hold all the data about a system. This data contains:
+///
 ///   - an unit cell, containing the system;
 ///   - a list of particles in the system;
 ///   - a list of interactions, associating particles kinds and potentials
