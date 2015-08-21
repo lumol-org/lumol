@@ -11,10 +11,12 @@ use std::fs::File;
 
 use ::universe::Universe;
 
-/// Type for data ouptut from a simulation.
+/// The `Output` trait define the interface for all the quantities outputed by
+/// the simulation during the run. An Output can be a text or a binary data
+/// file, an image, a text log, …
 pub trait Output {
     /// Function called once at the beggining of the simulation, which allow
-    /// for some setup if needed.
+    /// for some setup of the output if needed.
     fn setup(&mut self, _: &Universe) {}
 
     /// Write the output from the universe.
@@ -25,12 +27,15 @@ pub trait Output {
 }
 
 /******************************************************************************/
-
+/// The `TrajectoryOutput` allow to write the trajectory of the system to a
+/// file, using the XYZ format.
 pub struct TrajectoryOutput {
     file: File,
 }
 
 impl TrajectoryOutput {
+    /// Create a new `TrajectoryOutput`, using the file ate `filename` for
+    /// as the trajectory file. The file is replaced if it already exists.
     pub fn new<'a, S>(filename: S) -> TrajectoryOutput where S: Into<&'a str> {
         TrajectoryOutput{
             file: File::create(filename.into()).unwrap()
@@ -47,5 +52,37 @@ impl Output for TrajectoryOutput {
             let pos = part.position();
             writeln!(&mut self.file, "{} {} {} {}", part.name(), pos.x, pos.y, pos.z).unwrap();
         }
+    }
+}
+
+/******************************************************************************/
+/// The `EnergyOutput` write the energy of the system to a text file, organized
+/// as: `PotentialEnergy     KineticEnergy     TotalEnergy`.
+pub struct EnergyOutput {
+    file: File,
+}
+
+impl EnergyOutput {
+    /// Create a new `TrajectoryOutput`, using the file ate `filename` for
+    /// output.
+    pub fn new<'a, S>(filename: S) -> EnergyOutput where S: Into<&'a str> {
+        EnergyOutput{
+            file: File::create(filename.into()).unwrap()
+        }
+    }
+}
+
+impl Output for EnergyOutput {
+    fn setup(&mut self, _: &Universe) {
+         // TODO: write energy unit here.
+        writeln!(&mut self.file, "# Energy of the simulation (TODO)").unwrap();
+        writeln!(&mut self.file, "# Potential     Kinetic     Total").unwrap();
+    }
+
+    fn write(&mut self, universe: &Universe) {
+        let potential = universe.potential_energy();
+        let kinetic = universe.kinetic_energy();
+        let total = universe.total_energy();
+        writeln!(&mut self.file, "{}   {}   {}", potential, kinetic, total).unwrap();
     }
 }

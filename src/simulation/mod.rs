@@ -24,4 +24,4 @@ pub use self::compute::Temperature;
 
 pub mod outputs;
 pub use self::outputs::Output;
-pub use self::outputs::TrajectoryOutput;
+pub use self::outputs::{TrajectoryOutput, EnergyOutput};

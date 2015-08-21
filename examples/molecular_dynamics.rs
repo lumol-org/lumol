@@ -26,6 +26,7 @@ fn main() {
 
     let mut simulation = Simulation::new(MolecularDynamics::new(1.0));
     simulation.add_output(TrajectoryOutput::new("trajectory.xyz"));
+    simulation.add_output(EnergyOutput::new("energy.dat"));
 
     simulation.run(&mut universe, 500);
 
