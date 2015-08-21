@@ -153,6 +153,10 @@ mod test {
         assert_eq!(kinetic + potential, total);
         assert_eq!(kinetic, 1.0); // FIXME: wrong value, but the masses are missing
         assert_approx_eq!(potential, -30.0, 1e-12);
+
+        assert_eq!(kinetic, universe.kinetic_energy());
+        assert_eq!(potential, universe.potential_energy());
+        assert_eq!(total, universe.total_energy());
     }
 
     #[test]
@@ -160,5 +164,6 @@ mod test {
         let universe = &testing_universe();
         let T = Temperature.compute(universe);
         assert_eq!(T, 1.0/3.0); // FIXME: wrong value, masses and K_BOLTZMANN are missing
+        assert_eq!(T, universe.temperature());
     }
 }

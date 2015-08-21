@@ -115,6 +115,28 @@ impl Universe {
     }
 }
 
+/******************************************************************************/
+
+use ::simulation::Compute;
+use ::simulation::{PotentialEnergy, KineticEnergy, TotalEnergy, Temperature};
+
+// Universe pysical properties.
+impl Universe {
+    // TODO: This implementation recompute the properties each time. These can
+    // be cached somehow.
+
+    /// Get the kinetic energy of the system.
+    pub fn kinetic_energy(&self) -> f64 {KineticEnergy.compute(self)}
+    /// Get the potential energy of the system.
+    pub fn potential_energy(&self) -> f64 {PotentialEnergy.compute(self)}
+    /// Get the total energy of the system.
+    pub fn total_energy(&self) -> f64 {TotalEnergy.compute(self)}
+    /// Get the temperature of the system.
+    pub fn temperature(&self) -> f64 {Temperature.compute(self)}
+}
+
+/******************************************************************************/
+
 impl Index<usize> for Universe {
     type Output = Particle;
     fn index<'a>(&'a self, index: usize) -> &'a Particle {
