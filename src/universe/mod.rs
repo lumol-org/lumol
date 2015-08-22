@@ -7,6 +7,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/
 */
 
+mod periodic;
+pub use self::periodic::{PeriodicTable, ElementData};
+pub use self::periodic::PERIODIC_TABLE;
+
 mod particles;
 pub use self::particles::Particle;
 
