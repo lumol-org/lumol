@@ -8,6 +8,7 @@
 */
 
 use ::types::Vector3D;
+use super::PeriodicTable;
 
 /// The Particle type hold basic data about a particle in the system. It is self
 /// contained, so that it will be easy to send data between parrallels
@@ -28,10 +29,14 @@ pub struct Particle {
 
 
 impl Particle {
-    pub fn new<S: Into<String>>(name: S) -> Particle {
-        // TODO: get the mass here
-        Particle{name: name.into(),
-                 mass: 1.0,
+    pub fn new<S: Into<String>>(n: S) -> Particle {
+        let name = n.into();
+        let mass = match PeriodicTable::mass(&*name) {
+            Some(val) => val,
+            None => panic!("Could not find the mass for the {} particle", name)
+        };
+        Particle{name: name,
+                 mass: mass as f64,
                  kind: usize::max_value(),
                  position: Vector3D::new(0.0, 0.0, 0.0),
                  velocity: Vector3D::new(0.0, 0.0, 0.0)}
