@@ -7,6 +7,12 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/
 */
 
-// TODO: get real values and set an unit system
+//! This module defines and export some usefull physical constants, expressed
+//! directly in the internal unit system.
 
-pub static K_BOLTZMANN: f64 = 1.0;
+/// Boltzmann constant
+pub const K_BOLTZMANN: f64 = 8.31446284161522e-7;
+/// Bohr radius
+pub const BOHR_RADIUS: f64 = 0.52917720859;
+/// Avogadro number
+pub const NA: f64 = 6.02214179e23;

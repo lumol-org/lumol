@@ -12,6 +12,7 @@
 #[macro_use]
 mod tests;
 
+pub mod units;
 pub mod constants;
 
 pub mod types;
