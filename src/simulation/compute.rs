@@ -56,7 +56,7 @@ impl Compute for PotentialEnergy {
             for j in (i+1)..universe.size() {
                 for potential in universe.pairs(i, j) {
                     let d = universe.wrap_vector(i, j);
-                    res += potential.force(d.norm());
+                    res += potential.energy(d.norm());
                 }
             }
         }
@@ -156,7 +156,7 @@ mod test {
 
         assert_eq!(kinetic + potential, total);
         assert_eq!(kinetic, 0.004749600887298584);
-        assert_approx_eq!(potential, -3e-3, EPS);
+        assert_approx_eq!(potential, 1.5e-4, EPS);
 
         assert_eq!(kinetic, universe.kinetic_energy());
         assert_eq!(potential, universe.potential_energy());
