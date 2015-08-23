@@ -9,6 +9,7 @@
 use std::io::prelude::*;
 use std::fs::File;
 
+use ::units;
 use ::universe::Universe;
 
 /// The `Output` trait define the interface for all the quantities outputed by
@@ -74,15 +75,14 @@ impl EnergyOutput {
 
 impl Output for EnergyOutput {
     fn setup(&mut self, _: &Universe) {
-         // TODO: write energy unit here.
-        writeln!(&mut self.file, "# Energy of the simulation (TODO)").unwrap();
+        writeln!(&mut self.file, "# Energy of the simulation (kJ/mol)").unwrap();
         writeln!(&mut self.file, "# Potential     Kinetic     Total").unwrap();
     }
 
     fn write(&mut self, universe: &Universe) {
-        let potential = universe.potential_energy();
-        let kinetic = universe.kinetic_energy();
-        let total = universe.total_energy();
+        let potential = units::to(universe.potential_energy(), "kJ/mol").unwrap();
+        let kinetic = units::to(universe.kinetic_energy(), "kJ/mol").unwrap();
+        let total = units::to(universe.total_energy(), "kJ/mol").unwrap();
         writeln!(&mut self.file, "{}   {}   {}", potential, kinetic, total).unwrap();
     }
 }
