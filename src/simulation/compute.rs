@@ -107,18 +107,22 @@ mod test {
     use ::types::Vector3D;
     use ::universe::{Universe, Particle};
     use ::potentials::Harmonic;
+    use ::units;
+
+    const EPS : f64 = 1e-8;
 
     fn testing_universe() -> Universe {
         let mut universe = Universe::new();
         universe.add_particle(Particle::new("F"));
         universe[0].set_position(Vector3D::new(0.0, 0.0, 0.0));
-        universe[0].set_velocity(Vector3D::new(-1.0, 0.0, 0.0));
+        universe[0].set_velocity(Vector3D::new(0.0, 0.02, 0.0));
 
         universe.add_particle(Particle::new("F"));
         universe[1].set_position(Vector3D::new(1.3, 0.0, 0.0));
-        universe[1].set_velocity(Vector3D::new(1.0, 0.0, 0.0));
+        universe[1].set_velocity(Vector3D::new(0.01, 0.0, 0.0));
 
-        universe.add_pair_interaction("F", "F", Harmonic{k: 300.0, r0: 1.2});
+        universe.add_pair_interaction("F", "F",
+            Harmonic{k: units::from(300.0, "kJ/mol/A^2").unwrap(), r0: units::from(1.2, "A").unwrap()});
         return universe;
     }
 
@@ -134,13 +138,13 @@ mod test {
 
         assert_eq!(forces_tot, Vector3D::new(0.0, 0.0, 0.0));
 
-        assert_approx_eq!(res[0].x, 30.0, 1e-12);
-        assert_approx_eq!(res[0].y, 0.0, 1e-12);
-        assert_approx_eq!(res[0].y, 0.0, 1e-12);
+        assert_approx_eq!(res[0].x, 3e-3, EPS);
+        assert_approx_eq!(res[0].y, 0.0, EPS);
+        assert_approx_eq!(res[0].y, 0.0, EPS);
 
-        assert_approx_eq!(res[1].x, -30.0, 1e-12);
-        assert_approx_eq!(res[1].y, 0.0, 1e-12);
-        assert_approx_eq!(res[1].y, 0.0, 1e-12);
+        assert_approx_eq!(res[1].x, -3e-3, EPS);
+        assert_approx_eq!(res[1].y, 0.0, EPS);
+        assert_approx_eq!(res[1].y, 0.0, EPS);
     }
 
     #[test]
@@ -151,8 +155,8 @@ mod test {
         let total = TotalEnergy.compute(universe);
 
         assert_eq!(kinetic + potential, total);
-        assert_eq!(kinetic, 1.0); // FIXME: wrong value, but the masses are missing
-        assert_approx_eq!(potential, -30.0, 1e-12);
+        assert_eq!(kinetic, 0.004749600887298584);
+        assert_approx_eq!(potential, -3e-3, EPS);
 
         assert_eq!(kinetic, universe.kinetic_energy());
         assert_eq!(potential, universe.potential_energy());
@@ -163,7 +167,7 @@ mod test {
     fn temperature() {
         let universe = &testing_universe();
         let T = Temperature.compute(universe);
-        assert_eq!(T, 1.0/3.0); // FIXME: wrong value, masses and K_BOLTZMANN are missing
+        assert_eq!(T, 1904.1522295848426);
         assert_eq!(T, universe.temperature());
     }
 }

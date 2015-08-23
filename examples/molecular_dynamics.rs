@@ -18,17 +18,19 @@ fn main() {
             }
         }
     }
-    universe.add_pair_interaction("Ar", "Ar", LennardJones{sigma: 3.4, epsilon: 1e-4});
+    universe.add_pair_interaction("Ar", "Ar", LennardJones{
+                                                sigma: units::from(3.4, "A").unwrap(),
+                                                epsilon: units::from(1.0, "kJ/mol").unwrap()});
 
-    let mut velocities = BoltzmanVelocities::new(300.0);
+    let mut velocities = BoltzmanVelocities::new(units::from(300.0, "K").unwrap());
     velocities.seed(129);
     velocities.init(&mut universe);
 
-    let mut simulation = Simulation::new(MolecularDynamics::new(1.0));
+    let mut simulation = Simulation::new(MolecularDynamics::new(units::from(1.0, "fs").unwrap()));
     simulation.add_output(TrajectoryOutput::new("trajectory.xyz"));
     simulation.add_output(EnergyOutput::new("energy.dat"));
 
-    simulation.run(&mut universe, 500);
+    simulation.run(&mut universe, 5000);
 
     println!("All done!")
 }
