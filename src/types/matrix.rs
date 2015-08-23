@@ -7,6 +7,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/
 */
 
+//! Matrix type
+
 use std::ops::{Add, Sub, Mul, Index, IndexMut};
 use super::vectors::Vector3D;
 

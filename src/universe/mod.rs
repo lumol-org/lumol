@@ -7,6 +7,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/
 */
 
+//! The `universe` module provide a way to store data about a simulated system.
+//! These systems are represented by an `Universe` instance, made of a list of
+//! `Particle`, an enclosing `UnitCell` and some interactions.
+
 mod periodic;
 pub use self::periodic::{PeriodicTable, ElementData};
 pub use self::periodic::PERIODIC_TABLE;

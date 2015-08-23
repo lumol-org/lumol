@@ -6,6 +6,11 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/
 */
+
+//! Simulations in computational chemistry are often made using periodic
+//! boundaries conditions. The `UnitCell` type represents the enclosing box of
+//! a simulated system, with some type of periodic condition.
+
 use std::f64::consts::PI;
 
 use ::types::Vector3D;

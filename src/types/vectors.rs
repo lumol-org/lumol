@@ -7,6 +7,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/
 */
 
+//! Fixed-size vector type
+
 use std::ops::{Add, Sub, Mul, Div, BitXor};
 use std::cmp::PartialEq;
 use super::matrix::Matrix3;

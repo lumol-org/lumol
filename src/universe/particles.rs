@@ -7,6 +7,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/
 */
 
+//! `Particle` type and manipulation.
+
 use ::types::Vector3D;
 use super::PeriodicTable;
 

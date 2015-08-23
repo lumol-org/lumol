@@ -7,6 +7,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/
 */
 
+//! `Universe` type definition and implementation.
+
 use std::collections::HashMap;
 use std::ops::{Index, IndexMut};
 
@@ -96,7 +98,7 @@ impl Universe {
         self.cell.distance(self.particles[i].position(), self.particles[j].position())
     }
 
-    /// Get the distance between the particles at indexes `i` and `j`
+    /// Wrap the vector i->j in the cell.
     pub fn wrap_vector(&self, i: usize, j:usize) -> Vector3D {
         let mut res = *self.particles[i].position() - *self.particles[j].position();
         self.cell.wrap_vector(&mut res);
@@ -120,7 +122,7 @@ impl Universe {
 use ::simulation::Compute;
 use ::simulation::{PotentialEnergy, KineticEnergy, TotalEnergy, Temperature};
 
-// Universe pysical properties.
+/// Functions to get pysical properties of an universe.
 impl Universe {
     // TODO: This implementation recompute the properties each time. These can
     // be cached somehow.

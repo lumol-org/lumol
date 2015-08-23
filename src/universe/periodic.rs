@@ -19,7 +19,7 @@
 use std::sync::{Once, ONCE_INIT};
 use std::mem;
 
-/// Data about one "extened" chemical element.
+/// Data about one "extended" chemical element.
 pub struct ElementData {
     /// The symbol is used to identify the element
     pub symbol: &'static str,

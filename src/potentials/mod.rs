@@ -7,5 +7,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/
 */
 
+//! Potentials for energy and forces computation in simulations.
+
 pub mod pairs;
 pub use self::pairs::*;

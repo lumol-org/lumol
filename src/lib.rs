@@ -7,6 +7,19 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/
 */
 
+//! **cymbalum** is a molecular simulation library, which provides basic
+//! building blocks to create your very own simulations. It is based on two main
+//! ideas:
+//!
+//!  - any algorithm used in the simulation can be replaced by another one. This
+//!    allow for modularity and easy developement of novel algorithms.
+//!  - data and algorithms should be separated. This is accomplished through the
+//!    use of the `Universe` (for data) and `Simulation` (for algorithms) types,
+//!    interacting together to run the simulation on some data.
+//!
+//!  Rust provides a nice way to implement these two ideas with the concept of
+//!  traits.
+
 #![allow(non_snake_case)]
 
 #[macro_use]

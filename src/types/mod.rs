@@ -7,6 +7,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/
 */
 
+//! Some basic types used in all the other modules
+
 mod vectors;
 mod matrix;
 

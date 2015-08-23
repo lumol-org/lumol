@@ -7,13 +7,18 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/
 */
 
+//! Pair potentials traits and implementations.
+
 use ::types::Vector3D;
 use ::types::Matrix3;
 
+/// All pair potential can be expressed by implenting the `PairPotential` trait.
 pub trait PairPotential {
+    /// Get the energy corresponding to the distance `r` between the particles
     fn energy(&self, r: f64) -> f64;
+    /// Get the force norm corresponding to the distance `r` between the particles
     fn force(&self, r: f64) -> f64;
-
+    /// Compute the virial contribution corresponding to the distance `r` between the particles
     fn virial(&self, r: &Vector3D) -> Matrix3 {
         let fact = self.force(r.norm());
         let rn = r.normalized();
@@ -24,9 +29,12 @@ pub trait PairPotential {
 
 /******************************************************************************/
 
+/// Lennard-Jones potential
 #[derive(Clone, Copy)]
 pub struct LennardJones {
+    /// Distance constant of the Lennard-Jones potential
     pub sigma: f64,
+    /// Energy constant of the Lennard-Jones potential
     pub epsilon: f64,
 }
 
@@ -44,9 +52,12 @@ impl PairPotential for LennardJones {
 
 /******************************************************************************/
 
+/// Harmonic potential
 #[derive(Clone, Copy)]
 pub struct Harmonic {
+    /// Spring constant
     pub k: f64,
+    /// Equilibrium distance
     pub r0: f64,
 }
 
