@@ -46,13 +46,12 @@ impl BoltzmanVelocities {
 
 impl InitVelocities for BoltzmanVelocities {
     fn init(&mut self, universe: &mut Universe) {
-        for i in 0..universe.size() {
-            let part = &mut universe[i];
-            let m_inv = 1.0 / part.mass();
+        for particle in universe.iter_mut() {
+            let m_inv = 1.0 / particle.mass();
             let x = f64::sqrt(m_inv) * self.dist.sample(&mut self.rng);
             let y = f64::sqrt(m_inv) * self.dist.sample(&mut self.rng);
             let z = f64::sqrt(m_inv) * self.dist.sample(&mut self.rng);
-            part.set_velocity(Vector3D::new(x, y, z));
+            particle.set_velocity(Vector3D::new(x, y, z));
         }
     }
 
@@ -81,13 +80,12 @@ impl UniformVelocities {
 
 impl InitVelocities for UniformVelocities {
     fn init(&mut self, universe: &mut Universe) {
-        for i in 0..universe.size() {
-            let part = &mut universe[i];
-            let m_inv = 1.0 / part.mass();
+        for particle in universe.iter_mut() {
+            let m_inv = 1.0 / particle.mass();
             let x = f64::sqrt(m_inv) * self.dist.sample(&mut self.rng);
             let y = f64::sqrt(m_inv) * self.dist.sample(&mut self.rng);
             let z = f64::sqrt(m_inv) * self.dist.sample(&mut self.rng);
-            part.set_velocity(Vector3D::new(x, y, z));
+            particle.set_velocity(Vector3D::new(x, y, z));
         }
     }
 

@@ -11,6 +11,7 @@
 
 use std::collections::HashMap;
 use std::ops::{Index, IndexMut};
+use std::slice;
 
 use ::potentials::PairPotential;
 use ::types::Vector3D;
@@ -115,6 +116,16 @@ impl Universe {
             return index;
         }
     }
+
+    /// Get an iterator over the `Particle` in this universe
+    pub fn iter(&self) -> slice::Iter<Particle> {
+        self.particles.iter()
+    }
+
+    /// Get a mutable iterator over the `Particle` in this universe
+    pub fn iter_mut(&mut self) -> slice::IterMut<Particle> {
+        self.particles.iter_mut()
+    }
 }
 
 /******************************************************************************/
@@ -138,9 +149,9 @@ impl Universe {
 }
 
 /******************************************************************************/
-
 impl Index<usize> for Universe {
     type Output = Particle;
+    #[inline]
     fn index<'a>(&'a self, index: usize) -> &'a Particle {
         &self.particles[index]
     }

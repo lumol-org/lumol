@@ -70,9 +70,8 @@ impl Compute for KineticEnergy {
     type Output = f64;
     fn compute(&self, universe: &Universe) -> f64 {
         let mut res = 0.0;
-        for i in 0..universe.size() {
-            let part = &universe[i];
-            res += 0.5 * part.mass() * part.velocity().norm2();
+        for particle in universe.iter() {
+            res += 0.5 * particle.mass() * particle.velocity().norm2();
         }
         return res;
     }
