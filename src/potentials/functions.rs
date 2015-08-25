@@ -12,12 +12,15 @@
 use ::types::Vector3D;
 use ::types::Matrix3;
 
-/// All pair potential can be expressed by implenting the `PairPotential` trait.
-pub trait PairPotential {
-    /// Get the energy corresponding to the distance `r` between the particles
+pub trait PotentialFunction {
+    /// TODO Get the energy corresponding to the distance `r` between the particles
     fn energy(&self, r: f64) -> f64;
-    /// Get the force norm corresponding to the distance `r` between the particles
+    /// TODO Get the force norm corresponding to the distance `r` between the particles
     fn force(&self, r: f64) -> f64;
+}
+
+/// All pair potential can be expressed by implenting the `PairPotential` trait.
+pub trait PairPotential : PotentialFunction {
     /// Compute the virial contribution corresponding to the distance `r` between the particles
     fn virial(&self, r: &Vector3D) -> Matrix3 {
         let fact = self.force(r.norm());
@@ -38,17 +41,21 @@ pub struct LennardJones {
     pub epsilon: f64,
 }
 
-impl PairPotential for LennardJones {
+impl PotentialFunction for LennardJones {
+    #[inline]
     fn energy(&self, r: f64) -> f64 {
         let s6 = f64::powi(self.sigma/r, 6);
         4.0 * self.epsilon * (f64::powi(s6, 2) - s6)
     }
 
+    #[inline]
     fn force(&self, r: f64) -> f64 {
         let s6 = f64::powi(self.sigma/r, 6);
         -24.0 * self.epsilon * (s6 - 2.0 * f64::powi(s6, 2)) / r
     }
 }
+
+impl PairPotential for LennardJones {}
 
 /******************************************************************************/
 
@@ -61,16 +68,20 @@ pub struct Harmonic {
     pub r0: f64,
 }
 
-impl PairPotential for Harmonic {
+impl PotentialFunction for Harmonic {
+    #[inline]
     fn energy(&self, r: f64) -> f64 {
         let dr = r - self.r0;
         0.5 * self.k * dr * dr
     }
 
+    #[inline]
     fn force(&self, r: f64) -> f64 {
         self.k * (self.r0 - r)
     }
 }
+
+impl PairPotential for Harmonic {}
 
 /******************************************************************************/
 
