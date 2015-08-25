@@ -21,6 +21,8 @@ pub use self::compute::Compute;
 pub use self::compute::Forces;
 pub use self::compute::{PotentialEnergy, KineticEnergy, TotalEnergy};
 pub use self::compute::Temperature;
+pub use self::compute::Volume;
+pub use self::compute::{Virial, Stress, Pressure};
 
 pub mod outputs;
 pub use self::outputs::Output;

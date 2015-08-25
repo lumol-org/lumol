@@ -14,7 +14,7 @@ use std::ops::{Index, IndexMut};
 use std::slice;
 
 use ::potentials::PairPotential;
-use ::types::Vector3D;
+use ::types::{Vector3D, Matrix3};
 
 use super::Particle;
 use super::UnitCell;
@@ -131,7 +131,10 @@ impl Universe {
 /******************************************************************************/
 
 use ::simulation::Compute;
-use ::simulation::{PotentialEnergy, KineticEnergy, TotalEnergy, Temperature};
+use ::simulation::{PotentialEnergy, KineticEnergy, TotalEnergy};
+use ::simulation::Temperature;
+use ::simulation::Volume;
+use ::simulation::{Virial, Stress, Pressure};
 
 /// Functions to get pysical properties of an universe.
 impl Universe {
@@ -146,6 +149,16 @@ impl Universe {
     pub fn total_energy(&self) -> f64 {TotalEnergy.compute(self)}
     /// Get the temperature of the system.
     pub fn temperature(&self) -> f64 {Temperature.compute(self)}
+
+    /// Get the volume of the system.
+    pub fn volume(&self) -> f64 {Volume.compute(self)}
+
+    /// Get the tensorial virial of the system.
+    pub fn virial(&self) -> Matrix3 {Virial.compute(self)}
+    /// Get the pressure of the system, from the virial equation
+    pub fn pressure(&self) -> f64 {Pressure.compute(self)}
+    /// Get the stress tensor of the system, from the virial equation
+    pub fn stress(&self) -> Matrix3 {Stress.compute(self)}
 }
 
 /******************************************************************************/
