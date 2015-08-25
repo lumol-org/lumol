@@ -104,7 +104,8 @@ impl Compute for Temperature {
 mod test {
     use super::*;
     use ::types::Vector3D;
-    use ::universe::{Universe, Particle};
+    use ::universe::{Universe, Particle, UnitCell};
+    use ::universe::{InitVelocities, BoltzmanVelocities};
     use ::potentials::Harmonic;
     use ::units;
 
@@ -114,11 +115,12 @@ mod test {
         let mut universe = Universe::new();
         universe.add_particle(Particle::new("F"));
         universe[0].set_position(Vector3D::new(0.0, 0.0, 0.0));
-        universe[0].set_velocity(Vector3D::new(0.0, 0.02, 0.0));
 
         universe.add_particle(Particle::new("F"));
         universe[1].set_position(Vector3D::new(1.3, 0.0, 0.0));
-        universe[1].set_velocity(Vector3D::new(0.01, 0.0, 0.0));
+
+        let mut velocities = BoltzmanVelocities::new(units::from(300.0, "K").unwrap());
+        velocities.init(&mut universe);
 
         universe.add_pair_interaction("F", "F",
             Harmonic{k: units::from(300.0, "kJ/mol/A^2").unwrap(), r0: units::from(1.2, "A").unwrap()});
@@ -154,7 +156,7 @@ mod test {
         let total = TotalEnergy.compute(universe);
 
         assert_eq!(kinetic + potential, total);
-        assert_eq!(kinetic, 0.004749600887298584);
+        assert_eq!(kinetic, 0.0007483016557453699);
         assert_approx_eq!(potential, 1.5e-4, EPS);
 
         assert_eq!(kinetic, universe.kinetic_energy());
@@ -166,7 +168,7 @@ mod test {
     fn temperature() {
         let universe = &testing_universe();
         let T = Temperature.compute(universe);
-        assert_eq!(T, 1904.1522295848426);
+        assert_approx_eq!(T, 300.0, 1e-9);
         assert_eq!(T, universe.temperature());
     }
 }

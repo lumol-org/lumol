@@ -17,7 +17,19 @@ use self::rand::SeedableRng;
 
 use ::constants::K_BOLTZMANN;
 use ::types::Vector3D;
+use ::simulation::{Compute, Temperature};
 use super::Universe;
+
+/// Scale all velocities in the `Universe` such that the `universe` temperature
+/// is `T`.
+pub fn scale(universe: &mut Universe, T: f64) {
+    let instant_temperature = Temperature.compute(universe);
+    let factor = f64::sqrt(T / instant_temperature);
+    for particle in universe.iter_mut() {
+        let vel = factor * (*particle.velocity());
+        particle.set_velocity(vel);
+    }
+}
 
 /// Random initializer for the velocities of an universe.
 pub trait InitVelocities {
@@ -29,6 +41,7 @@ pub trait InitVelocities {
 
 /// Initialize the velocities from a Boltzman distribution.
 pub struct BoltzmanVelocities {
+    T: f64,
     dist: Normal,
     rng: Isaac64Rng,
 }
@@ -38,6 +51,7 @@ impl BoltzmanVelocities {
     /// temperature `T`.
     pub fn new(T: f64) -> BoltzmanVelocities {
         BoltzmanVelocities{
+            T: T,
             dist: Normal::new(0.0, f64::sqrt(K_BOLTZMANN * T)),
             rng: Isaac64Rng::from_seed(&[42]),
         }
@@ -53,6 +67,7 @@ impl InitVelocities for BoltzmanVelocities {
             let z = f64::sqrt(m_inv) * self.dist.sample(&mut self.rng);
             particle.set_velocity(Vector3D::new(x, y, z));
         }
+        scale(universe, self.T);
     }
 
     fn seed(&mut self, seed: u64) {
@@ -62,6 +77,7 @@ impl InitVelocities for BoltzmanVelocities {
 
 /// Initialize the velocities from an uniform distribution.
 pub struct UniformVelocities {
+    T: f64,
     dist: Range<f64>,
     rng: Isaac64Rng,
 }
@@ -72,6 +88,7 @@ impl UniformVelocities {
     pub fn new(T: f64) -> UniformVelocities {
         let factor = f64::sqrt(3.0*K_BOLTZMANN * T);
         UniformVelocities{
+            T: T,
             dist: Range::new(-factor, factor),
             rng: Isaac64Rng::from_seed(&[42]),
         }
@@ -87,6 +104,7 @@ impl InitVelocities for UniformVelocities {
             let z = f64::sqrt(m_inv) * self.dist.sample(&mut self.rng);
             particle.set_velocity(Vector3D::new(x, y, z));
         }
+        scale(universe, self.T);
     }
 
     fn seed(&mut self, seed: u64) {
@@ -116,7 +134,7 @@ mod test {
         velocities.seed(1234);
         velocities.init(&mut universe);
         let T = Temperature.compute(&universe);
-        assert!(f64::abs(T - 300.0) < 2.0);
+        assert_approx_eq!(T, 300.0, 1e-9);
     }
 
     #[test]
@@ -126,6 +144,6 @@ mod test {
         velocities.seed(1234);
         velocities.init(&mut universe);
         let T = Temperature.compute(&universe);
-        assert!(f64::abs(T - 300.0) < 2.0);
+        assert_approx_eq!(T, 300.0, 1e-9);
     }
 }
