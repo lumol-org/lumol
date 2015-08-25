@@ -77,3 +77,25 @@ fn constant_energy_leap_frog() {
     let E_final = universe.total_energy();
     assert!(f64::abs(E_initial - E_final) < 1e-5);
 }
+
+#[test]
+fn perfect_gaz() {
+    let (mut simulation, mut universe) = setup(
+        VelocityVerlet::new(units::from(1.0, "fs").unwrap())
+    );
+
+    // dilating the universe!
+    for particle in universe.iter_mut() {
+        let pos = particle.position().clone();
+        particle.set_position(10.0 * pos);
+    }
+    universe.set_cell(UnitCell::cubic(100.0));
+
+    simulation.run(&mut universe, 1000);
+    let P = universe.pressure();
+    let V = universe.volume();
+    let T = universe.temperature();
+    let N = universe.size() as f64;
+
+    assert!(f64::abs(P * V - N * constants::K_BOLTZMANN * T) < 1e-3);
+}
