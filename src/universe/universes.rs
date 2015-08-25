@@ -13,6 +13,11 @@ use std::collections::HashMap;
 use std::ops::{Index, IndexMut};
 use std::slice;
 
+use std::io::prelude::*;
+use std::io;
+use std::fs::File;
+use std::num;
+
 use ::potentials::PairPotential;
 use ::types::{Vector3D, Matrix3};
 
@@ -37,6 +42,33 @@ pub struct Universe {
     interactions: Interactions,
 }
 
+/// Possible error causes where reading XYZ file
+#[derive(Debug)]
+pub enum ReadError {
+    IoError(io::Error),
+    ParseIntError(num::ParseIntError),
+    ParseFloatError(num::ParseFloatError),
+    XYZFormatError{err: &'static str}, // Badly formated file
+}
+
+impl From<num::ParseIntError> for ReadError {
+    fn from(err: num::ParseIntError) -> ReadError {
+        ReadError::ParseIntError(err)
+    }
+}
+
+impl From<num::ParseFloatError> for ReadError {
+    fn from(err: num::ParseFloatError) -> ReadError {
+        ReadError::ParseFloatError(err)
+    }
+}
+
+impl From<io::Error> for ReadError {
+    fn from(err: io::Error) -> ReadError {
+        ReadError::IoError(err)
+    }
+}
+
 impl Universe {
     /// Create a new empty Universe
     pub fn new() -> Universe {
@@ -46,6 +78,34 @@ impl Universe {
             interactions: Interactions::new(),
             cell: UnitCell::new(),
         }
+    }
+
+    /// Read an XYZ file and create an Universe from it.
+    pub fn from_file(path: &str) -> Result<Universe, ReadError> {
+        // TODO: use chemharp for implementation
+        let mut file = try!(File::open(path));
+        let mut content = String::new();
+        try!(file.read_to_string(&mut content));
+        let lines : Vec<&str> = content.lines_any().collect();
+        let natoms = try!(lines[0].parse::<usize>());
+        if lines.len() != natoms + 2 {
+            return Err(ReadError::XYZFormatError{err: "Bad atom number in file."});
+        }
+
+        let mut universe = Universe::new();
+        for line in lines[2..].iter() {
+            let splited: Vec<&str> = line.split_whitespace().collect();
+            if splited.len() < 4 {
+                return Err(ReadError::XYZFormatError{err: "Line is too short."});
+            }
+            let mut part = Particle::new(splited[0]);
+            let x = try!(splited[1].parse::<f64>());
+            let y = try!(splited[2].parse::<f64>());
+            let z = try!(splited[3].parse::<f64>());
+            part.set_position(Vector3D::new(x, y, z));
+            universe.add_particle(part);
+        }
+        return Ok(universe);
     }
 
     /// Create an empty universe with a specific UnitCell
