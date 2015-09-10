@@ -25,6 +25,10 @@ pub mod velocities;
 pub use self::velocities::InitVelocities;
 pub use self::velocities::{BoltzmanVelocities, UniformVelocities};
 
+mod topologies;
+pub use self::topologies::{Bond, Angle, Dihedral};
+pub use self::topologies::Topology;
+
 mod interactions;
 mod universes;
 pub use self::universes::Universe;

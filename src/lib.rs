@@ -23,6 +23,9 @@
 #![allow(non_snake_case)]
 
 #[macro_use]
+extern crate log;
+
+#[macro_use]
 mod tests;
 
 pub mod units;

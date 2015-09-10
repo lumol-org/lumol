@@ -13,3 +13,4 @@ doctest = false
 
 [dependencies]
 rand = "*"
+log = "*"
