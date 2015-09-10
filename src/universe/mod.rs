@@ -11,14 +11,14 @@
 //! These systems are represented by an `Universe` instance, made of a list of
 //! `Particle`, an enclosing `UnitCell` and some interactions.
 
-pub mod periodic;
+mod periodic;
 pub use self::periodic::{PeriodicTable, ElementData};
 pub use self::periodic::PERIODIC_TABLE;
 
-pub mod particles;
+mod particles;
 pub use self::particles::Particle;
 
-pub mod cells;
+mod cells;
 pub use self::cells::UnitCell;
 
 pub mod velocities;
