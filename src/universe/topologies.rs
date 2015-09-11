@@ -107,21 +107,25 @@ impl Molecules {
         self.parts.values().collect()
     }
 
-    /// Get the molecules as list of lists of particles  -> particles mapping
+    /// Get the molecules index of the particle `i`
     #[inline] pub fn molecule_id(&self, i:usize) -> usize {
-        *self.mols.get(&i).unwrap()
+        debug_assert!(self.mols.contains_key(&i));
+        self.mols[&i]
     }
 
     /// Get the molecules as list of lists of particles  -> particles mapping
     #[inline] pub fn molecule_containing<'a>(&'a self, i:usize) -> &'a Vec<usize> {
         let mol = self.molecule_id(i);
-        &self.parts.get(&mol).unwrap()
+        debug_assert!(self.mols.contains_key(&mol));
+        &self.parts[&mol]
     }
 
     /// Merge the molecules containing the particles `i` and `j` in one molecule
     pub fn merge(&mut self, i: usize, j: usize) {
-        let mol_i = *self.mols.get(&i).unwrap();
-        let mol_j = *self.mols.get(&j).unwrap();
+        debug_assert!(self.mols.contains_key(&i));
+        debug_assert!(self.mols.contains_key(&j));
+        let mol_i = self.mols[&i];
+        let mol_j = self.mols[&j];
         let new_mol = min(mol_i, mol_j);
         let old_mol = max(mol_i, mol_j);
         for (_, mol) in self.mols.iter_mut() {
@@ -130,6 +134,8 @@ impl Molecules {
             }
         }
         {
+            debug_assert!(self.parts.contains_key(&old_mol));
+            debug_assert!(self.parts.contains_key(&new_mol));
             let old_mol_parts = self.parts.get(&old_mol).unwrap().clone();
             let new_mol_parts = self.parts.get_mut(&new_mol).unwrap();
             for part in old_mol_parts.iter() {
@@ -225,7 +231,9 @@ impl Topology {
         }
     }
 
-    /// Add a bond between the particles at indexes `i` and `j`
+    /// Add a bond between the particles at indexes `i` and `j`. This fails if
+    /// the particles were not added before calling this function, preferably
+    /// through the Universe::add_particle function.
     pub fn add_bond(&mut self, i: usize, j: usize) {
         if !self.are_in_same_molecule(i, j) {
             self.merge_molecules(i, j);
