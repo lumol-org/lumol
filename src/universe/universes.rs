@@ -147,7 +147,7 @@ impl Universe {
 
     /// Get the list of pair interaction between the particles at indexes `i`
     /// and `j`.
-    pub fn pairs<'a>(&'a self, i: usize, j: usize) -> &'a Vec<Box<PairPotential>> {
+    pub fn pair_potentials<'a>(&'a self, i: usize, j: usize) -> &'a Vec<Box<PairPotential>> {
         let ikind = self.particles[i].kind();
         let jkind = self.particles[j].kind();
         match self.interactions.pairs.get(&(ikind, jkind)) {
@@ -163,7 +163,7 @@ impl Universe {
 
     /// Get the list of angle interaction between the particles at indexes `i`,
     /// `j` and `k`.
-    pub fn angles<'a>(&'a self, i: usize, j: usize, k: usize) -> &'a Vec<Box<AnglePotential>> {
+    pub fn angle_potentials<'a>(&'a self, i: usize, j: usize, k: usize) -> &'a Vec<Box<AnglePotential>> {
         let ikind = self.particles[i].kind();
         let jkind = self.particles[j].kind();
         let kkind = self.particles[k].kind();
@@ -182,7 +182,7 @@ impl Universe {
 
     /// Get the list of dihedral angles interaction between the particles at
     /// indexes `i`, `j`, `k` and `m`.
-    pub fn dihedrals<'a>(&'a self, i: usize, j: usize, k: usize, m: usize) -> &'a Vec<Box<DihedralPotential>> {
+    pub fn dihedral_potentials<'a>(&'a self, i: usize, j: usize, k: usize, m: usize) -> &'a Vec<Box<DihedralPotential>> {
         let ikind = self.particles[i].kind();
         let jkind = self.particles[j].kind();
         let kkind = self.particles[k].kind();
@@ -402,13 +402,13 @@ mod tests {
 
         universe.add_pair_interaction("He", "He", LennardJones{sigma: 0.3, epsilon: 2.0});
         universe.add_pair_interaction("He", "He", Harmonic{k: 100.0, x0: 1.1});
-        assert_eq!(universe.pairs(0, 0).len(), 2);
+        assert_eq!(universe.pair_potentials(0, 0).len(), 2);
 
         universe.add_angle_interaction("He", "He", "He", Harmonic{k: 100.0, x0: 1.1});
-        assert_eq!(universe.angles(0, 0, 0).len(), 1);
+        assert_eq!(universe.angle_potentials(0, 0, 0).len(), 1);
 
         universe.add_dihedral_interaction("He", "He", "He", "He", CosineHarmonic::new(0.3, 2.0));
-        assert_eq!(universe.dihedrals(0, 0, 0, 0).len(), 1);
+        assert_eq!(universe.dihedral_potentials(0, 0, 0, 0).len(), 1);
     }
 
     #[test]
@@ -416,7 +416,7 @@ mod tests {
     fn pairs_errors() {
         let mut universe = Universe::new();
         universe.add_particle(Particle::new("He"));
-        universe.pairs(0, 0);
+        universe.pair_potentials(0, 0);
     }
 
     #[test]
@@ -424,13 +424,13 @@ mod tests {
     fn angles_errors() {
         let mut universe = Universe::new();
         universe.add_particle(Particle::new("He"));
-        universe.angles(0, 0, 0);
+        universe.angle_potentials(0, 0, 0);
     }
     #[test]
     #[should_panic]
     fn dihedrals_errors() {
         let mut universe = Universe::new();
         universe.add_particle(Particle::new("He"));
-        universe.dihedrals(0, 0, 0, 0);
+        universe.dihedral_potentials(0, 0, 0, 0);
     }
 }

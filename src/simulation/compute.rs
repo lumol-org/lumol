@@ -32,7 +32,7 @@ impl Compute for Forces {
 
         for i in 0..universe.size() {
             for j in (i+1)..universe.size() {
-                for potential in universe.pairs(i, j) {
+                for potential in universe.pair_potentials(i, j) {
                     let d = universe.wrap_vector(i, j);
                     let dn = d.normalized();
                     let f = potential.force(d.norm());
@@ -54,7 +54,7 @@ impl Compute for PotentialEnergy {
         let mut res = 0.0;
         for i in 0..universe.size() {
             for j in (i+1)..universe.size() {
-                for potential in universe.pairs(i, j) {
+                for potential in universe.pair_potentials(i, j) {
                     let d = universe.wrap_vector(i, j);
                     res += potential.energy(d.norm());
                 }
@@ -122,7 +122,7 @@ impl Compute for Virial {
         let mut res = Matrix3::zero();
         for i in 0..universe.size() {
             for j in (i+1)..universe.size() {
-                for potential in universe.pairs(i, j) {
+                for potential in universe.pair_potentials(i, j) {
                     let d = universe.wrap_vector(i, j);
                     res = res + 2.0 * potential.virial(&d);
                 }
