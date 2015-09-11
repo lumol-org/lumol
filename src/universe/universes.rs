@@ -22,6 +22,7 @@ use ::potentials::{PairPotential, AnglePotential, DihedralPotential};
 use ::types::{Vector3D, Matrix3};
 
 use super::Particle;
+use super::Topology;
 use super::UnitCell;
 use super::interactions::Interactions;
 
@@ -36,6 +37,8 @@ pub struct Universe {
     cell: UnitCell,
     /// List of particles in the system
     particles: Vec<Particle>,
+    /// Topology of the universe
+    topology: Topology,
     /// Particles kinds, associating particles names and indexes
     kinds: HashMap<String, u16>,
     /// Interactions is a hash map associating particles kinds and potentials
@@ -74,6 +77,7 @@ impl Universe {
     pub fn new() -> Universe {
         Universe{
             particles: Vec::new(),
+            topology: Topology::new(),
             kinds: HashMap::new(),
             interactions: Interactions::new(),
             cell: UnitCell::new(),
@@ -115,10 +119,15 @@ impl Universe {
         return universe;
     }
 
-    /// Get the universe unit cell
+    /// Get a reference to  the universe unit cell
     pub fn cell<'a>(&'a self) -> &'a UnitCell {&self.cell}
     /// Set the universe unit cell
     pub fn set_cell(&mut self, cell: UnitCell) {self.cell = cell;}
+
+    /// Get a reference to the universe topology
+    pub fn topology<'a>(&'a self) -> &'a Topology {&self.topology}
+    /// Get a mutable reference to the universe topology
+    pub fn topology_mut<'a>(&'a mut self) -> &'a mut Topology {&mut self.topology}
 
     /// Insert a particle at the end of the internal list
     pub fn add_particle(&mut self, p: Particle) {
@@ -130,6 +139,8 @@ impl Universe {
             part.set_kind(kind);
         }
         self.particles.push(part);
+        let index = self.size() - 1;
+        self.topology.add_particle(index);
     }
     /// Get the number of particles in this universe
     pub fn size(&self) -> usize {self.particles.len()}
@@ -320,6 +331,42 @@ mod tests {
     use ::universe::*;
     use ::types::*;
     use ::potentials::*;
+
+    #[test]
+    fn cell() {
+        let mut universe = Universe::from_cell(UnitCell::cubic(67.0));
+        {
+            let cell = universe.cell();
+            assert_eq!(cell.a(), 67.0);
+        }
+
+        universe.set_cell(UnitCell::cubic(10.0));
+        let cell = universe.cell();
+        assert_eq!(cell.a(), 10.0);
+    }
+
+    #[test]
+    fn topology() {
+        use std::collections::HashSet;
+
+        let mut universe = Universe::new();
+        universe.add_particle(Particle::new("He"));
+        universe.add_particle(Particle::new("He"));
+        universe.add_particle(Particle::new("He"));
+        universe.add_particle(Particle::new("He"));
+
+        {
+            let topology = universe.topology_mut();
+            topology.add_bond(0, 3);
+            topology.add_bond(1, 2);
+        }
+
+        let topology = universe.topology();
+        let mut bonds = HashSet::new();
+        bonds.insert(Bond::new(1, 2));
+        bonds.insert(Bond::new(0, 3));
+        assert_eq!(topology.bonds(), &bonds);
+    }
 
     #[test]
     fn particles() {
