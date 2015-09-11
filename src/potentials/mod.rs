@@ -16,7 +16,8 @@
 //! energy: with a cutoff, from a table, *etc.*
 
 pub mod functions;
-pub use self::functions::{PotentialFunction, PairPotential};
+pub use self::functions::PotentialFunction;
+pub use self::functions::{PairPotential, AnglePotential, DihedralPotential};
 pub use self::functions::{LennardJones, Harmonic};
 
 pub mod computations;

@@ -12,14 +12,20 @@
 use ::types::Vector3D;
 use ::types::Matrix3;
 
+/// A `PotentialFunction` is a set of two parametric functions which takes a
+/// single scalar variable and return the energy or the norm of the force
+/// corresponding to the value of that variable.
+///
+/// The scalar variable will be the distance for pair potentials, the angle for
+/// angles or dihedral angles potentials, *etc.*
 pub trait PotentialFunction {
-    /// TODO Get the energy corresponding to the distance `r` between the particles
+    /// Get the energy corresponding to the variable `r`
     fn energy(&self, r: f64) -> f64;
-    /// TODO Get the force norm corresponding to the distance `r` between the particles
+    /// Get the force norm corresponding to the variable `r`
     fn force(&self, r: f64) -> f64;
 }
 
-/// All pair potential can be expressed by implenting the `PairPotential` trait.
+/// Pair potential can be expressed by implenting the `PairPotential` trait.
 pub trait PairPotential : PotentialFunction {
     /// Compute the virial contribution corresponding to the distance `r` between the particles
     fn virial(&self, r: &Vector3D) -> Matrix3 {
@@ -30,9 +36,17 @@ pub trait PairPotential : PotentialFunction {
     }
 }
 
-/******************************************************************************/
+/// Angle potential can be expressed by implenting the `AnglePotential` trait.
+pub trait AnglePotential : PotentialFunction {}
 
-/// Lennard-Jones potential
+/// Dihedral angles potential can be expressed by implenting the
+/// `DihedralPotential` trait.
+pub trait DihedralPotential : PotentialFunction {}
+
+/******************************************************************************/
+/// Lennard-Jones potential, using the following form:
+/// $$ V(r) = 4 \epsilon \left[ (\sigma/r)^{12} - (\sigma/r)^{6} \right] $$
+/// where $\sigma$ is a distance constant, and $\epsilon$ an energetic constant.
 #[derive(Clone, Copy)]
 pub struct LennardJones {
     /// Distance constant of the Lennard-Jones potential
@@ -58,8 +72,9 @@ impl PotentialFunction for LennardJones {
 impl PairPotential for LennardJones {}
 
 /******************************************************************************/
-
-/// Harmonic potential
+/// Harmonic potential, using the following form:
+/// $$ V(r) = \frac 12 k (r - r_0)^2 $$
+/// where $r_0$ is the distance equilibrium, and $k$ the elastic constant.
 #[derive(Clone, Copy)]
 pub struct Harmonic {
     /// Spring constant
@@ -82,6 +97,8 @@ impl PotentialFunction for Harmonic {
 }
 
 impl PairPotential for Harmonic {}
+impl AnglePotential for Harmonic {}
+impl DihedralPotential for Harmonic {}
 
 /******************************************************************************/
 
