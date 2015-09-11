@@ -8,19 +8,25 @@
 */
 use std::collections::HashMap;
 
-use ::potentials::PairPotential;
+use ::potentials::{PairPotential, AnglePotential, DihedralPotential};
 
 /// The Interaction type hold all data about the potentials in the system,
 /// indexed by particle type.
 pub struct Interactions {
     /// Pair potentials
     pub pairs: HashMap<(u16, u16), Vec<Box<PairPotential>>>,
+    /// Angle potentials
+    pub angles: HashMap<(u16, u16, u16), Vec<Box<AnglePotential>>>,
+    /// Dihedral angles potentials
+    pub dihedrals: HashMap<(u16, u16, u16, u16), Vec<Box<DihedralPotential>>>,
 }
 
 impl Interactions {
     pub fn new() -> Interactions {
         Interactions{
-            pairs: HashMap::new()
+            pairs: HashMap::new(),
+            angles: HashMap::new(),
+            dihedrals: HashMap::new(),
         }
     }
 }

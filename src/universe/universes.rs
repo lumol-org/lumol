@@ -18,7 +18,7 @@ use std::io;
 use std::fs::File;
 use std::num;
 
-use ::potentials::PairPotential;
+use ::potentials::{PairPotential, AnglePotential, DihedralPotential};
 use ::types::{Vector3D, Matrix3};
 
 use super::Particle;
@@ -134,14 +134,63 @@ impl Universe {
     /// Get the number of particles in this universe
     pub fn size(&self) -> usize {self.particles.len()}
 
-    /// Get the list of pair interaction between the atom i and the atom j
+    /// Get the list of pair interaction between the particles at indexes `i`
+    /// and `j`.
     pub fn pairs<'a>(&'a self, i: usize, j: usize) -> &'a Vec<Box<PairPotential>> {
         let ikind = self.particles[i].kind();
         let jkind = self.particles[j].kind();
-        &self.interactions.pairs[&(ikind, jkind)]
+        match self.interactions.pairs.get(&(ikind, jkind)) {
+            Some(val) => &val,
+            None => {
+                let i = self.particles[i].name();
+                let j = self.particles[j].name();
+                error!("Error: no potential defined for the pair ({}, {})", i, j);
+                panic!();
+            }
+        }
     }
 
-    /// Add an interaction between the particles with names `names`
+    /// Get the list of angle interaction between the particles at indexes `i`,
+    /// `j` and `k`.
+    pub fn angles<'a>(&'a self, i: usize, j: usize, k: usize) -> &'a Vec<Box<AnglePotential>> {
+        let ikind = self.particles[i].kind();
+        let jkind = self.particles[j].kind();
+        let kkind = self.particles[k].kind();
+
+        match self.interactions.angles.get(&(ikind, jkind, kkind)) {
+            Some(val) => &val,
+            None => {
+                let i = self.particles[i].name();
+                let j = self.particles[j].name();
+                let k = self.particles[k].name();
+                error!("Error: no potential defined for the angle ({}, {}, {})", i, j, k);
+                panic!();
+            }
+        }
+    }
+
+    /// Get the list of dihedral angles interaction between the particles at
+    /// indexes `i`, `j`, `k` and `m`.
+    pub fn dihedrals<'a>(&'a self, i: usize, j: usize, k: usize, m: usize) -> &'a Vec<Box<DihedralPotential>> {
+        let ikind = self.particles[i].kind();
+        let jkind = self.particles[j].kind();
+        let kkind = self.particles[k].kind();
+        let mkind = self.particles[m].kind();
+
+        match self.interactions.dihedrals.get(&(ikind, jkind, kkind, mkind)) {
+            Some(val) => &val,
+            None => {
+                let i = self.particles[i].name();
+                let j = self.particles[j].name();
+                let k = self.particles[k].name();
+                let m = self.particles[m].name();
+                error!("Error: no potential defined for the dihedral ({}, {}, {}, {})", i, j, k, m);
+                panic!();
+            }
+        }
+    }
+
+    /// Add a pair interaction between the particles with names `names`
     pub fn add_pair_interaction<T>(&mut self, i: &str, j: &str, pot: T)
     where T: PairPotential + 'static {
         let ikind = self.get_kind(i);
@@ -152,6 +201,35 @@ impl Universe {
         }
         let pairs = self.interactions.pairs.get_mut(&(ikind, jkind)).unwrap();
         pairs.push(Box::new(pot));
+    }
+
+    /// Add an angle interaction between the particles with names `names`
+    pub fn add_angle_interaction<T>(&mut self, i: &str, j: &str, k: &str, pot: T)
+    where T: AnglePotential + 'static {
+        let ikind = self.get_kind(i);
+        let jkind = self.get_kind(j);
+        let kkind = self.get_kind(k);
+
+        if !self.interactions.angles.contains_key(&(ikind, jkind, kkind)) {
+            self.interactions.angles.insert((ikind, jkind, kkind), Vec::new());
+        }
+        let angles = self.interactions.angles.get_mut(&(ikind, jkind, kkind)).unwrap();
+        angles.push(Box::new(pot));
+    }
+
+    /// Add an angle interaction between the particles with names `names`
+    pub fn add_dihedral_interaction<T>(&mut self, i: &str, j: &str, k: &str, m: &str, pot: T)
+    where T: DihedralPotential + 'static {
+        let ikind = self.get_kind(i);
+        let jkind = self.get_kind(j);
+        let kkind = self.get_kind(k);
+        let mkind = self.get_kind(m);
+
+        if !self.interactions.dihedrals.contains_key(&(ikind, jkind, kkind, mkind)) {
+            self.interactions.dihedrals.insert((ikind, jkind, kkind, mkind), Vec::new());
+        }
+        let dihedrals = self.interactions.dihedrals.get_mut(&(ikind, jkind, kkind, mkind)).unwrap();
+        dihedrals.push(Box::new(pot));
     }
 
     /// Get the distance between the particles at indexes `i` and `j`
@@ -271,13 +349,41 @@ mod tests {
     }
 
     #[test]
-    fn pairs() {
+    fn interactions() {
         let mut universe = Universe::new();
         universe.add_particle(Particle::new("He"));
 
         universe.add_pair_interaction("He", "He", LennardJones{sigma: 0.3, epsilon: 2.0});
         universe.add_pair_interaction("He", "He", Harmonic{k: 100.0, x0: 1.1});
-
         assert_eq!(universe.pairs(0, 0).len(), 2);
+
+        universe.add_angle_interaction("He", "He", "He", Harmonic{k: 100.0, x0: 1.1});
+        assert_eq!(universe.angles(0, 0, 0).len(), 1);
+
+        universe.add_dihedral_interaction("He", "He", "He", "He", CosineHarmonic::new(0.3, 2.0));
+        assert_eq!(universe.dihedrals(0, 0, 0, 0).len(), 1);
+    }
+
+    #[test]
+    #[should_panic]
+    fn pairs_errors() {
+        let mut universe = Universe::new();
+        universe.add_particle(Particle::new("He"));
+        universe.pairs(0, 0);
+    }
+
+    #[test]
+    #[should_panic]
+    fn angles_errors() {
+        let mut universe = Universe::new();
+        universe.add_particle(Particle::new("He"));
+        universe.angles(0, 0, 0);
+    }
+    #[test]
+    #[should_panic]
+    fn dihedrals_errors() {
+        let mut universe = Universe::new();
+        universe.add_particle(Particle::new("He"));
+        universe.dihedrals(0, 0, 0, 0);
     }
 }
