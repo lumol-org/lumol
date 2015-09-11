@@ -9,7 +9,7 @@
 
 //! Fixed-size vector type
 
-use std::ops::{Add, Sub, Mul, Div, BitXor};
+use std::ops::{Add, Sub, Neg, Mul, Div, BitXor};
 use std::cmp::PartialEq;
 use super::matrix::Matrix3;
 
@@ -65,6 +65,14 @@ impl Sub for Vector3D {
     type Output = Vector3D;
     fn sub(self, other: Vector3D) -> Vector3D {
         Vector3D::new(self.x - other.x, self.y - other.y, self.z - other.z)
+    }
+}
+
+/// Unary - operator
+impl Neg for Vector3D {
+    type Output = Vector3D;
+    fn neg(self) -> Vector3D {
+        Vector3D::new(-self.x, -self.y, -self.z)
     }
 }
 
@@ -140,6 +148,9 @@ mod tests {
 
         let c = a - b;
         assert_eq!(c, Vector3D::new(-4.1, 12.0, -2.5));
+
+        let d = -c;
+        assert_eq!(d, Vector3D::new(4.1, -12.0, 2.5));
     }
 
     #[test]
