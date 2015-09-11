@@ -43,12 +43,7 @@ impl VelocityVerlet {
 
 impl Integrator for VelocityVerlet {
     fn setup(&mut self, universe: &Universe) {
-        // TODO(unstable): use Vec::resize here
-        self.accelerations.clear();
-        self.accelerations.reserve_exact(universe.size());
-        for _ in 0..universe.size() {
-            self.accelerations.push(Vector3D::new(0.0, 0.0, 0.0));
-        }
+        self.accelerations = vec![Vector3D::new(0.0, 0.0, 0.0); universe.size()];
     }
 
     fn integrate(&mut self, universe: &mut Universe) {

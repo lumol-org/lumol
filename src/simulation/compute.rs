@@ -27,10 +27,8 @@ pub struct Forces;
 impl Compute for Forces {
     type Output = Vec<Vector3D>;
     fn compute(&self, universe: &Universe) -> Vec<Vector3D> {
-        let mut res: Vec<Vector3D> = Vec::with_capacity(universe.size());
-        for _ in 0..universe.size() {
-            res.push(Vector3D::new(0.0, 0.0, 0.0));
-        }
+        let natoms = universe.size();
+        let mut res = vec![Vector3D::new(0.0, 0.0, 0.0); natoms];
 
         for i in 0..universe.size() {
             for j in (i+1)..universe.size() {
