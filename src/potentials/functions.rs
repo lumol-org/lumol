@@ -19,10 +19,10 @@ use ::types::Matrix3;
 /// The scalar variable will be the distance for pair potentials, the angle for
 /// angles or dihedral angles potentials, *etc.*
 pub trait PotentialFunction {
-    /// Get the energy corresponding to the variable `r`
-    fn energy(&self, r: f64) -> f64;
-    /// Get the force norm corresponding to the variable `r`
-    fn force(&self, r: f64) -> f64;
+    /// Get the energy corresponding to the variable `x`
+    fn energy(&self, x: f64) -> f64;
+    /// Get the force norm corresponding to the variable `x`
+    fn force(&self, x: f64) -> f64;
 }
 
 /// Pair potential can be expressed by implenting the `PairPotential` trait.
@@ -73,26 +73,26 @@ impl PairPotential for LennardJones {}
 
 /******************************************************************************/
 /// Harmonic potential, using the following form:
-/// $$ V(r) = \frac 12 k (r - r_0)^2 $$
-/// where $r_0$ is the distance equilibrium, and $k$ the elastic constant.
+/// $$ V(x) = \frac 12 k (x - x_0)^2 $$
+/// where $x_0$ is the distance equilibrium, and $k$ the elastic constant.
 #[derive(Clone, Copy)]
 pub struct Harmonic {
     /// Spring constant
     pub k: f64,
-    /// Equilibrium distance
-    pub r0: f64,
+    /// Equilibrium value
+    pub x0: f64,
 }
 
 impl PotentialFunction for Harmonic {
     #[inline]
-    fn energy(&self, r: f64) -> f64 {
-        let dr = r - self.r0;
-        0.5 * self.k * dr * dr
+    fn energy(&self, x: f64) -> f64 {
+        let dx = x - self.x0;
+        0.5 * self.k * dx * dx
     }
 
     #[inline]
-    fn force(&self, r: f64) -> f64 {
-        self.k * (self.r0 - r)
+    fn force(&self, x: f64) -> f64 {
+        self.k * (self.x0 - x)
     }
 }
 
@@ -122,14 +122,14 @@ mod tests {
 
     #[test]
     fn energy_harmonic() {
-        let harm = Harmonic{k: 50.0, r0: 2.0};
+        let harm = Harmonic{k: 50.0, x0: 2.0};
         assert_eq!(harm.energy(2.0), 0.0);
         assert_eq!(harm.energy(2.5), 6.25);
     }
 
     #[test]
     fn force_harmonic() {
-        let harm = Harmonic{k: 50.0, r0: 2.0};
+        let harm = Harmonic{k: 50.0, x0: 2.0};
         assert_eq!(harm.force(2.0), 0.0);
         assert_eq!(harm.force(2.5), -25.0);
     }

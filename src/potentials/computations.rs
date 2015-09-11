@@ -161,7 +161,7 @@ mod test {
 
     #[test]
     fn direct() {
-        let direct = DirectComputation::new(Box::new(Harmonic{k: 50.0, r0: 2.0}));
+        let direct = DirectComputation::new(Box::new(Harmonic{k: 50.0, x0: 2.0}));
 
         assert_eq!(direct.force(2.5), -25.0);
         assert_eq!(direct.energy(2.5), 6.25);
@@ -169,7 +169,7 @@ mod test {
 
     #[test]
     fn cutoff() {
-        let cutoff = CutoffComputation::new(Box::new(Harmonic{k: 50.0, r0: 2.0}), 4.0);
+        let cutoff = CutoffComputation::new(Box::new(Harmonic{k: 50.0, x0: 2.0}), 4.0);
 
         assert_eq!(cutoff.force(2.5), -25.0);
         assert_eq!(cutoff.energy(2.5), -93.75);
@@ -180,7 +180,7 @@ mod test {
 
     #[test]
     fn table() {
-        let table = TableComputation::new(Box::new(Harmonic{k: 50.0, r0: 2.0}), 1000, 4.0);
+        let table = TableComputation::new(Box::new(Harmonic{k: 50.0, x0: 2.0}), 1000, 4.0);
 
         assert_eq!(table.force(2.5), -25.0);
         assert_eq!(table.energy(2.5), -93.75);

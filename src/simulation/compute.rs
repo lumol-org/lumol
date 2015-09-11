@@ -202,7 +202,7 @@ mod test {
         velocities.init(&mut universe);
 
         universe.add_pair_interaction("F", "F",
-            Harmonic{k: units::from(300.0, "kJ/mol/A^2").unwrap(), r0: units::from(1.2, "A").unwrap()});
+            Harmonic{k: units::from(300.0, "kJ/mol/A^2").unwrap(), x0: units::from(1.2, "A").unwrap()});
         return universe;
     }
 

@@ -276,7 +276,7 @@ mod tests {
         universe.add_particle(Particle::new("He"));
 
         universe.add_pair_interaction("He", "He", LennardJones{sigma: 0.3, epsilon: 2.0});
-        universe.add_pair_interaction("He", "He", Harmonic{k: 100.0, r0: 1.1});
+        universe.add_pair_interaction("He", "He", Harmonic{k: 100.0, x0: 1.1});
 
         assert_eq!(universe.pairs(0, 0).len(), 2);
     }
