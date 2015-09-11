@@ -9,7 +9,7 @@
 
 //! Fixed-size vector type
 
-use std::ops::{Add, Sub, Neg, Mul, Div, BitXor};
+use std::ops::{Add, Sub, Neg, Mul, Div, BitXor, Index, IndexMut};
 use std::cmp::PartialEq;
 use super::matrix::Matrix3;
 
@@ -126,6 +126,31 @@ impl PartialEq for Vector3D {
     }
 }
 
+/// This is provided for convenience only, and is slower than direct field access
+impl Index<usize> for Vector3D {
+    type Output = f64;
+    fn index(&self, index: usize) -> &f64 {
+        match index {
+            0 => &self.x,
+            1 => &self.y,
+            2 => &self.z,
+            _ => panic!("Out of bonds indexing!")
+        }
+    }
+}
+
+/// This is provided for convenience only, and is slower than direct field access
+impl IndexMut<usize> for Vector3D {
+    fn index_mut<'a>(&'a mut self, index: usize) -> &'a mut f64 {
+        match index {
+            0 => &mut self.x,
+            1 => &mut self.y,
+            2 => &mut self.z,
+            _ => panic!("Out of bonds indexing!")
+        }
+    }
+}
+
 /******************************************************************************/
 
 #[cfg(test)]
@@ -188,5 +213,29 @@ mod tests {
 
         let c = a ^ b;
         assert_eq!(c, Vector3D::new(0.0, 0.0, 1.0));
+    }
+
+    #[test]
+    fn index() {
+        let mut a = Vector3D::new(2.1, 3.5, 4.8);
+
+        assert_eq!(a[0], a.x);
+        assert_eq!(a[1], a.y);
+        assert_eq!(a[2], a.z);
+
+        a[0] = 1.0;
+        a[1] = 1.0;
+        a[2] = 1.0;
+
+        assert_eq!(a.x, 1.0);
+        assert_eq!(a.y, 1.0);
+        assert_eq!(a.z, 1.0);
+    }
+
+    #[test]
+    #[should_panic]
+    fn index_out_of_bounds() {
+        let mut a = Vector3D::new(2.1, 3.5, 4.8);
+        a[3] += 4.0;
     }
 }
