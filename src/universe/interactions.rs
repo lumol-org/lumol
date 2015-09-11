@@ -14,7 +14,7 @@ use ::potentials::PairPotential;
 /// indexed by particle type.
 pub struct Interactions {
     /// Pair potentials
-    pub pairs: HashMap<(usize, usize), Vec<Box<PairPotential>>>,
+    pub pairs: HashMap<(u16, u16), Vec<Box<PairPotential>>>,
 }
 
 impl Interactions {

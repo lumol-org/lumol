@@ -37,7 +37,7 @@ pub struct Universe {
     /// List of particles in the system
     particles: Vec<Particle>,
     /// Particles kinds, associating particles names and indexes
-    kinds: HashMap<String, usize>,
+    kinds: HashMap<String, u16>,
     /// Interactions is a hash map associating particles kinds and potentials
     interactions: Interactions,
 }
@@ -123,7 +123,7 @@ impl Universe {
     /// Insert a particle at the end of the internal list
     pub fn add_particle(&mut self, p: Particle) {
         let mut part = p;
-        if part.kind() == usize::max_value() {
+        if part.kind() == u16::max_value() {
             // If no value have been precised, set one from the internal list
             // of particles kinds.
             let kind = self.get_kind(part.name());
@@ -167,11 +167,11 @@ impl Universe {
     }
 
     /// Get or create the usize kind index for the name `name` of a particle
-    fn get_kind(&mut self, name: &str) -> usize {
+    fn get_kind(&mut self, name: &str) -> u16 {
         if self.kinds.contains_key(name) {
-            self.kinds[name]
+            return self.kinds[name];
         } else {
-            let index = self.kinds.len();
+            let index = self.kinds.len() as u16;
             self.kinds.insert(name.to_string(), index);
             return index;
         }

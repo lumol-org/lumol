@@ -20,7 +20,7 @@ pub struct Particle {
     /// Particle name
     name: String,
     /// Particle kind, an index for potentials lookup
-    kind: usize,
+    kind: u16,
     /// Particle mass
     mass: f64,
     /// Particle positions
@@ -39,7 +39,7 @@ impl Particle {
         };
         Particle{name: name,
                  mass: mass as f64,
-                 kind: usize::max_value(),
+                 kind: u16::max_value(),
                  position: Vector3D::new(0.0, 0.0, 0.0),
                  velocity: Vector3D::new(0.0, 0.0, 0.0)}
     }
@@ -52,11 +52,11 @@ impl Particle {
         self.name = name.into();
     }
 
-    pub fn kind(&self) -> usize {
+    pub fn kind(&self) -> u16 {
         self.kind
     }
 
-    pub fn set_kind(&mut self, kind: usize) {
+    pub fn set_kind(&mut self, kind: u16) {
         self.kind = kind;
     }
 
