@@ -18,7 +18,7 @@
 pub mod functions;
 pub use self::functions::PotentialFunction;
 pub use self::functions::{PairPotential, AnglePotential, DihedralPotential};
-pub use self::functions::{LennardJones, Harmonic};
+pub use self::functions::{LennardJones, Harmonic, CosineHarmonic};
 
 pub mod computations;
 pub use self::computations::PotentialComputation;

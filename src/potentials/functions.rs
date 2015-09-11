@@ -101,6 +101,42 @@ impl AnglePotential for Harmonic {}
 impl DihedralPotential for Harmonic {}
 
 /******************************************************************************/
+/// Cosine harmonic potential, using the following form:
+/// $$ V(r) = \frac 12 k (\cos r - \cos x_0)^2 $$
+/// where $x_0$ is the distance equilibrium, and $k$ the elastic constant.
+#[derive(Clone, Copy)]
+pub struct CosineHarmonic {
+    /// Spring constant
+    k: f64,
+    /// Cosine of the equilibrium value
+    cos_x0: f64,
+}
+
+impl CosineHarmonic {
+    /// Create a new `CosineHarmonic` potentials, with elastic constant of `k`
+    /// and equilibrium value of `x0`
+    pub fn new(k: f64, x0:f64) -> CosineHarmonic {
+        CosineHarmonic{k: k, cos_x0: f64::cos(x0)}
+    }
+}
+
+impl PotentialFunction for CosineHarmonic {
+    #[inline]
+    fn energy(&self, x: f64) -> f64 {
+        let dr = f64::cos(x) - self.cos_x0;
+        0.5 * self.k * dr * dr
+    }
+
+    #[inline]
+    fn force(&self, x: f64) -> f64 {
+        self.k * (f64::cos(x) - self.cos_x0) * f64::sin(x)
+    }
+}
+
+impl AnglePotential for CosineHarmonic {}
+impl DihedralPotential for CosineHarmonic {}
+
+/******************************************************************************/
 
 #[cfg(test)]
 mod tests {
@@ -132,5 +168,21 @@ mod tests {
         let harm = Harmonic{k: 50.0, x0: 2.0};
         assert_eq!(harm.force(2.0), 0.0);
         assert_eq!(harm.force(2.5), -25.0);
+    }
+
+    #[test]
+    fn energy_cosine_harmonic() {
+        let harm = CosineHarmonic::new(50.0, 2.0);
+        assert_eq!(harm.energy(2.0), 0.0);
+        let dcos = f64::cos(2.5) - f64::cos(2.0);
+        assert_eq!(harm.energy(2.5), 0.5 * 50.0 * dcos * dcos);
+    }
+
+    #[test]
+    fn force_cosine_harmonic() {
+        let harm = CosineHarmonic::new(50.0, 2.0);
+        assert_eq!(harm.force(2.0), 0.0);
+        let dcos = f64::cos(2.5) - f64::cos(2.0);
+        assert_eq!(harm.force(2.5), 50.0 * dcos * f64::sin(2.5));
     }
 }
