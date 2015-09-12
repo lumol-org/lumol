@@ -217,6 +217,89 @@ impl UnitCell {
         self.wrap_vector(&mut d);
         return d.norm();
     }
+
+    /// Get the angle formed by the points at `a`, `b` and `c` using periodic
+    /// boundary conditions.
+    pub fn angle(&self, a: &Vector3D, b: &Vector3D, c: &Vector3D) -> f64 {
+        let mut x = *a - *b;
+        self.wrap_vector(&mut x);
+        let mut y = *c - *b;
+        self.wrap_vector(&mut y);
+
+        let xn = x.normalized();
+        let yn = y.normalized();
+        return f64::acos(xn * yn);
+    }
+
+    /// Get the angle formed by the points at `a`, `b` and `c` using periodic
+    /// boundary conditions and its derivatives.
+    pub fn angle_and_derivatives(&self, a: &Vector3D, b: &Vector3D, c: &Vector3D) -> (f64, Vector3D, Vector3D, Vector3D) {
+        let mut x = *a - *b;
+        self.wrap_vector(&mut x);
+        let mut y = *c - *b;
+        self.wrap_vector(&mut y);
+
+        let x_norm = x.norm();
+        let y_norm = y.norm();
+        let xn = x.normalized();
+        let yn = y.normalized();
+
+        let cos = xn * yn;
+        let sin_inv = 1.0 / f64::sqrt(1.0 - cos*cos);
+
+        let d1 = sin_inv * (cos * xn - yn) / x_norm;
+        let d3 = sin_inv * (cos * yn - xn) / y_norm;
+        let d2 = - (d1 + d3);
+
+        return (f64::acos(cos), d1, d2, d3);
+    }
+
+
+    /// Get the dihedral angle formed by the points at `a`, `b`, `c`, `d` using
+    /// periodic boundary conditions.
+    pub fn dihedral(&self, a: &Vector3D, b: &Vector3D, c: &Vector3D, d: &Vector3D) -> f64 {
+        let mut r12 = *b - *a;
+        self.wrap_vector(&mut r12);
+        let mut r23 = *c - *b;
+        self.wrap_vector(&mut r23);
+        let mut r34 = *d - *c;
+        self.wrap_vector(&mut r34);
+
+        let u = r12 ^ r23;
+        let v = r23 ^ r34;
+        return f64::atan2(r23.norm() * v * r12, u * v);
+    }
+
+    /// Get the dihedral angle formed by the points at `u`, `v` and `w` using
+    /// periodic boundary conditions and its derivatives.
+    pub fn dihedral_and_derivatives(&self, a: &Vector3D, b: &Vector3D, c: &Vector3D, d: &Vector3D)
+    -> (f64, Vector3D, Vector3D, Vector3D , Vector3D) {
+        let mut r12 = *b - *a;
+        self.wrap_vector(&mut r12);
+        let mut r23 = *c - *b;
+        self.wrap_vector(&mut r23);
+        let mut r34 = *d - *c;
+        self.wrap_vector(&mut r34);
+
+        let x = r12 ^ r23;
+        let y = r23 ^ r34;
+        let norm2_x = x.norm2();
+        let norm2_y = y.norm2();
+        let norm2_r23 = r23.norm2();
+        let norm_r23 = f64::sqrt(norm2_r23);
+
+        let d1 = (-norm_r23 / norm2_x) * x;
+        let d4 = (norm_r23 / norm2_y) * y;
+
+        let r23r34 = r23 * r34;
+        let r12r23 = r12 * r23;
+
+        let d2 = (-r12r23 / norm2_r23 - 1.0) * d1 + (r23r34 / norm2_r23) * d4;
+        let d3 = (-r23r34 / norm2_r23 - 1.0) * d4 + (r12r23 / norm2_r23) * d1;
+
+        let phi = f64::atan2(r23.norm() * y * r12, x * y);
+        return (phi, d1, d2, d3, d4)
+    }
 }
 
 /// Convert `x` from degrees to radians
@@ -239,6 +322,7 @@ fn angle(u: Vector3D, v: Vector3D) -> f64 {
 mod tests {
     use super::*;
     use ::types::*;
+    use std::f64;
 
     #[test]
     fn infinite() {
@@ -357,5 +441,104 @@ mod tests {
         assert_approx_eq!(v.x, res.x, 1e-15);
         assert_approx_eq!(v.y, res.y, 1e-15);
         assert_approx_eq!(v.z, res.z, 1e-15);
+    }
+
+    #[test]
+    fn angles() {
+        let cell = UnitCell::new();
+
+        let a = Vector3D::new(1.0, 0.0, 0.0);
+        let b = Vector3D::new(0.0, 0.0, 0.0);
+        let c = Vector3D::new(0.0, 1.0, 0.0);
+        assert_eq!(cell.angle(&a, &b, &c), f64::consts::PI/2.0);
+
+        let a = Vector3D::new(1.0, 0.0, 0.0);
+        let b = Vector3D::new(0.0, 0.0, 0.0);
+        let c = Vector3D::new(f64::cos(1.877), f64::sin(1.877), 0.0);
+        assert_eq!(cell.angle(&a, &b, &c), 1.877);
+    }
+
+    #[test]
+    fn angle_derivatives() {
+        const EPS: f64 = 1e-6;
+        let cell = UnitCell::new();
+        let a = Vector3D::new(0.0, 0.02, 0.0);
+        let b = Vector3D::new(-0.784729, -0.5548997, 0.0);
+        let c = Vector3D::new(0.784729, -0.5548997, 0.0);
+
+        let (angle, d1, d2, d3) = cell.angle_and_derivatives(&a, &b, &c);
+
+        // Check by comparison to finite differences
+        for i in 0..3 {
+            let mut p = a.clone();
+            p[i] += EPS;
+            assert_approx_eq!((cell.angle(&p, &b, &c) - angle)/EPS, d1[i], EPS);
+        }
+
+        for i in 0..3 {
+            let mut p = b.clone();
+            p[i] += EPS;
+            assert_approx_eq!((cell.angle(&a, &p, &c) - angle)/EPS, d2[i], EPS);
+        }
+
+        for i in 0..3 {
+            let mut p = c.clone();
+            p[i] += EPS;
+            assert_approx_eq!((cell.angle(&a, &b, &p) - angle)/EPS, d3[i], EPS);
+        }
+    }
+
+    #[test]
+    fn dihedrals() {
+        let cell = UnitCell::new();
+
+        let a = Vector3D::new(0.0, 0.0, 0.0);
+        let b = Vector3D::new(1.0, 0.0, 0.0);
+        let c = Vector3D::new(1.0, 1.0, 0.0);
+        let d = Vector3D::new(2.0, 1.0, 0.0);
+        assert_eq!(cell.dihedral(&a, &b, &c, &d), f64::consts::PI);
+
+        let a = Vector3D::new(1.241, 0.444, 0.349);
+        let b = Vector3D::new(-0.011, -0.441, 0.333);
+        let c = Vector3D::new(-1.176, 0.296, -0.332);
+        let d = Vector3D::new(-1.396, 1.211, 0.219);
+        assert_approx_eq!(cell.dihedral(&a, &b, &c, &d), -1.0453789, 1e-6);
+    }
+
+    #[test]
+    fn dihedral_derivatives() {
+        const EPS: f64 = 1e-6;
+        let cell = UnitCell::new();
+        let a = Vector3D::new(1.241, 0.444, 0.349);
+        let b = Vector3D::new(-0.011, -0.441, 0.333);
+        let c = Vector3D::new(-1.176, 0.296, -0.332);
+        let d = Vector3D::new(-1.396, 1.211, 0.219);
+
+        let (angle, d1, d2, d3, d4) = cell.dihedral_and_derivatives(&a, &b, &c, &d);
+
+        // Check by comparison to finite differences
+        for i in 0..3 {
+            let mut p = a.clone();
+            p[i] += EPS;
+            assert_approx_eq!((cell.dihedral(&p, &b, &c, &d) - angle)/EPS, d1[i], EPS);
+        }
+
+        for i in 0..3 {
+            let mut p = b.clone();
+            p[i] += EPS;
+            assert_approx_eq!((cell.dihedral(&a, &p, &c, &d) - angle)/EPS, d2[i], EPS);
+        }
+
+        for i in 0..3 {
+            let mut p = c.clone();
+            p[i] += EPS;
+            assert_approx_eq!((cell.dihedral(&a, &b, &p, &d) - angle)/EPS, d3[i], EPS);
+        }
+
+        for i in 0..3 {
+            let mut p = d.clone();
+            p[i] += EPS;
+            assert_approx_eq!((cell.dihedral(&a, &b, &c, &p) - angle)/EPS, d4[i], EPS);
+        }
     }
 }
