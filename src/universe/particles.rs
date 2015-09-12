@@ -44,46 +44,50 @@ impl Particle {
                  velocity: Vector3D::new(0.0, 0.0, 0.0)}
     }
 
-    pub fn name<'a>(&'a self) -> &'a str {
+    #[inline] pub fn name<'a>(&'a self) -> &'a str {
         &self.name
     }
 
-    pub fn set_name<S>(&mut self, name: S) where S: Into<String> {
+    #[inline] pub fn set_name<S>(&mut self, name: S) where S: Into<String> {
         self.name = name.into();
     }
 
-    pub fn kind(&self) -> u16 {
+    #[inline] pub fn kind(&self) -> u16 {
         self.kind
     }
 
-    pub fn set_kind(&mut self, kind: u16) {
+    #[inline] pub fn set_kind(&mut self, kind: u16) {
         self.kind = kind;
     }
 
-    pub fn mass(&self) -> f64 {
+    #[inline] pub fn mass(&self) -> f64 {
         self.mass
     }
-    pub fn set_mass(&mut self, mass: f64) {
+    #[inline] pub fn set_mass(&mut self, mass: f64) {
         self.mass = mass;
     }
 
-    pub fn position<'a>(&'a self) -> &'a Vector3D {
+    #[inline] pub fn position<'a>(&'a self) -> &'a Vector3D {
         &self.position
     }
-    pub fn set_position(&mut self, pos: Vector3D) {
+
+    #[inline] pub fn set_position(&mut self, pos: Vector3D) {
         self.position = pos;
     }
-    pub fn add_position(&mut self, new_pos: Vector3D) {
+
+    #[inline] pub fn add_position(&mut self, new_pos: Vector3D) {
         self.position = self.position + new_pos;
     }
 
-    pub fn velocity<'a>(&'a self) -> &'a Vector3D {
+    #[inline] pub fn velocity<'a>(&'a self) -> &'a Vector3D {
         &self.velocity
     }
-    pub fn set_velocity(&mut self, vel: Vector3D) {
+
+    #[inline] pub fn set_velocity(&mut self, vel: Vector3D) {
         self.velocity = vel;
     }
-    pub fn add_velocity(&mut self, new_vel: Vector3D) {
+
+    #[inline] pub fn add_velocity(&mut self, new_vel: Vector3D) {
         self.velocity = self.velocity + new_vel;
     }
 }

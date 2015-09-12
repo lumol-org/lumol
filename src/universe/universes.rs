@@ -120,14 +120,14 @@ impl Universe {
     }
 
     /// Get a reference to  the universe unit cell
-    pub fn cell<'a>(&'a self) -> &'a UnitCell {&self.cell}
+    #[inline] pub fn cell<'a>(&'a self) -> &'a UnitCell {&self.cell}
     /// Set the universe unit cell
-    pub fn set_cell(&mut self, cell: UnitCell) {self.cell = cell;}
+    #[inline] pub fn set_cell(&mut self, cell: UnitCell) {self.cell = cell;}
 
     /// Get a reference to the universe topology
-    pub fn topology<'a>(&'a self) -> &'a Topology {&self.topology}
+    #[inline] pub fn topology<'a>(&'a self) -> &'a Topology {&self.topology}
     /// Get a mutable reference to the universe topology
-    pub fn topology_mut<'a>(&'a mut self) -> &'a mut Topology {&mut self.topology}
+    #[inline] pub fn topology_mut<'a>(&'a mut self) -> &'a mut Topology {&mut self.topology}
 
     /// Insert a particle at the end of the internal list
     pub fn add_particle(&mut self, p: Particle) {
@@ -143,7 +143,7 @@ impl Universe {
         self.topology.add_particle(index);
     }
     /// Get the number of particles in this universe
-    pub fn size(&self) -> usize {self.particles.len()}
+    #[inline] pub fn size(&self) -> usize {self.particles.len()}
 
     /// Get the list of pair interaction between the particles at indexes `i`
     /// and `j`.
@@ -244,7 +244,7 @@ impl Universe {
     }
 
     /// Get the distance between the particles at indexes `i` and `j`
-    pub fn distance(&self, i: usize, j:usize) -> f64 {
+    #[inline] pub fn distance(&self, i: usize, j:usize) -> f64 {
         self.cell.distance(self.particles[i].position(), self.particles[j].position())
     }
 
@@ -267,12 +267,12 @@ impl Universe {
     }
 
     /// Get an iterator over the `Particle` in this universe
-    pub fn iter(&self) -> slice::Iter<Particle> {
+    #[inline] pub fn iter(&self) -> slice::Iter<Particle> {
         self.particles.iter()
     }
 
     /// Get a mutable iterator over the `Particle` in this universe
-    pub fn iter_mut(&mut self) -> slice::IterMut<Particle> {
+    #[inline] pub fn iter_mut(&mut self) -> slice::IterMut<Particle> {
         self.particles.iter_mut()
     }
 }

@@ -74,11 +74,11 @@ impl UnitCell {
     }
 
     /// Get the cell type
-    pub fn celltype(&self) -> CellType {
+    #[inline] pub fn celltype(&self) -> CellType {
         self.celltype
     }
     /// Set the cell type
-    pub fn set_celltype(&mut self, ctype: CellType) {
+    #[inline] pub fn set_celltype(&mut self, ctype: CellType) {
         self.celltype = ctype;
     }
 
@@ -179,12 +179,13 @@ impl UnitCell {
     }
 
     /// Scale this unit cell in-place by multiplying the H matrix by `s`.
-    pub fn scale_mut(&mut self, s: Matrix3) {
+    #[inline] pub fn scale_mut(&mut self, s: Matrix3) {
         self.data = s * self.data;
     }
 
-    /// Scale this unit cell by multiplying the H matrix by `s`, and return a new unit cell
-    pub fn scale(&self, s: Matrix3) -> UnitCell {
+    /// Scale this unit cell by multiplying the H matrix by `s`, and return a
+    /// new scaled unit cell
+    #[inline] pub fn scale(&self, s: Matrix3) -> UnitCell {
         UnitCell{data: s * self.data, celltype: self.celltype}
     }
 
@@ -303,11 +304,11 @@ impl UnitCell {
 }
 
 /// Convert `x` from degrees to radians
-fn deg2rad(x: f64) -> f64 {
+#[inline] fn deg2rad(x: f64) -> f64 {
     x * PI / 180.0
 }
 /// Convert `x` from radians to degrees
-fn rad2deg(x: f64) -> f64 {
+#[inline] fn rad2deg(x: f64) -> f64 {
     x * 180.0 / PI
 }
 

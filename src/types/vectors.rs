@@ -30,18 +30,15 @@ impl Vector3D {
         Vector3D{x: x, y: y, z: z}
     }
     /// Return the squared euclidean norm of a Vector3D
-    #[inline]
-    pub fn norm2(&self) -> f64 {
+    #[inline] pub fn norm2(&self) -> f64 {
         (*self) * (*self)
     }
     /// Return the euclidean norm of a Vector3D
-    #[inline]
-    pub fn norm(&self) -> f64 {
+    #[inline] pub fn norm(&self) -> f64 {
         f64::sqrt(self.norm2())
     }
     /// Normalize a Vector3D
-    #[inline]
-    pub fn normalized(&self) -> Vector3D {
+    #[inline] pub fn normalized(&self) -> Vector3D {
         *self / self.norm()
     }
     /// Tensorial product between vectors
@@ -55,7 +52,7 @@ impl Vector3D {
 /// Add two vectors
 impl Add for Vector3D {
     type Output = Vector3D;
-    fn add(self, other: Vector3D) -> Vector3D {
+    #[inline] fn add(self, other: Vector3D) -> Vector3D {
         Vector3D::new(self.x + other.x, self.y + other.y, self.z + other.z)
     }
 }
@@ -63,7 +60,7 @@ impl Add for Vector3D {
 /// Substract two vectors
 impl Sub for Vector3D {
     type Output = Vector3D;
-    fn sub(self, other: Vector3D) -> Vector3D {
+    #[inline] fn sub(self, other: Vector3D) -> Vector3D {
         Vector3D::new(self.x - other.x, self.y - other.y, self.z - other.z)
     }
 }
@@ -71,7 +68,7 @@ impl Sub for Vector3D {
 /// Unary - operator
 impl Neg for Vector3D {
     type Output = Vector3D;
-    fn neg(self) -> Vector3D {
+    #[inline] fn neg(self) -> Vector3D {
         Vector3D::new(-self.x, -self.y, -self.z)
     }
 }
@@ -79,7 +76,7 @@ impl Neg for Vector3D {
 /// Multiply by a scalar on the right hand side
 impl Mul<f64> for Vector3D {
     type Output = Vector3D;
-    fn mul(self, other: f64) -> Vector3D {
+    #[inline] fn mul(self, other: f64) -> Vector3D {
         Vector3D::new(self.x * other, self.y * other, self.z * other)
     }
 }
@@ -87,7 +84,7 @@ impl Mul<f64> for Vector3D {
 /// Multiply by a scalar on the left hand side
 impl Mul<Vector3D> for f64 {
     type Output = Vector3D;
-    fn mul(self, other: Vector3D) -> Vector3D {
+    #[inline] fn mul(self, other: Vector3D) -> Vector3D {
         Vector3D::new(self * other.x, self * other.y, self * other.z)
     }
 }
@@ -95,7 +92,7 @@ impl Mul<Vector3D> for f64 {
 /// Scalar product between vectors
 impl Mul<Vector3D> for Vector3D {
     type Output = f64;
-    fn mul(self, other: Vector3D) -> f64 {
+    #[inline] fn mul(self, other: Vector3D) -> f64 {
         self.x * other.x + self.y * other.y + self.z * other.z
     }
 }
@@ -114,14 +111,14 @@ impl BitXor<Vector3D> for Vector3D {
 /// Dividing a vector by a scalar
 impl Div<f64> for Vector3D {
     type Output = Vector3D;
-    fn div(self, other: f64) -> Vector3D {
+    #[inline] fn div(self, other: f64) -> Vector3D {
         Vector3D::new(self.x / other, self.y / other, self.z / other)
     }
 }
 
 /// Comparing two vectors
 impl PartialEq for Vector3D {
-    fn eq(&self, other: &Vector3D) -> bool {
+    #[inline] fn eq(&self, other: &Vector3D) -> bool {
         self.x == other.x && self.y == other.y && self.z == other.z
     }
 }
