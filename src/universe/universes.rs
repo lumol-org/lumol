@@ -255,6 +255,42 @@ impl Universe {
         return res;
     }
 
+    /// Get the angle between the particles `i`, `j` and `k`
+    pub fn angle(&self, i: usize, j: usize, k: usize) -> f64 {
+        let a = self.particles[i].position();
+        let b = self.particles[j].position();
+        let c = self.particles[k].position();
+        self.cell.angle(a, b, c)
+    }
+
+    /// Get the angle and the derivatives of the angle between the particles
+    /// `i`, `j` and `k`
+    pub fn angle_and_derivatives(&self, i: usize, j: usize, k: usize) -> (f64, Vector3D, Vector3D, Vector3D) {
+        let a = self.particles[i].position();
+        let b = self.particles[j].position();
+        let c = self.particles[k].position();
+        self.cell.angle_and_derivatives(a, b, c)
+    }
+
+    /// Get the dihedral angle between the particles `i`, `j`, `k` and `m`
+    pub fn dihedral(&self, i: usize, j: usize, k: usize, m: usize) -> f64 {
+        let a = self.particles[i].position();
+        let b = self.particles[j].position();
+        let c = self.particles[k].position();
+        let d = self.particles[m].position();
+        self.cell.dihedral(a, b, c, d)
+    }
+
+    /// Get the dihedral angle and the derivatives of the dihedral angle
+    /// between the particles `i`, `j`, `k` and `m`
+    pub fn dihedral_and_derivatives(&self, i: usize, j: usize, k: usize, m: usize) -> (f64, Vector3D, Vector3D, Vector3D, Vector3D) {
+        let a = self.particles[i].position();
+        let b = self.particles[j].position();
+        let c = self.particles[k].position();
+        let d = self.particles[m].position();
+        self.cell.dihedral_and_derivatives(a, b, c, d)
+    }
+
     /// Get or create the usize kind index for the name `name` of a particle
     fn get_kind(&mut self, name: &str) -> u16 {
         if self.kinds.contains_key(name) {
