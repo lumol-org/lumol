@@ -155,7 +155,7 @@ impl Universe {
             None => {
                 let i = self.particles[i].name();
                 let j = self.particles[j].name();
-                error!("Error: no potential defined for the pair ({}, {})", i, j);
+                error!("No potential defined for the pair ({}, {})", i, j);
                 panic!();
             }
         }
@@ -174,7 +174,7 @@ impl Universe {
                 let i = self.particles[i].name();
                 let j = self.particles[j].name();
                 let k = self.particles[k].name();
-                error!("Error: no potential defined for the angle ({}, {}, {})", i, j, k);
+                error!("No potential defined for the angle ({}, {}, {})", i, j, k);
                 panic!();
             }
         }
@@ -195,7 +195,7 @@ impl Universe {
                 let j = self.particles[j].name();
                 let k = self.particles[k].name();
                 let m = self.particles[m].name();
-                error!("Error: no potential defined for the dihedral ({}, {}, {}, {})", i, j, k, m);
+                error!("No potential defined for the dihedral ({}, {}, {}, {})", i, j, k, m);
                 panic!();
             }
         }
