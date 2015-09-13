@@ -150,7 +150,7 @@ impl Universe {
     pub fn pair_potentials<'a>(&'a self, i: usize, j: usize) -> &'a Vec<Box<PairPotential>> {
         let ikind = self.particles[i].kind();
         let jkind = self.particles[j].kind();
-        match self.interactions.pairs.get(&(ikind, jkind)) {
+        match self.interactions.pairs(ikind, jkind) {
             Some(val) => &val,
             None => {
                 let i = self.particles[i].name();
@@ -168,7 +168,7 @@ impl Universe {
         let jkind = self.particles[j].kind();
         let kkind = self.particles[k].kind();
 
-        match self.interactions.angles.get(&(ikind, jkind, kkind)) {
+        match self.interactions.angles(ikind, jkind, kkind) {
             Some(val) => &val,
             None => {
                 let i = self.particles[i].name();
@@ -188,7 +188,7 @@ impl Universe {
         let kkind = self.particles[k].kind();
         let mkind = self.particles[m].kind();
 
-        match self.interactions.dihedrals.get(&(ikind, jkind, kkind, mkind)) {
+        match self.interactions.dihedrals(ikind, jkind, kkind, mkind) {
             Some(val) => &val,
             None => {
                 let i = self.particles[i].name();
@@ -207,11 +207,7 @@ impl Universe {
         let ikind = self.get_kind(i);
         let jkind = self.get_kind(j);
 
-        if !self.interactions.pairs.contains_key(&(ikind, jkind)) {
-            self.interactions.pairs.insert((ikind, jkind), Vec::new());
-        }
-        let pairs = self.interactions.pairs.get_mut(&(ikind, jkind)).unwrap();
-        pairs.push(Box::new(pot));
+        self.interactions.add_pair(ikind, jkind, pot);
     }
 
     /// Add an angle interaction between the particles with names `names`
@@ -221,11 +217,7 @@ impl Universe {
         let jkind = self.get_kind(j);
         let kkind = self.get_kind(k);
 
-        if !self.interactions.angles.contains_key(&(ikind, jkind, kkind)) {
-            self.interactions.angles.insert((ikind, jkind, kkind), Vec::new());
-        }
-        let angles = self.interactions.angles.get_mut(&(ikind, jkind, kkind)).unwrap();
-        angles.push(Box::new(pot));
+        self.interactions.add_angle(ikind, jkind, kkind, pot);
     }
 
     /// Add an angle interaction between the particles with names `names`
@@ -236,11 +228,7 @@ impl Universe {
         let kkind = self.get_kind(k);
         let mkind = self.get_kind(m);
 
-        if !self.interactions.dihedrals.contains_key(&(ikind, jkind, kkind, mkind)) {
-            self.interactions.dihedrals.insert((ikind, jkind, kkind, mkind), Vec::new());
-        }
-        let dihedrals = self.interactions.dihedrals.get_mut(&(ikind, jkind, kkind, mkind)).unwrap();
-        dihedrals.push(Box::new(pot));
+        self.interactions.add_dihedral(ikind, jkind, kkind, mkind, pot);
     }
 
     /// Get the distance between the particles at indexes `i` and `j`
