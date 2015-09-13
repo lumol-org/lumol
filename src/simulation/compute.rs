@@ -32,13 +32,43 @@ impl Compute for Forces {
 
         for i in 0..universe.size() {
             for j in (i+1)..universe.size() {
+                let d = universe.wrap_vector(i, j);
+                let dn = d.normalized();
+                let r = d.norm();
                 for potential in universe.pair_potentials(i, j) {
-                    let d = universe.wrap_vector(i, j);
-                    let dn = d.normalized();
-                    let f = potential.force(d.norm());
+                    let f = potential.force(r);
                     res[i] = res[i] + f * dn;
                     res[j] = res[j] - f * dn;
                 }
+            }
+        }
+
+        let topology = universe.topology();
+        for angle in topology.angles().iter() {
+            let i = angle.i;
+            let j = angle.j;
+            let k = angle.k;
+            let (theta, d1, d2, d3) = universe.angle_and_derivatives(i, j, k);
+            for potential in universe.angle_potentials(i, j, k) {
+                let f = potential.force(theta);
+                res[i] = res[i] + f * d1;
+                res[j] = res[j] + f * d2;
+                res[k] = res[k] + f * d3;
+            }
+        }
+
+        for dihedral in topology.dihedrals().iter() {
+            let i = dihedral.i;
+            let j = dihedral.j;
+            let k = dihedral.k;
+            let m = dihedral.m;
+            let (phi, d1, d2, d3, d4) = universe.dihedral_and_derivatives(i, j, k, m);
+            for potential in universe.dihedral_potentials(i, j, k, m) {
+                let f = potential.force(phi);
+                res[i] = res[i] + f * d1;
+                res[j] = res[j] + f * d2;
+                res[k] = res[k] + f * d3;
+                res[k] = res[k] + f * d4;
             }
         }
         return res;
@@ -54,10 +84,32 @@ impl Compute for PotentialEnergy {
         let mut res = 0.0;
         for i in 0..universe.size() {
             for j in (i+1)..universe.size() {
+                let r = universe.wrap_vector(i, j).norm();
                 for potential in universe.pair_potentials(i, j) {
-                    let d = universe.wrap_vector(i, j);
-                    res += potential.energy(d.norm());
+                    res += potential.energy(r);
                 }
+            }
+        }
+
+        let topology = universe.topology();
+        for angle in topology.angles().iter() {
+            let i = angle.i;
+            let j = angle.j;
+            let k = angle.k;
+            let theta = universe.angle(i, j, k);
+            for potential in universe.angle_potentials(i, j, k) {
+                res += potential.energy(theta);
+            }
+        }
+
+        for dihedral in topology.dihedrals().iter() {
+            let i = dihedral.i;
+            let j = dihedral.j;
+            let k = dihedral.k;
+            let m = dihedral.m;
+            let phi = universe.dihedral(i, j, k, m);
+            for potential in universe.dihedral_potentials(i, j, k, m) {
+                res += potential.energy(phi);
             }
         }
         return res;
@@ -128,6 +180,9 @@ impl Compute for Virial {
                 }
             }
         }
+
+        // FIXME: implement virial computations for molecular potentials
+        // (angles & dihedrals)
         return res;
     }
 }
@@ -209,11 +264,7 @@ mod test {
         let universe = &testing_universe();
         let res = Forces.compute(universe);
 
-        let mut forces_tot = Vector3D::new(0.0, 0.0, 0.0);
-        forces_tot.x += res[0].x + res[1].x;
-        forces_tot.x += res[0].y + res[1].y;
-        forces_tot.x += res[0].z + res[1].z;
-
+        let forces_tot = res[0] + res[1];
         assert_eq!(forces_tot, Vector3D::new(0.0, 0.0, 0.0));
 
         assert_approx_eq!(res[0].x, 3e-3, EPS);
@@ -223,6 +274,41 @@ mod test {
         assert_approx_eq!(res[1].x, -3e-3, EPS);
         assert_approx_eq!(res[1].y, 0.0, EPS);
         assert_approx_eq!(res[1].y, 0.0, EPS);
+    }
+
+    #[test]
+    fn force_molecular() {
+        let mut universe = testing_universe();
+        universe.add_particle(Particle::new("F"));
+        universe.add_particle(Particle::new("F"));
+
+        universe[0].set_position(Vector3D::new(0.0, 0.0, 0.0));
+        universe[1].set_position(Vector3D::new(1.2, 0.0, 0.0));
+        universe[2].set_position(Vector3D::new(1.2, 1.2, 0.0));
+        universe[3].set_position(Vector3D::new(2.4, 1.2, 0.0));
+
+        {
+            let topology = universe.topology_mut();
+            topology.add_bond(0, 1);
+            topology.add_bond(1, 2);
+            topology.add_bond(2, 3);
+        }
+
+        universe.add_angle_interaction("F", "F", "F",
+            Harmonic{
+                k: units::from(100.0, "kJ/mol/A^2").unwrap(),
+                x0: units::from(80.0, "deg").unwrap()
+        });
+
+        universe.add_dihedral_interaction("F", "F", "F", "F",
+            Harmonic{
+                k: units::from(100.0, "kJ/mol/A^2").unwrap(),
+                x0: units::from(185.0, "deg").unwrap()
+        });
+
+        let res = Forces.compute(&universe);
+        let forces_tot = res[0] + res[1] + res[2] + res[3];
+        assert_approx_eq!(forces_tot.norm2(), 0.0, 1e-12);
     }
 
     #[test]
@@ -239,6 +325,39 @@ mod test {
         assert_eq!(kinetic, universe.kinetic_energy());
         assert_eq!(potential, universe.potential_energy());
         assert_eq!(total, universe.total_energy());
+    }
+
+    #[test]
+    fn energy_molecular() {
+        let mut universe = testing_universe();
+        universe.add_particle(Particle::new("F"));
+        universe.add_particle(Particle::new("F"));
+
+        universe[0].set_position(Vector3D::new(0.0, 0.0, 0.0));
+        universe[1].set_position(Vector3D::new(1.2, 0.0, 0.0));
+        universe[2].set_position(Vector3D::new(1.2, 1.2, 0.0));
+        universe[3].set_position(Vector3D::new(2.4, 1.2, 0.0));
+
+        {
+            let topology = universe.topology_mut();
+            topology.add_bond(0, 1);
+            topology.add_bond(1, 2);
+            topology.add_bond(2, 3);
+        }
+
+        universe.add_angle_interaction("F", "F", "F",
+            Harmonic{
+                k: units::from(100.0, "kJ/mol/A^2").unwrap(),
+                x0: units::from(80.0, "deg").unwrap()
+        });
+
+        universe.add_dihedral_interaction("F", "F", "F", "F",
+            Harmonic{
+                k: units::from(100.0, "kJ/mol/A^2").unwrap(),
+                x0: units::from(185.0, "deg").unwrap()
+        });
+
+        assert_approx_eq!(PotentialEnergy.compute(&universe), 0.040756506208, 1e-12);
     }
 
     #[test]
