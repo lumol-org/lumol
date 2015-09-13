@@ -8,6 +8,7 @@
 */
 #![allow(non_snake_case)]
 //! Testing physical properties of a Lennard-Jones gaz of Helium.
+extern crate env_logger;
 
 extern crate cymbalum;
 use self::cymbalum::*;
@@ -37,6 +38,7 @@ fn setup() -> (Simulation, Universe) {
 
 #[test]
 fn constant_energy() {
+    env_logger::init().unwrap();
     let (mut simulation, mut universe) = setup();
 
     let E_initial = universe.total_energy();

@@ -1,7 +1,9 @@
+extern crate env_logger;
 extern crate cymbalum;
 use cymbalum::*;
 
 fn main() {
+    env_logger::init().unwrap();
     let mut universe = Universe::from_cell(UnitCell::cubic(17.0));
 
     // Create a cubic crystal of Argon by hand.

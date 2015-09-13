@@ -14,3 +14,6 @@ doctest = false
 [dependencies]
 rand = "*"
 log = "*"
+
+[dev-dependencies]
+env_logger = "*"
