@@ -44,6 +44,22 @@ pub trait AnglePotential : PotentialFunction {}
 pub trait DihedralPotential : PotentialFunction {}
 
 /******************************************************************************/
+/// The `NullPotential` always returns 0.0 as energy and force.
+///
+/// It is to be used when there is no potential interaction between two
+/// particles kinds.
+#[derive(Clone, Copy)]
+pub struct NullPotential;
+impl PotentialFunction for NullPotential {
+    #[inline] fn energy(&self, _: f64) -> f64 {0.0}
+    #[inline] fn force(&self, _: f64) -> f64 {0.0}
+}
+
+impl PairPotential for NullPotential {}
+impl AnglePotential for NullPotential {}
+impl DihedralPotential for NullPotential {}
+
+/******************************************************************************/
 /// Lennard-Jones potential, using the following form:
 /// $$ V(r) = 4 \epsilon \left[ (\sigma/r)^{12} - (\sigma/r)^{6} \right] $$
 /// where $\sigma$ is a distance constant, and $\epsilon$ an energetic constant.
@@ -141,6 +157,16 @@ impl DihedralPotential for CosineHarmonic {}
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn energy_null() {
+        let null = NullPotential;
+        assert_eq!(null.energy(2.0), 0.0);
+        assert_eq!(null.energy(2.5), 0.0);
+
+        assert_eq!(null.force(2.0), 0.0);
+        assert_eq!(null.force(2.5), 0.0);
+    }
 
     #[test]
     fn energy_lj() {
