@@ -161,6 +161,22 @@ impl Universe {
         }
     }
 
+    /// Get the list of bonded interaction between the particles at indexes `i`
+    /// and `j`.
+    pub fn bond_potentials<'a>(&'a self, i: usize, j: usize) -> &'a Vec<Box<PairPotential>> {
+        let ikind = self.particles[i].kind();
+        let jkind = self.particles[j].kind();
+        match self.interactions.bonds(ikind, jkind) {
+            Some(val) => &val,
+            None => {
+                let i = self.particles[i].name();
+                let j = self.particles[j].name();
+                error!("No potential defined for the bond ({}, {})", i, j);
+                panic!();
+            }
+        }
+    }
+
     /// Get the list of angle interaction between the particles at indexes `i`,
     /// `j` and `k`.
     pub fn angle_potentials<'a>(&'a self, i: usize, j: usize, k: usize) -> &'a Vec<Box<AnglePotential>> {
@@ -208,6 +224,15 @@ impl Universe {
         let jkind = self.get_kind(j);
 
         self.interactions.add_pair(ikind, jkind, pot);
+    }
+
+    /// Add a bonded interaction between the particles with names `names`
+    pub fn add_bond_interaction<T>(&mut self, i: &str, j: &str, pot: T)
+    where T: PairPotential + 'static {
+        let ikind = self.get_kind(i);
+        let jkind = self.get_kind(j);
+
+        self.interactions.add_bond(ikind, jkind, pot);
     }
 
     /// Add an angle interaction between the particles with names `names`
@@ -427,6 +452,9 @@ mod tests {
         universe.add_pair_interaction("He", "He", LennardJones{sigma: 0.3, epsilon: 2.0});
         universe.add_pair_interaction("He", "He", Harmonic{k: 100.0, x0: 1.1});
         assert_eq!(universe.pair_potentials(0, 0).len(), 2);
+
+        universe.add_bond_interaction("He", "He", Harmonic{k: 100.0, x0: 1.1});
+        assert_eq!(universe.bond_potentials(0, 0).len(), 1);
 
         universe.add_angle_interaction("He", "He", "He", Harmonic{k: 100.0, x0: 1.1});
         assert_eq!(universe.angle_potentials(0, 0, 0).len(), 1);

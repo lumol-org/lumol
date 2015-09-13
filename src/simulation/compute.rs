@@ -44,6 +44,18 @@ impl Compute for Forces {
         }
 
         let topology = universe.topology();
+        for bond in topology.bonds().iter() {
+            let (i, j) = (bond.i, bond.j);
+            let d = universe.wrap_vector(i, j);
+            let dn = d.normalized();
+            let r = d.norm();
+            for potential in universe.bond_potentials(i, j) {
+                let f = potential.force(r);
+                res[i] = res[i] + f * dn;
+                res[j] = res[j] - f * dn;
+            }
+        }
+
         for angle in topology.angles().iter() {
             let i = angle.i;
             let j = angle.j;
@@ -92,6 +104,14 @@ impl Compute for PotentialEnergy {
         }
 
         let topology = universe.topology();
+        for bond in topology.bonds().iter() {
+            let (i, j) = (bond.i, bond.j);
+            let r = universe.wrap_vector(i, j).norm();
+            for potential in universe.bond_potentials(i, j) {
+                res += potential.energy(r);
+            }
+        }
+
         for angle in topology.angles().iter() {
             let i = angle.i;
             let j = angle.j;
@@ -294,15 +314,21 @@ mod test {
             topology.add_bond(2, 3);
         }
 
-        universe.add_angle_interaction("F", "F", "F",
+        universe.add_bond_interaction("F", "F",
             Harmonic{
                 k: units::from(100.0, "kJ/mol/A^2").unwrap(),
+                x0: units::from(1.22, "A").unwrap()
+        });
+
+        universe.add_angle_interaction("F", "F", "F",
+            Harmonic{
+                k: units::from(100.0, "kJ/mol/deg^2").unwrap(),
                 x0: units::from(80.0, "deg").unwrap()
         });
 
         universe.add_dihedral_interaction("F", "F", "F", "F",
             Harmonic{
-                k: units::from(100.0, "kJ/mol/A^2").unwrap(),
+                k: units::from(100.0, "kJ/mol/deg^2").unwrap(),
                 x0: units::from(185.0, "deg").unwrap()
         });
 
@@ -345,19 +371,25 @@ mod test {
             topology.add_bond(2, 3);
         }
 
-        universe.add_angle_interaction("F", "F", "F",
+        universe.add_bond_interaction("F", "F",
             Harmonic{
                 k: units::from(100.0, "kJ/mol/A^2").unwrap(),
+                x0: units::from(1.22, "A").unwrap()
+        });
+
+        universe.add_angle_interaction("F", "F", "F",
+            Harmonic{
+                k: units::from(100.0, "kJ/mol/deg^2").unwrap(),
                 x0: units::from(80.0, "deg").unwrap()
         });
 
         universe.add_dihedral_interaction("F", "F", "F", "F",
             Harmonic{
-                k: units::from(100.0, "kJ/mol/A^2").unwrap(),
+                k: units::from(100.0, "kJ/mol/deg^2").unwrap(),
                 x0: units::from(185.0, "deg").unwrap()
         });
 
-        assert_approx_eq!(PotentialEnergy.compute(&universe), 0.040756506208, 1e-12);
+        assert_approx_eq!(PotentialEnergy.compute(&universe), 0.040419916002, 1e-12);
     }
 
     #[test]

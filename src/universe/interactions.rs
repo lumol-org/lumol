@@ -16,6 +16,8 @@ use ::potentials::{PairPotential, AnglePotential, DihedralPotential};
 pub struct Interactions {
     /// Pair potentials
     pairs: HashMap<(u16, u16), Vec<Box<PairPotential>>>,
+    /// Bond potentials
+    bonds: HashMap<(u16, u16), Vec<Box<PairPotential>>>,
     /// Angle potentials
     angles: HashMap<(u16, u16, u16), Vec<Box<AnglePotential>>>,
     /// Dihedral angles potentials
@@ -26,6 +28,7 @@ impl Interactions {
     pub fn new() -> Interactions {
         Interactions{
             pairs: HashMap::new(),
+            bonds: HashMap::new(),
             angles: HashMap::new(),
             dihedrals: HashMap::new(),
         }
@@ -45,6 +48,22 @@ impl Interactions {
     pub fn pairs<'a>(&'a self, i: u16, j:u16) -> Option<&'a Vec<Box<PairPotential>>> {
         let (i, j) = sort_pair(i, j);
         self.pairs.get(&(i, j))
+    }
+
+    /// Add a bonded interaction to the pair `(i, j)`
+    pub fn add_bond<T>(&mut self, i: u16, j:u16, potential: T) where T: PairPotential + 'static {
+        let (i, j) = sort_pair(i, j);
+        if !self.bonds.contains_key(&(i, j)) {
+            self.bonds.insert((i, j), Vec::new());
+        }
+        let bonds = self.bonds.get_mut(&(i, j)).unwrap();
+        bonds.push(Box::new(potential));
+    }
+
+    /// Get all bonded interactions corresponding to the pair `(i, j)`
+    pub fn bonds<'a>(&'a self, i: u16, j:u16) -> Option<&'a Vec<Box<PairPotential>>> {
+        let (i, j) = sort_pair(i, j);
+        self.bonds.get(&(i, j))
     }
 
     /// Add an angle interaction to the angle `(i, j, k)`
@@ -123,6 +142,18 @@ mod test {
 
         interactions.add_pair(0, 0, Harmonic{x0: 0.0, k: 0.0});
         assert_eq!(interactions.pairs(0, 0).unwrap().len(), 1);
+    }
+
+    #[test]
+    fn bonds() {
+        let mut interactions = Interactions::new();
+
+        interactions.add_bond(0, 3, Harmonic{x0: 0.0, k: 0.0});
+        assert_eq!(interactions.bonds(0, 3).unwrap().len(), 1);
+        assert_eq!(interactions.bonds(3, 0).unwrap().len(), 1);
+
+        interactions.add_bond(0, 0, Harmonic{x0: 0.0, k: 0.0});
+        assert_eq!(interactions.bonds(0, 0).unwrap().len(), 1);
     }
 
     #[test]
