@@ -15,7 +15,7 @@ pub use self::integrators::LeapFrog;
 
 mod controls;
 pub use self::controls::Control;
-pub use self::controls::RescaleThermostat;
+pub use self::controls::{RescaleThermostat, BerendsenThermostat};
 
 mod molecular_dynamics;
 pub use self::molecular_dynamics::MolecularDynamics;

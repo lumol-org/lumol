@@ -36,7 +36,9 @@ pub trait Control {
 /// often: if tolerance is 10K and the target temperature is 300K, the algorithm
 /// will only run if the instant temperature is below 290K or above 310K.
 pub struct RescaleThermostat {
+    /// Target temperature
     T: f64,
+    /// Tolerance in temperature
     tol: f64,
 }
 
@@ -64,6 +66,41 @@ impl Control for RescaleThermostat {
                 let vel = factor * (*particle.velocity());
                 particle.set_velocity(vel);
             }
+        }
+    }
+}
+
+/******************************************************************************/
+/// Berendsen thermostat.
+///
+/// The berendsen thermostat sets the simulation temperature by exponentially
+/// relaxing to a desired temperature. A more complete description of this
+/// algorithm can be found in the original article [1].
+///
+/// [1] H.J.C. Berendsen, et al. J. Chem Phys 81, 3684 (1984); doi: 10.1063/1.448118
+pub struct BerendsenThermostat {
+    /// Target temperature
+    T: f64,
+    /// Timestep of the thermostat, expressed as a multiplicative factor of the
+    /// integrator timestep.
+    tau: f64,
+}
+
+impl BerendsenThermostat {
+    /// Create a new `BerendsenThermostat` acting at temperature `T`, with a
+    /// timestep of `tau` times the integrator timestep.
+    pub fn new(T: f64, tau: f64) -> BerendsenThermostat {
+        BerendsenThermostat{T: T, tau: tau}
+    }
+}
+
+impl Control for BerendsenThermostat {
+    fn control(&mut self, universe: &mut Universe) {
+        let T_inst = universe.temperature();
+        let factor = f64::sqrt(1.0 + 1.0 / self.tau * (self.T / T_inst - 1.0));
+        for particle in universe.iter_mut() {
+            let vel = factor * (*particle.velocity());
+            particle.set_velocity(vel);
         }
     }
 }
@@ -111,4 +148,19 @@ mod tests {
         let T2 = universe.temperature();
         assert_approx_eq!(T2, 250.0, 1e-12);
     }
+
+    #[test]
+    fn berendsen_thermostat() {
+        let mut universe = testing_universe();
+        let T0 = universe.temperature();
+        assert_approx_eq!(T0, 300.0, 1e-12);
+
+        let mut thermostat = BerendsenThermostat::new(250.0, 100.0);
+        for _ in 0..1000 {
+            thermostat.control(&mut universe);
+        }
+        let T1 = universe.temperature();
+        assert_approx_eq!(T1, 250.0, 1e-2);
+    }
+
 }
