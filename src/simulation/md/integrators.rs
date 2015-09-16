@@ -65,3 +65,53 @@ impl Integrator for VelocityVerlet {
         }
     }
 }
+
+/******************************************************************************/
+/// Verlet integrator. This one is reversible and symplectic.
+pub struct Verlet {
+    /// Timestep for the integrator
+    timestep: f64,
+    /// Previous positions
+    prevpos: Vec<Vector3D>,
+}
+
+impl Verlet {
+    /// Create a new integrator with a timestep of `timestep`.
+    pub fn new(timestep: f64) -> Verlet {
+        Verlet{
+            timestep: timestep,
+            prevpos: Vec::new(),
+        }
+    }
+}
+
+impl Integrator for Verlet {
+    fn setup(&mut self, universe: &Universe) {
+        self.prevpos = vec![Vector3D::new(0.0, 0.0, 0.0); universe.size()];
+
+        let dt = self.timestep;
+        // Approximate the positions at t - ∆t
+        for (i, part) in universe.iter().enumerate() {
+            self.prevpos[i] = *part.position() - *part.velocity() * dt;
+        }
+    }
+
+    fn integrate(&mut self, universe: &mut Universe) {
+        let dt = self.timestep;
+        let dt2 = self.timestep * self.timestep;
+
+        let forces = Forces.compute(&universe);
+        for (i, p) in universe.iter_mut().enumerate() {
+            // Save positions at t
+            let tmp = p.position().clone();
+            // Update positions at t + ∆t
+            let position = 2.0 * tmp - self.prevpos[i] + dt2/p.mass() * forces[i];
+            // Update velocities at t
+            let velocity = (position - self.prevpos[i]) / (2.0 * dt);
+            p.set_position(position);
+            p.set_velocity(velocity);
+            // Update saved position
+            self.prevpos[i] = tmp;
+        }
+    }
+}
