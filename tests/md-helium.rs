@@ -63,3 +63,17 @@ fn constant_energy_verlet() {
     let E_final = universe.total_energy();
     assert!(f64::abs(E_initial - E_final) < 1e-4);
 }
+
+
+#[test]
+#[allow(unused_must_use)]
+fn constant_energy_leap_frog() {
+    env_logger::init();
+    let (mut simulation, mut universe) = setup(
+        LeapFrog::new(units::from(1.0, "fs").unwrap())
+    );
+    let E_initial = universe.total_energy();
+    simulation.run(&mut universe, 1000);
+    let E_final = universe.total_energy();
+    assert!(f64::abs(E_initial - E_final) < 1e-5);
+}
