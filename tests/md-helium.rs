@@ -9,13 +9,12 @@
 #![allow(non_snake_case)]
 //! Testing physical properties of a Lennard-Jones gaz of Helium.
 extern crate env_logger;
-
 extern crate cymbalum;
 use self::cymbalum::*;
 
 use std::path::Path;
 
-fn setup() -> (Simulation, Universe) {
+fn setup<T: Integrator + 'static>(integrator: T) -> (Simulation, Universe) {
     let data_dir = Path::new(file!()).parent().unwrap();
     let configuration = data_dir.join("data").join("Helium.xyz");
     let mut universe = Universe::from_file(configuration.to_str().unwrap()).unwrap();
@@ -31,19 +30,36 @@ fn setup() -> (Simulation, Universe) {
     velocities.init(&mut universe);
 
     let simulation = Simulation::new(
-        MolecularDynamics::new(units::from(1.0, "fs").unwrap())
+        MolecularDynamics::from_integrator(integrator)
     );
     return (simulation, universe);
 }
 
 #[test]
-fn constant_energy() {
-    env_logger::init().unwrap();
-    let (mut simulation, mut universe) = setup();
+#[allow(unused_must_use)]
+fn constant_energy_velocity_verlet() {
+    env_logger::init();
+    let (mut simulation, mut universe) = setup(
+        VelocityVerlet::new(units::from(1.0, "fs").unwrap())
+    );
 
     let E_initial = universe.total_energy();
     simulation.run(&mut universe, 1000);
     let E_final = universe.total_energy();
 
     assert!(f64::abs(E_initial - E_final) < 1e-5);
+}
+
+
+#[test]
+#[allow(unused_must_use)]
+fn constant_energy_verlet() {
+    env_logger::init();
+    let (mut simulation, mut universe) = setup(
+        Verlet::new(units::from(1.0, "fs").unwrap())
+    );
+    let E_initial = universe.total_energy();
+    simulation.run(&mut universe, 1000);
+    let E_final = universe.total_energy();
+    assert!(f64::abs(E_initial - E_final) < 1e-4);
 }
