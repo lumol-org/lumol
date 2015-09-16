@@ -25,3 +25,90 @@ pub trait Control {
     /// Function called once at the end of the simulation.
     fn finish(&mut self, _: &Universe) {}
 }
+
+
+/******************************************************************************/
+/// Velocity rescaling thermostat.
+///
+/// The velocity rescale algorithm controls the temperature by rescaling all
+/// the velocities when the temperature differs exceedingly from the desired
+/// temperature. A tolerance parameter prevent this algorithm from running too
+/// often: if tolerance is 10K and the target temperature is 300K, the algorithm
+/// will only run if the instant temperature is below 290K or above 310K.
+pub struct RescaleThermostat {
+    T: f64,
+    tol: f64,
+}
+
+impl RescaleThermostat {
+    /// Create a new `RescaleThermostat` acting at temperature `T`, with a
+    /// tolerance of `5% T`.
+    pub fn new(T: f64) -> RescaleThermostat {
+        let tol = 0.05 * T;
+        RescaleThermostat::with_tolerance(T, tol)
+    }
+
+    /// Create a new `RescaleThermostat` acting at temperature `T`, with a
+    /// tolerance of `tol`. For rescaling all the steps, use `tol = 0`.
+    pub fn with_tolerance(T: f64, tol: f64) -> RescaleThermostat {
+        RescaleThermostat{T: T, tol: tol}
+    }
+}
+
+impl Control for RescaleThermostat {
+    fn control(&mut self, universe: &mut Universe) {
+        let T_inst = universe.temperature();
+        if f64::abs(T_inst - self.T) > self.tol {
+            let factor = f64::sqrt(self.T / T_inst);
+            for particle in universe.iter_mut() {
+                let vel = factor * (*particle.velocity());
+                particle.set_velocity(vel);
+            }
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use ::Universe;
+    use ::UnitCell;
+    use ::Particle;
+    use ::{BoltzmanVelocities, InitVelocities};
+    use ::Vector3D;
+
+    fn testing_universe() -> Universe {
+        let mut universe = Universe::from_cell(UnitCell::cubic(20.0));;
+
+        for i in 0..10 {
+            for j in 0..10 {
+                for k in 0..10 {
+                    let mut p = Particle::new("Cl");
+                    p.set_position(Vector3D::new(i as f64*2.0, j as f64*2.0, k as f64*2.0));
+                    universe.add_particle(p);
+                }
+            }
+        }
+
+        let mut velocities = BoltzmanVelocities::new(300.0);
+        velocities.init(&mut universe);
+        return universe;
+    }
+
+    #[test]
+    fn rescale_thermostat() {
+        let mut universe = testing_universe();
+        let T0 = universe.temperature();
+        assert_approx_eq!(T0, 300.0, 1e-12);
+
+        let mut thermostat = RescaleThermostat::with_tolerance(250.0, 100.0);
+        thermostat.control(&mut universe);
+        let T1 = universe.temperature();
+        assert_approx_eq!(T1, 300.0, 1e-12);
+
+        let mut thermostat = RescaleThermostat::with_tolerance(250.0, 10.0);
+        thermostat.control(&mut universe);
+        let T2 = universe.temperature();
+        assert_approx_eq!(T2, 250.0, 1e-12);
+    }
+}
