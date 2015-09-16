@@ -27,7 +27,7 @@ pub trait Integrator {
 pub struct VelocityVerlet {
     /// Timestep for the integrator
     timestep: f64,
-    /// Caching the accelerations
+    /// Storing the accelerations
     accelerations: Vec<Vector3D>
 }
 
@@ -112,6 +112,49 @@ impl Integrator for Verlet {
             p.set_velocity(velocity);
             // Update saved position
             self.prevpos[i] = tmp;
+        }
+    }
+}
+
+/******************************************************************************/
+/// Leap-frog integrator. This one is reversible and symplectic.
+pub struct LeapFrog {
+    /// Timestep for the integrator
+    timestep: f64,
+    /// Storing the accelerations
+    accelerations: Vec<Vector3D>
+}
+
+impl LeapFrog {
+    /// Create a new integrator with a timestep of `timestep`.
+    pub fn new(timestep: f64) -> LeapFrog {
+        LeapFrog{
+            timestep: timestep,
+            accelerations: Vec::new(),
+        }
+    }
+}
+
+impl Integrator for LeapFrog {
+    fn setup(&mut self, universe: &Universe) {
+        self.accelerations = vec![Vector3D::new(0.0, 0.0, 0.0); universe.size()];
+    }
+
+    fn integrate(&mut self, universe: &mut Universe) {
+        let dt = self.timestep;
+        let dt2 = self.timestep * self.timestep;
+
+        for (i, p) in universe.iter_mut().enumerate() {
+            let velocity = p.velocity().clone();
+            p.add_position(velocity * dt + 0.5 * self.accelerations[i] * dt2);
+        }
+
+        let forces = Forces.compute(&universe);
+        for (i, p) in universe.iter_mut().enumerate() {
+            let mass = p.mass();
+            let acceleration = forces[i]/mass;
+            p.add_velocity(0.5 * (self.accelerations[i] + acceleration)* dt);
+            self.accelerations[i] = acceleration;
         }
     }
 }

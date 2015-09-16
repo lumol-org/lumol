@@ -12,6 +12,7 @@ mod integrators;
 pub use self::integrators::Integrator;
 pub use self::integrators::VelocityVerlet;
 pub use self::integrators::Verlet;
+pub use self::integrators::LeapFrog;
 
 mod molecular_dynamics;
 pub use self::molecular_dynamics::MolecularDynamics;
