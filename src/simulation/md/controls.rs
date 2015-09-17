@@ -108,11 +108,8 @@ impl Control for BerendsenThermostat {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use ::Universe;
-    use ::UnitCell;
-    use ::Particle;
-    use ::{BoltzmanVelocities, InitVelocities};
-    use ::Vector3D;
+    use ::universe::*;
+    use ::types::*;
 
     fn testing_universe() -> Universe {
         let mut universe = Universe::from_cell(UnitCell::cubic(20.0));;
