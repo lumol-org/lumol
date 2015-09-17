@@ -1,3 +1,7 @@
+/*
+ * Molecular dynamics simulation of an Argon crystal
+ */
+
 extern crate env_logger;
 extern crate cymbalum;
 use cymbalum::*;
