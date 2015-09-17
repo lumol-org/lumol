@@ -33,7 +33,7 @@ impl GradientDescent {
     /// force convergence criteria. The force criterium is `1e-5 kJ/mol/Å^2`,
     /// and the energy criterium is `1e-5 kJ/mol/Å^2`.
     pub fn new() -> GradientDescent {
-        let delta_f = units::from(1e-5, "kJ/mol/Å^2").unwrap();
+        let delta_f = units::from(1e-5, "kJ/mol/A").unwrap();
         let delta_E = units::from(1e-5, "kJ/mol").unwrap();
         GradientDescent::with_criteria(delta_f, delta_E)
     }
@@ -41,7 +41,7 @@ impl GradientDescent {
     /// Create a new `GradientDescent` with the force convergence criterium of
     /// `force`, and the energy convergence criterium of `energy`.
     pub fn with_criteria(force: f64, energy: f64) -> GradientDescent {
-        let gamma = units::from(0.01, "fs^2/u").unwrap();
+        let gamma = units::from(0.1, "fs^2/u").unwrap();
         GradientDescent{
             gamma: gamma,
             dE: energy,
@@ -84,7 +84,6 @@ impl Propagator for GradientDescent {
         }
         let positions = positions;
 
-
         let old_gamma = self.gamma;
         // Update coordinates, reducing gamma until we find a configuration of
         // lower energy
@@ -92,12 +91,10 @@ impl Propagator for GradientDescent {
             for (i, p) in universe.iter_mut().enumerate() {
                 p.set_position(positions[i] + self.gamma * forces[i]);
             }
-
             let new_energy = PotentialEnergy.compute(&universe);
             if new_energy <= energy {
                 break;
             }
-
             self.gamma /= 2.0;
         }
 
@@ -106,5 +103,31 @@ impl Propagator for GradientDescent {
         if self.gamma == old_gamma {
             self.gamma *= 1.1;
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use ::universe::*;
+    use ::types::*;
+    use ::potentials::*;
+    use super::super::Propagator;
+
+    #[test]
+    fn minization() {
+        let mut universe = Universe::from_cell(UnitCell::cubic(20.0));;
+        universe.add_particle(Particle::new("Cl"));
+        universe[0].set_position(Vector3D::new(0.0, 0.0, 0.0));
+        universe.add_particle(Particle::new("Cl"));
+        universe[1].set_position(Vector3D::new(0.0, 0.0, 2.0));
+        universe.add_pair_interaction("Cl", "Cl", Harmonic{x0: 2.3, k: 0.1});
+
+        let mut minization = GradientDescent::new();
+        for _ in 0..100 {
+            minization.propagate(&mut universe);
+        }
+        assert!(minization.converged());
+        assert_approx_eq!(universe.distance(0, 1), 2.3, 1e-4);
     }
 }
