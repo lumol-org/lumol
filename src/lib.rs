@@ -21,6 +21,14 @@
 //!  traits.
 
 #![allow(non_snake_case)]
+#![warn(
+    missing_docs,
+    trivial_casts,
+    trivial_numeric_casts,
+    unused_import_braces,
+    variant_size_differences,
+    unused_qualifications
+)]
 
 #[macro_use]
 extern crate log;
