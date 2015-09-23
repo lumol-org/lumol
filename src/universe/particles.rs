@@ -31,6 +31,7 @@ pub struct Particle {
 
 
 impl Particle {
+    /// Create a new `Particle` from a name
     pub fn new<S: Into<String>>(n: S) -> Particle {
         let name = n.into();
         let mass = match PeriodicTable::mass(&*name) {
@@ -44,51 +45,65 @@ impl Particle {
                  velocity: Vector3D::new(0.0, 0.0, 0.0)}
     }
 
+    /// Get the particle name
     #[inline] pub fn name<'a>(&'a self) -> &'a str {
         &self.name
     }
 
+    /// Set the particle name
     #[inline] pub fn set_name<S>(&mut self, name: S) where S: Into<String> {
         self.name = name.into();
     }
 
+    /// Get the particle kind. This kind is used for fast lookup in interactions
+    /// tables
     #[inline] pub fn kind(&self) -> u16 {
         self.kind
     }
 
+    /// Set the particle kind.
     #[inline] pub fn set_kind(&mut self, kind: u16) {
         self.kind = kind;
     }
 
+    /// Get the particle mass
     #[inline] pub fn mass(&self) -> f64 {
         self.mass
     }
+
+    /// Set the particle mass
     #[inline] pub fn set_mass(&mut self, mass: f64) {
         self.mass = mass;
     }
 
+    /// Get the particle position
     #[inline] pub fn position<'a>(&'a self) -> &'a Vector3D {
         &self.position
     }
 
+    /// Set the particle position
     #[inline] pub fn set_position(&mut self, pos: Vector3D) {
         self.position = pos;
     }
 
-    #[inline] pub fn add_position(&mut self, new_pos: Vector3D) {
-        self.position = self.position + new_pos;
+    /// Add `dr` to the particle position
+    #[inline] pub fn add_position(&mut self, dr: Vector3D) {
+        self.position = self.position + dr;
     }
 
+    /// Get the particle velocity
     #[inline] pub fn velocity<'a>(&'a self) -> &'a Vector3D {
         &self.velocity
     }
 
+    /// Set the particle velocity
     #[inline] pub fn set_velocity(&mut self, vel: Vector3D) {
         self.velocity = vel;
     }
 
-    #[inline] pub fn add_velocity(&mut self, new_vel: Vector3D) {
-        self.velocity = self.velocity + new_vel;
+    /// Add `dv` to the particle velocity
+    #[inline] pub fn add_velocity(&mut self, dv: Vector3D) {
+        self.velocity = self.velocity + dv;
     }
 }
 

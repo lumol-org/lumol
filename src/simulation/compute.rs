@@ -7,6 +7,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/
 */
 
+//! Computing properties of an universe
+
 use ::constants::K_BOLTZMANN;
 use ::types::*;
 use ::universe::Universe;
@@ -15,6 +17,7 @@ use ::universe::Universe;
 /// modifying this universe. The Output type is the type of the computed
 /// property.
 pub trait Compute {
+    /// The data type of the property
     type Output;
     /// Compute the property
     fn compute(&self, universe: &Universe) -> Self::Output;

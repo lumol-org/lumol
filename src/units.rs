@@ -87,10 +87,23 @@ fn conversion_factors() -> HashMap<&'static str, f64> {
 /// Possible error causes when parsing an unit string.
 #[derive(Debug)]
 pub enum UnitParsingError {
+    /// Error while parsing a power in `x^y` expressions
     PowerParsingError(num::ParseIntError),
-    UnbalancedParentheses{unit:String},
-    BadBinary{op: char},
-    NotFound{unit:String},
+    /// Parentheses are not balanced in this unit
+    UnbalancedParentheses{
+        /// The full unit that created this error
+        unit:String
+    },
+    /// Unknown binary operator
+    BadBinary{
+        /// The operator that created this error
+        op: char
+    },
+    /// This unit was not found
+    NotFound{
+        /// The full unit that created this error
+        unit:String
+    },
 }
 
 impl From<num::ParseIntError> for UnitParsingError {

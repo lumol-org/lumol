@@ -41,6 +41,7 @@ impl Simulation {
         self.finish(universe);
     }
 
+    /// Add a new `Output` algorithm in the outputs list
     pub fn add_output<O>(&mut self, out: O) where O: Output + 'static {
         self.outputs.push(Box::new(out));
     }

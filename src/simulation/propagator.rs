@@ -7,6 +7,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/
 */
 
+//! A propagator is responsible for updating the universe during a simulation
+
 use ::universe::Universe;
 
 /// The propagator trait is the main algorithm of a simulation, i.e. the one

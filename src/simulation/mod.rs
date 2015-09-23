@@ -7,6 +7,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/
 */
 
+//! Types and traits for representing simulation algorithms
+
 pub mod propagator;
 pub use self::propagator::Propagator;
 

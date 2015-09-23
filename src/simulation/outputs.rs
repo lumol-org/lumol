@@ -6,6 +6,9 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/
 */
+
+//! Saving properties of the simulation to some stream (file or stdout mainly)
+
 use std::io::prelude::*;
 use std::fs::File;
 

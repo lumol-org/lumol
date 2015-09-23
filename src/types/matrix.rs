@@ -19,6 +19,7 @@ pub struct Matrix3 {
 }
 
 impl Matrix3 {
+    /// Create a new `Matrix3` specifying all its components
     pub fn new(m00: f64, m01: f64, m02: f64,
                m10: f64, m11: f64, m12: f64,
                m20: f64, m21: f64, m22: f64) -> Matrix3 {
