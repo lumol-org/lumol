@@ -7,8 +7,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/
 */
 
-//! [Chemharp](https://github.com/Luthaf/Chemharp/) library binding and
-//! adaptators for Cymbalum.
+//! [Chemharp](https://github.com/Luthaf/Chemharp/) adaptators for Cymbalum.
 
 extern crate chemharp;
 use ::universe::{Particle, Universe};
@@ -90,6 +89,7 @@ impl ToCymbalum for chemharp::Frame {
     }
 }
 
+/// Convert a chemharp `Frame` to an `Universe`
 pub fn frame_to_universe(frame: chemharp::Frame) -> Result<Universe, Error> {
     frame.to_cymbalum()
 }
@@ -175,7 +175,7 @@ impl ToChemharp for Universe {
     }
 }
 
-
-pub fn universe_to_frame(universe: Universe) -> Result<chemharp::Frame, Error> {
+/// Convert an `Universe` to a chemharp `Frame`
+pub fn universe_to_frame(universe: &Universe) -> Result<chemharp::Frame, Error> {
     universe.to_chemharp()
 }

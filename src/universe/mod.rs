@@ -33,4 +33,4 @@ mod interactions;
 mod universes;
 pub use self::universes::Universe;
 
-mod chemharp;
+pub mod chemharp;

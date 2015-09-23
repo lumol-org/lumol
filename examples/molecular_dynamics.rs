@@ -33,7 +33,7 @@ fn main() {
     velocities.init(&mut universe);
 
     let mut simulation = Simulation::new(MolecularDynamics::new(units::from(1.0, "fs").unwrap()));
-    simulation.add_output(TrajectoryOutput::new("trajectory.xyz"));
+    simulation.add_output(TrajectoryOutput::new("trajectory.xyz").unwrap());
     simulation.add_output(EnergyOutput::new("energy.dat"));
 
     simulation.run(&mut universe, 5000);
