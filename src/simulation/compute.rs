@@ -48,7 +48,7 @@ impl Compute for Forces {
 
         let topology = universe.topology();
         for bond in topology.bonds().iter() {
-            let (i, j) = (bond.i, bond.j);
+            let (i, j) = (bond.i(), bond.j());
             let d = universe.wrap_vector(i, j);
             let dn = d.normalized();
             let r = d.norm();
@@ -60,9 +60,7 @@ impl Compute for Forces {
         }
 
         for angle in topology.angles().iter() {
-            let i = angle.i;
-            let j = angle.j;
-            let k = angle.k;
+            let (i, j, k) = (angle.i(), angle.j(), angle.k());
             let (theta, d1, d2, d3) = universe.angle_and_derivatives(i, j, k);
             for potential in universe.angle_potentials(i, j, k) {
                 let f = potential.force(theta);
@@ -73,10 +71,7 @@ impl Compute for Forces {
         }
 
         for dihedral in topology.dihedrals().iter() {
-            let i = dihedral.i;
-            let j = dihedral.j;
-            let k = dihedral.k;
-            let m = dihedral.m;
+            let (i, j, k, m) = (dihedral.i(), dihedral.j(), dihedral.k(), dihedral.m());
             let (phi, d1, d2, d3, d4) = universe.dihedral_and_derivatives(i, j, k, m);
             for potential in universe.dihedral_potentials(i, j, k, m) {
                 let f = potential.force(phi);
@@ -108,7 +103,7 @@ impl Compute for PotentialEnergy {
 
         let topology = universe.topology();
         for bond in topology.bonds().iter() {
-            let (i, j) = (bond.i, bond.j);
+            let (i, j) = (bond.i(), bond.j());
             let r = universe.wrap_vector(i, j).norm();
             for potential in universe.bond_potentials(i, j) {
                 res += potential.energy(r);
@@ -116,9 +111,7 @@ impl Compute for PotentialEnergy {
         }
 
         for angle in topology.angles().iter() {
-            let i = angle.i;
-            let j = angle.j;
-            let k = angle.k;
+            let (i, j, k) = (angle.i(), angle.j(), angle.k());
             let theta = universe.angle(i, j, k);
             for potential in universe.angle_potentials(i, j, k) {
                 res += potential.energy(theta);
@@ -126,10 +119,7 @@ impl Compute for PotentialEnergy {
         }
 
         for dihedral in topology.dihedrals().iter() {
-            let i = dihedral.i;
-            let j = dihedral.j;
-            let k = dihedral.k;
-            let m = dihedral.m;
+            let (i, j, k, m) = (dihedral.i(), dihedral.j(), dihedral.k(), dihedral.m());
             let phi = universe.dihedral(i, j, k, m);
             for potential in universe.dihedral_potentials(i, j, k, m) {
                 res += potential.energy(phi);

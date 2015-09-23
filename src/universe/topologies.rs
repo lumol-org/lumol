@@ -18,8 +18,8 @@ use std::collections::HashMap;
 /// `i < j`
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct Bond {
-    pub i: usize,
-    pub j: usize,
+    i: usize,
+    j: usize,
 }
 
 impl Bond {
@@ -30,6 +30,16 @@ impl Bond {
         let j = max(first, second);
         Bond{i: i, j: j}
     }
+
+    /// Get the first particle in the bond
+    #[inline] pub fn i(&self) -> usize {
+        self.i
+    }
+
+    /// Get the second particle in the bond
+    #[inline] pub fn j(&self) -> usize {
+        self.j
+    }
 }
 
 /// An `Angle` formed by the atoms at indexes `i`, `j` and `k`
@@ -38,9 +48,9 @@ impl Bond {
 /// `i < k`
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct Angle {
-    pub i: usize,
-    pub j: usize,
-    pub k: usize,
+    i: usize,
+    j: usize,
+    k: usize,
 }
 
 impl Angle {
@@ -53,16 +63,31 @@ impl Angle {
         let k = max(first, third);
         Angle{i: i, j: second, k: k}
     }
+
+    /// Get the first particle in the angle
+    #[inline] pub fn i(&self) -> usize {
+        self.i
+    }
+
+    /// Get the second particle in the angle
+    #[inline] pub fn j(&self) -> usize {
+        self.j
+    }
+
+    /// Get the third particle in the angle
+    #[inline] pub fn k(&self) -> usize {
+        self.k
+    }
 }
 
 
 /// A `Dihedral` angle formed by the atoms at indexes `i`, `j`, `k` and `m`
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct Dihedral {
-    pub i: usize,
-    pub j: usize,
-    pub k: usize,
-    pub m: usize,
+    i: usize,
+    j: usize,
+    k: usize,
+    m: usize,
 }
 
 impl Dihedral {
@@ -77,6 +102,26 @@ impl Dihedral {
             (fourth, third, second, first)
         };
         Dihedral{i: i, j: j, k: k, m: m}
+    }
+
+    /// Get the first particle in the dihedral angle
+    #[inline] pub fn i(&self) -> usize {
+        self.i
+    }
+
+    /// Get the second particle in the dihedral angle
+    #[inline] pub fn j(&self) -> usize {
+        self.j
+    }
+
+    /// Get the third particle in the dihedral angle
+    #[inline] pub fn k(&self) -> usize {
+        self.k
+    }
+
+    /// Get the fourth particle in the dihedral angle
+    #[inline] pub fn m(&self) -> usize {
+        self.m
     }
 }
 
