@@ -82,6 +82,7 @@ impl ToCymbalum for chemharp::Frame {
         {
             let topo = universe.topology_mut();
             for bond in try!(topology.bonds()).iter() {
+                println!("{:?}", bond);
                 topo.add_bond(bond[0] as usize, bond[1] as usize);
             }
         }
@@ -89,12 +90,92 @@ impl ToCymbalum for chemharp::Frame {
     }
 }
 
-pub fn frame_to_universe(frame: chemharp::Frame) -> Universe {
-    match frame.to_cymbalum() {
-        Ok(val) => val,
-        Err(err) => {
-            error!("Error in Chemharp runtime: {}", err.message());
-            panic!();
-        }
+pub fn frame_to_universe(frame: chemharp::Frame) -> Result<Universe, Error> {
+    frame.to_cymbalum()
+}
+
+
+/******************************************************************************/
+
+/// Convert Cymbalum types to chemharp types
+trait ToChemharp {
+    /// Output type
+    type Output;
+    /// Conversion function
+    fn to_chemharp(&self) -> Result<Self::Output, Error>;
+}
+
+impl ToChemharp for Particle {
+    type Output = chemharp::Atom;
+    fn to_chemharp(&self) -> Result<chemharp::Atom, Error> {
+        let mut res = try!(chemharp::Atom::new(self.name()));
+        try!(res.set_mass(self.mass() as f32));
+        return Ok(res);
     }
+}
+
+impl ToChemharp for UnitCell {
+    type Output = chemharp::UnitCell;
+    fn to_chemharp(&self) -> Result<chemharp::UnitCell, Error> {
+        let res = match self.celltype() {
+            CellType::Infinite => {
+                unimplemented!()
+            }
+            CellType::Orthorombic => {
+                let (a, b, c) = (self.a(), self.b(), self.c());
+                try!(chemharp::UnitCell::new(a, b, c))
+            },
+            CellType::Triclinic => {
+                let (a, b, c) = (self.a(), self.b(), self.c());
+                let (alpha, beta, gamma) = (self.alpha(), self.beta(), self.gamma());
+                try!(chemharp::UnitCell::triclinic(a, b, c, alpha, beta, gamma))
+            },
+        };
+        return Ok(res);
+    }
+}
+
+impl ToChemharp for Universe {
+    type Output = chemharp::Frame;
+    fn to_chemharp(&self) -> Result<chemharp::Frame, Error> {
+
+        let natoms = self.size();
+        let mut frame = try!(chemharp::Frame::new(natoms as u64));
+        let mut topology = try!(chemharp::Topology::new());
+        let mut positions = vec![[0.0f32; 3]; natoms];
+        let mut velocities = vec![[0.0f32; 3]; natoms];
+
+        for (i, p) in self.iter().enumerate() {
+            let pos = p.position();
+            positions[i][0] = pos.x as f32;
+            positions[i][1] = pos.y as f32;
+            positions[i][2] = pos.z as f32;
+
+            let vel = p.velocity();
+            velocities[i][0] = vel.x as f32;
+            velocities[i][1] = vel.y as f32;
+            velocities[i][2] = vel.z as f32;
+
+            let atom = try!(p.to_chemharp());
+            try!(topology.push(&atom));
+        }
+        try!(frame.set_positions(positions));
+        try!(frame.set_velocities(velocities));
+
+        for bond in self.topology().bonds().iter() {
+            try!(topology.add_bond(bond.i() as u64, bond.j() as u64));
+        }
+        try!(frame.set_topology(&topology));
+        // Guessing angles and dihedrals
+        try!(frame.guess_topology(false));
+
+        let cell = try!(self.cell().to_chemharp());
+        try!(frame.set_cell(&cell));
+        Ok(frame)
+    }
+}
+
+
+pub fn universe_to_frame(universe: Universe) -> Result<chemharp::Frame, Error> {
+    universe.to_chemharp()
 }
