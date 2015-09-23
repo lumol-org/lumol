@@ -21,11 +21,11 @@ use ::types::Matrix3;
 #[derive(Clone, Copy)]
 pub enum CellType {
     /// Infinite unit cell, with no boundaries
-    INFINITE,
+    Infinite,
     /// Orthorombic unit cell, with cuboide shape
-    ORTHOROMBIC,
+    Orthorombic,
     /// Triclinic unit cell, with arbitrary parallelepipedic shape
-    TRICLINIC,
+    Triclinic,
 }
 
 /// The Universe type hold all the data about a system.
@@ -38,21 +38,21 @@ pub struct UnitCell {
 impl UnitCell {
     /// Create an infinite unit cell
     pub fn new() -> UnitCell {
-        UnitCell{data: Matrix3::zero(), celltype: CellType::INFINITE}
+        UnitCell{data: Matrix3::zero(), celltype: CellType::Infinite}
     }
     /// Create an orthorombic unit cell
     pub fn ortho(a: f64, b: f64, c: f64) -> UnitCell {
         UnitCell{data: Matrix3::new(a, 0.0, 0.0,
                                     0.0, b, 0.0,
                                     0.0, 0.0, c),
-                 celltype: CellType::ORTHOROMBIC}
+                 celltype: CellType::Orthorombic}
     }
     /// Create a cubic unit cell
     pub fn cubic(L: f64) -> UnitCell {
         UnitCell{data: Matrix3::new(L, 0.0, 0.0,
                                     0.0, L, 0.0,
                                     0.0, 0.0, L),
-                 celltype: CellType::ORTHOROMBIC}
+                 celltype: CellType::Orthorombic}
     }
     /// Create a triclinic unit cell
     pub fn triclinic(a: f64, b: f64, c: f64, alpha: f64, beta: f64, gamma: f64) -> UnitCell {
@@ -70,7 +70,7 @@ impl UnitCell {
         UnitCell{data: Matrix3::new(a,   b_x, c_x,
                                     0.0, b_y, c_y,
                                     0.0, 0.0, c_z),
-                 celltype: CellType::TRICLINIC}
+                 celltype: CellType::Triclinic}
     }
 
     /// Get the cell type
@@ -92,7 +92,7 @@ impl UnitCell {
     /// Get the first length of the cell
     pub fn a(&self) -> f64 {
         match self.celltype {
-            CellType::TRICLINIC => self.vect_a().norm(),
+            CellType::Triclinic => self.vect_a().norm(),
             _ => self.data[(0, 0)],
         }
     }
@@ -107,7 +107,7 @@ impl UnitCell {
     /// Get the second length of the cell
     pub fn b(&self) -> f64 {
         match self.celltype {
-            CellType::TRICLINIC => self.vect_b().norm(),
+            CellType::Triclinic => self.vect_b().norm(),
             _ => self.data[(1, 1)],
         }
     }
@@ -122,7 +122,7 @@ impl UnitCell {
     /// Get the second length of the cell
     pub fn c(&self) -> f64 {
         match self.celltype {
-            CellType::TRICLINIC => self.vect_c().norm(),
+            CellType::Triclinic => self.vect_c().norm(),
             _ => self.data[(2, 2)],
         }
     }
@@ -130,7 +130,7 @@ impl UnitCell {
     /// Get the first angle of the cell
     pub fn alpha(&self) -> f64 {
         match self.celltype {
-            CellType::TRICLINIC => {
+            CellType::Triclinic => {
                 let b = self.vect_b();
                 let c = self.vect_c();
                 rad2deg(angle(b, c))
@@ -142,7 +142,7 @@ impl UnitCell {
     /// Get the second angle of the cell
     pub fn beta(&self) -> f64 {
         match self.celltype {
-            CellType::TRICLINIC => {
+            CellType::Triclinic => {
                 let a = self.vect_a();
                 let c = self.vect_c();
                 rad2deg(angle(a, c))
@@ -154,7 +154,7 @@ impl UnitCell {
     /// Get the third angle of the cell
     pub fn gamma(&self) -> f64 {
         match self.celltype {
-            CellType::TRICLINIC => {
+            CellType::Triclinic => {
                 let a = self.vect_a();
                 let b = self.vect_b();
                 rad2deg(angle(a, b))
@@ -166,9 +166,9 @@ impl UnitCell {
     /// Get the volume angle of the cell
     pub fn volume(&self) -> f64 {
         match self.celltype {
-            CellType::INFINITE => 0.0,
-            CellType::ORTHOROMBIC => self.a()*self.b()*self.c(),
-            CellType::TRICLINIC => {
+            CellType::Infinite => 0.0,
+            CellType::Orthorombic => self.a()*self.b()*self.c(),
+            CellType::Triclinic => {
                 // The volume is the mixed product of the three cell vectors
                 let a = self.vect_a();
                 let b = self.vect_b();
@@ -192,13 +192,13 @@ impl UnitCell {
     /// Wrap a vector in the unit cell, obeying the periodic boundary conditions
     pub fn wrap_vector(&self, vect: &mut Vector3D) {
         match self.celltype {
-            CellType::INFINITE => (),
-            CellType::ORTHOROMBIC => {
+            CellType::Infinite => (),
+            CellType::Orthorombic => {
                 vect.x = vect.x - f64::round(vect.x/self.a())*self.a();
                 vect.y = vect.y - f64::round(vect.y/self.b())*self.b();
                 vect.z = vect.z - f64::round(vect.z/self.c())*self.c();
             },
-            CellType::TRICLINIC => {
+            CellType::Triclinic => {
                 let inv = self.data.inverse();
                 let mut fractional = inv * (*vect);
                 fractional.x = fractional.x - f64::round(fractional.x);
