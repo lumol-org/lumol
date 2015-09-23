@@ -13,10 +13,8 @@ use std::collections::HashMap;
 use std::ops::{Index, IndexMut};
 use std::slice;
 
-use std::io::prelude::*;
-use std::io;
-use std::fs::File;
-use std::num;
+extern crate chemharp;
+use self::chemharp::{Trajectory, Frame};
 
 use ::potentials::{PairPotential, AnglePotential, DihedralPotential};
 use ::types::{Vector3D, Matrix3};
@@ -25,6 +23,7 @@ use super::Particle;
 use super::Topology;
 use super::UnitCell;
 use super::interactions::Interactions;
+use super::chemharp::frame_to_universe;
 
 /// The Universe type hold all the data about a system. This data contains:
 ///
@@ -45,33 +44,6 @@ pub struct Universe {
     interactions: Interactions,
 }
 
-/// Possible error causes where reading XYZ file
-#[derive(Debug)]
-pub enum ReadError {
-    IoError(io::Error),
-    ParseIntError(num::ParseIntError),
-    ParseFloatError(num::ParseFloatError),
-    XYZFormatError{err: &'static str}, // Badly formated file
-}
-
-impl From<num::ParseIntError> for ReadError {
-    fn from(err: num::ParseIntError) -> ReadError {
-        ReadError::ParseIntError(err)
-    }
-}
-
-impl From<num::ParseFloatError> for ReadError {
-    fn from(err: num::ParseFloatError) -> ReadError {
-        ReadError::ParseFloatError(err)
-    }
-}
-
-impl From<io::Error> for ReadError {
-    fn from(err: io::Error) -> ReadError {
-        ReadError::IoError(err)
-    }
-}
-
 impl Universe {
     /// Create a new empty Universe
     pub fn new() -> Universe {
@@ -84,32 +56,25 @@ impl Universe {
         }
     }
 
-    /// Read an XYZ file and create an Universe from it.
-    pub fn from_file(path: &str) -> Result<Universe, ReadError> {
-        // TODO: use chemharp for implementation
-        let mut file = try!(File::open(path));
-        let mut content = String::new();
-        try!(file.read_to_string(&mut content));
-        let lines : Vec<&str> = content.lines_any().collect();
-        let natoms = try!(lines[0].parse::<usize>());
-        if lines.len() != natoms + 2 {
-            return Err(ReadError::XYZFormatError{err: "Bad atom number in file."});
-        }
+    /// Read a trajectory file and create an Universe from it. For a list of
+    /// supported formats, please refer to
+    /// [Chemharp](http://chemharp.readthedocs.org/en/latest/formats.html)
+    /// documentation.
+    pub fn from_file(path: &str) -> Result<Universe, chemharp::Error> {
+        let mut trajectory = try!(Trajectory::open(path));
+        let mut frame = try!(Frame::new(0));
+        try!(trajectory.read(&mut frame));
+        return frame_to_universe(frame);
+    }
 
-        let mut universe = Universe::new();
-        for line in lines[2..].iter() {
-            let splited: Vec<&str> = line.split_whitespace().collect();
-            if splited.len() < 4 {
-                return Err(ReadError::XYZFormatError{err: "Line is too short."});
-            }
-            let mut part = Particle::new(splited[0]);
-            let x = try!(splited[1].parse::<f64>());
-            let y = try!(splited[2].parse::<f64>());
-            let z = try!(splited[3].parse::<f64>());
-            part.set_position(Vector3D::new(x, y, z));
-            universe.add_particle(part);
-        }
-        return Ok(universe);
+    /// Do the same work that the `from_file` function, and guess bonds in the
+    /// universe based on the distances between the particles.
+    pub fn from_file_auto_bonds(path: &str) -> Result<Universe, chemharp::Error> {
+        let mut trajectory = try!(Trajectory::open(path));
+        let mut frame = try!(Frame::new(0));
+        try!(trajectory.read(&mut frame));
+        try!(frame.guess_topology(true));
+        return frame_to_universe(frame);
     }
 
     /// Create an empty universe with a specific UnitCell
