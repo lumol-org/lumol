@@ -89,3 +89,67 @@ impl Output for EnergyOutput {
         writeln!(&mut self.file, "{}   {}   {}", potential, kinetic, total).unwrap();
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use std::io::prelude::*;
+    use std::fs;
+
+    use super::*;
+    use ::universe::*;
+    use ::types::*;
+    use ::potentials::*;
+    use ::units;
+
+    fn testing_universe() -> Universe {
+        let mut universe = Universe::from_cell(UnitCell::cubic(10.0));;
+
+        universe.add_particle(Particle::new("F"));
+        universe[0].set_position(Vector3D::new(0.0, 0.0, 0.0));
+
+        universe.add_particle(Particle::new("F"));
+        universe[1].set_position(Vector3D::new(1.3, 0.0, 0.0));
+
+        universe.add_pair_interaction("F", "F",
+            Harmonic{k: units::from(300.0, "kJ/mol/A^2").unwrap(), x0: units::from(1.2, "A").unwrap()});
+        return universe;
+    }
+
+    fn check_file_content(filename: &str, content: &str) {
+        let mut file = fs::File::open(filename).unwrap();
+        let mut buffer = String::new();
+        file.read_to_string(&mut buffer).unwrap();
+
+        assert_eq!(buffer, content);
+    }
+
+    #[test]
+    fn trajectory() {
+        let filename = "testing-trajectory-output.xyz";
+        let universe = testing_universe();
+        {
+            let mut out = TrajectoryOutput::new(filename).unwrap();
+            out.setup(&universe);
+            out.write(&universe);
+            out.finish(&universe);
+        }
+
+        check_file_content(filename, "2\nWritten by Chemharp\nF 0 0 0\nF 1.3 0 0\n");
+        fs::remove_file(filename).unwrap();
+    }
+
+    #[test]
+    fn energy() {
+        let filename = "testing-energy-output.dat";
+        let universe = testing_universe();
+        {
+            let mut out = EnergyOutput::new(filename);
+            out.setup(&universe);
+            out.write(&universe);
+            out.finish(&universe);
+        }
+
+        check_file_content(filename, "# Energy of the simulation (kJ/mol)\n# Potential     Kinetic     Total\n1.5000000000000027   0   1.5000000000000027\n");
+        fs::remove_file(filename).unwrap();
+    }
+}
