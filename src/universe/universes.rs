@@ -83,12 +83,10 @@ impl Universe {
         universe.set_cell(cell);
         return universe;
     }
+}
 
-    /// Get a reference to  the universe unit cell
-    #[inline] pub fn cell<'a>(&'a self) -> &'a UnitCell {&self.cell}
-    /// Set the universe unit cell
-    #[inline] pub fn set_cell(&mut self, cell: UnitCell) {self.cell = cell;}
-
+/// Topology and particles related functions
+impl Universe {
     /// Get a reference to the universe topology
     #[inline] pub fn topology<'a>(&'a self) -> &'a Topology {&self.topology}
     /// Get a mutable reference to the universe topology
@@ -107,9 +105,34 @@ impl Universe {
         let index = self.size() - 1;
         self.topology.add_particle(index);
     }
+
     /// Get the number of particles in this universe
     #[inline] pub fn size(&self) -> usize {self.particles.len()}
 
+    /// Get an iterator over the `Particle` in this universe
+    #[inline] pub fn iter(&self) -> slice::Iter<Particle> {
+        self.particles.iter()
+    }
+
+    /// Get a mutable iterator over the `Particle` in this universe
+    #[inline] pub fn iter_mut(&mut self) -> slice::IterMut<Particle> {
+        self.particles.iter_mut()
+    }
+
+    /// Get or create the usize kind index for the name `name` of a particle
+    fn get_kind(&mut self, name: &str) -> u16 {
+        if self.kinds.contains_key(name) {
+            return self.kinds[name];
+        } else {
+            let index = self.kinds.len() as u16;
+            self.kinds.insert(name.to_string(), index);
+            return index;
+        }
+    }
+}
+
+/// Potentials related functions
+impl Universe {
     /// Get the list of pair interaction between the particles at indexes `i`
     /// and `j`.
     pub fn pair_potentials<'a>(&'a self, i: usize, j: usize) -> &'a Vec<Box<PairPotential>> {
@@ -220,6 +243,14 @@ impl Universe {
 
         self.interactions.add_dihedral(ikind, jkind, kkind, mkind, pot);
     }
+}
+
+/// UnitCell related functions
+impl Universe {
+    /// Get a reference to  the universe unit cell
+    #[inline] pub fn cell<'a>(&'a self) -> &'a UnitCell {&self.cell}
+    /// Set the universe unit cell
+    #[inline] pub fn set_cell(&mut self, cell: UnitCell) {self.cell = cell;}
 
     /// Get the distance between the particles at indexes `i` and `j`
     #[inline] pub fn distance(&self, i: usize, j:usize) -> f64 {
@@ -267,27 +298,6 @@ impl Universe {
         let c = self.particles[k].position();
         let d = self.particles[m].position();
         self.cell.dihedral_and_derivatives(a, b, c, d)
-    }
-
-    /// Get or create the usize kind index for the name `name` of a particle
-    fn get_kind(&mut self, name: &str) -> u16 {
-        if self.kinds.contains_key(name) {
-            return self.kinds[name];
-        } else {
-            let index = self.kinds.len() as u16;
-            self.kinds.insert(name.to_string(), index);
-            return index;
-        }
-    }
-
-    /// Get an iterator over the `Particle` in this universe
-    #[inline] pub fn iter(&self) -> slice::Iter<Particle> {
-        self.particles.iter()
-    }
-
-    /// Get a mutable iterator over the `Particle` in this universe
-    #[inline] pub fn iter_mut(&mut self) -> slice::IterMut<Particle> {
-        self.particles.iter_mut()
     }
 }
 
