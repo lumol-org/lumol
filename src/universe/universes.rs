@@ -270,6 +270,8 @@ impl Universe {
 impl Universe {
     /// Get a reference to  the universe unit cell
     #[inline] pub fn cell<'a>(&'a self) -> &'a UnitCell {&self.cell}
+    /// Get a mutable reference to  the universe unit cell
+    #[inline] pub fn cell_mut<'a>(&'a mut self) -> &'a mut UnitCell {&mut self.cell}
     /// Set the universe unit cell
     #[inline] pub fn set_cell(&mut self, cell: UnitCell) {self.cell = cell;}
 

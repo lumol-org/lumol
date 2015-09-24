@@ -7,7 +7,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/
 */
 
-use ::types::Vector3D;
+use ::types::{Vector3D, Matrix3};
 use ::simulation::{Compute, Forces};
 use ::universe::Universe;
 
@@ -155,6 +155,81 @@ impl Integrator for LeapFrog {
             let acceleration = forces[i]/mass;
             p.add_velocity(0.5 * (self.accelerations[i] + acceleration)* dt);
             self.accelerations[i] = acceleration;
+        }
+    }
+}
+
+/******************************************************************************/
+/// This is needed for the BerendsenBarostat implentations. The value comes
+/// from the DL_POLY source code.
+const WATER_COMPRESSIBILITY: f64 = 7372.0;
+
+/// Berendsen barostat integrator based on velocity-Verlet. This one neither
+/// reversible nor symplectic.
+pub struct BerendsenBarostat {
+    /// Timestep for the integrator
+    timestep: f64,
+    /// Target pressure for the barostat
+    pressure: f64,
+    /// Barostat timestep, expressed in units of the main timestep.
+    baro_timestep: f64,
+    /// Storing the accelerations
+    accelerations: Vec<Vector3D>,
+    /// Storing the scaling factor
+    eta: f64,
+}
+
+impl BerendsenBarostat {
+    /// Create a new Berendsen barostat with a timestep of `timestep`, and a
+    /// target pressure of `pressure`. The barostat timestep is 1000.
+    pub fn new(timestep: f64, pressure: f64) -> BerendsenBarostat {
+        BerendsenBarostat::with_timestep(timestep, pressure, 1000.0)
+    }
+
+    /// Create a new Berendsen barostat with a timestep of `timestep`, a
+    /// target pressure of `pressure` and a barostat timestep is of
+    /// `baro_timestep`. The barostat timestep is expressed in terms of the main
+    /// timestep. With `baro_timestep == 1000` and `timestep == 0.8 fs`, then
+    /// the effective barostat timestep will be `800 fs`.
+    pub fn with_timestep(timestep: f64, pressure: f64, baro_timestep: f64) -> BerendsenBarostat {
+        BerendsenBarostat{
+            timestep: timestep,
+            pressure: pressure,
+            baro_timestep: baro_timestep,
+            accelerations: Vec::new(),
+            eta: 1.0,
+        }
+    }
+
+}
+
+impl Integrator for BerendsenBarostat {
+    fn setup(&mut self, universe: &Universe) {
+        self.accelerations = vec![Vector3D::new(0.0, 0.0, 0.0); universe.size()];
+    }
+
+    fn integrate(&mut self, universe: &mut Universe) {
+        let dt = self.timestep;
+
+        // Update velocities at t + ∆t/2 and positions at t + ∆t
+        for (i, part) in universe.iter_mut().enumerate() {
+            part.add_velocity(0.5 * dt * self.accelerations[i]);
+            let position = *part.position();
+            // Scale all positions
+            let position = self.eta * position;
+            let position = position + *part.velocity() * dt;
+            part.set_position(position);
+        }
+
+        universe.cell_mut().scale_mut(self.eta*self.eta*self.eta * Matrix3::one());
+
+        self.eta = f64::cbrt(1.0 - WATER_COMPRESSIBILITY / self.baro_timestep * (self.pressure - universe.pressure()));
+
+        let forces = Forces.compute(&universe);
+        // Update accelerations at t + ∆t and velocities at t + ∆t
+        for (i, part) in universe.iter_mut().enumerate() {
+            self.accelerations[i] = forces[i] / part.mass();
+            part.add_velocity(0.5 * dt * self.accelerations[i]);
         }
     }
 }

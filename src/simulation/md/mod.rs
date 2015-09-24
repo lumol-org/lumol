@@ -12,6 +12,7 @@ pub use self::integrators::Integrator;
 pub use self::integrators::VelocityVerlet;
 pub use self::integrators::Verlet;
 pub use self::integrators::LeapFrog;
+pub use self::integrators::BerendsenBarostat;
 
 mod controls;
 pub use self::controls::Control;
