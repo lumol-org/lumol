@@ -48,20 +48,19 @@ impl Integrator for VelocityVerlet {
 
     fn integrate(&mut self, universe: &mut Universe) {
         let dt = self.timestep;
-        let natoms = universe.size();
 
         // Update velocities at t + ∆t/2 and positions at t + ∆t
-        for i in 0..natoms {
-            universe[i].add_velocity(0.5 * dt * self.accelerations[i]);
-            let new_vel = *universe[i].velocity() * dt;
-            universe[i].add_position(new_vel);
+        for (i, part) in universe.iter_mut().enumerate() {
+            part.add_velocity(0.5 * dt * self.accelerations[i]);
+            let dr = *part.velocity() * dt;
+            part.add_position(dr);
         }
 
         let forces = Forces.compute(&universe);
         // Update accelerations at t + ∆t and velocities at t + ∆t
-        for i in 0..natoms {
-            self.accelerations[i] = forces[i] / universe[i].mass();
-            universe[i].add_velocity(0.5 * dt * self.accelerations[i]);
+        for (i, part) in universe.iter_mut().enumerate() {
+            self.accelerations[i] = forces[i] / part.mass();
+            part.add_velocity(0.5 * dt * self.accelerations[i]);
         }
     }
 }
@@ -101,15 +100,15 @@ impl Integrator for Verlet {
         let dt2 = self.timestep * self.timestep;
 
         let forces = Forces.compute(&universe);
-        for (i, p) in universe.iter_mut().enumerate() {
+        for (i, part) in universe.iter_mut().enumerate() {
             // Save positions at t
-            let tmp = p.position().clone();
+            let tmp = part.position().clone();
             // Update positions at t + ∆t
-            let position = 2.0 * tmp - self.prevpos[i] + dt2/p.mass() * forces[i];
+            let position = 2.0 * tmp - self.prevpos[i] + dt2/part.mass() * forces[i];
             // Update velocities at t
             let velocity = (position - self.prevpos[i]) / (2.0 * dt);
-            p.set_position(position);
-            p.set_velocity(velocity);
+            part.set_position(position);
+            part.set_velocity(velocity);
             // Update saved position
             self.prevpos[i] = tmp;
         }
@@ -144,16 +143,16 @@ impl Integrator for LeapFrog {
         let dt = self.timestep;
         let dt2 = self.timestep * self.timestep;
 
-        for (i, p) in universe.iter_mut().enumerate() {
-            let velocity = p.velocity().clone();
-            p.add_position(velocity * dt + 0.5 * self.accelerations[i] * dt2);
+        for (i, part) in universe.iter_mut().enumerate() {
+            let velocity = part.velocity().clone();
+            part.add_position(velocity * dt + 0.5 * self.accelerations[i] * dt2);
         }
 
         let forces = Forces.compute(&universe);
-        for (i, p) in universe.iter_mut().enumerate() {
-            let mass = p.mass();
+        for (i, part) in universe.iter_mut().enumerate() {
+            let mass = part.mass();
             let acceleration = forces[i]/mass;
-            p.add_velocity(0.5 * (self.accelerations[i] + acceleration)* dt);
+            part.add_velocity(0.5 * (self.accelerations[i] + acceleration)* dt);
             self.accelerations[i] = acceleration;
         }
     }
