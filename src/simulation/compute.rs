@@ -300,12 +300,9 @@ mod test {
         universe[2].set_position(Vector3D::new(1.2, 1.2, 0.0));
         universe[3].set_position(Vector3D::new(2.4, 1.2, 0.0));
 
-        {
-            let topology = universe.topology_mut();
-            topology.add_bond(0, 1);
-            topology.add_bond(1, 2);
-            topology.add_bond(2, 3);
-        }
+        universe.add_bond(0, 1);
+        universe.add_bond(1, 2);
+        universe.add_bond(2, 3);
 
         universe.add_bond_interaction("F", "F",
             Harmonic{
@@ -357,12 +354,9 @@ mod test {
         universe[2].set_position(Vector3D::new(1.2, 1.2, 0.0));
         universe[3].set_position(Vector3D::new(2.4, 1.2, 0.0));
 
-        {
-            let topology = universe.topology_mut();
-            topology.add_bond(0, 1);
-            topology.add_bond(1, 2);
-            topology.add_bond(2, 3);
-        }
+        universe.add_bond(0, 1);
+        universe.add_bond(1, 2);
+        universe.add_bond(2, 3);
 
         universe.add_bond_interaction("F", "F",
             Harmonic{

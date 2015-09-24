@@ -10,6 +10,7 @@
 //! `Universe` type definition and implementation.
 
 use std::collections::HashMap;
+use std::collections::HashSet;
 use std::ops::{Index, IndexMut};
 use std::slice;
 
@@ -20,7 +21,7 @@ use ::potentials::{PairPotential, AnglePotential, DihedralPotential};
 use ::types::{Vector3D, Matrix3};
 
 use super::Particle;
-use super::Topology;
+use super::{Topology, Bond, Angle, Dihedral};
 use super::UnitCell;
 use super::interactions::Interactions;
 use super::chemharp::frame_to_universe;
@@ -117,6 +118,26 @@ impl Universe {
     /// Get a mutable iterator over the `Particle` in this universe
     #[inline] pub fn iter_mut(&mut self) -> slice::IterMut<Particle> {
         self.particles.iter_mut()
+    }
+
+    /// Add a bond between the particles at indexes `i` and `j`.
+    #[inline] pub fn add_bond(&mut self, i: usize, j: usize) {
+        self.topology.add_bond(i, j);
+    }
+
+    /// Get the list of bonds in the universe
+    #[inline] pub fn bonds<'a>(&'a self) -> &'a HashSet<Bond> {
+        &self.topology.bonds()
+    }
+
+    /// Get the list of angles in the universe
+    #[inline] pub fn angles<'a>(&'a self) -> &'a HashSet<Angle> {
+        &self.topology.angles()
+    }
+
+    /// Get the list of dihedrals in the universe
+    #[inline] pub fn dihedrals<'a>(&'a self) -> &'a HashSet<Dihedral> {
+        &self.topology.dihedrals()
     }
 
     /// Get or create the usize kind index for the name `name` of a particle
@@ -374,22 +395,29 @@ mod tests {
         use std::collections::HashSet;
 
         let mut universe = Universe::new();
-        universe.add_particle(Particle::new("He"));
-        universe.add_particle(Particle::new("He"));
-        universe.add_particle(Particle::new("He"));
-        universe.add_particle(Particle::new("He"));
+        universe.add_particle(Particle::new("H"));
+        universe.add_particle(Particle::new("O"));
+        universe.add_particle(Particle::new("O"));
+        universe.add_particle(Particle::new("H"));
 
-        {
-            let topology = universe.topology_mut();
-            topology.add_bond(0, 3);
-            topology.add_bond(1, 2);
-        }
+        universe.add_bond(0, 1);
+        universe.add_bond(2, 3);
 
-        let topology = universe.topology();
         let mut bonds = HashSet::new();
-        bonds.insert(Bond::new(1, 2));
-        bonds.insert(Bond::new(0, 3));
-        assert_eq!(topology.bonds(), &bonds);
+        bonds.insert(Bond::new(0, 1));
+        bonds.insert(Bond::new(2, 3));
+        assert_eq!(universe.bonds(), &bonds);
+
+        universe.add_bond(1, 2);
+
+        let mut angles = HashSet::new();
+        angles.insert(Angle::new(0, 1, 2));
+        angles.insert(Angle::new(1, 2, 3));
+        assert_eq!(universe.angles(), &angles);
+
+        let mut dihedrals = HashSet::new();
+        dihedrals.insert(Dihedral::new(0, 1, 2, 3));
+        assert_eq!(universe.dihedrals(), &dihedrals);
     }
 
     #[test]

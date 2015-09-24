@@ -32,14 +32,10 @@ impl Bond {
     }
 
     /// Get the first particle in the bond
-    #[inline] pub fn i(&self) -> usize {
-        self.i
-    }
+    #[inline] pub fn i(&self) -> usize {self.i}
 
     /// Get the second particle in the bond
-    #[inline] pub fn j(&self) -> usize {
-        self.j
-    }
+    #[inline] pub fn j(&self) -> usize {self.j}
 }
 
 /// An `Angle` formed by the atoms at indexes `i`, `j` and `k`
@@ -65,19 +61,13 @@ impl Angle {
     }
 
     /// Get the first particle in the angle
-    #[inline] pub fn i(&self) -> usize {
-        self.i
-    }
+    #[inline] pub fn i(&self) -> usize {self.i}
 
     /// Get the second particle in the angle
-    #[inline] pub fn j(&self) -> usize {
-        self.j
-    }
+    #[inline] pub fn j(&self) -> usize {self.j}
 
     /// Get the third particle in the angle
-    #[inline] pub fn k(&self) -> usize {
-        self.k
-    }
+    #[inline] pub fn k(&self) -> usize {self.k}
 }
 
 
@@ -105,24 +95,16 @@ impl Dihedral {
     }
 
     /// Get the first particle in the dihedral angle
-    #[inline] pub fn i(&self) -> usize {
-        self.i
-    }
+    #[inline] pub fn i(&self) -> usize {self.i}
 
     /// Get the second particle in the dihedral angle
-    #[inline] pub fn j(&self) -> usize {
-        self.j
-    }
+    #[inline] pub fn j(&self) -> usize {self.j}
 
     /// Get the third particle in the dihedral angle
-    #[inline] pub fn k(&self) -> usize {
-        self.k
-    }
+    #[inline] pub fn k(&self) -> usize {self.k}
 
     /// Get the fourth particle in the dihedral angle
-    #[inline] pub fn m(&self) -> usize {
-        self.m
-    }
+    #[inline] pub fn m(&self) -> usize {self.m}
 }
 
 /******************************************************************************/
@@ -279,6 +261,8 @@ impl Topology {
     /// Add a bond between the particles at indexes `i` and `j`. This fails if
     /// the particles were not added before calling this function, preferably
     /// through the Universe::add_particle function.
+    ///
+    /// The prefered way to do this is to call `Universe::add_bond`
     pub fn add_bond(&mut self, i: usize, j: usize) {
         if !self.are_in_same_molecule(i, j) {
             self.merge_molecules(i, j);

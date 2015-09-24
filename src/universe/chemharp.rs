@@ -78,12 +78,8 @@ impl ToCymbalum for chemharp::Frame {
             universe[i].set_position(position);
         }
 
-        {
-            let topo = universe.topology_mut();
-            for bond in try!(topology.bonds()).iter() {
-                println!("{:?}", bond);
-                topo.add_bond(bond[0] as usize, bond[1] as usize);
-            }
+        for bond in try!(topology.bonds()).iter() {
+            universe.add_bond(bond[0] as usize, bond[1] as usize);
         }
         Ok(universe)
     }
