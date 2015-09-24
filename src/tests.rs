@@ -12,7 +12,7 @@ macro_rules! assert_approx_eq {
         {
             match (&($left), &($right), ($tol)) {
                 (left_val , right_val, tol_val) => {
-                    if !(f64::abs(*left_val - *right_val) < tol_val) {
+                    if !((*left_val - *right_val).abs() < tol_val) {
                         panic!(
                             "assertion failed: `(left == right)` \
                              (left: `{:?}`, right: `{:?}`)"
