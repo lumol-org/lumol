@@ -1,17 +1,28 @@
 language: rust
-sudo: false
+sudo: required
 addons:
   apt:
+    sources:
+    - ubuntu-toolchain-r-test
     packages:
-      - libcurl4-openssl-dev
-      - libelf-dev
-      - libdw-dev
+    - g++-4.9
+    - libcurl4-openssl-dev
+    - libelf-dev
+    - libdw-dev
 rust:
     - stable
     - beta
 install:
+    - sudo add-apt-repository --yes ppa:yjwong/cmake
+    - sudo apt-get update
+    - sudo apt-cache search cmake
+    - sudo apt-get remove --yes cmake
+    - sudo apt-get install --yes cmake
     - pip install 'travis-cargo' --user
     - export PATH=$HOME/.local/bin:$PATH
+    - export CC=gcc-4.9
+    - export CXX=g++-4.9
+
 script:
     - travis-cargo build
     - travis-cargo test
