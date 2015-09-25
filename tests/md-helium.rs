@@ -16,7 +16,7 @@ static START: Once = ONCE_INIT;
 
 use std::path::Path;
 
-fn setup<T: Integrator + 'static>(integrator: T) -> (Simulation, Universe) {
+fn get_universe() -> Universe {
     let data_dir = Path::new(file!()).parent().unwrap();
     let configuration = data_dir.join("data").join("Helium.xyz");
     let mut universe = Universe::from_file(configuration.to_str().unwrap()).unwrap();
@@ -30,18 +30,17 @@ fn setup<T: Integrator + 'static>(integrator: T) -> (Simulation, Universe) {
 
     let mut velocities = BoltzmanVelocities::new(units::from(300.0, "K").unwrap());
     velocities.init(&mut universe);
-
-    let simulation = Simulation::new(
-        MolecularDynamics::from_integrator(integrator)
-    );
-    return (simulation, universe);
+    return universe;
 }
 
 #[test]
 fn constant_energy_velocity_verlet() {
     START.call_once(|| {Logger::stdout();});
-    let (mut simulation, mut universe) = setup(
-        VelocityVerlet::new(units::from(1.0, "fs").unwrap())
+    let mut universe = get_universe();
+    let mut simulation = Simulation::new(
+        MolecularDynamics::from_integrator(
+            VelocityVerlet::new(units::from(1.0, "fs").unwrap())
+        )
     );
 
     let E_initial = universe.total_energy();
@@ -55,8 +54,11 @@ fn constant_energy_velocity_verlet() {
 #[test]
 fn constant_energy_verlet() {
     START.call_once(|| {Logger::stdout();});
-    let (mut simulation, mut universe) = setup(
-        Verlet::new(units::from(1.0, "fs").unwrap())
+    let mut universe = get_universe();
+    let mut simulation = Simulation::new(
+        MolecularDynamics::from_integrator(
+            Verlet::new(units::from(1.0, "fs").unwrap())
+        )
     );
     let E_initial = universe.total_energy();
     simulation.run(&mut universe, 1000);
@@ -68,8 +70,11 @@ fn constant_energy_verlet() {
 #[test]
 fn constant_energy_leap_frog() {
     START.call_once(|| {Logger::stdout();});
-    let (mut simulation, mut universe) = setup(
-        LeapFrog::new(units::from(1.0, "fs").unwrap())
+    let mut universe = get_universe();
+    let mut simulation = Simulation::new(
+        MolecularDynamics::from_integrator(
+            LeapFrog::new(units::from(1.0, "fs").unwrap())
+        )
     );
     let E_initial = universe.total_energy();
     simulation.run(&mut universe, 1000);
@@ -80,8 +85,11 @@ fn constant_energy_leap_frog() {
 #[test]
 fn perfect_gaz() {
     START.call_once(|| {Logger::stdout();});
-    let (mut simulation, mut universe) = setup(
-        VelocityVerlet::new(units::from(1.0, "fs").unwrap())
+    let mut universe = get_universe();
+    let mut simulation = Simulation::new(
+        MolecularDynamics::from_integrator(
+            VelocityVerlet::new(units::from(1.0, "fs").unwrap())
+        )
     );
 
     // dilating the universe!
@@ -98,4 +106,26 @@ fn perfect_gaz() {
     let N = universe.size() as f64;
 
     assert!(f64::abs(P * V - N * constants::K_BOLTZMANN * T) < 1e-3);
+}
+
+#[test]
+fn berendsen_barostat() {
+    START.call_once(|| {Logger::stdout();});
+    let mut universe = get_universe();
+    let mut md = MolecularDynamics::from_integrator(
+        BerendsenBarostat::with_timestep(
+            units::from(1.0, "fs").unwrap(),
+            units::from(5000.0, "bar").unwrap(),
+            100.0
+        )
+    );
+    md.add_control(BerendsenThermostat::new(units::from(300.0, "K").unwrap(), 10.0));
+    let mut simulation = Simulation::new(md);
+
+    simulation.run(&mut universe, 5000);
+    let P = universe.pressure();
+    let T = universe.temperature();
+
+    assert!(f64::abs(P - units::from(5000.0, "bar").unwrap())/P < 1e-2);
+    assert!(f64::abs(T - units::from(300.0, "K").unwrap()) < 1.0);
 }
