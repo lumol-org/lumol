@@ -36,6 +36,9 @@ extern crate log;
 #[macro_use]
 mod tests;
 
+mod logging;
+pub use logging::Logger;
+
 pub mod units;
 pub mod constants;
 
