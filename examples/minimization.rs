@@ -1,13 +1,11 @@
 /*
  * Geometry minization of a molecule of water
  */
-
-extern crate env_logger;
 extern crate cymbalum;
 use cymbalum::*;
 
 fn main() {
-    env_logger::init().unwrap();
+    Logger::stdout();
     let mut universe = Universe::new();
 
     let alpha = units::from(50.0, "deg").unwrap();

@@ -17,6 +17,3 @@ log = "*"
 
 [dependencies.chemharp]
 git = "https://github.com/Luthaf/Chemharp.rs"
-
-[dev-dependencies]
-env_logger = "*"

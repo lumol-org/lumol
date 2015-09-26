@@ -8,9 +8,11 @@
 */
 #![allow(non_snake_case)]
 //! Testing physical properties of a Lennard-Jones gaz of Helium.
-extern crate env_logger;
 extern crate cymbalum;
 use self::cymbalum::*;
+
+use std::sync::{Once, ONCE_INIT};
+static START: Once = ONCE_INIT;
 
 use std::path::Path;
 
@@ -36,9 +38,8 @@ fn setup<T: Integrator + 'static>(integrator: T) -> (Simulation, Universe) {
 }
 
 #[test]
-#[allow(unused_must_use)]
 fn constant_energy_velocity_verlet() {
-    env_logger::init();
+    START.call_once(|| {Logger::stdout();});
     let (mut simulation, mut universe) = setup(
         VelocityVerlet::new(units::from(1.0, "fs").unwrap())
     );
@@ -52,9 +53,8 @@ fn constant_energy_velocity_verlet() {
 
 
 #[test]
-#[allow(unused_must_use)]
 fn constant_energy_verlet() {
-    env_logger::init();
+    START.call_once(|| {Logger::stdout();});
     let (mut simulation, mut universe) = setup(
         Verlet::new(units::from(1.0, "fs").unwrap())
     );
@@ -66,9 +66,8 @@ fn constant_energy_verlet() {
 
 
 #[test]
-#[allow(unused_must_use)]
 fn constant_energy_leap_frog() {
-    env_logger::init();
+    START.call_once(|| {Logger::stdout();});
     let (mut simulation, mut universe) = setup(
         LeapFrog::new(units::from(1.0, "fs").unwrap())
     );
@@ -80,6 +79,7 @@ fn constant_energy_leap_frog() {
 
 #[test]
 fn perfect_gaz() {
+    START.call_once(|| {Logger::stdout();});
     let (mut simulation, mut universe) = setup(
         VelocityVerlet::new(units::from(1.0, "fs").unwrap())
     );
