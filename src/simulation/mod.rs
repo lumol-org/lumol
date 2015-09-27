@@ -31,4 +31,4 @@ pub use self::compute::{Virial, Stress, Pressure};
 
 pub mod outputs;
 pub use self::outputs::Output;
-pub use self::outputs::{TrajectoryOutput, EnergyOutput};
+pub use self::outputs::{TrajectoryOutput, CellOutput, EnergyOutput};

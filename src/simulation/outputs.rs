@@ -45,8 +45,8 @@ pub struct TrajectoryOutput {
 }
 
 impl TrajectoryOutput {
-    /// Create a new `TrajectoryOutput`, using the file ate `filename` for
-    /// as the trajectory file. The file is replaced if it already exists.
+    /// Create a new `TrajectoryOutput` writing to `filename`. The file is
+    /// replaced if it already exists.
     pub fn new<'a, S>(filename: S) -> Result<TrajectoryOutput, chemharp::Error> where S: Into<&'a str> {
         Ok(TrajectoryOutput{
             file: try!(chemharp::Trajectory::create(filename.into()))
@@ -74,6 +74,50 @@ impl Output for TrajectoryOutput {
     }
 }
 
+
+/******************************************************************************/
+/// The `CellOutput` write all the components of a cell to a file . The columns
+/// in the file contains the following values: `A B C α β γ`.
+pub struct CellOutput {
+    file: File,
+    path: String
+}
+
+impl CellOutput {
+    /// Create a new `CellOutput` writing to `filename`. The file is replaced if
+    /// it already exists.
+    pub fn new<P: AsRef<Path>>(filename: P) -> Result<CellOutput, io::Error> {
+        let path = String::from(filename.as_ref().to_str().unwrap());
+        Ok(CellOutput{
+            file: try!(File::create(filename)),
+            path: path,
+        })
+    }
+}
+
+impl Output for CellOutput {
+    fn setup(&mut self, _: &Universe) {
+        if let Err(e) = writeln!(&mut self.file, "# Unit cell of the simulation") {
+            // Do panic in early time
+            panic!("Could not write to file '{}': {:?}", self.path, e);
+        }
+        if let Err(e) = writeln!(&mut self.file, "# A/Å B/Å C/Å α/deg β/deg γ/deg") {
+            panic!("Could not write to file '{}': {:?}", self.path, e);
+        }
+    }
+
+    fn write(&mut self, universe: &Universe) {
+        let cell = universe.cell();
+        if let Err(e) = writeln!(
+            &mut self.file, "{} {} {} {} {} {}",
+            cell.a(), cell.b(), cell.c(), cell.alpha(), cell.beta(), cell.gamma()
+        ) {
+            // Do not panic during the simulation
+            error!("Could not write to file '{}': {:?}", self.path, e);
+        }
+    }
+}
+
 /******************************************************************************/
 /// The `EnergyOutput` write the energy of the system to a text file, organized
 /// as: `PotentialEnergy     KineticEnergy     TotalEnergy`.
@@ -82,8 +126,8 @@ pub struct EnergyOutput {
 }
 
 impl EnergyOutput {
-    /// Create a new `TrajectoryOutput`, using the file ate `filename` for
-    /// output.
+    /// Create a new `EnergyOutput` writing to `filename`. The file is replaced
+    /// if it already exists.
     pub fn new<P: AsRef<Path>>(filename: P) -> Result<EnergyOutput, io::Error> {
         Ok(EnergyOutput{
             file: try!(File::create(filename))
@@ -165,6 +209,21 @@ mod tests {
         }
 
         check_file_content(filename, "# Energy of the simulation (kJ/mol)\n# Potential     Kinetic     Total\n1.5000000000000027   0   1.5000000000000027\n");
+        fs::remove_file(filename).unwrap();
+    }
+
+    #[test]
+    fn cell() {
+        let filename = "testing-cell-output.dat";
+        let universe = testing_universe();
+        {
+            let mut out = CellOutput::new(filename).unwrap();
+            out.setup(&universe);
+            out.write(&universe);
+            out.finish(&universe);
+        }
+
+        check_file_content(filename, "# Unit cell of the simulation\n# A/Å B/Å C/Å α/deg β/deg γ/deg\n10 10 10 90 90 90\n");
         fs::remove_file(filename).unwrap();
     }
 }
