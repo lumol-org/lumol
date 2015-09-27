@@ -38,6 +38,6 @@ fn main() {
 
 
     let mut simulation = Simulation::new(GradientDescent::new());
-    simulation.add_output(EnergyOutput::new("energy.dat"));
+    simulation.add_output(EnergyOutput::new("energy.dat").unwrap());
     simulation.run(&mut universe, 500);
 }

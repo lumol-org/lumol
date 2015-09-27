@@ -12,7 +12,9 @@
 extern crate chemharp;
 
 use std::io::prelude::*;
+use std::io;
 use std::fs::File;
+use std::path::Path;
 
 use ::units;
 use ::universe::Universe;
@@ -82,10 +84,10 @@ pub struct EnergyOutput {
 impl EnergyOutput {
     /// Create a new `TrajectoryOutput`, using the file ate `filename` for
     /// output.
-    pub fn new<'a, S>(filename: S) -> EnergyOutput where S: Into<&'a str> {
-        EnergyOutput{
-            file: File::create(filename.into()).unwrap()
-        }
+    pub fn new<P: AsRef<Path>>(filename: P) -> Result<EnergyOutput, io::Error> {
+        Ok(EnergyOutput{
+            file: try!(File::create(filename))
+        })
     }
 }
 
@@ -156,7 +158,7 @@ mod tests {
         let filename = "testing-energy-output.dat";
         let universe = testing_universe();
         {
-            let mut out = EnergyOutput::new(filename);
+            let mut out = EnergyOutput::new(filename).unwrap();
             out.setup(&universe);
             out.write(&universe);
             out.finish(&universe);
