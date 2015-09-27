@@ -165,7 +165,7 @@ impl UnitCell {
 
     /// Get the volume angle of the cell
     pub fn volume(&self) -> f64 {
-        match self.celltype {
+        let V = match self.celltype {
             CellType::Infinite => 0.0,
             CellType::Orthorombic => self.a()*self.b()*self.c(),
             CellType::Triclinic => {
@@ -175,7 +175,9 @@ impl UnitCell {
                 let c = self.vect_c();
                 a * (b ^ c)
             },
-        }
+        };
+        assert!(V >= 0.0, "Volume is not positive!");
+        return V;
     }
 
     /// Scale this unit cell in-place by multiplying the H matrix by `s`.

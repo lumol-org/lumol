@@ -91,12 +91,12 @@ pub struct PotentialEnergy;
 impl Compute for PotentialEnergy {
     type Output = f64;
     fn compute(&self, universe: &Universe) -> f64 {
-        let mut res = 0.0;
+        let mut energy = 0.0;
         for i in 0..universe.size() {
             for j in (i+1)..universe.size() {
                 let r = universe.wrap_vector(i, j).norm();
                 for potential in universe.pair_potentials(i, j) {
-                    res += potential.energy(r);
+                    energy += potential.energy(r);
                 }
             }
         }
@@ -106,7 +106,7 @@ impl Compute for PotentialEnergy {
             let (i, j) = (bond.i(), bond.j());
             let r = universe.wrap_vector(i, j).norm();
             for potential in universe.bond_potentials(i, j) {
-                res += potential.energy(r);
+                energy += potential.energy(r);
             }
         }
 
@@ -114,7 +114,7 @@ impl Compute for PotentialEnergy {
             let (i, j, k) = (angle.i(), angle.j(), angle.k());
             let theta = universe.angle(i, j, k);
             for potential in universe.angle_potentials(i, j, k) {
-                res += potential.energy(theta);
+                energy += potential.energy(theta);
             }
         }
 
@@ -122,10 +122,12 @@ impl Compute for PotentialEnergy {
             let (i, j, k, m) = (dihedral.i(), dihedral.j(), dihedral.k(), dihedral.m());
             let phi = universe.dihedral(i, j, k, m);
             for potential in universe.dihedral_potentials(i, j, k, m) {
-                res += potential.energy(phi);
+                energy += potential.energy(phi);
             }
         }
-        return res;
+
+        assert!(energy.is_finite(), "Potential energy is infinite!");
+        return energy;
     }
 }
 
@@ -135,11 +137,12 @@ pub struct KineticEnergy;
 impl Compute for KineticEnergy {
     type Output = f64;
     fn compute(&self, universe: &Universe) -> f64 {
-        let mut res = 0.0;
+        let mut energy = 0.0;
         for particle in universe.iter() {
-            res += 0.5 * particle.mass() * particle.velocity().norm2();
+            energy += 0.5 * particle.mass() * particle.velocity().norm2();
         }
-        return res;
+        assert!(energy.is_finite(), "Kinetic energy is infinite!");
+        return energy;
     }
 }
 
