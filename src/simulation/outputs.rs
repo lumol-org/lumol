@@ -36,7 +36,8 @@ pub trait Output {
 
 /******************************************************************************/
 /// The `TrajectoryOutput` allow to write the trajectory of the system to a
-/// file, using the XYZ format.
+/// file, using any format supported by the
+/// [Chemharp](http://chemharp.readthedocs.org/en/latest/formats.html) library.
 pub struct TrajectoryOutput {
     file: chemharp::Trajectory,
 }
