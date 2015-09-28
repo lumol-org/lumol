@@ -404,9 +404,13 @@ mod test {
         let virial = Virial.compute(universe);
 
         let mut res = Matrix3::zero();
-        res[(0, 0)] = -0.007800000005461644;
+        res[(0, 0)] = 2.0 * 3e-3 * 1.3;
 
-        assert_eq!(virial, res);
+        for i in 0..3 {
+            for j in 0..3 {
+                assert_approx_eq!(virial[(i, j)], res[(i, j)], 1e-9);
+            }
+        }
         assert_eq!(virial, universe.virial());
     }
 
@@ -425,7 +429,7 @@ mod test {
     fn pressure() {
         let universe = &testing_universe();
         let P = Pressure.compute(universe);
-        assert_approx_eq!(P, units::from(514.5790116223092, "bar").unwrap(), 1e-9);
+        assert_approx_eq!(P, units::from(-348.9011556223, "bar").unwrap(), 1e-9);
         assert_eq!(P, universe.pressure());
     }
 }
