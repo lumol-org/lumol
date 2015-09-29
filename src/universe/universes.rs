@@ -44,7 +44,7 @@ pub struct Universe {
     /// Interactions is a hash map associating particles kinds and potentials
     interactions: Interactions,
     /// Current step of the simulation
-    step: usize,
+    step: u64,
 }
 
 impl Universe {
@@ -89,8 +89,13 @@ impl Universe {
     }
 
     /// Get the current step of the universe
-    #[inline] pub fn step(&self) -> usize {
+    #[inline] pub fn step(&self) -> u64 {
         self.step
+    }
+
+    /// Set the current step of the universe to `step`
+    #[inline] pub fn set_step(&mut self, step: u64) {
+        self.step = step;
     }
 
     /// Reset the step of the universe to 0

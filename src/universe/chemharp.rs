@@ -64,6 +64,9 @@ impl ToCymbalum for chemharp::Frame {
         let topology = try!(self.topology());
         let positions = try!(self.positions());
         let natoms = try!(self.natoms());
+        let step = try!(self.step());
+
+        universe.set_step(step);
 
         for i in 0..natoms {
             let atom = try!(topology.atom(i as u64));
@@ -137,6 +140,9 @@ impl ToChemharp for Universe {
 
         let natoms = self.size();
         let mut frame = try!(chemharp::Frame::new(natoms as u64));
+
+        try!(frame.set_step(self.step()));
+
         let mut topology = try!(chemharp::Topology::new());
         let mut positions = vec![[0.0f32; 3]; natoms];
         let mut velocities = vec![[0.0f32; 3]; natoms];
