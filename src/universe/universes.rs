@@ -43,6 +43,8 @@ pub struct Universe {
     kinds: HashMap<String, u16>,
     /// Interactions is a hash map associating particles kinds and potentials
     interactions: Interactions,
+    /// Current step of the simulation
+    step: usize,
 }
 
 impl Universe {
@@ -54,6 +56,7 @@ impl Universe {
             kinds: HashMap::new(),
             interactions: Interactions::new(),
             cell: UnitCell::new(),
+            step: 0,
         }
     }
 
@@ -83,6 +86,21 @@ impl Universe {
         let mut universe = Universe::new();
         universe.set_cell(cell);
         return universe;
+    }
+
+    /// Get the current step of the universe
+    #[inline] pub fn step(&self) -> usize {
+        self.step
+    }
+
+    /// Reset the step of the universe to 0
+    pub fn reset_step(&mut self) {
+        self.step = 0;
+    }
+
+    /// Increment the universe step
+    pub fn increment_step(&mut self) {
+        self.step += 1;
     }
 }
 
@@ -378,6 +396,21 @@ mod tests {
     use ::universe::*;
     use ::types::*;
     use ::potentials::*;
+
+    #[test]
+    fn step() {
+        let mut universe = Universe::new();
+
+        assert_eq!(universe.step(), 0);
+
+        universe.increment_step();
+        universe.increment_step();
+        universe.increment_step();
+
+        assert_eq!(universe.step(), 3);
+        universe.reset_step();
+        assert_eq!(universe.step(), 0);
+    }
 
     #[test]
     fn cell() {

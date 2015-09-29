@@ -34,6 +34,7 @@ impl Simulation {
         self.setup(universe);
         for _ in 0..nsteps {
             self.propagator.propagate(universe);
+            universe.increment_step();
             for output in &mut self.outputs {
                 output.write(universe);
             }
