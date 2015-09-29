@@ -12,12 +12,53 @@ use ::universe::Universe;
 use super::Propagator;
 use super::Output;
 
+/// Writting an output at a given frequency
+struct OutputFrequency {
+    /// The output to use
+    output: Box<Output>,
+    /// The frequency. `output` will be used everytime the universe step matches
+    /// this frequency.
+    frequency: u64,
+}
+
+impl OutputFrequency {
+    pub fn new<O: Output + 'static>(output: O) -> OutputFrequency {
+        OutputFrequency{
+            frequency: 1,
+            output: Box::new(output),
+        }
+    }
+
+    pub fn with_frequency<O: Output + 'static>(output: O, frequency: u64) -> OutputFrequency {
+        OutputFrequency{
+            frequency: frequency,
+            output: Box::new(output),
+        }
+    }
+}
+
+impl Output for OutputFrequency {
+    fn setup(&mut self, universe: &Universe) {
+        self.output.setup(universe);
+    }
+
+    fn write(&mut self, universe: &Universe) {
+        if universe.step() % self.frequency == 0 {
+            self.output.write(universe);
+        }
+    }
+
+    fn finish(&mut self, universe: &Universe) {
+        self.output.finish(universe);
+    }
+}
+
 /// The Simulation struct holds all the needed algorithms for running the
 /// simulation. It should be use together with an Universe to perform the
 /// simulation.
 pub struct Simulation {
     propagator: Box<Propagator>,
-    outputs: Vec<Box<Output>>
+    outputs: Vec<OutputFrequency>
 }
 
 impl Simulation {
@@ -43,8 +84,15 @@ impl Simulation {
     }
 
     /// Add a new `Output` algorithm in the outputs list
-    pub fn add_output<O>(&mut self, out: O) where O: Output + 'static {
-        self.outputs.push(Box::new(out));
+    pub fn add_output<O>(&mut self, output: O) where O: Output + 'static {
+        self.outputs.push(OutputFrequency::new(output));
+    }
+
+    /// Add a new `Output` algorithm in the outputs list, which will be used
+    /// at the given frequency. The output will be used everytime the universe
+    ///  step matches this frequency.
+    pub fn add_output_with_frequency<O>(&mut self, output: O, frequency: u64) where O: Output + 'static {
+        self.outputs.push(OutputFrequency::with_frequency(output, frequency));
     }
 
     fn setup(&mut self, universe: &mut Universe) {

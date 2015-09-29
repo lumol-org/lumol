@@ -31,7 +31,9 @@ fn main() {
     velocities.init(&mut universe);
 
     let mut simulation = Simulation::new(MolecularDynamics::new(units::from(1.0, "fs").unwrap()));
-    simulation.add_output(TrajectoryOutput::new("trajectory.xyz").unwrap());
+    // Write the trajectory to `trajectory.xyz` every 10 steps
+    simulation.add_output_with_frequency(TrajectoryOutput::new("trajectory.xyz").unwrap(), 10);
+    // Write the energy to `energy.dat` every step
     simulation.add_output(EnergyOutput::new("energy.dat").unwrap());
 
     simulation.run(&mut universe, 5000);
