@@ -17,11 +17,8 @@ fn main() {
     universe.add_particle(Particle::new("H"));
     universe[2].set_position(Vector3D::new(1.2*f64::cos(-alpha), 1.2*f64::sin(-alpha), 0.0));
 
-    {
-        let topology = universe.topology_mut();
-        topology.add_bond(0, 1);
-        topology.add_bond(0, 2);
-    }
+    universe.add_bond(0, 1);
+    universe.add_bond(0, 2);
 
     universe.add_pair_interaction("O", "H", NullPotential);
     universe.add_pair_interaction("O", "O", NullPotential);
