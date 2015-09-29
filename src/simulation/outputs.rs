@@ -149,6 +149,50 @@ impl Output for EnergyOutput {
     }
 }
 
+/******************************************************************************/
+/// The `PropertiesOutput` write various physical properties of the universe to
+/// a file. These properties are:
+///
+/// - volume of the unit cell;
+/// - instant temperature;
+/// - instant pressure;
+pub struct PropertiesOutput {
+    file: File,
+    path: String,
+}
+
+impl PropertiesOutput {
+    /// Create a new `PropertiesOutput` writing to `filename`. The file is replaced
+    /// if it already exists.
+    pub fn new<P: AsRef<Path>>(filename: P) -> Result<PropertiesOutput, io::Error> {
+        let path = String::from(filename.as_ref().to_str().unwrap());
+        Ok(PropertiesOutput{
+            file: try!(File::create(filename)),
+            path: path,
+        })
+    }
+}
+
+impl Output for PropertiesOutput {
+    fn setup(&mut self, _: &Universe) {
+        if let Err(e) = writeln!(&mut self.file, "# Physical properties of the simulation") {
+            panic!("Could not write to file '{}': {:?}", self.path, e);
+        }
+        if let Err(e) = writeln!(&mut self.file, "# Step Volume/A^3 Temperature/K Pressure/bar") {
+            panic!("Could not write to file '{}': {:?}", self.path, e);
+        }
+    }
+
+    fn write(&mut self, universe: &Universe) {
+        let V = units::to(universe.volume(), "A^3").unwrap();
+        let T = units::to(universe.temperature(), "K").unwrap();
+        let P = units::to(universe.pressure(), "bar").unwrap();
+        if let Err(e) = writeln!(&mut self.file, "{} {} {} {}", universe.step(), V, T, P) {
+            error!("Could not write to file '{}': {:?}", self.path, e);
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use std::io::prelude::*;
@@ -224,6 +268,21 @@ mod tests {
         }
 
         check_file_content(filename, "# Unit cell of the simulation\n# Step A/Å B/Å C/Å α/deg β/deg γ/deg\n0 10 10 10 90 90 90\n");
+        fs::remove_file(filename).unwrap();
+    }
+
+    #[test]
+    fn properties() {
+        let filename = "testing-properties-output.dat";
+        let universe = testing_universe();
+        {
+            let mut out = PropertiesOutput::new(filename).unwrap();
+            out.setup(&universe);
+            out.write(&universe);
+            out.finish(&universe);
+        }
+
+        check_file_content(filename, "# Physical properties of the simulation\n# Step Volume/A^3 Temperature/K Pressure/bar\n0 1000 0 -431.7400836223091\n");
         fs::remove_file(filename).unwrap();
     }
 }
