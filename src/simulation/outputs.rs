@@ -123,29 +123,38 @@ impl Output for CellOutput {
 /// as: `PotentialEnergy     KineticEnergy     TotalEnergy`.
 pub struct EnergyOutput {
     file: File,
+    path: String
 }
 
 impl EnergyOutput {
     /// Create a new `EnergyOutput` writing to `filename`. The file is replaced
     /// if it already exists.
     pub fn new<P: AsRef<Path>>(filename: P) -> Result<EnergyOutput, io::Error> {
+        let path = String::from(filename.as_ref().to_str().unwrap());
         Ok(EnergyOutput{
-            file: try!(File::create(filename))
+            file: try!(File::create(filename)),
+            path: path,
         })
     }
 }
 
 impl Output for EnergyOutput {
     fn setup(&mut self, _: &Universe) {
-        writeln!(&mut self.file, "# Energy of the simulation (kJ/mol)").unwrap();
-        writeln!(&mut self.file, "# Step Potential Kinetic Total").unwrap();
+        if let Err(e) = writeln!(&mut self.file, "# Energy of the simulation (kJ/mol)") {
+            panic!("Could not write to file '{}': {:?}", self.path, e);
+        }
+        if let Err(e) = writeln!(&mut self.file, "# Step Potential Kinetic Total") {
+            panic!("Could not write to file '{}': {:?}", self.path, e);
+        }
     }
 
     fn write(&mut self, universe: &Universe) {
         let potential = units::to(universe.potential_energy(), "kJ/mol").unwrap();
         let kinetic = units::to(universe.kinetic_energy(), "kJ/mol").unwrap();
         let total = units::to(universe.total_energy(), "kJ/mol").unwrap();
-        writeln!(&mut self.file, "{} {} {} {}", universe.step(), potential, kinetic, total).unwrap();
+        if let Err(e) = writeln!(&mut self.file, "{} {} {} {}", universe.step(), potential, kinetic, total) {
+            error!("Could not write to file '{}': {:?}", self.path, e);
+        }
     }
 }
 
