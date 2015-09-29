@@ -126,6 +126,6 @@ fn berendsen_barostat() {
     let P = universe.pressure();
     let T = universe.temperature();
 
-    assert!(f64::abs(P - units::from(5000.0, "bar").unwrap())/P < 1e-2);
-    assert!(f64::abs(T - units::from(300.0, "K").unwrap()) < 1.0);
+    assert!(f64::abs(P - units::from(5000.0, "bar").unwrap())/P < 8e-2);
+    assert!(f64::abs(T - units::from(300.0, "K").unwrap())/T < 1e-2);
 }
