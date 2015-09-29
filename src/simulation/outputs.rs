@@ -101,7 +101,7 @@ impl Output for CellOutput {
             // Do panic in early time
             panic!("Could not write to file '{}': {:?}", self.path, e);
         }
-        if let Err(e) = writeln!(&mut self.file, "# A/Å B/Å C/Å α/deg β/deg γ/deg") {
+        if let Err(e) = writeln!(&mut self.file, "# Step A/Å B/Å C/Å α/deg β/deg γ/deg") {
             panic!("Could not write to file '{}': {:?}", self.path, e);
         }
     }
@@ -109,8 +109,8 @@ impl Output for CellOutput {
     fn write(&mut self, universe: &Universe) {
         let cell = universe.cell();
         if let Err(e) = writeln!(
-            &mut self.file, "{} {} {} {} {} {}",
-            cell.a(), cell.b(), cell.c(), cell.alpha(), cell.beta(), cell.gamma()
+            &mut self.file, "{} {} {} {} {} {} {}",
+            universe.step(), cell.a(), cell.b(), cell.c(), cell.alpha(), cell.beta(), cell.gamma()
         ) {
             // Do not panic during the simulation
             error!("Could not write to file '{}': {:?}", self.path, e);
@@ -138,14 +138,14 @@ impl EnergyOutput {
 impl Output for EnergyOutput {
     fn setup(&mut self, _: &Universe) {
         writeln!(&mut self.file, "# Energy of the simulation (kJ/mol)").unwrap();
-        writeln!(&mut self.file, "# Potential     Kinetic     Total").unwrap();
+        writeln!(&mut self.file, "# Step     Potential     Kinetic     Total").unwrap();
     }
 
     fn write(&mut self, universe: &Universe) {
         let potential = units::to(universe.potential_energy(), "kJ/mol").unwrap();
         let kinetic = units::to(universe.kinetic_energy(), "kJ/mol").unwrap();
         let total = units::to(universe.total_energy(), "kJ/mol").unwrap();
-        writeln!(&mut self.file, "{}   {}   {}", potential, kinetic, total).unwrap();
+        writeln!(&mut self.file, "{}   {}   {}   {}", universe.step(), potential, kinetic, total).unwrap();
     }
 }
 
@@ -208,7 +208,7 @@ mod tests {
             out.finish(&universe);
         }
 
-        check_file_content(filename, "# Energy of the simulation (kJ/mol)\n# Potential     Kinetic     Total\n1.5000000000000027   0   1.5000000000000027\n");
+        check_file_content(filename, "# Energy of the simulation (kJ/mol)\n# Step     Potential     Kinetic     Total\n0   1.5000000000000027   0   1.5000000000000027\n");
         fs::remove_file(filename).unwrap();
     }
 
@@ -223,7 +223,7 @@ mod tests {
             out.finish(&universe);
         }
 
-        check_file_content(filename, "# Unit cell of the simulation\n# A/Å B/Å C/Å α/deg β/deg γ/deg\n10 10 10 90 90 90\n");
+        check_file_content(filename, "# Unit cell of the simulation\n# Step A/Å B/Å C/Å α/deg β/deg γ/deg\n0 10 10 10 90 90 90\n");
         fs::remove_file(filename).unwrap();
     }
 }
