@@ -138,14 +138,14 @@ impl EnergyOutput {
 impl Output for EnergyOutput {
     fn setup(&mut self, _: &Universe) {
         writeln!(&mut self.file, "# Energy of the simulation (kJ/mol)").unwrap();
-        writeln!(&mut self.file, "# Step     Potential     Kinetic     Total").unwrap();
+        writeln!(&mut self.file, "# Step Potential Kinetic Total").unwrap();
     }
 
     fn write(&mut self, universe: &Universe) {
         let potential = units::to(universe.potential_energy(), "kJ/mol").unwrap();
         let kinetic = units::to(universe.kinetic_energy(), "kJ/mol").unwrap();
         let total = units::to(universe.total_energy(), "kJ/mol").unwrap();
-        writeln!(&mut self.file, "{}   {}   {}   {}", universe.step(), potential, kinetic, total).unwrap();
+        writeln!(&mut self.file, "{} {} {} {}", universe.step(), potential, kinetic, total).unwrap();
     }
 }
 
@@ -208,7 +208,7 @@ mod tests {
             out.finish(&universe);
         }
 
-        check_file_content(filename, "# Energy of the simulation (kJ/mol)\n# Step     Potential     Kinetic     Total\n0   1.5000000000000027   0   1.5000000000000027\n");
+        check_file_content(filename, "# Energy of the simulation (kJ/mol)\n# Step Potential Kinetic Total\n0 1.5000000000000027 0 1.5000000000000027\n");
         fs::remove_file(filename).unwrap();
     }
 
