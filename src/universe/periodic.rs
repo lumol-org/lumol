@@ -1,11 +1,9 @@
-/*
- * Cymbalum, Molecular Simulation in Rust
- * Copyright (C) 2015 Guillaume Fraux
+/* Cymbalum, Molecular Simulation in Rust - Copyright (C) 2015 Guillaume Fraux
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/
-*/
+ */
 
 //! The periodic module give access to information about "extended" elements.
 //! These elements can be real element like Hydrogen or Carbon, or composed
