@@ -1,0 +1,18 @@
+units real
+atom_style full
+boundary p p p
+
+read_data data/helium.lmp
+
+pair_style lj/cut 8
+pair_coeff 1 1 0.3 2.0
+
+neighbor 2.0 bin
+neigh_modify every 1 delay 0 check yes
+
+velocity all create 300.0 42 dist gaussian
+
+fix 1 all nve
+
+timestep 1
+run 5000
