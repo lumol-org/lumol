@@ -6,7 +6,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/
 */
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 use std::cmp::max;
 
 use ::potentials::{PairPotential, AnglePotential, DihedralPotential};
@@ -15,22 +15,22 @@ use ::potentials::{PairPotential, AnglePotential, DihedralPotential};
 /// indexed by particle type.
 pub struct Interactions {
     /// Pair potentials
-    pairs: HashMap<(u16, u16), Vec<Box<PairPotential>>>,
+    pairs: BTreeMap<(u16, u16), Vec<Box<PairPotential>>>,
     /// Bond potentials
-    bonds: HashMap<(u16, u16), Vec<Box<PairPotential>>>,
+    bonds: BTreeMap<(u16, u16), Vec<Box<PairPotential>>>,
     /// Angle potentials
-    angles: HashMap<(u16, u16, u16), Vec<Box<AnglePotential>>>,
+    angles: BTreeMap<(u16, u16, u16), Vec<Box<AnglePotential>>>,
     /// Dihedral angles potentials
-    dihedrals: HashMap<(u16, u16, u16, u16), Vec<Box<DihedralPotential>>>,
+    dihedrals: BTreeMap<(u16, u16, u16, u16), Vec<Box<DihedralPotential>>>,
 }
 
 impl Interactions {
     pub fn new() -> Interactions {
         Interactions{
-            pairs: HashMap::new(),
-            bonds: HashMap::new(),
-            angles: HashMap::new(),
-            dihedrals: HashMap::new(),
+            pairs: BTreeMap::new(),
+            bonds: BTreeMap::new(),
+            angles: BTreeMap::new(),
+            dihedrals: BTreeMap::new(),
         }
     }
 
