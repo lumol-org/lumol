@@ -1,6 +1,4 @@
-/*
- * Geometry minization of a molecule of water
- */
+//! Geometry minization of a molecule of water
 extern crate cymbalum;
 use cymbalum::*;
 

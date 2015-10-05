@@ -1,6 +1,4 @@
-/*
- * Molecular dynamics simulation of an Argon crystal
- */
+//! Molecular dynamics simulation of an Argon crystal
 extern crate cymbalum;
 use cymbalum::*;
 
