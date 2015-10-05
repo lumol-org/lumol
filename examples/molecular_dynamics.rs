@@ -22,9 +22,9 @@ fn main() {
             }
         }
     }
-    universe.add_pair_interaction("Ar", "Ar", LennardJones{
+    universe.add_pair_interaction("Ar", "Ar", Box::new(LennardJones{
                                                 sigma: units::from(3.4, "A").unwrap(),
-                                                epsilon: units::from(1.0, "kJ/mol").unwrap()});
+                                                epsilon: units::from(1.0, "kJ/mol").unwrap()}));
 
     let mut velocities = BoltzmanVelocities::new(units::from(300.0, "K").unwrap());
     velocities.seed(129);

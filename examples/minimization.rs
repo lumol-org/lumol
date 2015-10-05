@@ -20,18 +20,18 @@ fn main() {
     universe.add_bond(0, 1);
     universe.add_bond(0, 2);
 
-    universe.add_pair_interaction("O", "H", NullPotential);
-    universe.add_pair_interaction("O", "O", NullPotential);
-    universe.add_pair_interaction("H", "H", NullPotential);
+    universe.add_pair_interaction("O", "H", Box::new(NullPotential));
+    universe.add_pair_interaction("O", "O", Box::new(NullPotential));
+    universe.add_pair_interaction("H", "H", Box::new(NullPotential));
 
-    universe.add_bond_interaction("O", "H", Harmonic{
+    universe.add_bond_interaction("O", "H", Box::new(Harmonic{
         x0: units::from(1.1, "A").unwrap(),
         k: units::from(100.0, "kJ/mol/A^2").unwrap(),
-    });
-    universe.add_angle_interaction("H", "O", "H", Harmonic{
+    }));
+    universe.add_angle_interaction("H", "O", "H", Box::new(Harmonic{
         x0: units::from(109.0, "deg").unwrap(),
         k: units::from(30.0, "kJ/mol/deg").unwrap(),
-    });
+    }));
 
 
     let mut simulation = Simulation::new(GradientDescent::new());

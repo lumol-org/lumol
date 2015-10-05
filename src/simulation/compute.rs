@@ -269,7 +269,7 @@ mod test {
         velocities.init(&mut universe);
 
         universe.add_pair_interaction("F", "F",
-            Harmonic{k: units::from(300.0, "kJ/mol/A^2").unwrap(), x0: units::from(1.2, "A").unwrap()});
+            Box::new(Harmonic{k: units::from(300.0, "kJ/mol/A^2").unwrap(), x0: units::from(1.2, "A").unwrap()}));
         return universe;
     }
 
@@ -306,22 +306,22 @@ mod test {
         universe.add_bond(2, 3);
 
         universe.add_bond_interaction("F", "F",
-            Harmonic{
+            Box::new(Harmonic{
                 k: units::from(100.0, "kJ/mol/A^2").unwrap(),
                 x0: units::from(1.22, "A").unwrap()
-        });
+        }));
 
         universe.add_angle_interaction("F", "F", "F",
-            Harmonic{
+            Box::new(Harmonic{
                 k: units::from(100.0, "kJ/mol/deg^2").unwrap(),
                 x0: units::from(80.0, "deg").unwrap()
-        });
+        }));
 
         universe.add_dihedral_interaction("F", "F", "F", "F",
-            Harmonic{
+            Box::new(Harmonic{
                 k: units::from(100.0, "kJ/mol/deg^2").unwrap(),
                 x0: units::from(185.0, "deg").unwrap()
-        });
+        }));
 
         let res = Forces.compute(&universe);
         let forces_tot = res[0] + res[1] + res[2] + res[3];
@@ -360,22 +360,22 @@ mod test {
         universe.add_bond(2, 3);
 
         universe.add_bond_interaction("F", "F",
-            Harmonic{
+            Box::new(Harmonic{
                 k: units::from(100.0, "kJ/mol/A^2").unwrap(),
                 x0: units::from(1.22, "A").unwrap()
-        });
+        }));
 
         universe.add_angle_interaction("F", "F", "F",
-            Harmonic{
+            Box::new(Harmonic{
                 k: units::from(100.0, "kJ/mol/deg^2").unwrap(),
                 x0: units::from(80.0, "deg").unwrap()
-        });
+        }));
 
         universe.add_dihedral_interaction("F", "F", "F", "F",
-            Harmonic{
+            Box::new(Harmonic{
                 k: units::from(100.0, "kJ/mol/deg^2").unwrap(),
                 x0: units::from(185.0, "deg").unwrap()
-        });
+        }));
 
         assert_approx_eq!(PotentialEnergy.compute(&universe), 0.040419916002, 1e-12);
     }

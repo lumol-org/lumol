@@ -221,7 +221,7 @@ mod tests {
         universe[1].set_position(Vector3D::new(1.3, 0.0, 0.0));
 
         universe.add_pair_interaction("F", "F",
-            Harmonic{k: units::from(300.0, "kJ/mol/A^2").unwrap(), x0: units::from(1.2, "A").unwrap()});
+            Box::new(Harmonic{k: units::from(300.0, "kJ/mol/A^2").unwrap(), x0: units::from(1.2, "A").unwrap()}));
         return universe;
     }
 

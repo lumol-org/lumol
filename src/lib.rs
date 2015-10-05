@@ -49,3 +49,5 @@ pub use types::*;
 pub use potentials::*;
 pub use universe::*;
 pub use simulation::*;
+
+pub mod input;

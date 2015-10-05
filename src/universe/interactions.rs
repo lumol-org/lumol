@@ -37,13 +37,13 @@ impl Interactions {
     }
 
     /// Add a pair interaction to the pair `(i, j)`
-    pub fn add_pair<T>(&mut self, i: u16, j:u16, potential: T) where T: PairPotential + 'static {
+    pub fn add_pair(&mut self, i: u16, j:u16, potential: Box<PairPotential>) {
         let (i, j) = sort_pair(i, j);
         if !self.pairs.contains_key(&(i, j)) {
             self.pairs.insert((i, j), Vec::new());
         }
         let pairs = self.pairs.get_mut(&(i, j)).unwrap();
-        pairs.push(Box::new(potential));
+        pairs.push(potential);
     }
 
     /// Get all pair interactions corresponding to the pair `(i, j)`
@@ -53,13 +53,13 @@ impl Interactions {
     }
 
     /// Add a bonded interaction to the pair `(i, j)`
-    pub fn add_bond<T>(&mut self, i: u16, j:u16, potential: T) where T: PairPotential + 'static {
+    pub fn add_bond(&mut self, i: u16, j:u16, potential: Box<PairPotential>) {
         let (i, j) = sort_pair(i, j);
         if !self.bonds.contains_key(&(i, j)) {
             self.bonds.insert((i, j), Vec::new());
         }
         let bonds = self.bonds.get_mut(&(i, j)).unwrap();
-        bonds.push(Box::new(potential));
+        bonds.push(potential);
     }
 
     /// Get all bonded interactions corresponding to the pair `(i, j)`
@@ -69,13 +69,13 @@ impl Interactions {
     }
 
     /// Add an angle interaction to the angle `(i, j, k)`
-    pub fn add_angle<T>(&mut self, i: u16, j:u16, k:u16, potential: T) where T: AnglePotential + 'static {
+    pub fn add_angle(&mut self, i: u16, j:u16, k:u16, potential: Box<AnglePotential>) {
         let (i, j, k) = sort_angle(i, j, k);
         if !self.angles.contains_key(&(i, j, k)) {
             self.angles.insert((i, j, k), Vec::new());
         }
         let angles = self.angles.get_mut(&(i, j, k)).unwrap();
-        angles.push(Box::new(potential));
+        angles.push(potential);
     }
 
     /// Get all angle interactions corresponding to the angle `(i, j, k)`
@@ -85,13 +85,13 @@ impl Interactions {
     }
 
     /// Add a dihedral interaction to the dihedral `(i, j, k, m)`
-    pub fn add_dihedral<T>(&mut self, i: u16, j:u16, k:u16, m:u16, potential: T) where T: DihedralPotential + 'static {
+    pub fn add_dihedral(&mut self, i: u16, j:u16, k:u16, m:u16, potential: Box<DihedralPotential>) {
         let (i, j, k, m) = sort_dihedral(i, j, k, m);
         if !self.dihedrals.contains_key(&(i, j, k, m)) {
             self.dihedrals.insert((i, j, k, m), Vec::new());
         }
         let dihedrals = self.dihedrals.get_mut(&(i, j, k, m)).unwrap();
-        dihedrals.push(Box::new(potential));
+        dihedrals.push(potential);
     }
 
     /// Get all dihedral interactions corresponding to the dihedral `(i, j, k, m)`
@@ -138,11 +138,11 @@ mod test {
     fn pairs() {
         let mut interactions = Interactions::new();
 
-        interactions.add_pair(0, 3, Harmonic{x0: 0.0, k: 0.0});
+        interactions.add_pair(0, 3, Box::new(Harmonic{x0: 0.0, k: 0.0}));
         assert_eq!(interactions.pairs(0, 3).unwrap().len(), 1);
         assert_eq!(interactions.pairs(3, 0).unwrap().len(), 1);
 
-        interactions.add_pair(0, 0, Harmonic{x0: 0.0, k: 0.0});
+        interactions.add_pair(0, 0, Box::new(Harmonic{x0: 0.0, k: 0.0}));
         assert_eq!(interactions.pairs(0, 0).unwrap().len(), 1);
     }
 
@@ -150,11 +150,11 @@ mod test {
     fn bonds() {
         let mut interactions = Interactions::new();
 
-        interactions.add_bond(0, 3, Harmonic{x0: 0.0, k: 0.0});
+        interactions.add_bond(0, 3, Box::new(Harmonic{x0: 0.0, k: 0.0}));
         assert_eq!(interactions.bonds(0, 3).unwrap().len(), 1);
         assert_eq!(interactions.bonds(3, 0).unwrap().len(), 1);
 
-        interactions.add_bond(0, 0, Harmonic{x0: 0.0, k: 0.0});
+        interactions.add_bond(0, 0, Box::new(Harmonic{x0: 0.0, k: 0.0}));
         assert_eq!(interactions.bonds(0, 0).unwrap().len(), 1);
     }
 
@@ -162,15 +162,15 @@ mod test {
     fn angles() {
         let mut interactions = Interactions::new();
 
-        interactions.add_angle(0, 3, 7, Harmonic{x0: 0.0, k: 0.0});
+        interactions.add_angle(0, 3, 7, Box::new(Harmonic{x0: 0.0, k: 0.0}));
         assert_eq!(interactions.angles(0, 3, 7).unwrap().len(), 1);
         assert_eq!(interactions.angles(7, 3, 0).unwrap().len(), 1);
 
-        interactions.add_angle(0, 0, 7, Harmonic{x0: 0.0, k: 0.0});
+        interactions.add_angle(0, 0, 7, Box::new(Harmonic{x0: 0.0, k: 0.0}));
         assert_eq!(interactions.angles(0, 0, 7).unwrap().len(), 1);
         assert_eq!(interactions.angles(7, 0, 0).unwrap().len(), 1);
 
-        interactions.add_angle(42, 42, 42, Harmonic{x0: 0.0, k: 0.0});
+        interactions.add_angle(42, 42, 42, Box::new(Harmonic{x0: 0.0, k: 0.0}));
         assert_eq!(interactions.angles(42, 42, 42).unwrap().len(), 1);
     }
 
@@ -178,19 +178,19 @@ mod test {
     fn dihedrals() {
         let mut interactions = Interactions::new();
 
-        interactions.add_dihedral(0, 3, 7, 2, Harmonic{x0: 0.0, k: 0.0});
+        interactions.add_dihedral(0, 3, 7, 2, Box::new(Harmonic{x0: 0.0, k: 0.0}));
         assert_eq!(interactions.dihedrals(0, 3, 7, 2).unwrap().len(), 1);
         assert_eq!(interactions.dihedrals(2, 7, 3, 0).unwrap().len(), 1);
 
-        interactions.add_dihedral(0, 0, 7, 2, Harmonic{x0: 0.0, k: 0.0});
+        interactions.add_dihedral(0, 0, 7, 2, Box::new(Harmonic{x0: 0.0, k: 0.0}));
         assert_eq!(interactions.dihedrals(0, 0, 7, 2).unwrap().len(), 1);
         assert_eq!(interactions.dihedrals(2, 7, 0, 0).unwrap().len(), 1);
 
-        interactions.add_dihedral(0, 0, 9, 0, Harmonic{x0: 0.0, k: 0.0});
+        interactions.add_dihedral(0, 0, 9, 0, Box::new(Harmonic{x0: 0.0, k: 0.0}));
         assert_eq!(interactions.dihedrals(0, 0, 9, 0).unwrap().len(), 1);
         assert_eq!(interactions.dihedrals(0, 9, 0, 0).unwrap().len(), 1);
 
-        interactions.add_dihedral(42, 42, 42, 42, Harmonic{x0: 0.0, k: 0.0});
+        interactions.add_dihedral(42, 42, 42, 42, Box::new(Harmonic{x0: 0.0, k: 0.0}));
         assert_eq!(interactions.dihedrals(42, 42, 42, 42).unwrap().len(), 1);
     }
 }

@@ -37,27 +37,27 @@ fn setup() -> (Simulation, Universe) {
     }
 
     universe.add_pair_interaction("O", "O",
-        LennardJones{
+        Box::new(LennardJones{
             sigma: units::from(3.2, "A").unwrap(),
             epsilon: units::from(0.2583, "kcal/mol").unwrap()
-        }
+        })
     );
 
-    universe.add_pair_interaction("O", "H", NullPotential);
-    universe.add_pair_interaction("H", "H", NullPotential);
+    universe.add_pair_interaction("O", "H", Box::new(NullPotential));
+    universe.add_pair_interaction("H", "H", Box::new(NullPotential));
 
     universe.add_bond_interaction("O", "H",
-        Harmonic{
+        Box::new(Harmonic{
             x0: units::from(1.1, "A").unwrap(),
             k: units::from(390.0, "kcal/mol/A^2").unwrap()
-        }
+        })
     );
 
     universe.add_angle_interaction("H", "O", "H",
-        Harmonic{
+        Box::new(Harmonic{
             x0: units::from(109.5, "deg").unwrap(),
             k: units::from(70.0, "kcal/mol/rad^2").unwrap()
-        }
+        })
     );
 
     let mut velocities = BoltzmanVelocities::new(units::from(300.0, "K").unwrap());

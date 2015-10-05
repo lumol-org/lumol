@@ -248,8 +248,7 @@ impl Universe {
     }
 
     /// Add a pair interaction between the particles with names `names`
-    pub fn add_pair_interaction<T>(&mut self, i: &str, j: &str, pot: T)
-    where T: PairPotential + 'static {
+    pub fn add_pair_interaction(&mut self, i: &str, j: &str, pot: Box<PairPotential>) {
         let ikind = self.get_kind(i);
         let jkind = self.get_kind(j);
 
@@ -257,8 +256,7 @@ impl Universe {
     }
 
     /// Add a bonded interaction between the particles with names `names`
-    pub fn add_bond_interaction<T>(&mut self, i: &str, j: &str, pot: T)
-    where T: PairPotential + 'static {
+    pub fn add_bond_interaction(&mut self, i: &str, j: &str, pot: Box<PairPotential>) {
         let ikind = self.get_kind(i);
         let jkind = self.get_kind(j);
 
@@ -266,8 +264,7 @@ impl Universe {
     }
 
     /// Add an angle interaction between the particles with names `names`
-    pub fn add_angle_interaction<T>(&mut self, i: &str, j: &str, k: &str, pot: T)
-    where T: AnglePotential + 'static {
+    pub fn add_angle_interaction(&mut self, i: &str, j: &str, k: &str, pot: Box<AnglePotential>) {
         let ikind = self.get_kind(i);
         let jkind = self.get_kind(j);
         let kkind = self.get_kind(k);
@@ -276,8 +273,7 @@ impl Universe {
     }
 
     /// Add an angle interaction between the particles with names `names`
-    pub fn add_dihedral_interaction<T>(&mut self, i: &str, j: &str, k: &str, m: &str, pot: T)
-    where T: DihedralPotential + 'static {
+    pub fn add_dihedral_interaction(&mut self, i: &str, j: &str, k: &str, m: &str, pot: Box<DihedralPotential>) {
         let ikind = self.get_kind(i);
         let jkind = self.get_kind(j);
         let kkind = self.get_kind(k);
@@ -490,17 +486,17 @@ mod tests {
         let mut universe = Universe::new();
         universe.add_particle(Particle::new("He"));
 
-        universe.add_pair_interaction("He", "He", LennardJones{sigma: 0.3, epsilon: 2.0});
-        universe.add_pair_interaction("He", "He", Harmonic{k: 100.0, x0: 1.1});
+        universe.add_pair_interaction("He", "He", Box::new(LennardJones{sigma: 0.3, epsilon: 2.0}));
+        universe.add_pair_interaction("He", "He", Box::new(Harmonic{k: 100.0, x0: 1.1}));
         assert_eq!(universe.pair_potentials(0, 0).len(), 2);
 
-        universe.add_bond_interaction("He", "He", Harmonic{k: 100.0, x0: 1.1});
+        universe.add_bond_interaction("He", "He", Box::new(Harmonic{k: 100.0, x0: 1.1}));
         assert_eq!(universe.bond_potentials(0, 0).len(), 1);
 
-        universe.add_angle_interaction("He", "He", "He", Harmonic{k: 100.0, x0: 1.1});
+        universe.add_angle_interaction("He", "He", "He", Box::new(Harmonic{k: 100.0, x0: 1.1}));
         assert_eq!(universe.angle_potentials(0, 0, 0).len(), 1);
 
-        universe.add_dihedral_interaction("He", "He", "He", "He", CosineHarmonic::new(0.3, 2.0));
+        universe.add_dihedral_interaction("He", "He", "He", "He", Box::new(CosineHarmonic::new(0.3, 2.0)));
         assert_eq!(universe.dihedral_potentials(0, 0, 0, 0).len(), 1);
     }
 
