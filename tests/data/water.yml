@@ -1,0 +1,19 @@
+pairs:
+  - atoms: [O, O]
+    type: LennardJones
+    sigma: 3.2 A
+    epsilon: 0.2583 kcal/mol
+  - atoms: [O, H]
+    type: NullPotential
+  - atoms: [H, H]
+    type: "null"
+bonds:
+  - atoms: [O, H]
+    type: Harmonic
+    x0: 1.1 A
+    k: 390.0 kcal/mol/A^2
+angles:
+  - atoms: [H, O, H]
+    type: Harmonic
+    x0: 109.5 deg
+    k: 70.0 kcal/mol/rad^2

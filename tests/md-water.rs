@@ -11,6 +11,8 @@
 extern crate cymbalum;
 use self::cymbalum::*;
 
+use std::path::Path;
+
 fn setup() -> (Simulation, Universe) {
     let mut universe = Universe::from_cell(UnitCell::cubic(7.0));
 
@@ -36,29 +38,9 @@ fn setup() -> (Simulation, Universe) {
         topology.add_bond(3*i, 3*i + 2);
     }
 
-    universe.add_pair_interaction("O", "O",
-        Box::new(LennardJones{
-            sigma: units::from(3.2, "A").unwrap(),
-            epsilon: units::from(0.2583, "kcal/mol").unwrap()
-        })
-    );
-
-    universe.add_pair_interaction("O", "H", Box::new(NullPotential));
-    universe.add_pair_interaction("H", "H", Box::new(NullPotential));
-
-    universe.add_bond_interaction("O", "H",
-        Box::new(Harmonic{
-            x0: units::from(1.1, "A").unwrap(),
-            k: units::from(390.0, "kcal/mol/A^2").unwrap()
-        })
-    );
-
-    universe.add_angle_interaction("H", "O", "H",
-        Box::new(Harmonic{
-            x0: units::from(109.5, "deg").unwrap(),
-            k: units::from(70.0, "kcal/mol/rad^2").unwrap()
-        })
-    );
+    let data_dir = Path::new(file!()).parent().unwrap();
+    let potentials = data_dir.join("data").join("water.yml");
+    input::read_potentials(&mut universe, potentials).unwrap();
 
     let mut velocities = BoltzmanVelocities::new(units::from(300.0, "K").unwrap());
     velocities.init(&mut universe);
