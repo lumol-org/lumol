@@ -87,6 +87,8 @@ fn conversion_factors() -> HashMap<&'static str, f64> {
 pub enum UnitParsingError {
     /// Error while parsing a power in `x^y` expressions
     PowerParsingError(num::ParseIntError),
+    /// Error while parsing the value part of an unit string
+    ValueParsingError(num::ParseFloatError),
     /// Parentheses are not balanced in this unit
     UnbalancedParentheses{
         /// The full unit that created this error
@@ -110,10 +112,17 @@ impl From<num::ParseIntError> for UnitParsingError {
     }
 }
 
+impl From<num::ParseFloatError> for UnitParsingError {
+    fn from(err: num::ParseFloatError) -> UnitParsingError {
+        UnitParsingError::ValueParsingError(err)
+    }
+}
+
 impl fmt::Display for UnitParsingError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
             UnitParsingError::PowerParsingError(ref err) => err.fmt(f),
+            UnitParsingError::ValueParsingError(ref err) => err.fmt(f),
             UnitParsingError::UnbalancedParentheses{ref unit} => write!(f, "Parentheses are not equilibrated in unit: {}.", unit),
             UnitParsingError::BadBinary{ref op} => write!(f, "Bad binary operator {}.", op),
             UnitParsingError::NotFound{ref unit} => write!(f, "Unit '{}' not found.", unit),
@@ -125,6 +134,7 @@ impl Error for UnitParsingError {
     fn description(&self) -> &str {
         match *self {
             UnitParsingError::PowerParsingError(ref err) => err.description(),
+            UnitParsingError::ValueParsingError(ref err) => err.description(),
             UnitParsingError::UnbalancedParentheses{unit: _} => "Parentheses are not equilibrated.",
             UnitParsingError::BadBinary{op: _} => "Bad binary operator.",
             UnitParsingError::NotFound{unit: _} => "Unit not found.",
@@ -208,13 +218,25 @@ fn conversion<'a>(unit: &'a str) -> Result<f64, UnitParsingError> {
 /// let internal = from(1.0, "kJ/mol");
 /// assert!(internal == 1000.0);
 /// ```
-pub fn from<'a>(val: f64, unit: &'a str) -> Result<f64, UnitParsingError> {
-    let factor = match conversion(unit) {
-        Ok(f) => f,
-        Err(err) => {
-            return Err(err);
-        }
-    };
+pub fn from(val: f64, unit: &str) -> Result<f64, UnitParsingError> {
+    let factor = try!(conversion(unit));
+    return Ok(factor * val);
+}
+
+/// Parse the string `val` and convert it to the corresponding internal unit
+///
+/// ```
+/// let internal = from_str("10 A");
+/// assert!(internal == 10.0);
+///
+/// let internal = from("1 kJ/mol");
+/// assert!(internal == 1000.0);
+/// ```
+pub fn from_str(val: &str) -> Result<f64, UnitParsingError> {
+    let unit = val.split_whitespace().skip(1).collect::<Vec<&str>>().join(" ");
+    let factor = try!(conversion(&unit));
+    let val: &str = val.split_whitespace().take(1).collect::<Vec<&str>>()[0];
+    let val: f64 = try!(val.parse());
     return Ok(factor * val);
 }
 
@@ -227,13 +249,8 @@ pub fn from<'a>(val: f64, unit: &'a str) -> Result<f64, UnitParsingError> {
 /// let real = to(1e-4, "kJ/mol");
 /// assert!(internal == 1.0);
 /// ```
-pub fn to<'a>(val: f64, unit: &'a str) -> Result<f64, UnitParsingError> {
-    let factor = match conversion(unit) {
-        Ok(f) => f,
-        Err(err) => {
-            return Err(err);
-        }
-    };
+pub fn to(val: f64, unit: &str) -> Result<f64, UnitParsingError> {
+    let factor = try!(conversion(unit));
     return Ok(val / factor);
 }
 
@@ -249,11 +266,18 @@ mod test {
         assert_eq!(from(10.0, "pm").ok(), Some(0.1));
         assert_eq!(from(10.0, "nm").ok(), Some(100.0));
 
+        assert_eq!(from_str("10.0 A").ok(), Some(10.0));
+        assert_eq!(from_str("10 A").ok(), Some(10.0));
+        assert_eq!(from_str("1e1 A").ok(), Some(10.0));
+        assert_eq!(from_str("10").ok(), Some(10.0));
+
         // Parse stuff
         assert_eq!(from(10.0, "bohr/fs").ok(), Some(10.0*0.52917720859));
         assert_eq!(from(10.0, "kJ/mol/A^2").ok(), Some(0.0010000000007002099));
         assert_eq!(from(10.0, "(Ry / rad^-3   )").ok(), Some(1.3127498789124938));
         assert_eq!(from(10.0, "bar/(m * fs^2)").ok(), Some(6.0221417942167636e-18));
+
+        assert_eq!(from_str("10 bar/(m * fs^2)").ok(), Some(6.0221417942167636e-18));
 
         // Test the 'to' function too
         assert_eq!(to(25.0, "m").ok(), Some(2.5e-9));
@@ -265,7 +289,11 @@ mod test {
     fn errors() {
         assert!(from(10.0, "(bar/m").is_err());
         assert!(from(10.0, "m^4-8").is_err());
+        assert!(from(10.0, "m^z4").is_err());
         assert!(from(10.0, "m/K)").is_err());
         assert!(from(10.0, "HJK").is_err());
+
+        assert!(from_str("10a.0 bar").is_err());
+        assert!(from_str("h10").is_err());
     }
 }
