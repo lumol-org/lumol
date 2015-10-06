@@ -9,13 +9,13 @@
 
 use super::PotentialFunction;
 
-/// A `PotentialComputation` is a way to compute a potential.
-pub trait PotentialComputation {
-    /// Compute the energy value at `r`
-    fn energy(&self, r: f64) -> f64;
+/// A `Computation` is a way to compute a potential.
+pub trait Computation {
+    /// Compute the compute_energy value at `r`
+    fn compute_energy(&self, r: f64) -> f64;
 
-    /// Compute the force value at `r`
-    fn force(&self, r: f64) -> f64;
+    /// Compute the compute_force value at `r`
+    fn compute_force(&self, r: f64) -> f64;
 }
 
 /******************************************************************************/
@@ -33,20 +33,20 @@ impl DirectComputation {
     }
 }
 
-impl PotentialComputation for DirectComputation {
+impl Computation for DirectComputation {
     #[inline]
-    fn energy(&self, r: f64) -> f64 {
+    fn compute_energy(&self, r: f64) -> f64 {
         return self.potential.energy(r);
     }
 
     #[inline]
-    fn force(&self, r: f64) -> f64 {
+    fn compute_force(&self, r: f64) -> f64 {
         return self.potential.force(r);
     }
 }
 
 /******************************************************************************/
-/// Direct computation of the potential with a cutoff applied. The energy is
+/// Direct computation of the potential with a cutoff applied. The compute_energy is
 /// shifted to ensure `E(rc) = 0`, where `rc` is the cutoff distance.
 pub struct CutoffComputation {
     /// Potential to compute
@@ -66,9 +66,9 @@ impl CutoffComputation {
     }
 }
 
-impl PotentialComputation for CutoffComputation {
+impl Computation for CutoffComputation {
     #[inline]
-    fn energy(&self, r: f64) -> f64 {
+    fn compute_energy(&self, r: f64) -> f64 {
         if r > self.cutoff {
             return 0.0;
         } else {
@@ -77,7 +77,7 @@ impl PotentialComputation for CutoffComputation {
     }
 
     #[inline]
-    fn force(&self, r: f64) -> f64 {
+    fn compute_force(&self, r: f64) -> f64 {
         if r > self.cutoff {
             return 0.0;
         } else {
@@ -98,13 +98,13 @@ pub struct TableComputation {
 
     /// Number of tabulated values
     N: usize,
-    /// Step for tabulated value. energy[i]/force[i] contains energy/force at
+    /// Step for tabulated value. compute_energy[i]/compute_force[i] contains compute_energy/compute_force at
     /// r = i * delta
     delta: f64,
     /// Tabulated potential
-    energy: Vec<f64>,
-    /// Tabulated force
-    force: Vec<f64>,
+    compute_energy: Vec<f64>,
+    /// Tabulated compute_force
+    compute_force: Vec<f64>,
 }
 
 
@@ -114,35 +114,35 @@ impl TableComputation {
     pub fn new(potential: Box<PotentialFunction>, N: usize, max:f64) -> TableComputation {
         let delta = max/(N as f64);
         let dE = potential.energy(max);
-        let mut energy = Vec::with_capacity(N);
-        let mut force = Vec::with_capacity(N);
+        let mut compute_energy = Vec::with_capacity(N);
+        let mut compute_force = Vec::with_capacity(N);
         for i in 0..N {
             let pos = i as f64 * delta;
-            energy.push(potential.energy(pos) - dE);
-            force.push(potential.force(pos));
+            compute_energy.push(potential.energy(pos) - dE);
+            compute_force.push(potential.force(pos));
         }
-        TableComputation{N: N, delta: delta, energy: energy, force: force}
+        TableComputation{N: N, delta: delta, compute_energy: compute_energy, compute_force: compute_force}
     }
 }
 
-impl PotentialComputation for TableComputation {
-    fn energy(&self, r: f64) -> f64 {
+impl Computation for TableComputation {
+    fn compute_energy(&self, r: f64) -> f64 {
         let bin = f64::floor(r / self.delta) as usize;
         if bin < self.N - 1 {
             let dx = r - (bin as f64)*self.delta;
-            let slope = (self.energy[bin + 1] - self.energy[bin])/self.delta;
-            return self.energy[bin] + dx*slope;
+            let slope = (self.compute_energy[bin + 1] - self.compute_energy[bin])/self.delta;
+            return self.compute_energy[bin] + dx*slope;
         } else {
             return 0.0;
         }
     }
 
-    fn force(&self, r: f64) -> f64 {
+    fn compute_force(&self, r: f64) -> f64 {
         let bin = f64::floor(r / self.delta) as usize;
         if bin < self.N - 1 {
             let dx = r - (bin as f64)*self.delta;
-            let slope = (self.force[bin + 1] - self.force[bin])/self.delta;
-            return self.force[bin] + dx*slope;
+            let slope = (self.compute_force[bin + 1] - self.compute_force[bin])/self.delta;
+            return self.compute_force[bin] + dx*slope;
         } else {
             return 0.0;
         }
@@ -161,29 +161,29 @@ mod test {
     fn direct() {
         let direct = DirectComputation::new(Box::new(Harmonic{k: 50.0, x0: 2.0}));
 
-        assert_eq!(direct.force(2.5), -25.0);
-        assert_eq!(direct.energy(2.5), 6.25);
+        assert_eq!(direct.compute_force(2.5), -25.0);
+        assert_eq!(direct.compute_energy(2.5), 6.25);
     }
 
     #[test]
     fn cutoff() {
         let cutoff = CutoffComputation::new(Box::new(Harmonic{k: 50.0, x0: 2.0}), 4.0);
 
-        assert_eq!(cutoff.force(2.5), -25.0);
-        assert_eq!(cutoff.energy(2.5), -93.75);
+        assert_eq!(cutoff.compute_force(2.5), -25.0);
+        assert_eq!(cutoff.compute_energy(2.5), -93.75);
 
-        assert_eq!(cutoff.force(4.1), 0.0);
-        assert_eq!(cutoff.energy(4.1), 0.0);
+        assert_eq!(cutoff.compute_force(4.1), 0.0);
+        assert_eq!(cutoff.compute_energy(4.1), 0.0);
     }
 
     #[test]
     fn table() {
         let table = TableComputation::new(Box::new(Harmonic{k: 50.0, x0: 2.0}), 1000, 4.0);
 
-        assert_eq!(table.force(2.5), -25.0);
-        assert_eq!(table.energy(2.5), -93.75);
+        assert_eq!(table.compute_force(2.5), -25.0);
+        assert_eq!(table.compute_energy(2.5), -93.75);
 
-        assert_eq!(table.force(4.1), 0.0);
-        assert_eq!(table.energy(4.1), 0.0);
+        assert_eq!(table.compute_force(4.1), 0.0);
+        assert_eq!(table.compute_energy(4.1), 0.0);
     }
 }

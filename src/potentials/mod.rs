@@ -19,5 +19,5 @@ pub use self::functions::{PairPotential, AnglePotential, DihedralPotential};
 pub use self::functions::{NullPotential, LennardJones, Harmonic, CosineHarmonic};
 
 pub mod computations;
-pub use self::computations::PotentialComputation;
+pub use self::computations::Computation;
 pub use self::computations::{DirectComputation, TableComputation, CutoffComputation};
