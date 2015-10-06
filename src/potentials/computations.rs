@@ -45,7 +45,7 @@ impl<P> DihedralPotential for P where P: Computation<Potential = DihedralPotenti
 /// shifted to ensure `E(rc) = 0`, where `rc` is the cutoff distance.
 pub struct CutoffComputation {
     /// Potential to compute
-    potential: Box<PotentialFunction>,
+    potential: Box<PairPotential>,
     /// Cutoff distance
     cutoff: f64,
     /// Energy at cutoff
@@ -55,7 +55,7 @@ pub struct CutoffComputation {
 impl CutoffComputation {
     /// Create a new `CutoffComputation` for `potential`, with cutoff distance
     /// of `cutoff`.
-    pub fn new(potential: Box<PotentialFunction>, cutoff: f64) -> CutoffComputation {
+    pub fn new(potential: Box<PairPotential>, cutoff: f64) -> CutoffComputation {
         let delta = potential.energy(cutoff);
         CutoffComputation{potential: potential, cutoff: cutoff, delta: delta}
     }
@@ -107,7 +107,7 @@ pub struct TableComputation {
 impl TableComputation {
     /// Create a new `TableComputation` for `potential`, with `N` points and a
     /// maximum value of `max`.
-    pub fn new(potential: Box<PotentialFunction>, N: usize, max:f64) -> TableComputation {
+    pub fn new(potential: Box<PairPotential>, N: usize, max:f64) -> TableComputation {
         let delta = max/(N as f64);
         let dE = potential.energy(max);
         let mut compute_energy = Vec::with_capacity(N);
