@@ -20,4 +20,4 @@ pub use self::functions::{NullPotential, LennardJones, Harmonic, CosineHarmonic}
 
 pub mod computations;
 pub use self::computations::Computation;
-pub use self::computations::{DirectComputation, TableComputation, CutoffComputation};
+pub use self::computations::{TableComputation, CutoffComputation};

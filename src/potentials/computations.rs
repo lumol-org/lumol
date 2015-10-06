@@ -5,45 +5,40 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
 
-//! Pair potentials computation
+//! Potentials computation.
+//!
+//! A potential computation is a way of computing a potential given its
+//! expression (represented by a `PotentialFunction`). The same potential can be
+//! computed either direcly, or using a cutoff, or by a table interpolation, ...
 
-use super::PotentialFunction;
+use super::{PotentialFunction, PairPotential, AnglePotential, DihedralPotential};
 
 /// A `Computation` is a way to compute a potential.
-pub trait Computation {
-    /// Compute the compute_energy value at `r`
+pub trait Computation: Sized {
+    /// Kind of potential we can apply this computation to
+    type Potential: ?Sized + PotentialFunction;
+
+    /// Compute the energy value at `r`
     fn compute_energy(&self, r: f64) -> f64;
 
-    /// Compute the compute_force value at `r`
+    /// Compute the force value at `r`
     fn compute_force(&self, r: f64) -> f64;
 }
 
-/******************************************************************************/
-/// Direct computation of a potential, delegating to the underlying
-/// `PotentialFunction` all the computations.
-pub struct DirectComputation{
-    /// Potential to compute
-    potential: Box<PotentialFunction>
-}
+impl<P: Computation> PotentialFunction for P {
+    #[inline] fn energy(&self, r:f64) -> f64 {
+        self.compute_energy(r)
+    }
 
-impl DirectComputation {
-    /// Create a new DirectComputation for the given `potential`.
-    pub fn new(potential: Box<PotentialFunction>) -> DirectComputation {
-        DirectComputation{potential: potential}
+    #[inline] fn force(&self, r:f64) -> f64 {
+        self.compute_energy(r)
     }
 }
 
-impl Computation for DirectComputation {
-    #[inline]
-    fn compute_energy(&self, r: f64) -> f64 {
-        return self.potential.energy(r);
-    }
-
-    #[inline]
-    fn compute_force(&self, r: f64) -> f64 {
-        return self.potential.force(r);
-    }
-}
+// FIXME: use the custom implementation of virial here if any
+impl<P> PairPotential for P where P: Computation<Potential = PairPotential>{}
+impl<P> AnglePotential for P where P: Computation<Potential = AnglePotential>{}
+impl<P> DihedralPotential for P where P: Computation<Potential = DihedralPotential>{}
 
 /******************************************************************************/
 /// Direct computation of the potential with a cutoff applied. The compute_energy is
@@ -67,6 +62,7 @@ impl CutoffComputation {
 }
 
 impl Computation for CutoffComputation {
+    type Potential = PairPotential;
     #[inline]
     fn compute_energy(&self, r: f64) -> f64 {
         if r > self.cutoff {
@@ -126,6 +122,7 @@ impl TableComputation {
 }
 
 impl Computation for TableComputation {
+    type Potential = PairPotential;
     fn compute_energy(&self, r: f64) -> f64 {
         let bin = f64::floor(r / self.delta) as usize;
         if bin < self.N - 1 {
@@ -155,15 +152,6 @@ impl Computation for TableComputation {
 mod test {
     use super::*;
     use ::potentials::Harmonic;
-
-
-    #[test]
-    fn direct() {
-        let direct = DirectComputation::new(Box::new(Harmonic{k: 50.0, x0: 2.0}));
-
-        assert_eq!(direct.compute_force(2.5), -25.0);
-        assert_eq!(direct.compute_energy(2.5), 6.25);
-    }
 
     #[test]
     fn cutoff() {
