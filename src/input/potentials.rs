@@ -21,7 +21,6 @@ trait FromYaml where Self: Sized {
 }
 
 // TODO: Add support for * in atoms sections.
-// TODO: Add support for computation section
 
 /// Read a interactions from a Yaml file at `path`, and add these interactions
 /// to the `universe`.
@@ -34,6 +33,18 @@ trait FromYaml where Self: Sized {
 ///     type: LennardJones
 ///     sigma: 3.4 A
 ///     epsilon: 0.45 kJ/mol
+///     # computations specification is optional
+///     computation:
+///       type: table
+///       numpoints: 5000
+///       max: 20.0 A
+///   - atoms: [He, Ar]
+///     type: LennardJones
+///     sigma: 3.8 A
+///     epsilon: 0.67 kJ/mol
+///     computation:
+///       type: cutoff
+///       cutoff: 10 A
 ///   - atoms: [He, Ar]
 ///     type: NullPotential
 /// bond: # Bonded atoms pairs
@@ -111,7 +122,12 @@ fn read_pairs(universe: &mut Universe, pairs: &Vec<Yaml>, pair_potentials: bool)
             }
         };
 
-        let potential = try!(read_pair_potential(potential));
+        let potential = if potential["computation"].as_hash().is_some() {
+            try!(read_pair_computation(potential))
+        } else {
+            try!(read_pair_potential(potential))
+        };
+
         if pair_potentials {
             universe.add_pair_interaction(a, b, potential);
         } else {
@@ -124,7 +140,7 @@ fn read_pairs(universe: &mut Universe, pairs: &Vec<Yaml>, pair_potentials: bool)
 fn read_pair_potential(node: &Yaml) -> Result<Box<PairPotential>> {
     match node["type"].as_str() {
         None => {
-            return Err(Error::from("Missing 'type' section in pair potential"));
+            Err(Error::from("Missing 'type' section in pair potential"))
         }
         Some(val) => {
             let val: &str = &val.to_lowercase();
@@ -171,9 +187,9 @@ fn read_angles(universe: &mut Universe, angles: &Vec<Yaml>) -> Result<()> {
 fn read_angle_potential(node: &Yaml) -> Result<Box<AnglePotential>> {
     match node["type"].as_str() {
         None => {
-            return Err(Error::from(
+            Err(Error::from(
                 format!("Missing 'type' section in: {:?}", node)
-            ));
+            ))
         }
         Some(val) => {
             let val: &str = &val.to_lowercase();
@@ -220,9 +236,9 @@ fn read_dihedrals(universe: &mut Universe, dihedrals: &Vec<Yaml>) -> Result<()> 
 fn read_dihedral_potential(node: &Yaml) -> Result<Box<DihedralPotential>> {
     match node["type"].as_str() {
         None => {
-            return Err(Error::from(
+            Err(Error::from(
                 format!("Missing 'type' section in: {:?}", node)
-            ));
+            ))
         }
         Some(val) => {
             let val: &str = &val.to_lowercase();
@@ -283,6 +299,59 @@ impl FromYaml for CosineHarmonic {
         } else {
             Err(
                 Error::from("Missing 'k' or 'x0' in cosine harmonic potential")
+            )
+        }
+    }
+}
+
+/******************************************************************************/
+
+fn read_pair_computation(node: &Yaml) -> Result<Box<PairPotential>> {
+    let pot = try!(read_pair_potential(node));
+    match node["type"].as_str() {
+        None => {
+            Err(Error::from(
+                format!("Missing 'type' section for potential computation in: {:?}", node)
+            ))
+        }
+        Some(val) => {
+            let val: &str = &val.to_lowercase();
+            match val {
+                "cutoff" => Ok(Box::new(try!(CutoffComputation::from_yaml(node, pot)))),
+                //"table" => Ok(Box::new(try!(TableComputation::from_yaml(node, pot)))),
+                val => Err(
+                    Error::from(format!("Unknown computation type '{}'", val))
+                ),
+            }
+        }
+    }
+}
+
+trait FromYamlWithPairPotential where Self: Sized {
+    fn from_yaml(node: &Yaml, potential: Box<PairPotential>) -> Result<Self>;
+}
+
+impl FromYamlWithPairPotential for CutoffComputation {
+    fn from_yaml(node: &Yaml, potential: Box<PairPotential>) -> Result<CutoffComputation> {
+        if let Some(cutoff) = node["cutoff"].as_str() {
+            let cutoff = try!(::units::from_str(cutoff));
+            Ok(CutoffComputation::new(potential, cutoff))
+        } else {
+            Err(
+                Error::from("Missing 'cutoff' value in cutoff computation")
+            )
+        }
+    }
+}
+
+impl FromYamlWithPairPotential for TableComputation {
+    fn from_yaml(node: &Yaml, potential: Box<PairPotential>) -> Result<TableComputation> {
+        if let (Some(n), Some(max)) = (node["max"].as_i64(), node["max"].as_str()) {
+            let max = try!(::units::from_str(max));
+            Ok(TableComputation::new(potential, n as usize, max))
+        } else {
+            Err(
+                Error::from("Missing 'cutoff' value in cutoff computation")
             )
         }
     }
