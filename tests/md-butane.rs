@@ -16,12 +16,12 @@ use std::sync::{Once, ONCE_INIT};
 static START: Once = ONCE_INIT;
 
 fn setup_universe() -> Universe {
-    let data_dir = Path::new(file!()).parent().unwrap();
-    let configuration = data_dir.join("data").join("methane.xyz");
+    let data_dir = Path::new(file!()).parent().unwrap().join("data");
+    let configuration = data_dir.join("butane.xyz");
     let mut universe = Universe::from_file_auto_bonds(configuration.to_str().unwrap()).unwrap();
     universe.set_cell(UnitCell::cubic(20.0));
 
-    let interactions = data_dir.join("data").join("methane.yml");
+    let interactions = data_dir.join("butane.yml");
     input::read_interactions(&mut universe, interactions).unwrap();
 
     let mut velocities = BoltzmanVelocities::new(units::from(300.0, "K").unwrap());
@@ -34,12 +34,12 @@ fn setup_universe() -> Universe {
 fn bonds_detection() {
     START.call_once(|| {Logger::stdout();});
     let universe = setup_universe();
-    assert_eq!(universe.molecules().len(), 150);
+    assert_eq!(universe.molecules().len(), 50);
 
     for molecule in universe.molecules() {
-        assert_eq!(molecule.bonds().len(), 4);
-        assert_eq!(molecule.angles().len(), 6);
-        assert_eq!(molecule.dihedrals().len(), 0);
+        assert_eq!(molecule.bonds().len(), 3);
+        assert_eq!(molecule.angles().len(), 2);
+        assert_eq!(molecule.dihedrals().len(), 1);
     }
 }
 
@@ -53,7 +53,7 @@ fn constant_energy() {
     );
 
     let E_initial = universe.total_energy();
-    simulation.run(&mut universe, 500);
+    simulation.run(&mut universe, 1000);
     let E_final = universe.total_energy();
-    assert!(f64::abs((E_initial - E_final)/E_final) < 1e-2);
+    assert!(f64::abs((E_initial - E_final)/E_final) < 1e-3);
 }
