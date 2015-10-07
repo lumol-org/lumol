@@ -18,7 +18,7 @@ use std::path::Path;
 
 fn get_universe() -> Universe {
     let data_dir = Path::new(file!()).parent().unwrap();
-    let configuration = data_dir.join("data").join("Helium.xyz");
+    let configuration = data_dir.join("data").join("helium.xyz");
     let mut universe = Universe::from_file(configuration.to_str().unwrap()).unwrap();
     universe.set_cell(UnitCell::cubic(10.0));
     universe.add_pair_interaction("He", "He",
