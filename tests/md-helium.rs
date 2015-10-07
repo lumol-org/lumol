@@ -21,6 +21,14 @@ fn get_universe() -> Universe {
     let configuration = data_dir.join("data").join("helium.xyz");
     let mut universe = Universe::from_file(configuration.to_str().unwrap()).unwrap();
     universe.set_cell(UnitCell::cubic(10.0));
+
+    let mut velocities = BoltzmanVelocities::new(units::from(300.0, "K").unwrap());
+    velocities.init(&mut universe);
+    return universe;
+}
+
+fn get_universe_with_interaction() -> Universe {
+    let mut universe = get_universe();
     universe.add_pair_interaction("He", "He",
         Box::new(LennardJones{
             sigma: units::from(2.0, "A").unwrap(),
@@ -28,33 +36,29 @@ fn get_universe() -> Universe {
         })
     );
 
-    let mut velocities = BoltzmanVelocities::new(units::from(300.0, "K").unwrap());
-    velocities.init(&mut universe);
     return universe;
 }
 
 #[test]
 fn constant_energy_velocity_verlet() {
     START.call_once(|| {Logger::stdout();});
-    let mut universe = get_universe();
+    let mut universe = get_universe_with_interaction();
     let mut simulation = Simulation::new(
         MolecularDynamics::from_integrator(
             VelocityVerlet::new(units::from(1.0, "fs").unwrap())
         )
     );
-
     let E_initial = universe.total_energy();
     simulation.run(&mut universe, 1000);
     let E_final = universe.total_energy();
-
-    assert!(f64::abs(E_initial - E_final) < 1e-5);
+    assert!(f64::abs(E_initial - E_final)/E_final < 1e-3);
 }
 
 
 #[test]
 fn constant_energy_verlet() {
     START.call_once(|| {Logger::stdout();});
-    let mut universe = get_universe();
+    let mut universe = get_universe_with_interaction();
     let mut simulation = Simulation::new(
         MolecularDynamics::from_integrator(
             Verlet::new(units::from(1.0, "fs").unwrap())
@@ -63,14 +67,14 @@ fn constant_energy_verlet() {
     let E_initial = universe.total_energy();
     simulation.run(&mut universe, 1000);
     let E_final = universe.total_energy();
-    assert!(f64::abs(E_initial - E_final) < 1e-4);
+    assert!(f64::abs(E_initial - E_final)/E_final < 1e-2);
 }
 
 
 #[test]
 fn constant_energy_leap_frog() {
     START.call_once(|| {Logger::stdout();});
-    let mut universe = get_universe();
+    let mut universe = get_universe_with_interaction();
     let mut simulation = Simulation::new(
         MolecularDynamics::from_integrator(
             LeapFrog::new(units::from(1.0, "fs").unwrap())
@@ -79,13 +83,13 @@ fn constant_energy_leap_frog() {
     let E_initial = universe.total_energy();
     simulation.run(&mut universe, 1000);
     let E_final = universe.total_energy();
-    assert!(f64::abs(E_initial - E_final) < 1e-5);
+    assert!(f64::abs(E_initial - E_final)/E_final < 1e-3);
 }
 
 #[test]
 fn perfect_gaz() {
     START.call_once(|| {Logger::stdout();});
-    let mut universe = get_universe();
+    let mut universe = get_universe_with_interaction();
     let mut simulation = Simulation::new(
         MolecularDynamics::from_integrator(
             VelocityVerlet::new(units::from(1.0, "fs").unwrap())
@@ -111,7 +115,7 @@ fn perfect_gaz() {
 #[test]
 fn berendsen_barostat() {
     START.call_once(|| {Logger::stdout();});
-    let mut universe = get_universe();
+    let mut universe = get_universe_with_interaction();
     let mut md = MolecularDynamics::from_integrator(
         BerendsenBarostat::with_timestep(
             units::from(1.0, "fs").unwrap(),
@@ -128,4 +132,64 @@ fn berendsen_barostat() {
 
     assert!(f64::abs(P - units::from(5000.0, "bar").unwrap())/P < 8e-2);
     assert!(f64::abs(T - units::from(300.0, "K").unwrap())/T < 1e-2);
+}
+
+#[test]
+fn cutoff_computation() {
+    START.call_once(|| {Logger::stdout();});
+    let mut universe = get_universe();
+
+    universe.add_pair_interaction("He", "He",
+        Box::new(CutoffComputation::new(
+            Box::new(LennardJones{
+                sigma: units::from(2.0, "A").unwrap(),
+                epsilon: units::from(0.2, "kJ/mol").unwrap()
+            }),
+            units::from(7.0, "A").unwrap()
+        ))
+    );
+
+    let mut simulation = Simulation::new(
+        MolecularDynamics::from_integrator(
+            VelocityVerlet::new(units::from(1.0, "fs").unwrap())
+        )
+    );
+    simulation.run(&mut universe, 100);
+
+    let E_initial = universe.total_energy();
+    simulation.run(&mut universe, 1000);
+    let E_final = universe.total_energy();
+    println!("{}", f64::abs(E_initial - E_final)/E_final);
+    assert!(f64::abs(E_initial - E_final)/E_final < 2e-1);
+}
+
+
+#[test]
+fn table_computation() {
+    START.call_once(|| {Logger::stdout();});
+    let mut universe = get_universe();
+
+    universe.add_pair_interaction("He", "He",
+        Box::new(TableComputation::new(
+            Box::new(LennardJones{
+                sigma: units::from(2.0, "A").unwrap(),
+                epsilon: units::from(0.2, "kJ/mol").unwrap()
+            }),
+            1000,
+            units::from(7.0, "A").unwrap()
+        ))
+    );
+
+    let mut simulation = Simulation::new(
+        MolecularDynamics::from_integrator(
+            VelocityVerlet::new(units::from(1.0, "fs").unwrap())
+        )
+    );
+    simulation.run(&mut universe, 100);
+
+    let E_initial = universe.total_energy();
+    simulation.run(&mut universe, 1000);
+    let E_final = universe.total_energy();
+    println!("{}", f64::abs(E_initial - E_final)/E_final);
+    assert!(f64::abs(E_initial - E_final)/E_final < 2e-1);
 }
