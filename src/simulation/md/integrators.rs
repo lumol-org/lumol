@@ -230,3 +230,90 @@ impl Integrator for BerendsenBarostat {
         }
     }
 }
+
+/******************************************************************************/
+/// Anisotropic Berendsen barostat integrator based on velocity-Verlet. This one
+/// neither reversible nor symplectic.
+pub struct AnisoBerendsenBarostat {
+    /// Timestep for the integrator
+    timestep: f64,
+    /// Target stress matrix for the barostat
+    stress: Matrix3,
+    /// Barostat timestep, expressed in units of the main timestep.
+    baro_timestep: f64,
+    /// Storing the accelerations
+    accelerations: Vec<Vector3D>,
+    /// Storing the scaling factor
+    eta: Matrix3,
+}
+
+impl AnisoBerendsenBarostat {
+    /// Create a new anisotropic Berendsen barostat with an integration timestep
+    /// of `timestep`, and a target stress matrix of `stress`. The barostat
+    /// timestep is 1000.
+    pub fn new(timestep: f64, stress: Matrix3) -> AnisoBerendsenBarostat {
+        AnisoBerendsenBarostat{
+            timestep: timestep,
+            stress: stress,
+            baro_timestep: 1000.0,
+            accelerations: Vec::new(),
+            eta: Matrix3::one(),
+        }
+    }
+
+    /// Create a new anisotropic Berendsen barostat with an integration timestep
+    /// of `timestep`, using an hydrostatic stress matrix corresponding to the
+    /// pressure `pressure`. The barostat timestep is 1000.
+    pub fn hydrostatic(timestep: f64, pressure: f64) -> AnisoBerendsenBarostat {
+        AnisoBerendsenBarostat::new(timestep, pressure * Matrix3::one())
+    }
+
+    /// Set the barostat timestep. It should be expressed in terms of the
+    /// integration timestep. With a barostat timestep of 1000 and an
+    /// integration timestep of `0.8 fs`, the effective barostat timestep will
+    /// be `800 fs`.
+    pub fn timestep(mut self, timestep: f64) -> AnisoBerendsenBarostat {
+        self.baro_timestep =  timestep;
+        return self;
+    }
+}
+
+impl Integrator for AnisoBerendsenBarostat {
+    fn setup(&mut self, universe: &Universe) {
+        self.accelerations = vec![Vector3D::new(0.0, 0.0, 0.0); universe.size()];
+    }
+
+    fn integrate(&mut self, universe: &mut Universe) {
+        let dt = self.timestep;
+
+        // Update velocities at t + ∆t/2 and positions at t + ∆t
+        for (i, part) in universe.iter_mut().enumerate() {
+            part.add_velocity(0.5 * dt * self.accelerations[i]);
+            let position = *part.position();
+            // Scale all positions
+            let position = self.eta * position;
+            let position = position + *part.velocity() * dt;
+            part.set_position(position);
+        }
+
+        universe.cell_mut().scale_mut(self.eta);
+
+        let factor = self.timestep * WATER_COMPRESSIBILITY / self.baro_timestep;
+        self.eta = Matrix3::one() - factor * (self.stress - universe.stress());
+
+        // Make the eta matrix symetric here
+        for i in 0..3 {
+            for j in 0..i {
+                self.eta[(i, j)] = 0.5 * (self.eta[(i, j)] + self.eta[(j, i)]);
+                self.eta[(j, i)] = self.eta[(i, j)];
+            }
+        }
+
+        let forces = Forces.compute(&universe);
+        // Update accelerations at t + ∆t and velocities at t + ∆t
+        for (i, part) in universe.iter_mut().enumerate() {
+            self.accelerations[i] = forces[i] / part.mass();
+            part.add_velocity(0.5 * dt * self.accelerations[i]);
+        }
+    }
+}
