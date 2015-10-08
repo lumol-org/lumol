@@ -21,6 +21,8 @@ pub struct Particle {
     kind: u16,
     /// Particle mass
     mass: f64,
+    /// Particle charge
+    charge: f64,
     /// Particle positions
     position: Vector3D,
     /// Particle velocity, if needed
@@ -38,6 +40,7 @@ impl Particle {
         };
         Particle{name: name,
                  mass: mass as f64,
+                 charge: 0.0,
                  kind: u16::max_value(),
                  position: Vector3D::new(0.0, 0.0, 0.0),
                  velocity: Vector3D::new(0.0, 0.0, 0.0)}
@@ -72,6 +75,16 @@ impl Particle {
     /// Set the particle mass
     #[inline] pub fn set_mass(&mut self, mass: f64) {
         self.mass = mass;
+    }
+
+    /// Get the particle charge
+    #[inline] pub fn charge(&self) -> f64 {
+        self.charge
+    }
+
+    /// Set the particle charge
+    #[inline] pub fn set_charge(&mut self, charge: f64) {
+        self.charge = charge;
     }
 
     /// Get the particle position
@@ -129,6 +142,14 @@ mod tests {
         let mut part = Particle::new("O");
         part.set_mass(16.0);
         assert_eq!(part.mass(), 16.0);
+    }
+
+    #[test]
+    fn charge() {
+        let mut part = Particle::new("O");
+        assert_eq!(part.charge(), 0.0);
+        part.set_charge(-1.0);
+        assert_eq!(part.charge(), -1.0);
     }
 
     #[test]
