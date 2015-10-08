@@ -31,7 +31,7 @@ impl<P: Computation> PotentialFunction for P {
     }
 
     #[inline] fn force(&self, r:f64) -> f64 {
-        self.compute_energy(r)
+        self.compute_force(r)
     }
 }
 
