@@ -177,27 +177,27 @@ pub struct BerendsenBarostat {
 }
 
 impl BerendsenBarostat {
-    /// Create a new Berendsen barostat with a timestep of `timestep`, and a
-    /// target pressure of `pressure`. The barostat timestep is 1000.
+    /// Create a new Berendsen barostat with an integration timestep of
+    /// `timestep`, and a target pressure of `pressure`. The barostat timestep
+    /// is 1000.
     pub fn new(timestep: f64, pressure: f64) -> BerendsenBarostat {
-        BerendsenBarostat::with_timestep(timestep, pressure, 1000.0)
-    }
-
-    /// Create a new Berendsen barostat with a timestep of `timestep`, a
-    /// target pressure of `pressure` and a barostat timestep is of
-    /// `baro_timestep`. The barostat timestep is expressed in terms of the main
-    /// timestep. With `baro_timestep == 1000` and `timestep == 0.8 fs`, then
-    /// the effective barostat timestep will be `800 fs`.
-    pub fn with_timestep(timestep: f64, pressure: f64, baro_timestep: f64) -> BerendsenBarostat {
         BerendsenBarostat{
             timestep: timestep,
             pressure: pressure,
-            baro_timestep: baro_timestep,
+            baro_timestep: 1000.0,
             accelerations: Vec::new(),
             eta: 1.0,
         }
     }
 
+    /// Set the barostat timestep. It should be expressed in terms of the
+    /// integration timestep. With a barostat timestep of 1000 and an
+    /// integration timestep of `0.8 fs`, the effective barostat timestep will
+    /// be `800 fs`.
+    pub fn timestep(mut self, timestep: f64) -> BerendsenBarostat {
+        self.baro_timestep =  timestep;
+        return self;
+    }
 }
 
 impl Integrator for BerendsenBarostat {

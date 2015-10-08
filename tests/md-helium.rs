@@ -116,13 +116,10 @@ fn perfect_gaz() {
 fn berendsen_barostat() {
     START.call_once(|| {Logger::stdout();});
     let mut universe = get_universe_with_interaction();
-    let mut md = MolecularDynamics::from_integrator(
-        BerendsenBarostat::with_timestep(
-            units::from(1.0, "fs").unwrap(),
-            units::from(5000.0, "bar").unwrap(),
-            100.0
-        )
-    );
+    let barostat = BerendsenBarostat::new(units::from(1.0, "fs").unwrap(),
+                                          units::from(5000.0, "bar").unwrap()
+                                          ).timestep(100.0);
+    let mut md = MolecularDynamics::from_integrator(barostat);
     md.add_control(BerendsenThermostat::new(units::from(300.0, "K").unwrap(), 10.0));
     let mut simulation = Simulation::new(md);
 
