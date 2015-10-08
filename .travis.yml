@@ -24,9 +24,9 @@ install:
     - export CXX=g++-4.9
 
 script:
-    - travis-cargo build
-    - travis-cargo test
-    - travis-cargo bench
+    - cargo build
+    - cargo test --lib
+    - cargo test --release
     - travis-cargo --only stable doc
 after_success:
     - travis-cargo --only stable doc-upload
