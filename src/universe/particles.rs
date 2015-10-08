@@ -140,8 +140,9 @@ mod tests {
     #[test]
     fn mass() {
         let mut part = Particle::new("O");
-        part.set_mass(16.0);
-        assert_eq!(part.mass(), 16.0);
+        assert_eq!(part.mass(), 15.999f32 as f64);
+        part.set_mass(10.0);
+        assert_eq!(part.mass(), 10.0);
     }
 
     #[test]
