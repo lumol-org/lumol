@@ -159,8 +159,7 @@ fn cutoff_computation() {
     let E_initial = universe.total_energy();
     simulation.run(&mut universe, 1000);
     let E_final = universe.total_energy();
-    println!("{}", f64::abs(E_initial - E_final)/E_final);
-    assert!(f64::abs(E_initial - E_final)/E_final < 2e-1);
+    assert!(f64::abs(E_initial - E_final)/E_final < 1e-3);
 }
 
 
@@ -190,6 +189,5 @@ fn table_computation() {
     let E_initial = universe.total_energy();
     simulation.run(&mut universe, 1000);
     let E_final = universe.total_energy();
-    println!("{}", f64::abs(E_initial - E_final)/E_final);
-    assert!(f64::abs(E_initial - E_final)/E_final < 2e-1);
+    assert!(f64::abs(E_initial - E_final)/E_final < 1e-3);
 }
