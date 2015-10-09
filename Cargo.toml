@@ -15,6 +15,7 @@ doctest = false
 rand = "*"
 log = "*"
 yaml-rust = "*"
+special = "*"
 
 [dependencies.chemharp]
 git = "https://github.com/Luthaf/Chemharp.rs"

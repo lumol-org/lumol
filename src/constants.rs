@@ -4,7 +4,6 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-
 //! This module defines and export some usefull physical constants, expressed
 //! directly in the internal unit system.
 
@@ -14,3 +13,5 @@ pub const K_BOLTZMANN: f64 = 8.31446284161522e-7;
 pub const BOHR_RADIUS: f64 = 0.52917720859;
 /// Avogadro number
 pub const NA: f64 = 6.02214179e23;
+/// 4*pi*epsilon0
+pub const ELCC: f64 = 7.197589831304046;
