@@ -318,7 +318,7 @@ fn read_pair_computation(node: &Yaml) -> Result<Box<PairPotential>> {
             let val: &str = &val.to_lowercase();
             match val {
                 "cutoff" => Ok(Box::new(try!(CutoffComputation::from_yaml(node, pot)))),
-                //"table" => Ok(Box::new(try!(TableComputation::from_yaml(node, pot)))),
+                "table" => Ok(Box::new(try!(TableComputation::from_yaml(node, pot)))),
                 val => Err(
                     Error::from(format!("Unknown computation type '{}'", val))
                 ),
@@ -346,12 +346,12 @@ impl FromYamlWithPairPotential for CutoffComputation {
 
 impl FromYamlWithPairPotential for TableComputation {
     fn from_yaml(node: &Yaml, potential: Box<PairPotential>) -> Result<TableComputation> {
-        if let (Some(n), Some(max)) = (node["max"].as_i64(), node["max"].as_str()) {
+        if let (Some(n), Some(max)) = (node["n"].as_i64(), node["max"].as_str()) {
             let max = try!(::units::from_str(max));
             Ok(TableComputation::new(potential, n as usize, max))
         } else {
             Err(
-                Error::from("Missing 'cutoff' value in cutoff computation")
+                Error::from("Missing 'max' or 'n' value in cutoff computation")
             )
         }
     }
