@@ -79,6 +79,14 @@ impl Compute for Forces {
                 res[k] = res[k] + f * d4;
             }
         }
+
+        for global in universe.global_potentials() {
+            let forces = global.forces(&universe);
+            debug_assert!(forces.len() == natoms, "Wrong `forces` size in global potentials");
+            for (i, force) in forces.iter().enumerate() {
+                res[i] = res[i] + (*force);
+            }
+        }
         return res;
     }
 }
@@ -122,6 +130,10 @@ impl Compute for PotentialEnergy {
             for potential in universe.dihedral_potentials(i, j, k, m) {
                 energy += potential.energy(phi);
             }
+        }
+
+        for global in universe.global_potentials() {
+            energy += global.energy(&universe);
         }
 
         assert!(energy.is_finite(), "Potential energy is infinite!");
@@ -197,6 +209,11 @@ impl Compute for Virial {
 
         // FIXME: implement virial computations for molecular potentials
         // (angles & dihedrals)
+
+        for global in universe.global_potentials() {
+            res = res + global.virial(&universe);
+        }
+
         return res;
     }
 }

@@ -15,7 +15,7 @@ use std::slice;
 extern crate chemharp;
 use self::chemharp::{Trajectory, Frame};
 
-use ::potentials::{PairPotential, AnglePotential, DihedralPotential};
+use ::potentials::{PairPotential, AnglePotential, DihedralPotential, GlobalPotential};
 use ::types::{Vector3D, Matrix3};
 
 use super::Particle;
@@ -247,6 +247,11 @@ impl Universe {
         }
     }
 
+    /// Get all the global interactions
+    pub fn global_potentials(&self) -> &Vec<Box<GlobalPotential>> {
+        self.interactions.globals()
+    }
+
     /// Add a pair interaction between the particles with names `names`
     pub fn add_pair_interaction(&mut self, i: &str, j: &str, pot: Box<PairPotential>) {
         let ikind = self.get_kind(i);
@@ -280,6 +285,11 @@ impl Universe {
         let mkind = self.get_kind(m);
 
         self.interactions.add_dihedral(ikind, jkind, kkind, mkind, pot);
+    }
+
+    /// Add a global interaction to the universe
+    pub fn add_global_interaction(&mut self, potential: Box<GlobalPotential>) {
+        self.interactions.add_global(potential);
     }
 }
 
@@ -392,9 +402,9 @@ impl IndexMut<usize> for Universe {
 
 #[cfg(test)]
 mod tests {
-    use ::universe::*;
-    use ::types::*;
-    use ::potentials::*;
+    use universe::*;
+    use types::*;
+    use potentials::*;
 
     #[test]
     fn step() {
@@ -498,6 +508,9 @@ mod tests {
 
         universe.add_dihedral_interaction("He", "He", "He", "He", Box::new(CosineHarmonic::new(0.3, 2.0)));
         assert_eq!(universe.dihedral_potentials(0, 0, 0, 0).len(), 1);
+
+        universe.add_global_interaction(Box::new(Wolf::new(1.0)));
+        assert_eq!(universe.global_potentials().len(), 1);
     }
 
     #[test]

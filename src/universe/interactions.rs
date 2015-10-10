@@ -11,7 +11,7 @@
 use std::collections::BTreeMap;
 use std::cmp::max;
 
-use ::potentials::{PairPotential, AnglePotential, DihedralPotential};
+use ::potentials::{PairPotential, AnglePotential, DihedralPotential, GlobalPotential};
 
 /// The Interaction type hold all data about the potentials in the system,
 /// indexed by particle type.
@@ -24,6 +24,8 @@ pub struct Interactions {
     angles: BTreeMap<(u16, u16, u16), Vec<Box<AnglePotential>>>,
     /// Dihedral angles potentials
     dihedrals: BTreeMap<(u16, u16, u16, u16), Vec<Box<DihedralPotential>>>,
+    /// Global potentials
+    globals: Vec<Box<GlobalPotential>>,
 }
 
 impl Interactions {
@@ -33,6 +35,7 @@ impl Interactions {
             bonds: BTreeMap::new(),
             angles: BTreeMap::new(),
             dihedrals: BTreeMap::new(),
+            globals: Vec::new(),
         }
     }
 
@@ -99,6 +102,16 @@ impl Interactions {
         let (i, j, k, m) = sort_dihedral(i, j, k, m);
         self.dihedrals.get(&(i, j, k, m))
     }
+
+    /// Add a global interaction
+    pub fn add_global(&mut self, potential: Box<GlobalPotential>) {
+        self.globals.push(potential);
+    }
+
+    /// Get all global interactions
+    pub fn globals(&self) -> &Vec<Box<GlobalPotential>> {
+        &self.globals
+    }
 }
 
 /// Sort pair indexes to get a cannonical representation
@@ -132,7 +145,7 @@ impl Interactions {
 #[cfg(test)]
 mod test {
     use super::*;
-    use ::potentials::Harmonic;
+    use potentials::{Harmonic, Wolf};
 
     #[test]
     fn pairs() {
@@ -192,5 +205,12 @@ mod test {
 
         interactions.add_dihedral(42, 42, 42, 42, Box::new(Harmonic{x0: 0.0, k: 0.0}));
         assert_eq!(interactions.dihedrals(42, 42, 42, 42).unwrap().len(), 1);
+    }
+
+    #[test]
+    fn globals() {
+        let mut interactions = Interactions::new();
+        interactions.add_global(Box::new(Wolf::new(1.0)));
+        assert_eq!(interactions.globals().len(), 1);
     }
 }
