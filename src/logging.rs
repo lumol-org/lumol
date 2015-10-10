@@ -121,14 +121,14 @@ impl Log for Logger {
     fn log(&self, record: &LogRecord) {
         let mut out = self.writer.lock().ok().expect("Could not lock the logger.");
         let write_res = write!(
-            &mut out, "{}: {} at {}:{}",
+            &mut out, "{}: {} at {}:{}\n",
             record.level(), record.args(),
             record.location().file(), record.location().line()
         );
 
         if let Err(err) = write_res {
             let error_res = write!(& mut io::stderr(),
-                "Error while writing log: {:?}\nMessage was: {} at {}:{} ({})",
+                "Error while writing log: {:?}\nMessage was: {} at {}:{} ({})\n",
                 err, record.args(),
                 record.location().file(), record.location().line(),
                 record.level()
