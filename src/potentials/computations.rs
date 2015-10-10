@@ -151,7 +151,7 @@ impl Computation for TableComputation {
 #[cfg(test)]
 mod test {
     use super::*;
-    use ::potentials::Harmonic;
+    use potentials::Harmonic;
 
     #[test]
     fn cutoff() {

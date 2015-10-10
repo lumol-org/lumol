@@ -11,7 +11,7 @@
 use std::collections::BTreeMap;
 use std::cmp::max;
 
-use ::potentials::{PairPotential, AnglePotential, DihedralPotential, GlobalPotential};
+use potentials::{PairPotential, AnglePotential, DihedralPotential, GlobalPotential};
 
 /// The Interaction type hold all data about the potentials in the system,
 /// indexed by particle type.

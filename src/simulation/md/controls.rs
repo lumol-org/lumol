@@ -9,7 +9,7 @@
 //! simulation parameters: the temperature, the pressure, etc. This is the goal
 //! of the control algorithms, all implmenting of the `Control` trait.
 
-use ::universe::Universe;
+use universe::Universe;
 
 /// Trait for controling some parameters in an universe during a simulation.
 pub trait Control {
@@ -106,8 +106,8 @@ impl Control for BerendsenThermostat {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use ::universe::*;
-    use ::types::*;
+    use universe::*;
+    use types::*;
 
     fn testing_universe() -> Universe {
         let mut universe = Universe::from_cell(UnitCell::cubic(20.0));;

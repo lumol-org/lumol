@@ -5,9 +5,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
 
-use ::universe::Universe;
+use universe::Universe;
+use simulation::Propagator;
 
-use ::simulation::Propagator;
 use super::Integrator;
 use super::Control;
 use super::VelocityVerlet;

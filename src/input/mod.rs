@@ -15,7 +15,7 @@ use self::yaml::ScanError;
 use std::io;
 use std::result;
 
-use ::units::UnitParsingError;
+use units::UnitParsingError;
 
 #[derive(Debug)]
 /// Possible causes of error when reading potential files

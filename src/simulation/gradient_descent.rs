@@ -7,8 +7,8 @@
 
 //! Gradient-descent based energy minization.
 
-use ::units;
-use ::Universe;
+use units;
+use Universe;
 use super::Propagator;
 use super::{Compute, PotentialEnergy, Forces};
 
@@ -108,9 +108,9 @@ impl Propagator for GradientDescent {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use ::universe::*;
-    use ::types::*;
-    use ::potentials::*;
+    use universe::*;
+    use types::*;
+    use potentials::*;
     use super::super::Propagator;
 
     #[test]

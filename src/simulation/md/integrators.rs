@@ -5,9 +5,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
 
-use ::types::{Vector3D, Matrix3};
-use ::simulation::{Compute, Forces};
-use ::universe::Universe;
+use types::{Vector3D, Matrix3};
+use simulation::{Compute, Forces};
+use universe::Universe;
 
 /// The Integrator trait define integrators interface for Molecular Dynamics.
 /// An integrator is an algorithm responsible for propagating the equations of

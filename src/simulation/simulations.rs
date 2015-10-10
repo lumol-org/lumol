@@ -5,7 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
 
-use ::universe::Universe;
+use universe::Universe;
 
 use super::Propagator;
 use super::Output;

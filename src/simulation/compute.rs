@@ -7,9 +7,9 @@
 
 //! Computing properties of an universe
 
-use ::constants::K_BOLTZMANN;
-use ::types::*;
-use ::universe::Universe;
+use constants::K_BOLTZMANN;
+use types::{Matrix3, Vector3D};
+use universe::Universe;
 
 /// The compute trait allow to compute properties of an universe, whithout
 /// modifying this universe. The Output type is the type of the computed
@@ -265,11 +265,10 @@ impl Compute for Pressure {
 #[cfg(test)]
 mod test {
     use super::*;
-    use ::types::*;
-    use ::universe::{Universe, Particle, UnitCell};
-    use ::universe::{InitVelocities, BoltzmanVelocities};
-    use ::potentials::Harmonic;
-    use ::units;
+    use types::*;
+    use universe::*;
+    use potentials::Harmonic;
+    use units;
 
     const EPS : f64 = 1e-8;
 

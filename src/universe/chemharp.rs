@@ -8,9 +8,9 @@
 //! [Chemharp](https://github.com/Luthaf/Chemharp/) adaptators for Cymbalum.
 
 extern crate chemharp;
-use ::universe::{Particle, Universe};
-use ::universe::cells::{UnitCell, CellType};
-use ::types::Vector3D;
+use universe::{Particle, Universe};
+use universe::cells::{UnitCell, CellType};
+use types::Vector3D;
 
 use self::chemharp::Error;
 

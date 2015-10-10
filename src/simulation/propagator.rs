@@ -7,7 +7,7 @@
 
 //! A propagator is responsible for updating the universe during a simulation
 
-use ::universe::Universe;
+use universe::Universe;
 
 /// The propagator trait is the main algorithm of a simulation, i.e. the one
 /// which update the universe. The main function here is `propagate`, which

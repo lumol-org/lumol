@@ -11,8 +11,7 @@
 
 use std::f64::consts::PI;
 
-use ::types::Vector3D;
-use ::types::Matrix3;
+use types::{Matrix3, Vector3D};
 
 /// The type of a cell determine how we will be able to compute the periodic
 /// boundaries condition.
@@ -322,7 +321,7 @@ fn angle(u: Vector3D, v: Vector3D) -> f64 {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use ::types::*;
+    use types::*;
     use std::f64;
 
     #[test]

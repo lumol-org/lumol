@@ -10,8 +10,8 @@ use std::io::prelude::*;
 use std::fs::File;
 use std::path::Path;
 
-use ::universe::Universe;
-use ::potentials::*;
+use universe::Universe;
+use potentials::*;
 
 use super::yaml::{YamlLoader, Yaml};
 use super::{Error, Result};

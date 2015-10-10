@@ -13,9 +13,9 @@ use self::rand::distributions::Sample;
 use self::rand::Isaac64Rng;
 use self::rand::SeedableRng;
 
-use ::constants::K_BOLTZMANN;
-use ::types::Vector3D;
-use ::simulation::{Compute, Temperature};
+use constants::K_BOLTZMANN;
+use types::Vector3D;
+use simulation::{Compute, Temperature};
 use super::Universe;
 
 /// Scale all velocities in the `Universe` such that the `universe` temperature
@@ -113,9 +113,9 @@ impl InitVelocities for UniformVelocities {
 #[cfg(test)]
 mod test {
     use super::*;
-    use ::simulation::{Compute, Temperature};
+    use simulation::{Compute, Temperature};
 
-    use ::universe::{Universe, Particle};
+    use universe::{Universe, Particle};
 
     fn testing_universe() -> Universe {
         let mut universe = Universe::new();

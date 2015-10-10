@@ -14,10 +14,9 @@ use std::io;
 use std::fs::File;
 use std::path::Path;
 
-use ::units;
-use ::universe::Universe;
-
-use ::universe::chemharp::universe_to_frame;
+use units;
+use universe::Universe;
+use universe::chemharp::universe_to_frame;
 
 /// The `Output` trait define the interface for all the quantities outputed by
 /// the simulation during the run. An Output can be a text or a binary data
@@ -206,10 +205,10 @@ mod tests {
     use std::fs;
 
     use super::*;
-    use ::universe::*;
-    use ::types::*;
-    use ::potentials::*;
-    use ::units;
+    use universe::*;
+    use types::*;
+    use potentials::*;
+    use units;
 
     fn testing_universe() -> Universe {
         let mut universe = Universe::from_cell(UnitCell::cubic(10.0));;

@@ -15,8 +15,8 @@ use std::slice;
 extern crate chemharp;
 use self::chemharp::{Trajectory, Frame};
 
-use ::potentials::{PairPotential, AnglePotential, DihedralPotential, GlobalPotential};
-use ::types::{Vector3D, Matrix3};
+use potentials::{PairPotential, AnglePotential, DihedralPotential, GlobalPotential};
+use types::{Vector3D, Matrix3};
 
 use super::Particle;
 use super::{Topology, Bond, Angle, Dihedral};
@@ -353,11 +353,11 @@ impl Universe {
 
 /******************************************************************************/
 
-use ::simulation::Compute;
-use ::simulation::{PotentialEnergy, KineticEnergy, TotalEnergy};
-use ::simulation::Temperature;
-use ::simulation::Volume;
-use ::simulation::{Virial, Stress, Pressure};
+use simulation::Compute;
+use simulation::{PotentialEnergy, KineticEnergy, TotalEnergy};
+use simulation::Temperature;
+use simulation::Volume;
+use simulation::{Virial, Stress, Pressure};
 
 /// Functions to get pysical properties of an universe.
 impl Universe {

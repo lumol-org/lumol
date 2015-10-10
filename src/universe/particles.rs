@@ -7,7 +7,7 @@
 
 //! `Particle` type and manipulation.
 
-use ::types::Vector3D;
+use types::Vector3D;
 use super::PeriodicTable;
 
 /// The Particle type hold basic data about a particle in the system. It is self
@@ -122,7 +122,7 @@ impl Particle {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use ::types::*;
+    use types::Vector3D;
 
     #[test]
     fn name() {

@@ -7,8 +7,7 @@
 
 //! Pair potentials traits and implementations.
 
-use ::types::Vector3D;
-use ::types::Matrix3;
+use types::{Matrix3, Vector3D};
 
 /// A `PotentialFunction` is a set of two parametric functions which takes a
 /// single scalar variable and return the energy or the norm of the force
