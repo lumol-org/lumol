@@ -136,7 +136,7 @@ impl Index<usize> for Vector3D {
 
 /// This is provided for convenience only, and is slower than direct field access
 impl IndexMut<usize> for Vector3D {
-    fn index_mut<'a>(&'a mut self, index: usize) -> &'a mut f64 {
+    fn index_mut(&mut self, index: usize) -> &mut f64 {
         match index {
             0 => &mut self.x,
             1 => &mut self.y,

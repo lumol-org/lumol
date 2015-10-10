@@ -128,7 +128,7 @@ impl Molecules {
     }
 
     /// Get the molecules as list of lists of particles  -> particles mapping
-    #[inline] pub fn molecules<'a>(&'a self) -> Vec<&'a Vec<usize>> {
+    #[inline] pub fn molecules(&self) -> Vec<&Vec<usize>> {
         self.parts.values().collect()
     }
 
@@ -138,8 +138,8 @@ impl Molecules {
         self.mols[&i]
     }
 
-    /// Get the molecules as list of lists of particles  -> particles mapping
-    #[inline] pub fn molecule_containing<'a>(&'a self, i:usize) -> &'a Vec<usize> {
+    /// Get the molecule containing the particle `i`
+    #[inline] pub fn molecule_containing(&self, i:usize) -> &Vec<usize> {
         let mol = self.molecule_id(i);
         debug_assert!(self.mols.contains_key(&mol));
         &self.parts[&mol]
@@ -228,13 +228,13 @@ impl Topology {
 
     /// Get the list of molecules in the system as list of lists of particles
     /// indexes.
-    #[inline] pub fn molecules<'a>(&'a self) -> Vec<&'a Vec<usize>> {
+    #[inline] pub fn molecules(&self) -> Vec<&Vec<usize>> {
         self.molecules.molecules()
     }
 
     /// Get the molecule containing the particle at index `i` as a list of
     /// particles indexes.
-    #[inline] pub fn molecule_containing<'a>(&'a self, i:usize) -> &'a Vec<usize> {
+    #[inline] pub fn molecule_containing(&self, i:usize) -> &Vec<usize> {
         self.molecules.molecule_containing(i)
     }
 
@@ -347,17 +347,17 @@ impl Topology {
     }
 
     /// Get the internal list of bonds
-    #[inline] pub fn bonds<'a>(&'a self) -> &'a HashSet<Bond> {
+    #[inline] pub fn bonds(&self) -> &HashSet<Bond> {
         &self.bonds
     }
 
     /// Get the internal list of angles
-    #[inline] pub fn angles<'a>(&'a self) -> &'a HashSet<Angle> {
+    #[inline] pub fn angles(&self) -> &HashSet<Angle> {
         &self.angles
     }
 
     /// Get the internal list of dihedrals
-    #[inline] pub fn dihedrals<'a>(&'a self) -> &'a HashSet<Dihedral> {
+    #[inline] pub fn dihedrals(&self) -> &HashSet<Dihedral> {
         &self.dihedrals
     }
 }

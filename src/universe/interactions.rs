@@ -50,7 +50,7 @@ impl Interactions {
     }
 
     /// Get all pair interactions corresponding to the pair `(i, j)`
-    pub fn pairs<'a>(&'a self, i: u16, j:u16) -> Option<&'a Vec<Box<PairPotential>>> {
+    pub fn pairs(&self, i: u16, j:u16) -> Option<&Vec<Box<PairPotential>>> {
         let (i, j) = sort_pair(i, j);
         self.pairs.get(&(i, j))
     }
@@ -66,7 +66,7 @@ impl Interactions {
     }
 
     /// Get all bonded interactions corresponding to the pair `(i, j)`
-    pub fn bonds<'a>(&'a self, i: u16, j:u16) -> Option<&'a Vec<Box<PairPotential>>> {
+    pub fn bonds(&self, i: u16, j:u16) -> Option<&Vec<Box<PairPotential>>> {
         let (i, j) = sort_pair(i, j);
         self.bonds.get(&(i, j))
     }
@@ -82,7 +82,7 @@ impl Interactions {
     }
 
     /// Get all angle interactions corresponding to the angle `(i, j, k)`
-    pub fn angles<'a>(&'a self, i: u16, j:u16, k:u16) -> Option<&'a Vec<Box<AnglePotential>>> {
+    pub fn angles(&self, i: u16, j:u16, k:u16) -> Option<&Vec<Box<AnglePotential>>> {
         let (i, j, k) = sort_angle(i, j, k);
         self.angles.get(&(i, j, k))
     }
@@ -98,7 +98,7 @@ impl Interactions {
     }
 
     /// Get all dihedral interactions corresponding to the dihedral `(i, j, k, m)`
-    pub fn dihedrals<'a>(&'a self, i: u16, j:u16, k:u16, m:u16) -> Option<&'a Vec<Box<DihedralPotential>>> {
+    pub fn dihedrals(&self, i: u16, j:u16, k:u16, m:u16) -> Option<&Vec<Box<DihedralPotential>>> {
         let (i, j, k, m) = sort_dihedral(i, j, k, m);
         self.dihedrals.get(&(i, j, k, m))
     }

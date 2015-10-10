@@ -47,7 +47,7 @@ impl Particle {
     }
 
     /// Get the particle name
-    #[inline] pub fn name<'a>(&'a self) -> &'a str {
+    #[inline] pub fn name(&self) -> &str {
         &self.name
     }
 
@@ -88,7 +88,7 @@ impl Particle {
     }
 
     /// Get the particle position
-    #[inline] pub fn position<'a>(&'a self) -> &'a Vector3D {
+    #[inline] pub fn position(&self) -> &Vector3D {
         &self.position
     }
 
@@ -103,7 +103,7 @@ impl Particle {
     }
 
     /// Get the particle velocity
-    #[inline] pub fn velocity<'a>(&'a self) -> &'a Vector3D {
+    #[inline] pub fn velocity(&self) -> &Vector3D {
         &self.velocity
     }
 

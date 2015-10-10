@@ -144,7 +144,7 @@ impl Error for UnitParsingError {
 
 /// Recursive unit string parsing function. This return the conversion factor
 /// for a given unit.
-fn conversion<'a>(unit: &'a str) -> Result<f64, UnitParsingError> {
+fn conversion(unit: &str) -> Result<f64, UnitParsingError> {
     let unit = unit.trim();
     // First check if we do already have a known unit
     let factors = conversion_factors();

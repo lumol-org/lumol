@@ -110,9 +110,9 @@ impl Universe {
 /// Topology and particles related functions
 impl Universe {
     /// Get a reference to the universe topology
-    #[inline] pub fn topology<'a>(&'a self) -> &'a Topology {&self.topology}
+    #[inline] pub fn topology(&self) -> &Topology {&self.topology}
     /// Get a mutable reference to the universe topology
-    #[inline] pub fn topology_mut<'a>(&'a mut self) -> &'a mut Topology {&mut self.topology}
+    #[inline] pub fn topology_mut(&mut self) -> &mut Topology {&mut self.topology}
 
     /// Insert a particle at the end of the internal list
     pub fn add_particle(&mut self, p: Particle) {
@@ -147,17 +147,17 @@ impl Universe {
     }
 
     /// Get the list of bonds in the universe
-    #[inline] pub fn bonds<'a>(&'a self) -> &'a HashSet<Bond> {
+    #[inline] pub fn bonds(&self) -> &HashSet<Bond> {
         &self.topology.bonds()
     }
 
     /// Get the list of angles in the universe
-    #[inline] pub fn angles<'a>(&'a self) -> &'a HashSet<Angle> {
+    #[inline] pub fn angles(&self) -> &HashSet<Angle> {
         &self.topology.angles()
     }
 
     /// Get the list of dihedrals in the universe
-    #[inline] pub fn dihedrals<'a>(&'a self) -> &'a HashSet<Dihedral> {
+    #[inline] pub fn dihedrals(&self) -> &HashSet<Dihedral> {
         &self.topology.dihedrals()
     }
 
@@ -177,7 +177,7 @@ impl Universe {
 impl Universe {
     /// Get the list of pair interaction between the particles at indexes `i`
     /// and `j`.
-    pub fn pair_potentials<'a>(&'a self, i: usize, j: usize) -> &'a Vec<Box<PairPotential>> {
+    pub fn pair_potentials(&self, i: usize, j: usize) -> &Vec<Box<PairPotential>> {
         let ikind = self.particles[i].kind();
         let jkind = self.particles[j].kind();
         match self.interactions.pairs(ikind, jkind) {
@@ -193,7 +193,7 @@ impl Universe {
 
     /// Get the list of bonded interaction between the particles at indexes `i`
     /// and `j`.
-    pub fn bond_potentials<'a>(&'a self, i: usize, j: usize) -> &'a Vec<Box<PairPotential>> {
+    pub fn bond_potentials(&self, i: usize, j: usize) -> &Vec<Box<PairPotential>> {
         let ikind = self.particles[i].kind();
         let jkind = self.particles[j].kind();
         match self.interactions.bonds(ikind, jkind) {
@@ -209,7 +209,7 @@ impl Universe {
 
     /// Get the list of angle interaction between the particles at indexes `i`,
     /// `j` and `k`.
-    pub fn angle_potentials<'a>(&'a self, i: usize, j: usize, k: usize) -> &'a Vec<Box<AnglePotential>> {
+    pub fn angle_potentials(&self, i: usize, j: usize, k: usize) -> &Vec<Box<AnglePotential>> {
         let ikind = self.particles[i].kind();
         let jkind = self.particles[j].kind();
         let kkind = self.particles[k].kind();
@@ -228,7 +228,7 @@ impl Universe {
 
     /// Get the list of dihedral angles interaction between the particles at
     /// indexes `i`, `j`, `k` and `m`.
-    pub fn dihedral_potentials<'a>(&'a self, i: usize, j: usize, k: usize, m: usize) -> &'a Vec<Box<DihedralPotential>> {
+    pub fn dihedral_potentials(&self, i: usize, j: usize, k: usize, m: usize) -> &Vec<Box<DihedralPotential>> {
         let ikind = self.particles[i].kind();
         let jkind = self.particles[j].kind();
         let kkind = self.particles[k].kind();
@@ -296,9 +296,9 @@ impl Universe {
 /// UnitCell related functions
 impl Universe {
     /// Get a reference to  the universe unit cell
-    #[inline] pub fn cell<'a>(&'a self) -> &'a UnitCell {&self.cell}
+    #[inline] pub fn cell(&self) -> &UnitCell {&self.cell}
     /// Get a mutable reference to  the universe unit cell
-    #[inline] pub fn cell_mut<'a>(&'a mut self) -> &'a mut UnitCell {&mut self.cell}
+    #[inline] pub fn cell_mut(&mut self) -> &mut UnitCell {&mut self.cell}
     /// Set the universe unit cell
     #[inline] pub fn set_cell(&mut self, cell: UnitCell) {self.cell = cell;}
 
@@ -388,14 +388,14 @@ impl Universe {
 impl Index<usize> for Universe {
     type Output = Particle;
     #[inline]
-    fn index<'a>(&'a self, index: usize) -> &'a Particle {
+    fn index(&self, index: usize) -> &Particle {
         &self.particles[index]
     }
 }
 
 impl IndexMut<usize> for Universe {
     #[inline]
-    fn index_mut<'a>(&'a mut self, index: usize) -> &'a mut Particle {
+    fn index_mut(&mut self, index: usize) -> &mut Particle {
         &mut self.particles[index]
     }
 }

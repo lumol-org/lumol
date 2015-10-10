@@ -79,14 +79,14 @@ impl Index<(usize, usize)> for Matrix3 {
 
 impl IndexMut<usize> for Matrix3 {
     #[inline]
-    fn index_mut<'a>(&'a mut self, index: usize) -> &'a mut [f64; 3] {
+    fn index_mut(&mut self, index: usize) -> &mut [f64; 3] {
         &mut self.data[index]
     }
 }
 
 impl IndexMut<(usize, usize)> for Matrix3 {
     #[inline]
-    fn index_mut<'a>(&'a mut self, index: (usize, usize)) -> &'a mut f64 {
+    fn index_mut(&mut self, index: (usize, usize)) -> &mut f64 {
         &mut self.data[index.0][index.1]
     }
 }
