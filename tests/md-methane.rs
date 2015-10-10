@@ -22,7 +22,7 @@ fn setup_universe() -> Universe {
     universe.set_cell(UnitCell::cubic(20.0));
 
     let potentials = data_dir.join("data").join("methane.yml");
-    input::read_potentials(&mut universe, potentials).unwrap();
+    input::read_interactions(&mut universe, potentials).unwrap();
 
     let mut velocities = BoltzmanVelocities::new(units::from(300.0, "K").unwrap());
     velocities.init(&mut universe);

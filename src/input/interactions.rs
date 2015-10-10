@@ -84,7 +84,7 @@ trait FromYaml where Self: Sized {
 /// The `"coulomb"` section specify how to compute the coulombic interactions.
 /// It should contains the `type` and `charge` key, with data about charges to
 /// assign to the system, and which method to use to compute these interactions.
-pub fn read_potentials<P: AsRef<Path>>(universe: &mut Universe, path: P) -> Result<()> {
+pub fn read_interactions<P: AsRef<Path>>(universe: &mut Universe, path: P) -> Result<()> {
     let mut file = try!(File::open(path));
     let mut buff = String::new();
     try!(file.read_to_string(&mut buff));

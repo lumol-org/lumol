@@ -60,5 +60,5 @@ impl From<UnitParsingError> for Error {
 /// Custom Result for input files
 pub type Result<T> = result::Result<T, Error>;
 
-mod potentials;
-pub use self::potentials::read_potentials;
+mod interactions;
+pub use self::interactions::read_interactions;
