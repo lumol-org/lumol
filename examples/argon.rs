@@ -1,4 +1,7 @@
-//! Molecular dynamics simulation of an Argon crystal
+//! Molecular dynamics simulation of an Argon crystal.
+//!
+//! In this example, we do everything by hand, from the universe setup to the
+//! simulation run.
 extern crate cymbalum;
 use cymbalum::*;
 
