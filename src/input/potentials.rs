@@ -66,6 +66,12 @@ trait FromYaml where Self: Sized {
 ///     type: harmonic
 ///     k: 42 kJ/mol/deg^2
 ///     x0: 180 deg
+/// coulomb:
+///   - type: wolf
+///     cutoff: 10 A
+///     charges:
+///         O: -1.8
+///         Na: 0.9
 /// ```
 ///
 /// The main items are the `"pairs"`, `"bonds"`, `"angles"` and `"dihedrals"`;
@@ -74,6 +80,10 @@ trait FromYaml where Self: Sized {
 /// has at least a vector of `"atoms"` defining which particles will get this
 /// interaction applied to, and a `"type"` parameter defining the type of the
 /// potential. Others keys may be supplied depending on the potential type.
+///
+/// The `"coulomb"` section specify how to compute the coulombic interactions.
+/// It should contains the `type` and `charge` key, with data about charges to
+/// assign to the system, and which method to use to compute these interactions.
 pub fn read_potentials<P: AsRef<Path>>(universe: &mut Universe, path: P) -> Result<()> {
     let mut file = try!(File::open(path));
     let mut buff = String::new();
@@ -94,6 +104,10 @@ pub fn read_potentials<P: AsRef<Path>>(universe: &mut Universe, path: P) -> Resu
 
     if let Some(config) = doc["dihedrals"].as_vec() {
         try!(read_dihedrals(universe, config));
+    }
+
+    if doc["coulomb"].as_hash().is_some() {
+        try!(read_coulomb(universe, &doc["coulomb"]));
     }
 
     Ok(())
@@ -355,4 +369,69 @@ impl FromYamlWithPairPotential for TableComputation {
             )
         }
     }
+}
+
+/******************************************************************************/
+
+fn read_coulomb(universe: &mut Universe, config: &Yaml) -> Result<()> {
+    let potential = try!(read_global_potential(config));
+    universe.add_global_interaction(potential);
+
+    if config["charges"].as_hash().is_some() {
+        try!(assign_charges(universe, &config["charges"]));
+    }
+    Ok(())
+}
+
+fn read_global_potential(node: &Yaml) -> Result<Box<GlobalPotential>> {
+    match node["type"].as_str() {
+        None => {
+            Err(Error::from(
+                format!("Missing 'type' section for coulomb section in: {:?}", node)
+            ))
+        }
+        Some(val) => {
+            let val: &str = &val.to_lowercase();
+            match val {
+                "wolf" => Ok(Box::new(try!(Wolf::from_yaml(node)))),
+                val => Err(Error::from(format!("Unknown coulomb type '{}'", val))),
+            }
+        }
+    }
+}
+
+impl FromYaml for Wolf {
+    fn from_yaml(node: &Yaml) -> Result<Wolf> {
+        if let Some(cutoff) = node["cutoff"].as_str() {
+            let cutoff = try!(::units::from_str(cutoff));
+            Ok(Wolf::new(cutoff))
+        } else {
+            Err(Error::from("Missing 'cutoff' value in Wolf potential"))
+        }
+    }
+}
+
+fn assign_charges(universe: &mut Universe, config: &Yaml) -> Result<()> {
+    let charges = config.as_hash().unwrap();
+    for (name, charge) in charges {
+        if let (Some(name), Some(charge)) = (name.as_str(), charge.as_f64()) {
+            let mut changed = 0;
+            for particle in universe.iter_mut() {
+                if particle.name() == name {
+                    particle.set_charge(charge);
+                    changed += 1;
+                }
+            }
+            if changed == 0 {
+                return Err(Error::from(format!("No particle with the name {} was found", name)));
+            } else {
+                info!("Charge was set for {} particles", changed);
+            }
+        } else {
+            return Err(
+                Error::from(format!("Bad Yaml format in charges section: {:?}, {:?}", name, charge))
+            );
+        }
+    }
+    Ok(())
 }
