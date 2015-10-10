@@ -22,7 +22,8 @@ use std::path::Path;
 use std::sync::{Arc, Mutex};
 
 extern crate log;
-use log::{Log, LogRecord, LogMetadata, LogLevel, set_logger};
+use log::{Log, LogRecord, LogMetadata, set_logger};
+pub use log::LogLevel;
 
 /// Logger with capacity to write to the standard output stream, the standard
 /// error stream or a file.

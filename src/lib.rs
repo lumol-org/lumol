@@ -35,7 +35,7 @@ extern crate log;
 mod tests;
 
 mod logging;
-pub use logging::Logger;
+pub use logging::{Logger, LogLevel};
 
 pub mod units;
 pub mod constants;
