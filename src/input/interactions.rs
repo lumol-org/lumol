@@ -425,7 +425,7 @@ fn assign_charges(universe: &mut Universe, config: &Yaml) -> Result<()> {
             if changed == 0 {
                 return Err(Error::from(format!("No particle with the name {} was found", name)));
             } else {
-                info!("Charge was set for {} particles", changed);
+                info!("Charge was set to {} set for {} {} particles", charge, changed, name);
             }
         } else {
             return Err(
