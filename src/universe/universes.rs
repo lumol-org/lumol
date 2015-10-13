@@ -12,8 +12,8 @@ use std::collections::HashSet;
 use std::ops::{Index, IndexMut};
 use std::slice;
 
-extern crate chemharp;
-use self::chemharp::{Trajectory, Frame};
+extern crate chemfiles;
+use self::chemfiles::{Trajectory, Frame};
 
 use potentials::{PairPotential, AnglePotential, DihedralPotential, GlobalPotential};
 use types::{Vector3D, Matrix3};
@@ -22,7 +22,7 @@ use super::Particle;
 use super::{Topology, Bond, Angle, Dihedral};
 use super::UnitCell;
 use super::interactions::Interactions;
-use super::chemharp::frame_to_universe;
+use super::chemfiles::frame_to_universe;
 
 /// The Universe type hold all the data about a system. This data contains:
 ///
@@ -60,9 +60,9 @@ impl Universe {
 
     /// Read a trajectory file and create an Universe from it. For a list of
     /// supported formats, please refer to
-    /// [Chemharp](http://chemharp.readthedocs.org/en/latest/formats.html)
+    /// [Chemharp](http://chemfiles.readthedocs.org/en/latest/formats.html)
     /// documentation.
-    pub fn from_file(path: &str) -> Result<Universe, chemharp::Error> {
+    pub fn from_file(path: &str) -> Result<Universe, chemfiles::Error> {
         let mut trajectory = try!(Trajectory::open(path));
         let mut frame = try!(Frame::new(0));
         try!(trajectory.read(&mut frame));
@@ -71,7 +71,7 @@ impl Universe {
 
     /// Do the same work that the `from_file` function, and guess bonds in the
     /// universe based on the distances between the particles.
-    pub fn from_file_auto_bonds(path: &str) -> Result<Universe, chemharp::Error> {
+    pub fn from_file_auto_bonds(path: &str) -> Result<Universe, chemfiles::Error> {
         let mut trajectory = try!(Trajectory::open(path));
         let mut frame = try!(Frame::new(0));
         try!(trajectory.read(&mut frame));

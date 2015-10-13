@@ -7,14 +7,14 @@
 
 //! [Chemharp](https://github.com/Luthaf/Chemharp/) adaptators for Cymbalum.
 
-extern crate chemharp;
+extern crate chemfiles;
 use universe::{Particle, Universe};
 use universe::cells::{UnitCell, CellType};
 use types::Vector3D;
 
-use self::chemharp::Error;
+use self::chemfiles::Error;
 
-/// Convert chemharp types to Cymbalum types
+/// Convert chemfiles types to Cymbalum types
 trait ToCymbalum {
     /// Output type
     type Output;
@@ -22,7 +22,7 @@ trait ToCymbalum {
     fn to_cymbalum(self) -> Result<Self::Output, Error>;
 }
 
-impl ToCymbalum for chemharp::Atom {
+impl ToCymbalum for chemfiles::Atom {
     type Output = Particle;
     fn to_cymbalum(self) -> Result<Particle, Error> {
         let name = try!(self.name());
@@ -33,17 +33,17 @@ impl ToCymbalum for chemharp::Atom {
     }
 }
 
-impl ToCymbalum for chemharp::UnitCell {
+impl ToCymbalum for chemfiles::UnitCell {
     type Output = UnitCell;
     fn to_cymbalum(self) -> Result<UnitCell, Error> {
         let cell_type = try!(self.cell_type());
         let cell = match cell_type {
-            chemharp::CellType::Infinite => UnitCell::new(),
-            chemharp::CellType::Orthorombic => {
+            chemfiles::CellType::Infinite => UnitCell::new(),
+            chemfiles::CellType::Orthorombic => {
                 let (a, b, c) = try!(self.lengths());
                 UnitCell::ortho(a, b, c)
             },
-            chemharp::CellType::Triclinic => {
+            chemfiles::CellType::Triclinic => {
                 let (a, b, c) = try!(self.lengths());
                 let (alpha, beta, gamma) = try!(self.angles());
                 UnitCell::triclinic(a, b, c, alpha, beta, gamma)
@@ -53,7 +53,7 @@ impl ToCymbalum for chemharp::UnitCell {
     }
 }
 
-impl ToCymbalum for chemharp::Frame {
+impl ToCymbalum for chemfiles::Frame {
     type Output = Universe;
     fn to_cymbalum(self) -> Result<Universe, Error> {
         let cell = try!(self.cell());
@@ -86,62 +86,62 @@ impl ToCymbalum for chemharp::Frame {
     }
 }
 
-/// Convert a chemharp `Frame` to an `Universe`
-pub fn frame_to_universe(frame: chemharp::Frame) -> Result<Universe, Error> {
+/// Convert a chemfiles `Frame` to an `Universe`
+pub fn frame_to_universe(frame: chemfiles::Frame) -> Result<Universe, Error> {
     frame.to_cymbalum()
 }
 
 
 /******************************************************************************/
 
-/// Convert Cymbalum types to chemharp types
-trait ToChemharp {
+/// Convert Cymbalum types to chemfiles types
+trait ToChemfiles {
     /// Output type
     type Output;
     /// Conversion function
-    fn to_chemharp(&self) -> Result<Self::Output, Error>;
+    fn to_chemfiles(&self) -> Result<Self::Output, Error>;
 }
 
-impl ToChemharp for Particle {
-    type Output = chemharp::Atom;
-    fn to_chemharp(&self) -> Result<chemharp::Atom, Error> {
-        let mut res = try!(chemharp::Atom::new(self.name()));
+impl ToChemfiles for Particle {
+    type Output = chemfiles::Atom;
+    fn to_chemfiles(&self) -> Result<chemfiles::Atom, Error> {
+        let mut res = try!(chemfiles::Atom::new(self.name()));
         try!(res.set_mass(self.mass() as f32));
         return Ok(res);
     }
 }
 
-impl ToChemharp for UnitCell {
-    type Output = chemharp::UnitCell;
-    fn to_chemharp(&self) -> Result<chemharp::UnitCell, Error> {
+impl ToChemfiles for UnitCell {
+    type Output = chemfiles::UnitCell;
+    fn to_chemfiles(&self) -> Result<chemfiles::UnitCell, Error> {
         let res = match self.celltype() {
             CellType::Infinite => {
                 unimplemented!()
             }
             CellType::Orthorombic => {
                 let (a, b, c) = (self.a(), self.b(), self.c());
-                try!(chemharp::UnitCell::new(a, b, c))
+                try!(chemfiles::UnitCell::new(a, b, c))
             },
             CellType::Triclinic => {
                 let (a, b, c) = (self.a(), self.b(), self.c());
                 let (alpha, beta, gamma) = (self.alpha(), self.beta(), self.gamma());
-                try!(chemharp::UnitCell::triclinic(a, b, c, alpha, beta, gamma))
+                try!(chemfiles::UnitCell::triclinic(a, b, c, alpha, beta, gamma))
             },
         };
         return Ok(res);
     }
 }
 
-impl ToChemharp for Universe {
-    type Output = chemharp::Frame;
-    fn to_chemharp(&self) -> Result<chemharp::Frame, Error> {
+impl ToChemfiles for Universe {
+    type Output = chemfiles::Frame;
+    fn to_chemfiles(&self) -> Result<chemfiles::Frame, Error> {
 
         let natoms = self.size();
-        let mut frame = try!(chemharp::Frame::new(natoms as u64));
+        let mut frame = try!(chemfiles::Frame::new(natoms as u64));
 
         try!(frame.set_step(self.step()));
 
-        let mut topology = try!(chemharp::Topology::new());
+        let mut topology = try!(chemfiles::Topology::new());
         let mut positions = vec![[0.0f32; 3]; natoms];
         let mut velocities = vec![[0.0f32; 3]; natoms];
 
@@ -156,7 +156,7 @@ impl ToChemharp for Universe {
             velocities[i][1] = vel.y as f32;
             velocities[i][2] = vel.z as f32;
 
-            let atom = try!(p.to_chemharp());
+            let atom = try!(p.to_chemfiles());
             try!(topology.push(&atom));
         }
         try!(frame.set_positions(positions));
@@ -169,13 +169,13 @@ impl ToChemharp for Universe {
         // Guessing angles and dihedrals
         try!(frame.guess_topology(false));
 
-        let cell = try!(self.cell().to_chemharp());
+        let cell = try!(self.cell().to_chemfiles());
         try!(frame.set_cell(&cell));
         Ok(frame)
     }
 }
 
-/// Convert an `Universe` to a chemharp `Frame`
-pub fn universe_to_frame(universe: &Universe) -> Result<chemharp::Frame, Error> {
-    universe.to_chemharp()
+/// Convert an `Universe` to a chemfiles `Frame`
+pub fn universe_to_frame(universe: &Universe) -> Result<chemfiles::Frame, Error> {
+    universe.to_chemfiles()
 }

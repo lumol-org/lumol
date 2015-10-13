@@ -17,5 +17,5 @@ log = "*"
 yaml-rust = "*"
 special = "*"
 
-[dependencies.chemharp]
-git = "https://github.com/Luthaf/Chemharp.rs"
+[dependencies.chemfiles]
+git = "https://github.com/chemfiles/chemfiles.rs"

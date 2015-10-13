@@ -7,7 +7,7 @@
 
 //! Saving properties of the simulation to some stream (file or stdout mainly)
 
-extern crate chemharp;
+extern crate chemfiles;
 
 use std::io::prelude::*;
 use std::io;
@@ -16,7 +16,7 @@ use std::path::Path;
 
 use units;
 use universe::Universe;
-use universe::chemharp::universe_to_frame;
+use universe::chemfiles::universe_to_frame;
 
 /// The `Output` trait define the interface for all the quantities outputed by
 /// the simulation during the run. An Output can be a text or a binary data
@@ -36,17 +36,17 @@ pub trait Output {
 /******************************************************************************/
 /// The `TrajectoryOutput` allow to write the trajectory of the system to a
 /// file, using any format supported by the
-/// [Chemharp](http://chemharp.readthedocs.org/en/latest/formats.html) library.
+/// [Chemharp](http://chemfiles.readthedocs.org/en/latest/formats.html) library.
 pub struct TrajectoryOutput {
-    file: chemharp::Trajectory,
+    file: chemfiles::Trajectory,
 }
 
 impl TrajectoryOutput {
     /// Create a new `TrajectoryOutput` writing to `filename`. The file is
     /// replaced if it already exists.
-    pub fn new<'a, S>(filename: S) -> Result<TrajectoryOutput, chemharp::Error> where S: Into<&'a str> {
+    pub fn new<'a, S>(filename: S) -> Result<TrajectoryOutput, chemfiles::Error> where S: Into<&'a str> {
         Ok(TrajectoryOutput{
-            file: try!(chemharp::Trajectory::create(filename.into()))
+            file: try!(chemfiles::Trajectory::create(filename.into()))
         })
     }
 }
@@ -243,7 +243,7 @@ mod tests {
             out.finish(&universe);
         }
 
-        check_file_content(filename, "2\nWritten by Chemharp\nF 0 0 0\nF 1.3 0 0\n");
+        check_file_content(filename, "2\nWritten by the chemfiles library\nF 0 0 0\nF 1.3 0 0\n");
         fs::remove_file(filename).unwrap();
     }
 
