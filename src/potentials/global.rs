@@ -120,8 +120,8 @@ impl GlobalPotential for Wolf {
                 }
                 let rij = universe.wrap_vector(i, j);
                 let force = self.force_pair(qi, qj, rij);
-                res[i] = res[i] - force;
-                res[j] = res[j] + force;
+                res[i] = res[i] + force;
+                res[j] = res[j] - force;
             }
         }
         return res;
@@ -192,6 +192,6 @@ mod tests {
         let e1 = wolf.energy(&universe);
         let force = wolf.forces(&universe)[0].x;
         // Finite difference computation of the force
-        assert_approx_eq!((e1 - e)/eps, force, 1e-6);
+        assert_approx_eq!((e - e1)/eps, force, 1e-6);
     }
 }
