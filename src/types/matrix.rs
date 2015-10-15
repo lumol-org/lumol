@@ -5,8 +5,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
 
-//! 3x3 Matrix type
-
+//! Matrix types: generic square matrix, and 3x3 matrix.
+use std::slice;
 use std::ops::{Add, Sub, Mul, Index, IndexMut};
 use super::vectors::Vector3D;
 
@@ -163,6 +163,59 @@ impl Mul<Vector3D> for Matrix3 {
 }
 
 /******************************************************************************/
+// TODO: merge Matrix and Matrix3 when we have genericity over constants.
+
+/// Bidimensional square matrix, with cache locality and runtime size. This type
+/// only provide an indexable bidimensional storage.
+pub struct Matrix<T> {
+    /// Data storage
+    data: Vec<T>,
+    /// Size of the matrix (it is an NxN matrix)
+    n: usize
+}
+
+impl<T: Clone> Matrix<T> {
+    /// Create a new `Matrix` of size `n x n` filed with `value`.
+    pub fn new(value: T, n: usize) -> Matrix<T> {
+        let mut vec = Vec::with_capacity(n*n);
+        for _ in 0..n*n {
+            vec.push(value.clone())
+        }
+        Matrix{data: vec, n: n}
+    }
+}
+
+impl<T: Default + Clone> Matrix<T> {
+    /// Create a new `Matrix` of size `n x n` filed with the default value for
+    /// `T`.
+    pub fn with_size(n: usize) -> Matrix<T> {
+        let vec = vec![T::default(); n*n];
+        Matrix{data: vec, n: n}
+    }
+}
+
+impl<T> Index<usize> for Matrix<T> {
+    type Output = [T];
+    fn index<'a>(&'a self, i: usize) -> &'a [T] {
+        assert!(i < self.n, format!("index out of bounds: the len is {} but the index is {}", self.n, i));
+        unsafe {
+            let ptr = self.data.as_ptr().offset((i * self.n) as isize);
+            slice::from_raw_parts(ptr,self.n)
+        }
+    }
+}
+
+impl<T> IndexMut<usize> for Matrix<T> {
+    fn index_mut<'a>(&'a mut self, i: usize) -> &'a mut [T] {
+        assert!(i < self.n, format!("index out of bounds: the len is {} but the index is {}", self.n, i));
+        unsafe {
+            let ptr = self.data.as_mut_ptr().offset((i * self.n) as isize);
+            slice::from_raw_parts_mut(ptr, self.n)
+        }
+    }
+}
+
+/******************************************************************************/
 
 #[cfg(test)]
 mod tests {
@@ -171,7 +224,35 @@ mod tests {
 
     #[test]
     #[should_panic]
-    fn out_of_bounds_access() {
+    fn out_of_bounds_access_matrix() {
+        let a = Matrix::<f64>::with_size(4);
+        let _ = a[6][1];
+    }
+
+    #[test]
+    fn matrix() {
+        let mut a = Matrix::<f64>::with_size(4);
+
+        for i in 0..4 {
+            for j in 0..4 {
+                assert_eq!(a[i][j], 0.0);
+            }
+        }
+
+        a[2][3] = 7.0;
+        assert_eq!(a[2][3], 7.0);
+
+        a = Matrix::<f64>::new(42.0, 4);
+        for i in 0..4 {
+            for j in 0..4 {
+                assert_eq!(a[i][j], 42.0);
+            }
+        }
+    }
+
+    #[test]
+    #[should_panic]
+    fn out_of_bounds_access_matrix3() {
         let a = Matrix3::zero();
         let _ = a[(3, 1)];
     }

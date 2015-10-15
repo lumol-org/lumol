@@ -10,5 +10,5 @@
 mod vectors;
 mod matrix;
 
-pub use self::vectors::*;
-pub use self::matrix::*;
+pub use self::vectors::Vector3D;
+pub use self::matrix::{Matrix, Matrix3};
