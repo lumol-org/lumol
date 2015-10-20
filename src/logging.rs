@@ -120,11 +120,20 @@ impl Log for Logger {
 
     fn log(&self, record: &LogRecord) {
         let mut out = self.writer.lock().ok().expect("Could not lock the logger.");
-        let write_res = write!(
-            &mut out, "{}: {} at {}:{}\n",
-            record.level(), record.args(),
-            record.location().file(), record.location().line()
-        );
+        let write_res = match record.level() {
+            LogLevel::Info => write!(&mut out, "{}\n", record.args()),
+            LogLevel::Warn => write!(
+                   &mut out, "Warning: {} from {}:{}\n",
+                   record.args(),
+                   record.location().file(), record.location().line()
+            ),
+            _ => write!(
+                   &mut out, "{}: {} from {}:{}\n",
+                   record.level(), record.args(),
+                   record.location().file(), record.location().line()
+            ),
+        };
+
 
         if let Err(err) = write_res {
             let error_res = write!(& mut io::stderr(),
