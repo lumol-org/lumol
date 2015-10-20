@@ -116,19 +116,18 @@ fn perfect_gaz() {
 fn berendsen_barostat() {
     START.call_once(|| {Logger::stdout();});
     let mut universe = get_universe_with_interaction();
-    let barostat = BerendsenBarostat::new(units::from(1.0, "fs").unwrap(),
-                                          units::from(5000.0, "bar").unwrap()
-                                          ).timestep(100.0);
-    let mut md = MolecularDynamics::from_integrator(barostat);
-    md.add_control(BerendsenThermostat::new(units::from(300.0, "K").unwrap(), 10.0));
-    let mut simulation = Simulation::new(md);
+    let mut simulation = Simulation::new(
+        MolecularDynamics::from_integrator(
+            BerendsenBarostat::new(
+                units::from(1.0, "fs").unwrap(),
+                units::from(5000.0, "bar").unwrap()
+            )
+        )
+    );
 
-    simulation.run(&mut universe, 5000);
-    let P = universe.pressure();
-    let T = universe.temperature();
-
-    assert!(f64::abs(P - units::from(5000.0, "bar").unwrap())/P < 8e-2);
-    assert!(f64::abs(T - units::from(300.0, "K").unwrap())/T < 1e-2);
+    simulation.run(&mut universe, 1000);
+    let pressure = units::from(5000.0, "bar").unwrap();
+    assert!(f64::abs(universe.pressure() - pressure)/pressure < 5e-2);
 }
 
 #[test]
