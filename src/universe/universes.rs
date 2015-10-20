@@ -173,11 +173,15 @@ impl Universe {
     }
 }
 
+static NO_PAIR_INTERACTION: &'static [Box<PairPotential>] = &[];
+static NO_ANGLE_INTERACTION: &'static [Box<AnglePotential>] = &[];
+static NO_DIHEDRAL_INTERACTION: &'static [Box<DihedralPotential>] = &[];
+
 /// Potentials related functions
 impl Universe {
     /// Get the list of pair interaction between the particles at indexes `i`
     /// and `j`.
-    pub fn pair_potentials(&self, i: usize, j: usize) -> &Vec<Box<PairPotential>> {
+    pub fn pair_potentials(&self, i: usize, j: usize) -> &[Box<PairPotential>] {
         let ikind = self.particles[i].kind();
         let jkind = self.particles[j].kind();
         match self.interactions.pairs(ikind, jkind) {
@@ -185,15 +189,16 @@ impl Universe {
             None => {
                 let i = self.particles[i].name();
                 let j = self.particles[j].name();
-                error!("No potential defined for the pair ({}, {})", i, j);
-                panic!();
+                // TODO: add and use the warn_once! macro
+                warn!("No potential defined for the pair ({}, {})", i, j);
+                NO_PAIR_INTERACTION
             }
         }
     }
 
     /// Get the list of bonded interaction between the particles at indexes `i`
     /// and `j`.
-    pub fn bond_potentials(&self, i: usize, j: usize) -> &Vec<Box<PairPotential>> {
+    pub fn bond_potentials(&self, i: usize, j: usize) -> &[Box<PairPotential>] {
         let ikind = self.particles[i].kind();
         let jkind = self.particles[j].kind();
         match self.interactions.bonds(ikind, jkind) {
@@ -201,15 +206,16 @@ impl Universe {
             None => {
                 let i = self.particles[i].name();
                 let j = self.particles[j].name();
-                error!("No potential defined for the bond ({}, {})", i, j);
-                panic!();
+                // TODO: add and use the warn_once! macro
+                warn!("No potential defined for the bond ({}, {})", i, j);
+                NO_PAIR_INTERACTION
             }
         }
     }
 
     /// Get the list of angle interaction between the particles at indexes `i`,
     /// `j` and `k`.
-    pub fn angle_potentials(&self, i: usize, j: usize, k: usize) -> &Vec<Box<AnglePotential>> {
+    pub fn angle_potentials(&self, i: usize, j: usize, k: usize) -> &[Box<AnglePotential>] {
         let ikind = self.particles[i].kind();
         let jkind = self.particles[j].kind();
         let kkind = self.particles[k].kind();
@@ -220,15 +226,16 @@ impl Universe {
                 let i = self.particles[i].name();
                 let j = self.particles[j].name();
                 let k = self.particles[k].name();
-                error!("No potential defined for the angle ({}, {}, {})", i, j, k);
-                panic!();
+                // TODO: add and use the warn_once! macro
+                warn!("No potential defined for the angle ({}, {}, {})", i, j, k);
+                NO_ANGLE_INTERACTION
             }
         }
     }
 
     /// Get the list of dihedral angles interaction between the particles at
     /// indexes `i`, `j`, `k` and `m`.
-    pub fn dihedral_potentials(&self, i: usize, j: usize, k: usize, m: usize) -> &Vec<Box<DihedralPotential>> {
+    pub fn dihedral_potentials(&self, i: usize, j: usize, k: usize, m: usize) -> &[Box<DihedralPotential>] {
         let ikind = self.particles[i].kind();
         let jkind = self.particles[j].kind();
         let kkind = self.particles[k].kind();
@@ -241,8 +248,9 @@ impl Universe {
                 let j = self.particles[j].name();
                 let k = self.particles[k].name();
                 let m = self.particles[m].name();
-                error!("No potential defined for the dihedral ({}, {}, {}, {})", i, j, k, m);
-                panic!();
+                // TODO: add and use the warn_once! macro
+                warn!("No potential defined for the dihedral ({}, {}, {}, {})", i, j, k, m);
+                NO_DIHEDRAL_INTERACTION
             }
         }
     }
@@ -514,25 +522,12 @@ mod tests {
     }
 
     #[test]
-    #[should_panic]
-    fn pairs_errors() {
+    fn missing_interaction() {
         let mut universe = Universe::new();
         universe.add_particle(Particle::new("He"));
-        universe.pair_potentials(0, 0);
-    }
-
-    #[test]
-    #[should_panic]
-    fn angles_errors() {
-        let mut universe = Universe::new();
-        universe.add_particle(Particle::new("He"));
-        universe.angle_potentials(0, 0, 0);
-    }
-    #[test]
-    #[should_panic]
-    fn dihedrals_errors() {
-        let mut universe = Universe::new();
-        universe.add_particle(Particle::new("He"));
-        universe.dihedral_potentials(0, 0, 0, 0);
+        assert_eq!(universe.pair_potentials(0, 0).len(), 0);
+        assert_eq!(universe.bond_potentials(0, 0).len(), 0);
+        assert_eq!(universe.angle_potentials(0, 0, 0).len(), 0);
+        assert_eq!(universe.dihedral_potentials(0, 0, 0, 0).len(), 0);
     }
 }

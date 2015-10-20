@@ -14,7 +14,7 @@
 use super::{PotentialFunction, PairPotential, AnglePotential, DihedralPotential};
 
 /// A `Computation` is a way to compute a potential.
-pub trait Computation: Sized {
+pub trait Computation: Sized + Sync + Send {
     /// Kind of potential we can apply this computation to
     type Potential: ?Sized + PotentialFunction;
 

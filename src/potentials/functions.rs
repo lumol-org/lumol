@@ -15,7 +15,7 @@ use types::{Matrix3, Vector3D};
 ///
 /// The scalar variable will be the distance for pair potentials, the angle for
 /// angles or dihedral angles potentials, *etc.*
-pub trait PotentialFunction {
+pub trait PotentialFunction : Sync + Send {
     /// Get the energy corresponding to the variable `x`
     fn energy(&self, x: f64) -> f64;
     /// Get the force norm corresponding to the variable `x`
