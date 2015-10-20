@@ -11,8 +11,10 @@ extern crate cymbalum;
 use self::cymbalum::*;
 
 use std::path::Path;
+use std::sync::{Once, ONCE_INIT};
+static START: Once = ONCE_INIT;
 
-fn setup() -> (Simulation, Universe) {
+fn setup_universe() -> Universe {
     let data_dir = Path::new(file!()).parent().unwrap();
     let configuration = data_dir.join("data").join("NaCl.xyz");
     let mut universe = Universe::from_file(configuration.to_str().unwrap()).unwrap();
@@ -23,20 +25,37 @@ fn setup() -> (Simulation, Universe) {
 
     let mut velocities = BoltzmanVelocities::new(units::from(300.0, "K").unwrap());
     velocities.init(&mut universe);
-
-    let simulation = Simulation::new(
-        MolecularDynamics::new(units::from(1.0, "fs").unwrap())
-    );
-    return (simulation, universe);
+    return universe;
 }
 
 #[test]
 fn constant_energy() {
-    Logger::stdout();
-    let (mut simulation, mut universe) = setup();
+    START.call_once(|| {Logger::stdout();});
+    let mut universe = setup_universe();
+    let mut simulation = Simulation::new(
+        MolecularDynamics::new(units::from(1.0, "fs").unwrap())
+    );
 
     let e_initial = universe.total_energy();
     simulation.run(&mut universe, 1000);
     let e_final = universe.total_energy();
     assert!(f64::abs(e_initial - e_final)/e_final < 1e-6);
+}
+
+#[test]
+fn anisotropic_berendsen() {
+    START.call_once(|| {Logger::stdout();});
+    let mut universe = setup_universe();
+    let mut simulation = Simulation::new(
+        MolecularDynamics::from_integrator(
+            AnisoBerendsenBarostat::hydrostatic(
+                units::from(1.0, "fs").unwrap(),
+                units::from(5e4, "bar").unwrap()
+            )
+        )
+    );
+
+    simulation.run(&mut universe, 10000);
+    let pressure = units::from(5e4, "bar").unwrap();
+    assert!(f64::abs(universe.pressure() - pressure)/pressure < 1e-2);
 }
