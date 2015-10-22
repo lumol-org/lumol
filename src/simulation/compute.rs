@@ -44,39 +44,40 @@ impl Compute for Forces {
             }
         }
 
-        let topology = universe.topology();
-        for bond in topology.bonds().iter() {
-            let (i, j) = (bond.i(), bond.j());
-            let d = universe.wrap_vector(i, j);
-            let dn = d.normalized();
-            let r = d.norm();
-            for potential in universe.bond_potentials(i, j) {
-                let f = potential.force(r);
-                res[i] = res[i] + f * dn;
-                res[j] = res[j] - f * dn;
+        for molecule in universe.molecules().iter() {
+            for bond in molecule.bonds().iter() {
+                let (i, j) = (bond.i(), bond.j());
+                let d = universe.wrap_vector(i, j);
+                let dn = d.normalized();
+                let r = d.norm();
+                for potential in universe.bond_potentials(i, j) {
+                    let f = potential.force(r);
+                    res[i] = res[i] + f * dn;
+                    res[j] = res[j] - f * dn;
+                }
             }
-        }
 
-        for angle in topology.angles().iter() {
-            let (i, j, k) = (angle.i(), angle.j(), angle.k());
-            let (theta, d1, d2, d3) = universe.angle_and_derivatives(i, j, k);
-            for potential in universe.angle_potentials(i, j, k) {
-                let f = potential.force(theta);
-                res[i] = res[i] + f * d1;
-                res[j] = res[j] + f * d2;
-                res[k] = res[k] + f * d3;
+            for angle in molecule.angles().iter() {
+                let (i, j, k) = (angle.i(), angle.j(), angle.k());
+                let (theta, d1, d2, d3) = universe.angle_and_derivatives(i, j, k);
+                for potential in universe.angle_potentials(i, j, k) {
+                    let f = potential.force(theta);
+                    res[i] = res[i] + f * d1;
+                    res[j] = res[j] + f * d2;
+                    res[k] = res[k] + f * d3;
+                }
             }
-        }
 
-        for dihedral in topology.dihedrals().iter() {
-            let (i, j, k, m) = (dihedral.i(), dihedral.j(), dihedral.k(), dihedral.m());
-            let (phi, d1, d2, d3, d4) = universe.dihedral_and_derivatives(i, j, k, m);
-            for potential in universe.dihedral_potentials(i, j, k, m) {
-                let f = potential.force(phi);
-                res[i] = res[i] + f * d1;
-                res[j] = res[j] + f * d2;
-                res[k] = res[k] + f * d3;
-                res[k] = res[k] + f * d4;
+            for dihedral in molecule.dihedrals().iter() {
+                let (i, j, k, m) = (dihedral.i(), dihedral.j(), dihedral.k(), dihedral.m());
+                let (phi, d1, d2, d3, d4) = universe.dihedral_and_derivatives(i, j, k, m);
+                for potential in universe.dihedral_potentials(i, j, k, m) {
+                    let f = potential.force(phi);
+                    res[i] = res[i] + f * d1;
+                    res[j] = res[j] + f * d2;
+                    res[k] = res[k] + f * d3;
+                    res[k] = res[k] + f * d4;
+                }
             }
         }
 
@@ -107,28 +108,29 @@ impl Compute for PotentialEnergy {
             }
         }
 
-        let topology = universe.topology();
-        for bond in topology.bonds().iter() {
-            let (i, j) = (bond.i(), bond.j());
-            let r = universe.wrap_vector(i, j).norm();
-            for potential in universe.bond_potentials(i, j) {
-                energy += potential.energy(r);
+        for molecule in universe.molecules().iter() {
+            for bond in molecule.bonds().iter() {
+                let (i, j) = (bond.i(), bond.j());
+                let r = universe.wrap_vector(i, j).norm();
+                for potential in universe.bond_potentials(i, j) {
+                    energy += potential.energy(r);
+                }
             }
-        }
 
-        for angle in topology.angles().iter() {
-            let (i, j, k) = (angle.i(), angle.j(), angle.k());
-            let theta = universe.angle(i, j, k);
-            for potential in universe.angle_potentials(i, j, k) {
-                energy += potential.energy(theta);
+            for angle in molecule.angles().iter() {
+                let (i, j, k) = (angle.i(), angle.j(), angle.k());
+                let theta = universe.angle(i, j, k);
+                for potential in universe.angle_potentials(i, j, k) {
+                    energy += potential.energy(theta);
+                }
             }
-        }
 
-        for dihedral in topology.dihedrals().iter() {
-            let (i, j, k, m) = (dihedral.i(), dihedral.j(), dihedral.k(), dihedral.m());
-            let phi = universe.dihedral(i, j, k, m);
-            for potential in universe.dihedral_potentials(i, j, k, m) {
-                energy += potential.energy(phi);
+            for dihedral in molecule.dihedrals().iter() {
+                let (i, j, k, m) = (dihedral.i(), dihedral.j(), dihedral.k(), dihedral.m());
+                let phi = universe.dihedral(i, j, k, m);
+                for potential in universe.dihedral_potentials(i, j, k, m) {
+                    energy += potential.energy(phi);
+                }
             }
         }
 

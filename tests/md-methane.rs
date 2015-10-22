@@ -34,10 +34,13 @@ fn setup_universe() -> Universe {
 fn bonds_detection() {
     START.call_once(|| {Logger::stdout();});
     let universe = setup_universe();
-    assert_eq!(universe.topology().molecules().len(), 150);
-    assert_eq!(universe.bonds().len(), 600);
-    assert_eq!(universe.angles().len(), 900);
-    assert_eq!(universe.dihedrals().len(), 0);
+    assert_eq!(universe.molecules().len(), 150);
+
+    for molecule in universe.molecules() {
+        assert_eq!(molecule.bonds().len(), 4);
+        assert_eq!(molecule.angles().len(), 6);
+        assert_eq!(molecule.dihedrals().len(), 0);
+    }
 }
 
 #[test]

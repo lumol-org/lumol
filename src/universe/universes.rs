@@ -8,9 +8,9 @@
 //! `Universe` type definition and implementation.
 
 use std::collections::HashMap;
-use std::collections::HashSet;
 use std::ops::{Index, IndexMut};
 use std::slice;
+use std::cmp::{min, max};
 
 extern crate chemfiles;
 use self::chemfiles::{Trajectory, Frame};
@@ -19,24 +19,31 @@ use potentials::{PairPotential, AnglePotential, DihedralPotential, GlobalPotenti
 use types::{Vector3D, Matrix3};
 
 use super::Particle;
-use super::{Topology, Bond, Angle, Dihedral};
+use super::Molecule;
 use super::UnitCell;
 use super::interactions::Interactions;
 use super::chemfiles::frame_to_universe;
+
+pub type Permutations = Vec<(usize, usize)>;
 
 /// The Universe type hold all the data about a system. This data contains:
 ///
 ///   - an unit cell, containing the system;
 ///   - a list of particles in the system;
+///   - a list of molecules in the system;
 ///   - a list of interactions, associating particles kinds and potentials
 ///   - a hash map associating particles names and particles kinds.
+///
+/// In this implementation, the particles contained in a molecule are guaranted
+/// to be contiguous in memory. This allow for faster access when iterating over
+/// molecules, and easier molecule removal in the universe.
 pub struct Universe {
     /// Unit cell of the universe
     cell: UnitCell,
     /// List of particles in the system
     particles: Vec<Particle>,
-    /// Topology of the universe
-    topology: Topology,
+    /// Molecules in the universe
+    molecules: Vec<Molecule>,
     /// Particles kinds, associating particles names and indexes
     kinds: HashMap<String, u16>,
     /// Interactions is a hash map associating particles kinds and potentials
@@ -50,7 +57,7 @@ impl Universe {
     pub fn new() -> Universe {
         Universe{
             particles: Vec::new(),
-            topology: Topology::new(),
+            molecules: Vec::new(),
             kinds: HashMap::new(),
             interactions: Interactions::new(),
             cell: UnitCell::new(),
@@ -109,10 +116,133 @@ impl Universe {
 
 /// Topology and particles related functions
 impl Universe {
-    /// Get a reference to the universe topology
-    #[inline] pub fn topology(&self) -> &Topology {&self.topology}
-    /// Get a mutable reference to the universe topology
-    #[inline] pub fn topology_mut(&mut self) -> &mut Topology {&mut self.topology}
+    /// Get the index of the molecule containing the particle `i`
+    fn molecule_id(&self, i: usize) -> usize {
+        for (idx, mol) in self.molecules.iter().enumerate() {
+            if mol.first() <= i && i <= mol.last() {
+                return idx;
+            }
+        }
+        error!("Could not find the molecule id for particle {}", i);
+        unreachable!()
+    }
+
+    /// Get the molecule containing the particle `i`
+    pub fn molecule_containing(&self, i:usize) -> &Molecule {
+        let id = self.molecule_id(i);
+        return &self.molecules[id];
+    }
+
+    /// Check if the particles at indexes `i` and `j` are in the same molecule
+    #[inline] pub fn are_in_same_molecule(&self, i: usize, j:usize) -> bool {
+        self.molecule_id(i) == self.molecule_id(j)
+    }
+
+    /// Get the list of molecules in the universe.
+    #[inline] pub fn molecules(&self) -> &Vec<Molecule> {
+        &self.molecules
+    }
+
+    /// Remove the molecule containing the particle at index `i`
+    pub fn remove_molecule_containing(&mut self, i: usize) {
+        let id = self.molecule_id(i);
+        let molecule = self.molecules.remove(id);
+        let first = molecule.first();
+        let size = molecule.size();
+
+        for _ in 0..size {
+            self.particles.remove(first);
+        }
+
+        for molecule in self.molecules.iter_mut().skip(id) {
+            molecule.translate_by(-(size as isize));
+        }
+    }
+
+    /// Add a bond between the particles at indexes `i` and `j`. The particles
+    /// should have been added to the system before calling this.
+    ///
+    /// # Warning
+    ///
+    /// If the bond is between two particles which are not in the same molecule,
+    /// the two molecules are merged together by deplacing particles in the
+    /// particles list, and thus invalidate any previously stored index. In
+    /// particular, any bond, angle, dihedral or molecule is invalidated.
+    ///
+    /// If molecules where merged, this function will return `Some(perms)`,
+    /// where `perms` contains a list of `(old_index, new_index)` associations.
+    /// If no molecules where merged, this function will return `None`.
+    pub fn add_bond(&mut self, i: usize, j: usize) -> Option<Permutations> {
+        assert!(i <= self.particles.len());
+        assert!(j <= self.particles.len());
+        debug!("Adding bond between the particles {} and {}, in molecules {} and {}", i, j, self.molecule_id(i), self.molecule_id(j));
+
+        let (i, j, perms) = if !self.are_in_same_molecule(i, j) {
+            // Getting copy of the molecules before the merge
+            let mol_i = self.molecule_id(i);
+            let mol_j = self.molecule_id(j);
+            let new_mol_idx = min(mol_i, mol_j);
+            let old_mol_idx = max(mol_i, mol_j);
+            let new_mol = self.molecules[new_mol_idx].clone();
+            let old_mol = self.molecules[old_mol_idx].clone();
+
+            let mut perms = Permutations::new();
+            let new_mol_last = new_mol.last();
+            let mut old_mol_idx = old_mol.first();
+
+            // If new_mol_last + 1 == old_mol_idx, no one move
+            if new_mol_last + 1 != old_mol_idx {
+                let size = old_mol.size();
+                // Add permutation for the molecule we just moved around
+                for i in (new_mol_last + 1)..(new_mol_last + size + 1) {
+                    perms.push((old_mol_idx, i));
+                    old_mol_idx += 1;
+                }
+
+                // Add permutations for molecules that where shifted to make space
+                // for the just moved molecule.
+                for molecule in self.molecules.iter().skip(new_mol_idx + 2).take(old_mol_idx - new_mol_idx - 1) {
+                    for i in molecule {
+                        perms.push((i - size, i));
+                    }
+                }
+            }
+
+            // Effective merge
+            let delta = self.merge_molecules_containing(i, j);
+
+            // One of the `i` or `j` index is no longer valid, as one molecule
+            // has been displaced.
+            let (i, j) = if mol_i == new_mol_idx {
+                (i, j - delta) // j moved
+            } else {
+                debug_assert!(mol_j == new_mol_idx);
+                (i - delta, j) // i moved
+            };
+            (i, j, Some(perms))
+        } else {
+            (i, j, None)
+        };
+
+        let id = self.molecule_id(i);
+        let molecule = &mut self.molecules[id];
+        molecule.add_bond(i, j);
+
+        return perms;
+    }
+
+    /// Removes particle at index `i` and any associated bonds, angle or dihedral
+    pub fn remove_particle(&mut self, i: usize) {
+        let id = self.molecule_id(i);
+        self.molecules[id].remove_particle(i);
+
+        for molecule in self.molecules.iter_mut().skip(id + 1) {
+            molecule.translate_by(-1);
+        }
+
+        self.particles.remove(i);
+    }
+
 
     /// Insert a particle at the end of the internal list
     pub fn add_particle(&mut self, p: Particle) {
@@ -124,8 +254,7 @@ impl Universe {
             part.set_kind(kind);
         }
         self.particles.push(part);
-        let index = self.size() - 1;
-        self.topology.add_particle(index);
+        self.molecules.push(Molecule::new(self.particles.len() - 1));
     }
 
     /// Get the number of particles in this universe
@@ -141,26 +270,6 @@ impl Universe {
         self.particles.iter_mut()
     }
 
-    /// Add a bond between the particles at indexes `i` and `j`.
-    #[inline] pub fn add_bond(&mut self, i: usize, j: usize) {
-        self.topology.add_bond(i, j);
-    }
-
-    /// Get the list of bonds in the universe
-    #[inline] pub fn bonds(&self) -> &HashSet<Bond> {
-        &self.topology.bonds()
-    }
-
-    /// Get the list of angles in the universe
-    #[inline] pub fn angles(&self) -> &HashSet<Angle> {
-        &self.topology.angles()
-    }
-
-    /// Get the list of dihedrals in the universe
-    #[inline] pub fn dihedrals(&self) -> &HashSet<Dihedral> {
-        &self.topology.dihedrals()
-    }
-
     /// Get or create the usize kind index for the name `name` of a particle
     fn get_kind(&mut self, name: &str) -> u16 {
         if self.kinds.contains_key(name) {
@@ -170,6 +279,69 @@ impl Universe {
             self.kinds.insert(name.to_string(), index);
             return index;
         }
+    }
+
+    /// Merge the molecules containing the atoms at indexes `i` and `j` in one
+    /// molecule. The molecule are merged into the one with the lower index in
+    /// `molecules`.
+    ///
+    /// For example, if we have
+    /// ```
+    /// H-H  H-H  H-H  H-H
+    /// 0 1  2 3  4 5  6 7
+    /// ```
+    /// and call `merge_molecules_containing(1, 6)`, the molecules 0 and 2 will
+    /// be merged into the molecule 0, and the result will be
+    /// ```
+    /// 0 1 6 7  2 3  4 5  # Old indexes
+    /// H-H-H-H  H-H  H-H
+    /// 0 1 2 3  4 5  6 7  # New indexes
+    /// ```
+    ///
+    /// This functions return the deplacement of the move molecule, i.e. in this
+    /// example `4`.
+    fn merge_molecules_containing(&mut self, i: usize, j: usize) -> usize {
+        let mol_i = self.molecule_id(i);
+        let mol_j = self.molecule_id(j);
+
+        // Move the particles so that we still have molecules contiguous in
+        // memory. The molecules are merged in the one with the smaller index.
+        let new_mol_idx = min(mol_i, mol_j);
+        let old_mol_idx = max(mol_i, mol_j);
+
+        let mut new_mol = self.molecules[new_mol_idx].clone();
+        let old_mol = self.molecules[old_mol_idx].clone();
+        assert!(new_mol.last() < old_mol.first());
+        debug!("Merging molecules \n{:#?}\n ---\n{:#?}", new_mol, old_mol);
+
+        if new_mol.last() + 1 != old_mol.first() {
+            let mut new_index = new_mol.last() + 1;
+            for i in old_mol {
+                // Remove particles from the old position, and insert it to the
+                // new one. The indexes are valid during the movement, because
+                // we insert a new particle for each particle removed.
+                let particle = self.particles.remove(i);
+                self.particles.insert(new_index, particle);
+                new_index += 1;
+            }
+        }
+
+        let mut old_mol = self.molecules[max(mol_i, mol_j)].clone();
+        let size = old_mol.size() as isize;
+
+        // translate all indexed in the molecules between new_mol and old_mol
+        for molecule in self.molecules.iter_mut().skip(new_mol_idx + 1).take(old_mol_idx - new_mol_idx - 1) {
+            molecule.translate_by(size);
+        }
+
+        let delta = old_mol.first() - new_mol.last() - 1;
+        old_mol.translate_by(- (delta as isize));
+
+        new_mol.merge_with(old_mol);
+        self.molecules[new_mol_idx] = new_mol;
+        self.molecules.remove(old_mol_idx);
+
+        return delta;
     }
 }
 
@@ -443,33 +615,48 @@ mod tests {
     }
 
     #[test]
-    fn topology() {
-        use std::collections::HashSet;
-
+    fn molecules() {
         let mut universe = Universe::new();
         universe.add_particle(Particle::new("H"));
         universe.add_particle(Particle::new("O"));
         universe.add_particle(Particle::new("O"));
         universe.add_particle(Particle::new("H"));
 
-        universe.add_bond(0, 1);
-        universe.add_bond(2, 3);
+        assert_eq!(universe.add_bond(0, 1), Some(vec![]));
+        assert_eq!(universe.add_bond(2, 3), Some(vec![]));
 
-        let mut bonds = HashSet::new();
-        bonds.insert(Bond::new(0, 1));
-        bonds.insert(Bond::new(2, 3));
-        assert_eq!(universe.bonds(), &bonds);
+        assert_eq!(universe.molecules().len(), 2);
 
-        universe.add_bond(1, 2);
+        let molecule = universe.molecules()[0].clone();
+        assert!(molecule.bonds().contains(&Bond::new(0, 1)));
+        let molecule = universe.molecules()[1].clone();
+        assert!(molecule.bonds().contains(&Bond::new(2, 3)));
 
-        let mut angles = HashSet::new();
-        angles.insert(Angle::new(0, 1, 2));
-        angles.insert(Angle::new(1, 2, 3));
-        assert_eq!(universe.angles(), &angles);
+        assert_eq!(universe.add_bond(1, 2), Some(vec![]));
+        assert_eq!(universe.molecules().len(), 1);
 
-        let mut dihedrals = HashSet::new();
-        dihedrals.insert(Dihedral::new(0, 1, 2, 3));
-        assert_eq!(universe.dihedrals(), &dihedrals);
+        let molecule = universe.molecules()[0].clone();
+        assert!(molecule.angles().contains(&Angle::new(0, 1, 2)));
+        assert!(molecule.angles().contains(&Angle::new(1, 2, 3)));
+        assert!(molecule.dihedrals().contains(&Dihedral::new(0, 1, 2, 3)));
+
+        universe.remove_particle(2);
+        assert_eq!(universe.molecules().len(), 1);
+
+        universe.remove_molecule_containing(1);
+        assert_eq!(universe.molecules().len(), 0);
+        assert_eq!(universe.size(), 0);
+    }
+
+    #[test]
+    fn molecules_permutations() {
+        let mut universe = Universe::new();
+        universe.add_particle(Particle::new("O"));
+        universe.add_particle(Particle::new("H"));
+        universe.add_particle(Particle::new("H"));
+
+        assert_eq!(universe.add_bond(0, 2), Some(vec![(2, 1), (1, 2)]));
+        assert_eq!(universe.add_bond(0, 2), Some(vec![]));
     }
 
     #[test]

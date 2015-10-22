@@ -79,10 +79,26 @@ impl ToCymbalum for chemfiles::Frame {
             universe[i].set_position(position);
         }
 
-        for bond in try!(topology.bonds()).iter() {
-            universe.add_bond(bond[0] as usize, bond[1] as usize);
+        let mut bonds = try!(topology.bonds());
+        while bonds.len() != 0 {
+            let bond = bonds.pop().unwrap();
+            if let Some(perms) = universe.add_bond(bond[0] as usize, bond[1] as usize) {
+                apply_particle_permutation(&mut bonds, perms);
+            }
         }
         Ok(universe)
+    }
+}
+
+fn apply_particle_permutation(bonds: &mut Vec<[u64; 2]>, perms: Vec<(usize, usize)>) {
+    for bond in bonds {
+        for perm in &perms {
+            if bond[0] == perm.0 as u64 {
+                bond[0] = perm.1 as u64;
+            } else if bond[1] == perm.0 as u64 {
+                bond[1] = perm.1 as u64;
+            }
+        }
     }
 }
 
@@ -90,7 +106,6 @@ impl ToCymbalum for chemfiles::Frame {
 pub fn frame_to_universe(frame: chemfiles::Frame) -> Result<Universe, Error> {
     frame.to_cymbalum()
 }
-
 
 /******************************************************************************/
 
@@ -162,9 +177,12 @@ impl ToChemfiles for Universe {
         try!(frame.set_positions(positions));
         try!(frame.set_velocities(velocities));
 
-        for bond in self.topology().bonds().iter() {
-            try!(topology.add_bond(bond.i() as u64, bond.j() as u64));
+        for molecule in self.molecules().iter() {
+            for bond in molecule.bonds().iter() {
+                try!(topology.add_bond(bond.i() as u64, bond.j() as u64));
+            }
         }
+
         try!(frame.set_topology(&topology));
         // Guessing angles and dihedrals
         try!(frame.guess_topology(false));

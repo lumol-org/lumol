@@ -33,9 +33,8 @@ fn setup() -> (Simulation, Universe) {
         universe[3*i + 1].set_position(origin.clone() + h_1.clone());
         universe[3*i + 2].set_position(origin.clone() + h_2.clone());
 
-        let topology = universe.topology_mut();
-        topology.add_bond(3*i, 3*i + 1);
-        topology.add_bond(3*i, 3*i + 2);
+        universe.add_bond(3*i, 3*i + 1);
+        universe.add_bond(3*i, 3*i + 2);
     }
 
     let data_dir = Path::new(file!()).parent().unwrap();
