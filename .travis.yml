@@ -1,11 +1,13 @@
 language: rust
-sudo: required
+sudo: false
 addons:
   apt:
     sources:
     - ubuntu-toolchain-r-test
+    - kalakris-cmake
     packages:
     - g++-4.9
+    - cmake
     - libcurl4-openssl-dev
     - libelf-dev
     - libdw-dev
