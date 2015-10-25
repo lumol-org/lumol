@@ -61,11 +61,16 @@ trait FromYaml where Self: Sized {
 ///     type: harmonic
 ///     k: 300 kJ/mol/deg^2
 ///     x0: 120 deg
-/// dihedrals: # Molecular angles
+/// dihedrals: # Dihedral angles
 ///   - atoms: [O, C, C, O]
 ///     type: harmonic
 ///     k: 42 kJ/mol/deg^2
 ///     x0: 180 deg
+///   - atoms: [C, C, C, C]
+///     type: torsion
+///     k: 40 kJ/mol
+///     delta: 120 deg
+///     n: 4
 /// coulomb:
 ///   - type: wolf
 ///     cutoff: 10 A
@@ -259,6 +264,7 @@ fn read_dihedral_potential(node: &Yaml) -> Result<Box<DihedralPotential>> {
             match val {
                 "harmonic" => Ok(Box::new(try!(Harmonic::from_yaml(node)))),
                 "cosine-harmonic" | "cosineharmonic" => Ok(Box::new(try!(CosineHarmonic::from_yaml(node)))),
+                "torsion" => Ok(Box::new(try!(Torsion::from_yaml(node)))),
                 "null" => Ok(Box::new(try!(NullPotential::from_yaml(node)))),
                 val => Err(
                     Error::from(format!("Unknown potential type '{}'", val))
@@ -313,6 +319,20 @@ impl FromYaml for CosineHarmonic {
         } else {
             Err(
                 Error::from("Missing 'k' or 'x0' in cosine harmonic potential")
+            )
+        }
+    }
+}
+
+impl FromYaml for Torsion {
+    fn from_yaml(node: &Yaml) -> Result<Torsion> {
+        if let (Some(n), Some(k), Some(delta)) = (node["n"].as_i64(), node["k"].as_str(), node["delta"].as_str()) {
+            let k = try!(::units::from_str(k));
+            let delta = try!(::units::from_str(delta));
+            Ok(Torsion{n: n as usize, k: k, delta: delta})
+        } else {
+            Err(
+                Error::from("Missing 'n', 'k' or 'delta' in torsion potential")
             )
         }
     }
