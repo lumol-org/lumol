@@ -24,5 +24,5 @@ pub use self::computations::Computation;
 pub use self::computations::{TableComputation, CutoffComputation};
 
 pub mod global;
-pub use self::global::GlobalPotential;
+pub use self::global::{GlobalPotential, CoulombicPotential};
 pub use self::global::Wolf;

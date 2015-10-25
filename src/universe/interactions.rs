@@ -11,7 +11,8 @@
 use std::collections::BTreeMap;
 use std::cmp::max;
 
-use potentials::{PairPotential, AnglePotential, DihedralPotential, GlobalPotential};
+use potentials::{PairPotential, AnglePotential, DihedralPotential};
+use potentials::{GlobalPotential, CoulombicPotential};
 
 /// The Interaction type hold all data about the potentials in the system,
 /// indexed by particle type.
@@ -24,6 +25,8 @@ pub struct Interactions {
     angles: BTreeMap<(u16, u16, u16), Vec<Box<AnglePotential>>>,
     /// Dihedral angles potentials
     dihedrals: BTreeMap<(u16, u16, u16, u16), Vec<Box<DihedralPotential>>>,
+    /// Coulombic potential solver
+    coulomb: Option<Box<CoulombicPotential>>,
     /// Global potentials
     globals: Vec<Box<GlobalPotential>>,
 }
@@ -35,6 +38,7 @@ impl Interactions {
             bonds: BTreeMap::new(),
             angles: BTreeMap::new(),
             dihedrals: BTreeMap::new(),
+            coulomb: None,
             globals: Vec::new(),
         }
     }
@@ -101,6 +105,16 @@ impl Interactions {
     pub fn dihedrals(&self, i: u16, j:u16, k:u16, m:u16) -> Option<&Vec<Box<DihedralPotential>>> {
         let (i, j, k, m) = sort_dihedral(i, j, k, m);
         self.dihedrals.get(&(i, j, k, m))
+    }
+
+
+    pub fn set_coulomb(&mut self, potential: Box<CoulombicPotential>) {
+        self.coulomb = Some(potential)
+    }
+
+
+    pub fn coulomb(&self) -> &Option<Box<CoulombicPotential>> {
+        &self.coulomb
     }
 
     /// Add a global interaction

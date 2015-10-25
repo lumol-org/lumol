@@ -28,6 +28,10 @@ pub trait GlobalPotential {
     fn virial(&self, universe: &Universe) -> Matrix3;
 }
 
+/// Electrostatic potential solver should implement the `CoulombicPotential`
+/// trait.
+pub trait CoulombicPotential : GlobalPotential {}
+
 /******************************************************************************/
 /// Wolf summation for the coulombic potential, as defined in [Wolf1999]. This
 /// is a fast direct pairwise summation for coulombic potential.
@@ -145,6 +149,8 @@ impl GlobalPotential for Wolf {
         return res;
     }
 }
+
+impl CoulombicPotential for Wolf {}
 
 /******************************************************************************/
 

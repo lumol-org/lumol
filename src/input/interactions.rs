@@ -89,6 +89,7 @@ trait FromYaml where Self: Sized {
 /// The `"coulomb"` section specify how to compute the coulombic interactions.
 /// It should contains the `type` and `charge` key, with data about charges to
 /// assign to the system, and which method to use to compute these interactions.
+/// Additional keys can exist depending on the actual coulombic solver used.
 pub fn read_interactions<P: AsRef<Path>>(universe: &mut Universe, path: P) -> Result<()> {
     let mut file = try!(File::open(path));
     let mut buff = String::new();
@@ -394,8 +395,8 @@ impl FromYamlWithPairPotential for TableComputation {
 /******************************************************************************/
 
 fn read_coulomb(universe: &mut Universe, config: &Yaml) -> Result<()> {
-    let potential = try!(read_global_potential(config));
-    universe.add_global_interaction(potential);
+    let potential = try!(read_coulomb_potential(config));
+    universe.set_coulomb_interaction(potential);
 
     if config["charges"].as_hash().is_some() {
         try!(assign_charges(universe, &config["charges"]));
@@ -403,7 +404,7 @@ fn read_coulomb(universe: &mut Universe, config: &Yaml) -> Result<()> {
     Ok(())
 }
 
-fn read_global_potential(node: &Yaml) -> Result<Box<GlobalPotential>> {
+fn read_coulomb_potential(node: &Yaml) -> Result<Box<CoulombicPotential>> {
     match node["type"].as_str() {
         None => {
             Err(Error::from(
@@ -414,7 +415,7 @@ fn read_global_potential(node: &Yaml) -> Result<Box<GlobalPotential>> {
             let val: &str = &val.to_lowercase();
             match val {
                 "wolf" => Ok(Box::new(try!(Wolf::from_yaml(node)))),
-                val => Err(Error::from(format!("Unknown coulomb type '{}'", val))),
+                val => Err(Error::from(format!("Unknown coulomb solver type '{}'", val))),
             }
         }
     }

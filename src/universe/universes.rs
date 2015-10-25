@@ -16,7 +16,8 @@ use std::iter::IntoIterator;
 extern crate chemfiles;
 use self::chemfiles::{Trajectory, Frame};
 
-use potentials::{PairPotential, AnglePotential, DihedralPotential, GlobalPotential};
+use potentials::{PairPotential, AnglePotential, DihedralPotential};
+use potentials::{CoulombicPotential, GlobalPotential};
 use types::{Vector3D, Matrix3};
 
 use super::Particle;
@@ -427,6 +428,11 @@ impl Universe {
         }
     }
 
+    /// Get the current coulombic solver
+    pub fn coulomb_interaction(&self) -> &Option<Box<CoulombicPotential>> {
+        self.interactions.coulomb()
+    }
+
     /// Get all the global interactions
     pub fn global_potentials(&self) -> &Vec<Box<GlobalPotential>> {
         self.interactions.globals()
@@ -465,6 +471,11 @@ impl Universe {
         let mkind = self.get_kind(m);
 
         self.interactions.add_dihedral(ikind, jkind, kkind, mkind, pot);
+    }
+
+    /// Set the coulombic solver to use
+    pub fn set_coulomb_interaction(&mut self, potential: Box<CoulombicPotential>) {
+        self.interactions.set_coulomb(potential);
     }
 
     /// Add a global interaction to the universe
@@ -723,6 +734,10 @@ mod tests {
 
         universe.add_dihedral_interaction("He", "He", "He", "He", Box::new(CosineHarmonic::new(0.3, 2.0)));
         assert_eq!(universe.dihedral_potentials(0, 0, 0, 0).len(), 1);
+
+        assert!(universe.coulomb_interaction().is_none());
+        universe.set_coulomb_interaction(Box::new(Wolf::new(1.0)));
+        assert!(universe.coulomb_interaction().is_some());
 
         universe.add_global_interaction(Box::new(Wolf::new(1.0)));
         assert_eq!(universe.global_potentials().len(), 1);
