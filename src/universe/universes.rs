@@ -11,6 +11,7 @@ use std::collections::HashMap;
 use std::ops::{Index, IndexMut};
 use std::slice;
 use std::cmp::{min, max};
+use std::iter::IntoIterator;
 
 extern crate chemfiles;
 use self::chemfiles::{Trajectory, Frame};
@@ -470,6 +471,26 @@ impl Universe {
     /// Add a global interaction to the universe
     pub fn add_global_interaction(&mut self, potential: Box<GlobalPotential>) {
         self.interactions.add_global(potential);
+    }
+}
+
+impl<'a> IntoIterator for &'a Universe {
+    type Item = &'a Particle;
+    type IntoIter = slice::Iter<'a, Particle>;
+
+    #[inline]
+    fn into_iter(self) -> slice::Iter<'a, Particle> {
+        self.iter()
+    }
+}
+
+impl<'a> IntoIterator for &'a mut Universe {
+    type Item = &'a mut Particle;
+    type IntoIter = slice::IterMut<'a, Particle>;
+
+    #[inline]
+    fn into_iter(self) -> slice::IterMut<'a, Particle> {
+        self.iter_mut()
     }
 }
 
