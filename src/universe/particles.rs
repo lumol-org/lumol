@@ -15,18 +15,19 @@ use super::PeriodicTable;
 /// processes.
 #[derive(Clone, Debug)]
 pub struct Particle {
-    /// Particle name
+    /// Particle name. This one is not public, as we always want to get &str,
+    /// and to use either `String` of `&str` to set it.
     name: String,
     /// Particle kind, an index for potentials lookup
-    kind: u16,
+    pub kind: u16,
     /// Particle mass
-    mass: f64,
+    pub mass: f64,
     /// Particle charge
-    charge: f64,
+    pub charge: f64,
     /// Particle positions
-    position: Vector3D,
+    pub position: Vector3D,
     /// Particle velocity, if needed
-    velocity: Vector3D,
+    pub velocity: Vector3D,
 }
 
 
@@ -47,74 +48,13 @@ impl Particle {
     }
 
     /// Get the particle name
-    #[inline] pub fn name(&self) -> &str {
+    pub fn name(&self) -> &str {
         &self.name
     }
 
-    /// Set the particle name
-    #[inline] pub fn set_name<S>(&mut self, name: S) where S: Into<String> {
-        self.name = name.into();
-    }
-
-    /// Get the particle kind. This kind is used for fast lookup in interactions
-    /// tables
-    #[inline] pub fn kind(&self) -> u16 {
-        self.kind
-    }
-
-    /// Set the particle kind.
-    #[inline] pub fn set_kind(&mut self, kind: u16) {
-        self.kind = kind;
-    }
-
-    /// Get the particle mass
-    #[inline] pub fn mass(&self) -> f64 {
-        self.mass
-    }
-
-    /// Set the particle mass
-    #[inline] pub fn set_mass(&mut self, mass: f64) {
-        self.mass = mass;
-    }
-
-    /// Get the particle charge
-    #[inline] pub fn charge(&self) -> f64 {
-        self.charge
-    }
-
-    /// Set the particle charge
-    #[inline] pub fn set_charge(&mut self, charge: f64) {
-        self.charge = charge;
-    }
-
-    /// Get the particle position
-    #[inline] pub fn position(&self) -> &Vector3D {
-        &self.position
-    }
-
-    /// Set the particle position
-    #[inline] pub fn set_position(&mut self, pos: Vector3D) {
-        self.position = pos;
-    }
-
-    /// Add `dr` to the particle position
-    #[inline] pub fn add_position(&mut self, dr: Vector3D) {
-        self.position = self.position + dr;
-    }
-
-    /// Get the particle velocity
-    #[inline] pub fn velocity(&self) -> &Vector3D {
-        &self.velocity
-    }
-
-    /// Set the particle velocity
-    #[inline] pub fn set_velocity(&mut self, vel: Vector3D) {
-        self.velocity = vel;
-    }
-
-    /// Add `dv` to the particle velocity
-    #[inline] pub fn add_velocity(&mut self, dv: Vector3D) {
-        self.velocity = self.velocity + dv;
+    /// Set the particle name to `name`
+    pub fn set_name<'a, S>(&mut self, name: S) where S: Into<&'a str> {
+        self.name = String::from(name.into());
     }
 }
 
@@ -122,7 +62,12 @@ impl Particle {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use types::Vector3D;
+
+    #[test]
+    fn mass_initialization() {
+        let part = Particle::new("O");
+        assert_eq!(part.mass, 15.999f32 as f64);
+    }
 
     #[test]
     fn name() {
@@ -132,43 +77,5 @@ mod tests {
         part.set_name("H");
         assert_eq!(part.name(), "H");
 
-        let name = "Zn";
-        part.set_name(name);
-        assert_eq!(part.name(), "Zn");
-    }
-
-    #[test]
-    fn mass() {
-        let mut part = Particle::new("O");
-        assert_eq!(part.mass(), 15.999f32 as f64);
-        part.set_mass(10.0);
-        assert_eq!(part.mass(), 10.0);
-    }
-
-    #[test]
-    fn charge() {
-        let mut part = Particle::new("O");
-        assert_eq!(part.charge(), 0.0);
-        part.set_charge(-1.0);
-        assert_eq!(part.charge(), -1.0);
-    }
-
-    #[test]
-    fn kind() {
-        let mut part = Particle::new("O");
-        part.set_kind(42);
-        assert_eq!(part.kind(), 42);
-    }
-
-    #[test]
-    fn coordinates() {
-        let mut part = Particle::new("O");
-        assert_eq!(part.position(), &Vector3D::new(0.0, 0.0, 0.0));
-
-        part.set_position(Vector3D::new(1.0, 2.0, 3.0));
-        assert_eq!(part.position(), &Vector3D::new(1.0, 2.0, 3.0));
-
-        part.set_velocity(Vector3D::new(1.0, 2.0, 3.0));
-        assert_eq!(part.velocity(), &Vector3D::new(1.0, 2.0, 3.0));
     }
 }

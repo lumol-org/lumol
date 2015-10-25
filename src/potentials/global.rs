@@ -93,9 +93,9 @@ impl GlobalPotential for Wolf {
         let natoms = universe.size();
         let mut res = 0.0;
         for i in 0..natoms {
-            let qi = universe[i].charge();
+            let qi = universe[i].charge;
             for j in i+1..natoms {
-                let qj = universe[j].charge();
+                let qj = universe[j].charge;
                 if qi*qj == 0.0 {
                     continue;
                 }
@@ -112,9 +112,9 @@ impl GlobalPotential for Wolf {
         let natoms = universe.size();
         let mut res = vec![Vector3D::new(0.0, 0.0, 0.0); natoms];
         for i in 0..natoms {
-            let qi = universe[i].charge();
+            let qi = universe[i].charge;
             for j in i+1..natoms {
-                let qj = universe[j].charge();
+                let qj = universe[j].charge;
                 if qi*qj == 0.0 {
                     continue;
                 }
@@ -131,9 +131,9 @@ impl GlobalPotential for Wolf {
         let natoms = universe.size();
         let mut res = Matrix3::zero();
         for i in 0..natoms {
-            let qi = universe[i].charge();
+            let qi = universe[i].charge;
             for j in i+1..natoms {
-                let qj = universe[j].charge();
+                let qj = universe[j].charge;
                 if qi*qj == 0.0 {
                     continue;
                 }
@@ -160,12 +160,12 @@ mod tests {
         let mut universe = Universe::from_cell(UnitCell::cubic(20.0));
 
         universe.add_particle(Particle::new("Cl"));
-        universe[0].set_charge(-1.0);
-        universe[0].set_position(Vector3D::new(0.0, 0.0, 0.0));
+        universe[0].charge = -1.0;
+        universe[0].position = Vector3D::new(0.0, 0.0, 0.0);
 
         universe.add_particle(Particle::new("Na"));
-        universe[1].set_charge(1.0);
-        universe[1].set_position(Vector3D::new(1.5, 0.0, 0.0));
+        universe[1].charge = 1.0;
+        universe[1].position = Vector3D::new(1.5, 0.0, 0.0);
 
         return universe;
     }
@@ -185,9 +185,7 @@ mod tests {
         assert_approx_eq!(norm, 0.0, 1e-9);
 
         let eps = 1e-9;
-        let mut pos = universe[0].position().clone();
-        pos.x += eps;
-        universe[0].set_position(pos);
+        universe[0].position.x += eps;
 
         let e1 = wolf.energy(&universe);
         let force = wolf.forces(&universe)[0].x;

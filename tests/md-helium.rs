@@ -98,8 +98,7 @@ fn perfect_gaz() {
 
     // dilating the universe!
     for particle in universe.iter_mut() {
-        let pos = particle.position().clone();
-        particle.set_position(10.0 * pos);
+        particle.position = 10.0 * particle.position;
     }
     universe.set_cell(UnitCell::cubic(100.0));
 

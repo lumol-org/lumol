@@ -248,11 +248,10 @@ impl Universe {
     /// Insert a particle at the end of the internal list
     pub fn add_particle(&mut self, p: Particle) {
         let mut part = p;
-        if part.kind() == u16::max_value() {
+        if part.kind == u16::max_value() {
             // If no value have been precised, set one from the internal list
             // of particles kinds.
-            let kind = self.get_kind(part.name());
-            part.set_kind(kind);
+            part.kind = self.get_kind(part.name());
         }
         self.particles.push(part);
         self.molecules.push(Molecule::new(self.particles.len() - 1));
@@ -355,8 +354,8 @@ impl Universe {
     /// Get the list of pair interaction between the particles at indexes `i`
     /// and `j`.
     pub fn pair_potentials(&self, i: usize, j: usize) -> &[Box<PairPotential>] {
-        let ikind = self.particles[i].kind();
-        let jkind = self.particles[j].kind();
+        let ikind = self.particles[i].kind;
+        let jkind = self.particles[j].kind;
         match self.interactions.pairs(ikind, jkind) {
             Some(val) => &val,
             None => {
@@ -372,8 +371,8 @@ impl Universe {
     /// Get the list of bonded interaction between the particles at indexes `i`
     /// and `j`.
     pub fn bond_potentials(&self, i: usize, j: usize) -> &[Box<PairPotential>] {
-        let ikind = self.particles[i].kind();
-        let jkind = self.particles[j].kind();
+        let ikind = self.particles[i].kind;
+        let jkind = self.particles[j].kind;
         match self.interactions.bonds(ikind, jkind) {
             Some(val) => &val,
             None => {
@@ -389,9 +388,9 @@ impl Universe {
     /// Get the list of angle interaction between the particles at indexes `i`,
     /// `j` and `k`.
     pub fn angle_potentials(&self, i: usize, j: usize, k: usize) -> &[Box<AnglePotential>] {
-        let ikind = self.particles[i].kind();
-        let jkind = self.particles[j].kind();
-        let kkind = self.particles[k].kind();
+        let ikind = self.particles[i].kind;
+        let jkind = self.particles[j].kind;
+        let kkind = self.particles[k].kind;
 
         match self.interactions.angles(ikind, jkind, kkind) {
             Some(val) => &val,
@@ -409,10 +408,10 @@ impl Universe {
     /// Get the list of dihedral angles interaction between the particles at
     /// indexes `i`, `j`, `k` and `m`.
     pub fn dihedral_potentials(&self, i: usize, j: usize, k: usize, m: usize) -> &[Box<DihedralPotential>] {
-        let ikind = self.particles[i].kind();
-        let jkind = self.particles[j].kind();
-        let kkind = self.particles[k].kind();
-        let mkind = self.particles[m].kind();
+        let ikind = self.particles[i].kind;
+        let jkind = self.particles[j].kind;
+        let kkind = self.particles[k].kind;
+        let mkind = self.particles[m].kind;
 
         match self.interactions.dihedrals(ikind, jkind, kkind, mkind) {
             Some(val) => &val,
@@ -505,50 +504,50 @@ impl Universe {
 
     /// Get the distance between the particles at indexes `i` and `j`
     #[inline] pub fn distance(&self, i: usize, j:usize) -> f64 {
-        self.cell.distance(self.particles[i].position(), self.particles[j].position())
+        self.cell.distance(&self.particles[i].position, &self.particles[j].position)
     }
 
     /// Wrap the vector i->j in the cell.
     pub fn wrap_vector(&self, i: usize, j:usize) -> Vector3D {
-        let mut res = *self.particles[i].position() - *self.particles[j].position();
+        let mut res = self.particles[i].position - self.particles[j].position;
         self.cell.wrap_vector(&mut res);
         return res;
     }
 
     /// Get the angle between the particles `i`, `j` and `k`
     pub fn angle(&self, i: usize, j: usize, k: usize) -> f64 {
-        let a = self.particles[i].position();
-        let b = self.particles[j].position();
-        let c = self.particles[k].position();
-        self.cell.angle(a, b, c)
+        let a = self.particles[i].position;
+        let b = self.particles[j].position;
+        let c = self.particles[k].position;
+        self.cell.angle(&a, &b, &c)
     }
 
     /// Get the angle and the derivatives of the angle between the particles
     /// `i`, `j` and `k`
     pub fn angle_and_derivatives(&self, i: usize, j: usize, k: usize) -> (f64, Vector3D, Vector3D, Vector3D) {
-        let a = self.particles[i].position();
-        let b = self.particles[j].position();
-        let c = self.particles[k].position();
-        self.cell.angle_and_derivatives(a, b, c)
+        let a = self.particles[i].position;
+        let b = self.particles[j].position;
+        let c = self.particles[k].position;
+        self.cell.angle_and_derivatives(&a, &b, &c)
     }
 
     /// Get the dihedral angle between the particles `i`, `j`, `k` and `m`
     pub fn dihedral(&self, i: usize, j: usize, k: usize, m: usize) -> f64 {
-        let a = self.particles[i].position();
-        let b = self.particles[j].position();
-        let c = self.particles[k].position();
-        let d = self.particles[m].position();
-        self.cell.dihedral(a, b, c, d)
+        let a = self.particles[i].position;
+        let b = self.particles[j].position;
+        let c = self.particles[k].position;
+        let d = self.particles[m].position;
+        self.cell.dihedral(&a, &b, &c, &d)
     }
 
     /// Get the dihedral angle and the derivatives of the dihedral angle
     /// between the particles `i`, `j`, `k` and `m`
     pub fn dihedral_and_derivatives(&self, i: usize, j: usize, k: usize, m: usize) -> (f64, Vector3D, Vector3D, Vector3D, Vector3D) {
-        let a = self.particles[i].position();
-        let b = self.particles[j].position();
-        let c = self.particles[k].position();
-        let d = self.particles[m].position();
-        self.cell.dihedral_and_derivatives(a, b, c, d)
+        let a = self.particles[i].position;
+        let b = self.particles[j].position;
+        let c = self.particles[k].position;
+        let d = self.particles[m].position;
+        self.cell.dihedral_and_derivatives(&a, &b, &c, &d)
     }
 }
 
@@ -699,8 +698,8 @@ mod tests {
         universe.add_particle(Particle::new("O"));
         universe.add_particle(Particle::new("H"));
 
-        universe[0].set_position(Vector3D::new(9.0, 0.0, 0.0));
-        universe[1].set_position(Vector3D::new(0.0, 0.0, 0.0));
+        universe[0].position = Vector3D::new(9.0, 0.0, 0.0);
+        universe[1].position = Vector3D::new(0.0, 0.0, 0.0);
         assert_eq!(universe.distance(0, 1), 1.0);
 
         universe.set_cell(UnitCell::new());

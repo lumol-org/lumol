@@ -438,7 +438,7 @@ fn assign_charges(universe: &mut Universe, config: &Yaml) -> Result<()> {
             let mut n_changed = 0;
             for particle in universe.iter_mut() {
                 if particle.name() == name {
-                    particle.set_charge(charge);
+                    particle.charge = charge;
                     n_changed += 1;
                 }
             }

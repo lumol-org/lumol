@@ -49,16 +49,16 @@ impl Integrator for VelocityVerlet {
 
         // Update velocities at t + ∆t/2 and positions at t + ∆t
         for (i, part) in universe.iter_mut().enumerate() {
-            part.add_velocity(0.5 * dt * self.accelerations[i]);
-            let dr = *part.velocity() * dt;
-            part.add_position(dr);
+            part.velocity = part.velocity + 0.5 * dt * self.accelerations[i];
+            let dr = part.velocity * dt;
+            part.position = part.position + dr;
         }
 
         let forces = Forces.compute(&universe);
         // Update accelerations at t + ∆t and velocities at t + ∆t
         for (i, part) in universe.iter_mut().enumerate() {
-            self.accelerations[i] = forces[i] / part.mass();
-            part.add_velocity(0.5 * dt * self.accelerations[i]);
+            self.accelerations[i] = forces[i] / part.mass;
+            part.velocity = part.velocity + 0.5 * dt * self.accelerations[i];
         }
     }
 }
@@ -89,7 +89,7 @@ impl Integrator for Verlet {
         let dt = self.timestep;
         // Approximate the positions at t - ∆t
         for (i, part) in universe.iter().enumerate() {
-            self.prevpos[i] = *part.position() - *part.velocity() * dt;
+            self.prevpos[i] = part.position - part.velocity * dt;
         }
     }
 
@@ -100,13 +100,14 @@ impl Integrator for Verlet {
         let forces = Forces.compute(&universe);
         for (i, part) in universe.iter_mut().enumerate() {
             // Save positions at t
-            let tmp = part.position().clone();
+            let tmp = part.position.clone();
             // Update positions at t + ∆t
-            let position = 2.0 * tmp - self.prevpos[i] + dt2/part.mass() * forces[i];
+            let position = 2.0 * tmp - self.prevpos[i] + dt2/part.mass * forces[i];
             // Update velocities at t
             let velocity = (position - self.prevpos[i]) / (2.0 * dt);
-            part.set_position(position);
-            part.set_velocity(velocity);
+
+            part.position = position;
+            part.velocity = velocity;
             // Update saved position
             self.prevpos[i] = tmp;
         }
@@ -142,15 +143,14 @@ impl Integrator for LeapFrog {
         let dt2 = self.timestep * self.timestep;
 
         for (i, part) in universe.iter_mut().enumerate() {
-            let velocity = part.velocity().clone();
-            part.add_position(velocity * dt + 0.5 * self.accelerations[i] * dt2);
+            part.position = part.position + part.velocity * dt + 0.5 * self.accelerations[i] * dt2;
         }
 
         let forces = Forces.compute(&universe);
         for (i, part) in universe.iter_mut().enumerate() {
-            let mass = part.mass();
+            let mass = part.mass;
             let acceleration = forces[i]/mass;
-            part.add_velocity(0.5 * (self.accelerations[i] + acceleration)* dt);
+            part.velocity = part.velocity + 0.5 * (self.accelerations[i] + acceleration)* dt;
             self.accelerations[i] = acceleration;
         }
     }
@@ -210,12 +210,10 @@ impl Integrator for BerendsenBarostat {
 
         // Update velocities at t + ∆t/2 and positions at t + ∆t
         for (i, part) in universe.iter_mut().enumerate() {
-            part.add_velocity(0.5 * dt * self.accelerations[i]);
-            let position = *part.position();
+            part.velocity = part.velocity + 0.5 * dt * self.accelerations[i];
             // Scale all positions
-            let position = self.eta * position;
-            let position = position + *part.velocity() * dt;
-            part.set_position(position);
+            part.position = self.eta * part.position;
+            part.position = part.position + part.velocity * dt;
         }
 
         universe.cell_mut().scale_mut(self.eta*self.eta*self.eta * Matrix3::one());
@@ -225,8 +223,8 @@ impl Integrator for BerendsenBarostat {
         let forces = Forces.compute(&universe);
         // Update accelerations at t + ∆t and velocities at t + ∆t
         for (i, part) in universe.iter_mut().enumerate() {
-            self.accelerations[i] = forces[i] / part.mass();
-            part.add_velocity(0.5 * dt * self.accelerations[i]);
+            self.accelerations[i] = forces[i] / part.mass;
+            part.velocity = part.velocity + 0.5 * dt * self.accelerations[i];
         }
     }
 }
@@ -288,12 +286,10 @@ impl Integrator for AnisoBerendsenBarostat {
 
         // Update velocities at t + ∆t/2 and positions at t + ∆t
         for (i, part) in universe.iter_mut().enumerate() {
-            part.add_velocity(0.5 * dt * self.accelerations[i]);
-            let position = *part.position();
+            part.velocity = part.velocity + 0.5 * dt * self.accelerations[i];
             // Scale all positions
-            let position = self.eta * position;
-            let position = position + *part.velocity() * dt;
-            part.set_position(position);
+            part.position = self.eta * part.position;
+            part.position = part.position + part.velocity * dt;
         }
 
         universe.cell_mut().scale_mut(self.eta);
@@ -312,8 +308,8 @@ impl Integrator for AnisoBerendsenBarostat {
         let forces = Forces.compute(&universe);
         // Update accelerations at t + ∆t and velocities at t + ∆t
         for (i, part) in universe.iter_mut().enumerate() {
-            self.accelerations[i] = forces[i] / part.mass();
-            part.add_velocity(0.5 * dt * self.accelerations[i]);
+            self.accelerations[i] = forces[i] / part.mass;
+            part.velocity = part.velocity + 0.5 * dt * self.accelerations[i];
         }
     }
 }

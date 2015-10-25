@@ -28,7 +28,7 @@ impl ToCymbalum for chemfiles::Atom {
         let name = try!(self.name());
         let mut part = Particle::new(name);
         let mass = try!(self.mass());
-        part.set_mass(mass as f64);
+        part.mass = mass as f64;
         Ok(part)
     }
 }
@@ -76,7 +76,7 @@ impl ToCymbalum for chemfiles::Frame {
                 positions[i][1] as f64,
                 positions[i][2] as f64
             );
-            universe[i].set_position(position);
+            universe[i].position = position;
         }
 
         let mut bonds = try!(topology.bonds());
@@ -121,7 +121,7 @@ impl ToChemfiles for Particle {
     type Output = chemfiles::Atom;
     fn to_chemfiles(&self) -> Result<chemfiles::Atom, Error> {
         let mut res = try!(chemfiles::Atom::new(self.name()));
-        try!(res.set_mass(self.mass() as f32));
+        try!(res.set_mass(self.mass as f32));
         return Ok(res);
     }
 }
@@ -161,12 +161,12 @@ impl ToChemfiles for Universe {
         let mut velocities = vec![[0.0f32; 3]; natoms];
 
         for (i, p) in self.iter().enumerate() {
-            let pos = p.position();
+            let pos = p.position;
             positions[i][0] = pos.x as f32;
             positions[i][1] = pos.y as f32;
             positions[i][2] = pos.z as f32;
 
-            let vel = p.velocity();
+            let vel = p.velocity;
             velocities[i][0] = vel.x as f32;
             velocities[i][1] = vel.y as f32;
             velocities[i][2] = vel.z as f32;

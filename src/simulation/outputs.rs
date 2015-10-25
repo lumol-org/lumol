@@ -214,10 +214,10 @@ mod tests {
         let mut universe = Universe::from_cell(UnitCell::cubic(10.0));;
 
         universe.add_particle(Particle::new("F"));
-        universe[0].set_position(Vector3D::new(0.0, 0.0, 0.0));
+        universe[0].position = Vector3D::new(0.0, 0.0, 0.0);
 
         universe.add_particle(Particle::new("F"));
-        universe[1].set_position(Vector3D::new(1.3, 0.0, 0.0));
+        universe[1].position = Vector3D::new(1.3, 0.0, 0.0);
 
         universe.add_pair_interaction("F", "F",
             Box::new(Harmonic{k: units::from(300.0, "kJ/mol/A^2").unwrap(), x0: units::from(1.2, "A").unwrap()}));

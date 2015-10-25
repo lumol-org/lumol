@@ -29,9 +29,9 @@ fn setup() -> (Simulation, Universe) {
         universe.add_particle(Particle::new("H"));
         universe.add_particle(Particle::new("H"));
 
-        universe[3*i + 0].set_position(origin.clone());
-        universe[3*i + 1].set_position(origin.clone() + h_1.clone());
-        universe[3*i + 2].set_position(origin.clone() + h_2.clone());
+        universe[3*i + 0].position = origin.clone();
+        universe[3*i + 1].position = origin.clone() + h_1.clone();
+        universe[3*i + 2].position = origin.clone() + h_2.clone();
 
         universe.add_bond(3*i, 3*i + 1);
         universe.add_bond(3*i, 3*i + 2);

@@ -151,7 +151,7 @@ impl Compute for KineticEnergy {
     fn compute(&self, universe: &Universe) -> f64 {
         let mut energy = 0.0;
         for particle in universe {
-            energy += 0.5 * particle.mass() * particle.velocity().norm2();
+            energy += 0.5 * particle.mass * particle.velocity.norm2();
         }
         assert!(energy.is_finite(), "Kinetic energy is infinite!");
         return energy;
@@ -228,8 +228,8 @@ impl Compute for Stress {
     fn compute(&self, universe: &Universe) -> Matrix3 {
         let mut K = Matrix3::zero(); // Kinetic tensor
         for particle in universe.iter() {
-            let m = particle.mass();
-            let vel = particle.velocity();
+            let m = particle.mass;
+            let vel = particle.velocity;
             K[(0, 0)] += m * vel.x * vel.x;
             K[(0, 1)] += m * vel.x * vel.y;
             K[(0, 2)] += m * vel.x * vel.z;
@@ -278,16 +278,20 @@ mod test {
         let mut universe = Universe::from_cell(UnitCell::cubic(10.0));;
 
         universe.add_particle(Particle::new("F"));
-        universe[0].set_position(Vector3D::new(0.0, 0.0, 0.0));
+        universe[0].position = Vector3D::new(0.0, 0.0, 0.0);
 
         universe.add_particle(Particle::new("F"));
-        universe[1].set_position(Vector3D::new(1.3, 0.0, 0.0));
+        universe[1].position = Vector3D::new(1.3, 0.0, 0.0);
 
         let mut velocities = BoltzmanVelocities::new(units::from(300.0, "K").unwrap());
         velocities.init(&mut universe);
 
         universe.add_pair_interaction("F", "F",
-            Box::new(Harmonic{k: units::from(300.0, "kJ/mol/A^2").unwrap(), x0: units::from(1.2, "A").unwrap()}));
+            Box::new(Harmonic{
+                k: units::from(300.0, "kJ/mol/A^2").unwrap(),
+                x0: units::from(1.2, "A").unwrap()
+            })
+        );
         return universe;
     }
 
@@ -314,10 +318,10 @@ mod test {
         universe.add_particle(Particle::new("F"));
         universe.add_particle(Particle::new("F"));
 
-        universe[0].set_position(Vector3D::new(0.0, 0.0, 0.0));
-        universe[1].set_position(Vector3D::new(1.2, 0.0, 0.0));
-        universe[2].set_position(Vector3D::new(1.2, 1.2, 0.0));
-        universe[3].set_position(Vector3D::new(2.4, 1.2, 0.0));
+        universe[0].position = Vector3D::new(0.0, 0.0, 0.0);
+        universe[1].position = Vector3D::new(1.2, 0.0, 0.0);
+        universe[2].position = Vector3D::new(1.2, 1.2, 0.0);
+        universe[3].position = Vector3D::new(2.4, 1.2, 0.0);
 
         universe.add_bond(0, 1);
         universe.add_bond(1, 2);
@@ -368,10 +372,10 @@ mod test {
         universe.add_particle(Particle::new("F"));
         universe.add_particle(Particle::new("F"));
 
-        universe[0].set_position(Vector3D::new(0.0, 0.0, 0.0));
-        universe[1].set_position(Vector3D::new(1.2, 0.0, 0.0));
-        universe[2].set_position(Vector3D::new(1.2, 1.2, 0.0));
-        universe[3].set_position(Vector3D::new(2.4, 1.2, 0.0));
+        universe[0].position = Vector3D::new(0.0, 0.0, 0.0);
+        universe[1].position = Vector3D::new(1.2, 0.0, 0.0);
+        universe[2].position = Vector3D::new(1.2, 1.2, 0.0);
+        universe[3].position = Vector3D::new(2.4, 1.2, 0.0);
 
         universe.add_bond(0, 1);
         universe.add_bond(1, 2);

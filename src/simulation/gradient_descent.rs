@@ -79,7 +79,7 @@ impl Propagator for GradientDescent {
         // Store the current coordinates
         let mut positions = Vec::with_capacity(universe.size());
         for p in universe.iter() {
-            positions.push(p.position().clone());
+            positions.push(p.position.clone());
         }
         let positions = positions;
 
@@ -88,7 +88,7 @@ impl Propagator for GradientDescent {
         // lower energy
         loop {
             for (i, p) in universe.iter_mut().enumerate() {
-                p.set_position(positions[i] + self.gamma * forces[i]);
+                p.position = positions[i] + self.gamma * forces[i];
             }
             let new_energy = PotentialEnergy.compute(&universe);
             if new_energy <= energy {
@@ -117,9 +117,9 @@ mod tests {
     fn minization() {
         let mut universe = Universe::from_cell(UnitCell::cubic(20.0));;
         universe.add_particle(Particle::new("Cl"));
-        universe[0].set_position(Vector3D::new(0.0, 0.0, 0.0));
+        universe[0].position = Vector3D::new(0.0, 0.0, 0.0);
         universe.add_particle(Particle::new("Cl"));
-        universe[1].set_position(Vector3D::new(0.0, 0.0, 2.0));
+        universe[1].position = Vector3D::new(0.0, 0.0, 2.0);
         universe.add_pair_interaction("Cl", "Cl", Box::new(Harmonic{x0: 2.3, k: 0.1}));
 
         let mut minization = GradientDescent::new();

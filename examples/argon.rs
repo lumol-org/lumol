@@ -14,11 +14,11 @@ fn main() {
         for j in 0..5 {
             for k in 0..5 {
                 let mut part = Particle::new("Ar");
-                part.set_position(Vector3D::new(
+                part.position = Vector3D::new(
                         i as f64 * 3.4,
                         j as f64 * 3.4,
                         k as f64 * 3.4
-                ));
+                );
                 universe.add_particle(part);
             }
         }

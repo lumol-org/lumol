@@ -9,11 +9,11 @@ fn main() {
     let alpha = units::from(50.0, "deg").unwrap();
 
     universe.add_particle(Particle::new("O"));
-    universe[0].set_position(Vector3D::new(0.0, 0.0, 0.0));
+    universe[0].position = Vector3D::new(0.0, 0.0, 0.0);
     universe.add_particle(Particle::new("H"));
-    universe[1].set_position(Vector3D::new(1.2*f64::cos(alpha), 1.2*f64::sin(alpha), 0.0));
+    universe[1].position = Vector3D::new(1.2*f64::cos(alpha), 1.2*f64::sin(alpha), 0.0);
     universe.add_particle(Particle::new("H"));
-    universe[2].set_position(Vector3D::new(1.2*f64::cos(-alpha), 1.2*f64::sin(-alpha), 0.0));
+    universe[2].position = Vector3D::new(1.2*f64::cos(-alpha), 1.2*f64::sin(-alpha), 0.0);
 
     universe.add_bond(0, 1);
     universe.add_bond(0, 2);

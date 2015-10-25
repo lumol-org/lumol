@@ -24,8 +24,7 @@ pub fn scale(universe: &mut Universe, T: f64) {
     let instant_temperature = Temperature.compute(universe);
     let factor = f64::sqrt(T / instant_temperature);
     for particle in universe {
-        let vel = factor * (*particle.velocity());
-        particle.set_velocity(vel);
+        particle.velocity = factor * particle.velocity;
     }
 }
 
@@ -59,11 +58,11 @@ impl BoltzmanVelocities {
 impl InitVelocities for BoltzmanVelocities {
     fn init(&mut self, universe: &mut Universe) {
         for particle in universe.iter_mut() {
-            let m_inv = 1.0 / particle.mass();
+            let m_inv = 1.0 / particle.mass;
             let x = f64::sqrt(m_inv) * self.dist.sample(&mut self.rng);
             let y = f64::sqrt(m_inv) * self.dist.sample(&mut self.rng);
             let z = f64::sqrt(m_inv) * self.dist.sample(&mut self.rng);
-            particle.set_velocity(Vector3D::new(x, y, z));
+            particle.velocity = Vector3D::new(x, y, z);
         }
         scale(universe, self.T);
     }
@@ -96,11 +95,11 @@ impl UniformVelocities {
 impl InitVelocities for UniformVelocities {
     fn init(&mut self, universe: &mut Universe) {
         for particle in universe.iter_mut() {
-            let m_inv = 1.0 / particle.mass();
+            let m_inv = 1.0 / particle.mass;
             let x = f64::sqrt(m_inv) * self.dist.sample(&mut self.rng);
             let y = f64::sqrt(m_inv) * self.dist.sample(&mut self.rng);
             let z = f64::sqrt(m_inv) * self.dist.sample(&mut self.rng);
-            particle.set_velocity(Vector3D::new(x, y, z));
+            particle.velocity = Vector3D::new(x, y, z);
         }
         scale(universe, self.T);
     }
