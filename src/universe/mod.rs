@@ -11,7 +11,6 @@
 
 mod periodic;
 pub use self::periodic::{PeriodicTable, ElementData};
-pub use self::periodic::PERIODIC_TABLE;
 
 mod particles;
 pub use self::particles::Particle;

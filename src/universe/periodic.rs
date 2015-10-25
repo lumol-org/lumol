@@ -33,7 +33,7 @@ pub struct ElementData {
 
 /// The full periodic table of elements is accessible here. This data comes from
 /// the blue obelisk repository at http://svn.code.sf.net/p/bodr/code/trunk/bodr
-pub static PERIODIC_TABLE: [ElementData; 119] = [
+static PERIODIC_TABLE: [ElementData; 119] = [
     ElementData{symbol: "Xx", name: "Dummy", mass: 0.0f32, covalent: 0.0f32, vdw: 0.0f32},
     ElementData{symbol: "H", name: "Hydrogen", mass: 1.008f32, covalent: 0.37f32, vdw: 1.2f32},
     ElementData{symbol: "He", name: "Helium", mass: 4.002602f32, covalent: 0.32f32, vdw: 1.4f32},
@@ -162,20 +162,24 @@ pub struct PeriodicTable {
 }
 
 impl PeriodicTable {
-    fn get() -> &'static mut PeriodicTable {
+    unsafe fn get_mut() -> &'static mut PeriodicTable {
         static mut SINGLETON: *mut PeriodicTable = 0 as *mut PeriodicTable;
         static INIT: Once = ONCE_INIT;
+        INIT.call_once(|| {
+            let singleton = PeriodicTable {
+                others: Vec::new()
+            };
+
+            // Put it in the heap so it can outlive this call
+            SINGLETON = mem::transmute(Box::new(singleton));
+        });
+
+        return &mut (*SINGLETON);
+    }
+
+    fn get() -> &'static PeriodicTable {
         unsafe {
-            INIT.call_once(|| {
-                let singleton = PeriodicTable {
-                    others: Vec::new()
-                };
-
-                // Put it in the heap so it can outlive this call
-                SINGLETON = mem::transmute(Box::new(singleton));
-            });
-
-            return &mut (*SINGLETON);
+            PeriodicTable::get_mut()
         }
     }
 
@@ -189,7 +193,7 @@ impl PeriodicTable {
     /// only be called by one thread, and preferably before any parrallel
     /// region.
     pub unsafe fn add_element(element: ElementData) {
-        let mut table = PeriodicTable::get();
+        let table = PeriodicTable::get_mut();
         table.others.push(element);
     }
 
