@@ -13,7 +13,7 @@ pub use self::propagator::Propagator;
 mod simulations;
 pub use self::simulations::Simulation;
 
-mod md;
+pub mod md;
 pub use self::md::*;
 
 pub mod minimization;

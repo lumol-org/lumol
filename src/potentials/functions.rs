@@ -5,7 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
 
-//! Pair potentials traits and implementations.
+//! Potentials traits and implementations.
 
 use types::{Matrix3, Vector3D};
 

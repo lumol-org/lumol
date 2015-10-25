@@ -5,8 +5,6 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
 
-//! Potentials computation.
-//!
 //! A potential computation is a way of computing a potential given its
 //! expression (represented by a `PotentialFunction`). The same potential can be
 //! computed either direcly, or using a cutoff, or by a table interpolation, ...
@@ -41,8 +39,8 @@ impl<P> AnglePotential for P where P: Computation<Potential = AnglePotential>{}
 impl<P> DihedralPotential for P where P: Computation<Potential = DihedralPotential>{}
 
 /******************************************************************************/
-/// Direct computation of the potential with a cutoff applied. The compute_energy is
-/// shifted to ensure `E(rc) = 0`, where `rc` is the cutoff distance.
+/// Direct computation of the potential with a cutoff applied. The computed
+/// energy is shifted to ensure `E(rc) = 0`, where `rc` is the cutoff distance.
 pub struct CutoffComputation {
     /// Potential to compute
     potential: Box<PairPotential>,
@@ -84,10 +82,10 @@ impl Computation for CutoffComputation {
 
 /******************************************************************************/
 /// Computation of a potential using tabulated values. This can be faster than
-/// direct computation for smooth potentials, but either uses more memory or is
-/// less precise than direct computation. Values are tabulated in the `[0, max)`
-/// range, and a cutoff is applied after `max`. Energy is shifted before the
-/// cutoff to ensure that `E(max) = 0`
+/// direct computation for smooth potentials, but will either uses more memory
+/// or is less precise than direct computation. Values are tabulated in the `[0,
+/// max)` range, and a cutoff is applied after `max`. Energy is shifted before
+/// the cutoff to ensure that `E(max) = 0`
 pub struct TableComputation {
     // TODO: use genericity over static values here if it ever comes out
     // see https://internals.rust-lang.org/t/pre-rfc-genericity-over-static-values/1538/19

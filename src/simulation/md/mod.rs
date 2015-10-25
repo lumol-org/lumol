@@ -5,6 +5,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
 
+//! Molecular dynamics algorithms.
+
 mod integrators;
 pub use self::integrators::Integrator;
 pub use self::integrators::VelocityVerlet;

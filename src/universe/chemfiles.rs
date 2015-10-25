@@ -5,7 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
 
-//! [Chemharp](https://github.com/Luthaf/Chemharp/) adaptators for Cymbalum.
+//! [Chemfiles](https://github.com/chemfiles/chemfiles/) adaptators for Cymbalum.
 
 extern crate chemfiles;
 use universe::{Particle, Universe};
