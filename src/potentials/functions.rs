@@ -176,7 +176,7 @@ impl PotentialFunction for Torsion {
     fn force(&self, phi: f64) -> f64 {
         let n = self.n as f64;
         let sin = f64::sin(n * phi - self.delta);
-        - self.k * n * sin
+        self.k * n * sin
     }
 }
 
@@ -187,6 +187,7 @@ impl DihedralPotential for Torsion {}
 #[cfg(test)]
 mod tests {
     use super::*;
+    const EPS: f64 = 1e-9;
 
     #[test]
     fn null() {
@@ -196,6 +197,10 @@ mod tests {
 
         assert_eq!(null.force(2.0), 0.0);
         assert_eq!(null.force(2.5), 0.0);
+
+        let e0 = null.energy(2.0);
+        let e1 = null.energy(2.0 + EPS);
+        assert_approx_eq!((e0 - e1)/EPS, null.force(2.0), EPS);
     }
 
     #[test]
@@ -206,6 +211,10 @@ mod tests {
 
         assert_approx_eq!(lj.force(f64::powf(2.0, 1.0/6.0) * 2.0), 0.0, 1e-15);
         assert_approx_eq!(lj.force(2.5), -0.95773475733504, 1e-15);
+
+        let e0 = lj.energy(4.0);
+        let e1 = lj.energy(4.0 + EPS);
+        assert_approx_eq!((e0 - e1)/EPS, lj.force(4.0), 1e-6);
     }
 
     #[test]
@@ -216,6 +225,10 @@ mod tests {
 
         assert_eq!(harm.force(2.0), 0.0);
         assert_eq!(harm.force(2.5), -25.0);
+
+        let e0 = harm.energy(2.1);
+        let e1 = harm.energy(2.1 + EPS);
+        assert_approx_eq!((e0 - e1)/EPS, harm.force(2.1), 1e-6);
     }
 
     #[test]
@@ -228,6 +241,10 @@ mod tests {
         assert_eq!(harm.force(2.0), 0.0);
         let dcos = f64::cos(2.5) - f64::cos(2.0);
         assert_eq!(harm.force(2.5), 50.0 * dcos * f64::sin(2.5));
+
+        let e0 = harm.energy(2.3);
+        let e1 = harm.energy(2.3 + EPS);
+        assert_approx_eq!((e0 - e1)/EPS, harm.force(2.3), 1e-6);
     }
 
     #[test]
@@ -238,5 +255,9 @@ mod tests {
         assert_eq!(torsion.energy(1.1), energy);
 
         assert_eq!(torsion.force(1.0), 0.0);
+
+        let e0 = torsion.energy(4.0);
+        let e1 = torsion.energy(4.0 + EPS);
+        assert_approx_eq!((e0 - e1)/EPS, torsion.force(4.0), 1e-6);
     }
 }
