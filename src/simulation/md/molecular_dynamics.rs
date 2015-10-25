@@ -45,20 +45,20 @@ impl MolecularDynamics {
 impl Propagator for MolecularDynamics {
     fn setup(&mut self, universe: &Universe) {
         self.integrator.setup(universe);
-        for control in self.controls.iter_mut() {
+        for control in &mut self.controls {
             control.setup(universe);
         }
     }
 
     fn propagate(&mut self, universe: &mut Universe) {
         self.integrator.integrate(universe);
-        for control in self.controls.iter_mut() {
+        for control in &mut self.controls {
             control.control(universe);
         }
     }
 
     fn finish(&mut self, universe: &Universe) {
-        for control in self.controls.iter_mut() {
+        for control in &mut self.controls {
             control.finish(universe);
         }
     }

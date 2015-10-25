@@ -23,7 +23,7 @@ use super::Universe;
 pub fn scale(universe: &mut Universe, T: f64) {
     let instant_temperature = Temperature.compute(universe);
     let factor = f64::sqrt(T / instant_temperature);
-    for particle in universe.iter_mut() {
+    for particle in universe {
         let vel = factor * (*particle.velocity());
         particle.set_velocity(vel);
     }

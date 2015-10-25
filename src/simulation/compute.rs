@@ -44,8 +44,8 @@ impl Compute for Forces {
             }
         }
 
-        for molecule in universe.molecules().iter() {
-            for bond in molecule.bonds().iter() {
+        for molecule in universe.molecules() {
+            for bond in molecule.bonds() {
                 let (i, j) = (bond.i(), bond.j());
                 let d = universe.wrap_vector(i, j);
                 let dn = d.normalized();
@@ -57,7 +57,7 @@ impl Compute for Forces {
                 }
             }
 
-            for angle in molecule.angles().iter() {
+            for angle in molecule.angles() {
                 let (i, j, k) = (angle.i(), angle.j(), angle.k());
                 let (theta, d1, d2, d3) = universe.angle_and_derivatives(i, j, k);
                 for potential in universe.angle_potentials(i, j, k) {
@@ -68,7 +68,7 @@ impl Compute for Forces {
                 }
             }
 
-            for dihedral in molecule.dihedrals().iter() {
+            for dihedral in molecule.dihedrals() {
                 let (i, j, k, m) = (dihedral.i(), dihedral.j(), dihedral.k(), dihedral.m());
                 let (phi, d1, d2, d3, d4) = universe.dihedral_and_derivatives(i, j, k, m);
                 for potential in universe.dihedral_potentials(i, j, k, m) {
@@ -108,8 +108,8 @@ impl Compute for PotentialEnergy {
             }
         }
 
-        for molecule in universe.molecules().iter() {
-            for bond in molecule.bonds().iter() {
+        for molecule in universe.molecules() {
+            for bond in molecule.bonds() {
                 let (i, j) = (bond.i(), bond.j());
                 let r = universe.wrap_vector(i, j).norm();
                 for potential in universe.bond_potentials(i, j) {
@@ -117,7 +117,7 @@ impl Compute for PotentialEnergy {
                 }
             }
 
-            for angle in molecule.angles().iter() {
+            for angle in molecule.angles() {
                 let (i, j, k) = (angle.i(), angle.j(), angle.k());
                 let theta = universe.angle(i, j, k);
                 for potential in universe.angle_potentials(i, j, k) {
@@ -125,7 +125,7 @@ impl Compute for PotentialEnergy {
                 }
             }
 
-            for dihedral in molecule.dihedrals().iter() {
+            for dihedral in molecule.dihedrals() {
                 let (i, j, k, m) = (dihedral.i(), dihedral.j(), dihedral.k(), dihedral.m());
                 let phi = universe.dihedral(i, j, k, m);
                 for potential in universe.dihedral_potentials(i, j, k, m) {
@@ -150,7 +150,7 @@ impl Compute for KineticEnergy {
     type Output = f64;
     fn compute(&self, universe: &Universe) -> f64 {
         let mut energy = 0.0;
-        for particle in universe.iter() {
+        for particle in universe {
             energy += 0.5 * particle.mass() * particle.velocity().norm2();
         }
         assert!(energy.is_finite(), "Kinetic energy is infinite!");

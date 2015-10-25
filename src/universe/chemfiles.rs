@@ -177,8 +177,8 @@ impl ToChemfiles for Universe {
         try!(frame.set_positions(positions));
         try!(frame.set_velocities(velocities));
 
-        for molecule in self.molecules().iter() {
-            for bond in molecule.bonds().iter() {
+        for molecule in self.molecules() {
+            for bond in molecule.bonds() {
                 try!(topology.add_bond(bond.i() as u64, bond.j() as u64));
             }
         }

@@ -60,7 +60,7 @@ impl Control for RescaleThermostat {
         let T_inst = universe.temperature();
         if f64::abs(T_inst - self.T) > self.tol {
             let factor = f64::sqrt(self.T / T_inst);
-            for particle in universe.iter_mut() {
+            for particle in universe {
                 let vel = factor * (*particle.velocity());
                 particle.set_velocity(vel);
             }
@@ -96,7 +96,7 @@ impl Control for BerendsenThermostat {
     fn control(&mut self, universe: &mut Universe) {
         let T_inst = universe.temperature();
         let factor = f64::sqrt(1.0 + 1.0 / self.tau * (self.T / T_inst - 1.0));
-        for particle in universe.iter_mut() {
+        for particle in universe {
             let vel = factor * (*particle.velocity());
             particle.set_velocity(vel);
         }
