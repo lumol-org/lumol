@@ -435,17 +435,17 @@ fn assign_charges(universe: &mut Universe, config: &Yaml) -> Result<()> {
     let charges = config.as_hash().unwrap();
     for (name, charge) in charges {
         if let (Some(name), Some(charge)) = (name.as_str(), charge.as_f64()) {
-            let mut changed = 0;
+            let mut n_changed = 0;
             for particle in universe.iter_mut() {
                 if particle.name() == name {
                     particle.set_charge(charge);
-                    changed += 1;
+                    n_changed += 1;
                 }
             }
-            if changed == 0 {
+            if n_changed == 0 {
                 return Err(Error::from(format!("No particle with the name {} was found", name)));
             } else {
-                info!("Charge was set to {} set for {} {} particles", charge, changed, name);
+                info!("Charge was set to {} for {} {} particles", charge, n_changed, name);
             }
         } else {
             return Err(
