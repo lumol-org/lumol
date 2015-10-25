@@ -5,18 +5,16 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
 
-//! Gradient-descent based energy minization.
-
 use units;
 use Universe;
-use super::Propagator;
-use super::{Compute, PotentialEnergy, Forces};
+use simulation::Propagator;
+use simulation::{Compute, PotentialEnergy, Forces};
 
-/// Gradient-descent based energy minization.
+/// Steepest gradient descent for energy minization.
 ///
 /// This algorithm is very rough, and will not converge in all the situations.
 /// However it is easy to use, and simple enough to be implemented quickly.
-pub struct GradientDescent {
+pub struct SteepestDescent {
     /// Dumping factor
     gamma: f64,
     /// Max force norm convergence criterium
@@ -27,21 +25,21 @@ pub struct GradientDescent {
     is_converged: bool
 }
 
-impl GradientDescent {
+impl SteepestDescent {
     /// Create a GradientDescent with sensible default values for energy and
     /// force convergence criteria. The force criterium is `1e-5 kJ/mol/Å^2`,
     /// and the energy criterium is `1e-5 kJ/mol/Å^2`.
-    pub fn new() -> GradientDescent {
+    pub fn new() -> SteepestDescent {
         let delta_f = units::from(1e-5, "kJ/mol/A").unwrap();
         let delta_E = units::from(1e-5, "kJ/mol").unwrap();
-        GradientDescent::with_criteria(delta_f, delta_E)
+        SteepestDescent::with_criteria(delta_f, delta_E)
     }
 
     /// Create a new `GradientDescent` with the force convergence criterium of
     /// `force`, and the energy convergence criterium of `energy`.
-    pub fn with_criteria(force: f64, energy: f64) -> GradientDescent {
+    pub fn with_criteria(force: f64, energy: f64) -> SteepestDescent {
         let gamma = units::from(0.1, "fs^2/u").unwrap();
-        GradientDescent{
+        SteepestDescent{
             gamma: gamma,
             dE: energy,
             df2: force*force,
@@ -55,7 +53,7 @@ impl GradientDescent {
     }
 }
 
-impl Propagator for GradientDescent {
+impl Propagator for SteepestDescent {
     fn setup(&mut self, _: &Universe) {
         self.is_converged = false;
     }
@@ -111,7 +109,7 @@ mod tests {
     use universe::*;
     use types::*;
     use potentials::*;
-    use super::super::Propagator;
+    use simulation::Propagator;
 
     #[test]
     fn minization() {
@@ -122,7 +120,7 @@ mod tests {
         universe[1].position = Vector3D::new(0.0, 0.0, 2.0);
         universe.add_pair_interaction("Cl", "Cl", Box::new(Harmonic{x0: 2.3, k: 0.1}));
 
-        let mut minization = GradientDescent::new();
+        let mut minization = SteepestDescent::new();
         for _ in 0..100 {
             minization.propagate(&mut universe);
         }

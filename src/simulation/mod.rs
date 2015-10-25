@@ -16,8 +16,8 @@ pub use self::simulations::Simulation;
 mod md;
 pub use self::md::*;
 
-mod gradient_descent;
-pub use self::gradient_descent::GradientDescent;
+pub mod minimization;
+pub use self::minimization::*;
 
 pub mod compute;
 pub use self::compute::Compute;
