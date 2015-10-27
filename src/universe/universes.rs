@@ -190,15 +190,16 @@ impl Universe {
 
             let mut perms = Permutations::new();
             let new_mol_last = new_mol.last();
-            let mut old_mol_idx = old_mol.first();
+            let old_mol_first = old_mol.first();
 
-            // If new_mol_last + 1 == old_mol_idx, no one move
-            if new_mol_last + 1 != old_mol_idx {
+            // If new_mol_last + 1 == old_mol_first, no one move
+            if new_mol_last + 1 != old_mol_first {
                 let size = old_mol.size();
+                let mut i = old_mol.first();
                 // Add permutation for the molecule we just moved around
-                for i in (new_mol_last + 1)..(new_mol_last + size + 1) {
-                    perms.push((old_mol_idx, i));
-                    old_mol_idx += 1;
+                for j in (new_mol_last + 1)..(new_mol_last + size + 1) {
+                    perms.push((i, j));
+                    i += 1;
                 }
 
                 // Add permutations for molecules that where shifted to make space
@@ -218,7 +219,6 @@ impl Universe {
             let (i, j) = if mol_i == new_mol_idx {
                 (i, j - delta) // j moved
             } else {
-                debug_assert!(mol_j == new_mol_idx);
                 (i - delta, j) // i moved
             };
             (i, j, Some(perms))
@@ -226,10 +226,12 @@ impl Universe {
             (i, j, None)
         };
 
-        let id = self.molecule_id(i);
-        let molecule = &mut self.molecules[id];
-        molecule.add_bond(i, j);
+        if i == j {
+            error!("Can not add a bond between a particle and itself.");
+        }
 
+        let id = self.molecule_id(i);
+        self.molecules[id].add_bond(i, j);
         return perms;
     }
 
@@ -313,7 +315,8 @@ impl Universe {
         let mut new_mol = self.molecules[new_mol_idx].clone();
         let old_mol = self.molecules[old_mol_idx].clone();
         assert!(new_mol.last() < old_mol.first());
-        debug!("Merging molecules \n{:#?}\n ---\n{:#?}", new_mol, old_mol);
+        debug!("Merging molecules: {} <-- {}", new_mol_idx, old_mol_idx);
+        trace!("The molecules contains:\n{:#?}\n ---\n{:#?}", new_mol, old_mol);
 
         if new_mol.last() + 1 != old_mol.first() {
             let mut new_index = new_mol.last() + 1;
@@ -682,12 +685,22 @@ mod tests {
     #[test]
     fn molecules_permutations() {
         let mut universe = Universe::new();
-        universe.add_particle(Particle::new("O"));
+        universe.add_particle(Particle::new("N"));
+        universe.add_particle(Particle::new("H"));
+        universe.add_particle(Particle::new("H"));
+        universe.add_particle(Particle::new("H"));
+        universe.add_particle(Particle::new("N"));
+        universe.add_particle(Particle::new("H"));
         universe.add_particle(Particle::new("H"));
         universe.add_particle(Particle::new("H"));
 
-        assert_eq!(universe.add_bond(0, 2), Some(vec![(2, 1), (1, 2)]));
-        assert_eq!(universe.add_bond(0, 2), Some(vec![]));
+        assert_eq!(universe.add_bond(0, 3), Some(vec![(3, 1), (1, 2), (2, 3)]));
+        assert_eq!(universe.add_bond(0, 3), Some(vec![(3, 2), (2, 3)]));
+        assert_eq!(universe.add_bond(0, 3), Some(vec![]));
+
+        assert_eq!(universe.add_bond(4, 5), Some(vec![]));
+        assert_eq!(universe.add_bond(4, 7), Some(vec![(7, 6), (6, 7)]));
+        assert_eq!(universe.add_bond(4, 7), Some(vec![]));
     }
 
     #[test]

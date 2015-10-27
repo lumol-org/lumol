@@ -91,12 +91,14 @@ impl ToCymbalum for chemfiles::Frame {
 }
 
 fn apply_particle_permutation(bonds: &mut Vec<[u64; 2]>, perms: Vec<(usize, usize)>) {
-    for bond in bonds {
-        for perm in &perms {
-            if bond[0] == perm.0 as u64 {
+    'bonds: for bond in bonds {
+        for perm in perms.iter() {
+            if bond[0] == (perm.0 as u64) {
                 bond[0] = perm.1 as u64;
-            } else if bond[1] == perm.0 as u64 {
+                continue 'bonds;
+            } else if bond[1] == (perm.0 as u64) {
                 bond[1] = perm.1 as u64;
+                continue 'bonds;
             }
         }
     }
