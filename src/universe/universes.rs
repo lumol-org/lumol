@@ -382,8 +382,8 @@ static NO_DIHEDRAL_INTERACTION: &'static [Box<DihedralPotential>] = &[];
 
 /// Potentials related functions
 impl Universe {
-    /// Get the list of pair interaction between the particles at indexes `i`
-    /// and `j`.
+    /// Get the list of pair potential acting between the particles at indexes
+    /// `i` and `j`.
     pub fn pair_potentials(&self, i: usize, j: usize) -> &[PairInteraction] {
         let ikind = self.particles[i].kind;
         let jkind = self.particles[j].kind;
@@ -399,8 +399,8 @@ impl Universe {
         }
     }
 
-    /// Get the list of bonded interaction between the particles at indexes `i`
-    /// and `j`.
+    /// Get the list of bonded potential acting between the particles at indexes
+    /// `i` and `j`.
     pub fn bond_potentials(&self, i: usize, j: usize) -> &[Box<PairPotential>] {
         let ikind = self.particles[i].kind;
         let jkind = self.particles[j].kind;
@@ -416,8 +416,8 @@ impl Universe {
         }
     }
 
-    /// Get the list of angle interaction between the particles at indexes `i`,
-    /// `j` and `k`.
+    /// Get the list of angle interaction acting between the particles at
+    /// indexes `i`, `j` and `k`.
     pub fn angle_potentials(&self, i: usize, j: usize, k: usize) -> &[Box<AnglePotential>] {
         let ikind = self.particles[i].kind;
         let jkind = self.particles[j].kind;
@@ -436,8 +436,8 @@ impl Universe {
         }
     }
 
-    /// Get the list of dihedral angles interaction between the particles at
-    /// indexes `i`, `j`, `k` and `m`.
+    /// Get the list of dihedral angles interaction acting between the particles
+    /// at indexes `i`, `j`, `k` and `m`.
     pub fn dihedral_potentials(&self, i: usize, j: usize, k: usize, m: usize) -> &[Box<DihedralPotential>] {
         let ikind = self.particles[i].kind;
         let jkind = self.particles[j].kind;
@@ -459,51 +459,55 @@ impl Universe {
     }
 
     /// Get the current coulombic solver
-    pub fn coulomb_interaction(&self) -> &Option<Box<CoulombicPotential>> {
+    pub fn coulomb_potential(&self) -> &Option<Box<CoulombicPotential>> {
         self.interactions.coulomb()
     }
 
-    /// Get all the global interactions
+    /// Get all the global potentials
     pub fn global_potentials(&self) -> &Vec<Box<GlobalPotential>> {
         self.interactions.globals()
     }
 
-    /// Add a pair interaction between the particles with names `names`
-    pub fn add_pair_interaction(&mut self, i: &str, j: &str, pot: Box<PairPotential>) {
+    /// Add the `potential` pair potential between the particles with names
+    /// `i` and `j`.
+    pub fn add_pair_interaction(&mut self, i: &str, j: &str, potential: Box<PairPotential>) {
         let ikind = self.get_kind(i);
         let jkind = self.get_kind(j);
 
-        self.interactions.add_pair(ikind, jkind, pot);
+        self.interactions.add_pair(ikind, jkind, potential);
     }
 
-    /// Add a bonded interaction between the particles with names `names`
-    pub fn add_bond_interaction(&mut self, i: &str, j: &str, pot: Box<PairPotential>) {
+    /// Add the `potential` bonded potentials between the particles with names
+    /// `i` and `j`
+    pub fn add_bond_interaction(&mut self, i: &str, j: &str, potential: Box<PairPotential>) {
         let ikind = self.get_kind(i);
         let jkind = self.get_kind(j);
 
-        self.interactions.add_bond(ikind, jkind, pot);
+        self.interactions.add_bond(ikind, jkind, potential);
     }
 
-    /// Add an angle interaction between the particles with names `names`
-    pub fn add_angle_interaction(&mut self, i: &str, j: &str, k: &str, pot: Box<AnglePotential>) {
+    /// Add the `potential` angle potential between the particles with names `i`,
+    /// `j`, and `k`
+    pub fn add_angle_interaction(&mut self, i: &str, j: &str, k: &str, potential: Box<AnglePotential>) {
         let ikind = self.get_kind(i);
         let jkind = self.get_kind(j);
         let kkind = self.get_kind(k);
 
-        self.interactions.add_angle(ikind, jkind, kkind, pot);
+        self.interactions.add_angle(ikind, jkind, kkind, potential);
     }
 
-    /// Add an angle interaction between the particles with names `names`
-    pub fn add_dihedral_interaction(&mut self, i: &str, j: &str, k: &str, m: &str, pot: Box<DihedralPotential>) {
+    /// Add the `potential` dihedral angle potential between the particles with
+    /// names names `i`, `j`, `k`, and `m`
+    pub fn add_dihedral_interaction(&mut self, i: &str, j: &str, k: &str, m: &str, potential: Box<DihedralPotential>) {
         let ikind = self.get_kind(i);
         let jkind = self.get_kind(j);
         let kkind = self.get_kind(k);
         let mkind = self.get_kind(m);
 
-        self.interactions.add_dihedral(ikind, jkind, kkind, mkind, pot);
+        self.interactions.add_dihedral(ikind, jkind, kkind, mkind, potential);
     }
 
-    /// Set the coulombic solver to use
+    /// Set the coulombic potential to `potential`
     pub fn set_coulomb_interaction(&mut self, potential: Box<CoulombicPotential>) {
         self.interactions.set_coulomb(potential);
     }
@@ -800,9 +804,9 @@ mod tests {
         universe.add_dihedral_interaction("He", "He", "He", "He", Box::new(CosineHarmonic::new(0.3, 2.0)));
         assert_eq!(universe.dihedral_potentials(0, 0, 0, 0).len(), 1);
 
-        assert!(universe.coulomb_interaction().is_none());
+        assert!(universe.coulomb_potential().is_none());
         universe.set_coulomb_interaction(Box::new(Wolf::new(1.0)));
-        assert!(universe.coulomb_interaction().is_some());
+        assert!(universe.coulomb_potential().is_some());
 
         universe.add_global_interaction(Box::new(Wolf::new(1.0)));
         assert_eq!(universe.global_potentials().len(), 1);
