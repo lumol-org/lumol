@@ -80,7 +80,7 @@ impl ToCymbalum for chemfiles::Frame {
         }
 
         let mut bonds = try!(topology.bonds());
-        while bonds.len() != 0 {
+        while !bonds.is_empty() {
             let bond = bonds.pop().unwrap();
             if let Some(perms) = universe.add_bond(bond[0] as usize, bond[1] as usize) {
                 apply_particle_permutation(&mut bonds, perms);
@@ -92,7 +92,7 @@ impl ToCymbalum for chemfiles::Frame {
 
 fn apply_particle_permutation(bonds: &mut Vec<[u64; 2]>, perms: Vec<(usize, usize)>) {
     'bonds: for bond in bonds {
-        for perm in perms.iter() {
+        for perm in &perms {
             if bond[0] == (perm.0 as u64) {
                 bond[0] = perm.1 as u64;
                 continue 'bonds;

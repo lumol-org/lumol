@@ -122,7 +122,7 @@ pub fn read_interactions<P: AsRef<Path>>(universe: &mut Universe, path: P) -> Re
 /// Read the "pairs" or the "bonds" section in the file. If `pair_potentials`
 /// is `true`, then the interactions are added to the pair interactions. Else,
 /// the interaction are added to the bond interactions.
-fn read_pairs(universe: &mut Universe, pairs: &Vec<Yaml>, pair_potentials: bool) -> Result<()> {
+fn read_pairs(universe: &mut Universe, pairs: &[Yaml], pair_potentials: bool) -> Result<()> {
     for potential in pairs {
         let (a, b) = match potential["atoms"].as_vec() {
             Some(vec) => {
@@ -178,7 +178,7 @@ fn read_pair_potential(node: &Yaml) -> Result<Box<PairPotential>> {
 
 /******************************************************************************/
 
-fn read_angles(universe: &mut Universe, angles: &Vec<Yaml>) -> Result<()> {
+fn read_angles(universe: &mut Universe, angles: &[Yaml]) -> Result<()> {
     for potential in angles {
         let (a, b, c) = match potential["atoms"].as_vec() {
             Some(vec) => {
@@ -227,7 +227,7 @@ fn read_angle_potential(node: &Yaml) -> Result<Box<AnglePotential>> {
 
 /******************************************************************************/
 
-fn read_dihedrals(universe: &mut Universe, dihedrals: &Vec<Yaml>) -> Result<()> {
+fn read_dihedrals(universe: &mut Universe, dihedrals: &[Yaml]) -> Result<()> {
     for potential in dihedrals {
         let (a, b, c, d) = match potential["atoms"].as_vec() {
             Some(vec) => {

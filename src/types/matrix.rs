@@ -244,7 +244,7 @@ impl<T: Clone> Clone for Matrix<T> {
 
 impl<T> Index<usize> for Matrix<T> {
     type Output = [T];
-    fn index<'a>(&'a self, i: usize) -> &'a [T] {
+    fn index(&self, i: usize) -> &[T] {
         assert!(i < self.n, format!("index out of bounds: the len is {} but the index is {}", self.n, i));
         unsafe {
             let ptr = self.data.as_ptr().offset((i * self.n) as isize);
@@ -254,7 +254,7 @@ impl<T> Index<usize> for Matrix<T> {
 }
 
 impl<T> IndexMut<usize> for Matrix<T> {
-    fn index_mut<'a>(&'a mut self, i: usize) -> &'a mut [T] {
+    fn index_mut(&mut self, i: usize) -> &mut [T] {
         assert!(i < self.n, format!("index out of bounds: the len is {} but the index is {}", self.n, i));
         unsafe {
             let ptr = self.data.as_mut_ptr().offset((i * self.n) as isize);
@@ -333,8 +333,8 @@ mod tests {
             let a = Matrix3::zero();
             let b = Matrix3::one();
 
-            for i in (0..2) {
-                for j in (0..2) {
+            for i in 0..2 {
+                for j in 0..2 {
                     assert_eq!(a[(i, j)], 0.0);
                     if i == j {
                         assert_eq!(b[(i, j)], 1.0);
@@ -358,8 +358,8 @@ mod tests {
                                    4.0, 6.0, 6.0,
                                    8.0, 9.0, 11.0);
 
-            for i in (0..3) {
-                for j in (0..3) {
+            for i in 0..3 {
+                for j in 0..3 {
                     assert_eq!(add[(i, j)], res[(i, j)]);
                 }
             }
@@ -377,8 +377,8 @@ mod tests {
                                    4.0, 4.0, 6.0,
                                    8.0, 9.0, 9.0);
 
-            for i in (0..3) {
-                for j in (0..3) {
+            for i in 0..3 {
+                for j in 0..3 {
                     assert_eq!(sub[(i, j)], res[(i, j)]);
                 }
             }
@@ -397,8 +397,8 @@ mod tests {
                                    8.0, 10.0, 12.0,
                                    16.0, 18.0, 20.0);
 
-            for i in (0..3) {
-                for j in (0..3) {
+            for i in 0..3 {
+                for j in 0..3 {
                     assert_eq!(mul_r[(i, j)], res[(i, j)]);
                     assert_eq!(mul_l[(i, j)], res[(i, j)]);
                 }

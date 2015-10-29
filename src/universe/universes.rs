@@ -279,7 +279,7 @@ impl Universe {
             return self.kinds[name];
         } else {
             let index = self.kinds.len() as u16;
-            self.kinds.insert(name.to_string(), index);
+            self.kinds.insert(String::from(name), index);
             return index;
         }
     }

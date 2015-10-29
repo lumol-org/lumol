@@ -81,7 +81,7 @@ impl Propagator for SteepestDescent {
         }
         let positions = positions;
 
-        let old_gamma = self.gamma;
+        let mut gamma_changed = false;
         // Update coordinates, reducing gamma until we find a configuration of
         // lower energy
         loop {
@@ -93,11 +93,12 @@ impl Propagator for SteepestDescent {
                 break;
             }
             self.gamma /= 2.0;
+            gamma_changed = true;
         }
 
         // If we had a successful iteration without needing to reduce gamma,
-        // we increase it slightly
-        if self.gamma == old_gamma {
+        // we can increase it slightly
+        if !gamma_changed {
             self.gamma *= 1.1;
         }
     }
