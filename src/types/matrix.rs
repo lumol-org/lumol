@@ -165,6 +165,7 @@ impl Mul<Vector3D> for Matrix3 {
 /******************************************************************************/
 /// Bidimensional square matrix, with cache locality and runtime size. This type
 /// only provide an indexable bidimensional storage.
+#[derive(Debug)]
 pub struct Matrix<T> {
     /// Data storage
     data: Vec<T>,
@@ -220,6 +221,24 @@ impl<T: Default + Clone> Matrix<T> {
             self.data.truncate(new_size * new_size);
         }
         self.n = new_size;
+    }
+}
+
+impl<T: PartialEq> PartialEq for Matrix<T> {
+    fn eq(&self, rhs: &Matrix<T>) -> bool {
+        if self.n != rhs.n {
+            return false;
+        }
+        return self.data == rhs.data;
+    }
+}
+
+impl<T: Clone> Clone for Matrix<T> {
+    fn clone(&self) -> Matrix<T> {
+        Matrix{
+            data: self.data.clone(),
+            n: self.n
+        }
     }
 }
 
