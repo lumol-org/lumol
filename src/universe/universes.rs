@@ -710,6 +710,31 @@ mod tests {
     }
 
     #[test]
+    fn shortest_path() {
+        let mut universe = Universe::new();
+        universe.add_particle(Particle::new("C"));
+        universe.add_particle(Particle::new("C"));
+        universe.add_particle(Particle::new("C"));
+        universe.add_particle(Particle::new("C"));
+        universe.add_particle(Particle::new("C"));
+        universe.add_particle(Particle::new("Zn"));
+
+        universe.add_bond(0, 1);
+        universe.add_bond(1, 2);
+        universe.add_bond(2, 3);
+        universe.add_bond(3, 4);
+
+        println!("{:#?}", universe.molecules());
+
+        assert_eq!(universe.shortest_path(0, 0), 1);
+        assert_eq!(universe.shortest_path(0, 1), 2);
+        assert_eq!(universe.shortest_path(0, 2), 3);
+        assert_eq!(universe.shortest_path(0, 3), 4);
+        assert!(universe.shortest_path(0, 4) > 4);
+        assert_eq!(universe.shortest_path(0, 5), 0);
+    }
+
+    #[test]
     fn molecules_permutations() {
         let mut universe = Universe::new();
         universe.add_particle(Particle::new("N"));
