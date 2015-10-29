@@ -46,10 +46,10 @@ impl PairRestriction {
         match *self {
             PairRestriction::None => false,
             PairRestriction::InterMolecular => {
-                !universe.are_in_same_molecule(i, j)
+                universe.are_in_same_molecule(i, j)
             },
             PairRestriction::IntraMolecular => {
-                universe.are_in_same_molecule(i, j)
+                !universe.are_in_same_molecule(i, j)
             },
             PairRestriction::Exclude12 => {
                 let distance = universe.shortest_path(i, j);
@@ -84,5 +84,187 @@ impl PairRestriction {
                 }
             }
         }
+    }
+}
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use universe::*;
+
+    fn testing_universe() -> Universe {
+        // Creating 2 pentane molecule
+        //    C   C        C   C
+        //   / \ / \      / \ / \
+        //  C   C   C    C   C   C
+        let mut universe = Universe::new();
+        for _ in 0..10 {
+            universe.add_particle(Particle::new("C"));
+        }
+
+        universe.add_bond(0, 1);
+        universe.add_bond(1, 2);
+        universe.add_bond(2, 3);
+        universe.add_bond(3, 4);
+
+        universe.add_bond(5, 6);
+        universe.add_bond(6, 7);
+        universe.add_bond(7, 8);
+        universe.add_bond(8, 9);
+
+        return universe;
+    }
+
+    #[test]
+    fn none() {
+        let restrictions = PairRestriction::None;
+        let universe = testing_universe();
+        for i in 0..10 {
+            for j in 0..10 {
+                assert_eq!(restrictions.is_excluded_pair(&universe, i, j), false);
+                assert_eq!(restrictions.scaling(&universe, i, j), 1.0);
+            }
+        }
+    }
+
+    #[test]
+    fn intra() {
+        let restrictions = PairRestriction::IntraMolecular;
+        let universe = testing_universe();
+        for i in 0..10 {
+            for j in 0..10 {
+                assert_eq!(restrictions.scaling(&universe, i, j), 1.0);
+                assert_eq!(
+                    restrictions.is_excluded_pair(&universe, i, j),
+                    !universe.are_in_same_molecule(i, j)
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn inter() {
+        let restrictions = PairRestriction::InterMolecular;
+        let universe = testing_universe();
+        for i in 0..10 {
+            for j in 0..10 {
+                assert_eq!(restrictions.scaling(&universe, i, j), 1.0);
+                assert_eq!(
+                    restrictions.is_excluded_pair(&universe, i, j),
+                    universe.are_in_same_molecule(i, j)
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn exclude_12() {
+        let restrictions = PairRestriction::Exclude12;
+        let universe = testing_universe();
+        for i in 0..10 {
+            for j in 0..10 {
+                assert_eq!(restrictions.scaling(&universe, i, j), 1.0);
+            }
+        }
+
+        // Bonds
+        assert_eq!(restrictions.is_excluded_pair(&universe, 0, 1), true);
+        assert_eq!(restrictions.is_excluded_pair(&universe, 1, 2), true);
+        assert_eq!(restrictions.is_excluded_pair(&universe, 7, 8), true);
+
+        // Not excluded
+        assert_eq!(restrictions.is_excluded_pair(&universe, 0, 8), false);
+        assert_eq!(restrictions.is_excluded_pair(&universe, 0, 3), false);
+        assert_eq!(restrictions.is_excluded_pair(&universe, 8, 2), false);
+    }
+
+    #[test]
+    fn exclude_13() {
+        let restrictions = PairRestriction::Exclude13;
+        let universe = testing_universe();
+        for i in 0..10 {
+            for j in 0..10 {
+                assert_eq!(restrictions.scaling(&universe, i, j), 1.0);
+            }
+        }
+
+        // Bonds
+        assert_eq!(restrictions.is_excluded_pair(&universe, 0, 1), true);
+        assert_eq!(restrictions.is_excluded_pair(&universe, 7, 6), true);
+
+        // Angles
+        assert_eq!(restrictions.is_excluded_pair(&universe, 0, 2), true);
+        assert_eq!(restrictions.is_excluded_pair(&universe, 1, 3), true);
+        assert_eq!(restrictions.is_excluded_pair(&universe, 7, 9), true);
+
+        // Not excluded
+        assert_eq!(restrictions.is_excluded_pair(&universe, 4, 5), false);
+        assert_eq!(restrictions.is_excluded_pair(&universe, 0, 3), false);
+        assert_eq!(restrictions.is_excluded_pair(&universe, 8, 2), false);
+    }
+
+    #[test]
+    fn exclude_14() {
+        let restrictions = PairRestriction::Exclude14;
+        let universe = testing_universe();
+        for i in 0..10 {
+            for j in 0..10 {
+                assert_eq!(restrictions.scaling(&universe, i, j), 1.0);
+            }
+        }
+
+        // Bonds
+        assert_eq!(restrictions.is_excluded_pair(&universe, 0, 1), true);
+        assert_eq!(restrictions.is_excluded_pair(&universe, 7, 6), true);
+
+        // Angles
+        assert_eq!(restrictions.is_excluded_pair(&universe, 0, 2), true);
+        assert_eq!(restrictions.is_excluded_pair(&universe, 1, 3), true);
+        assert_eq!(restrictions.is_excluded_pair(&universe, 7, 9), true);
+
+        // Dihedrals
+        assert_eq!(restrictions.is_excluded_pair(&universe, 0, 3), true);
+        assert_eq!(restrictions.is_excluded_pair(&universe, 1, 4), true);
+        assert_eq!(restrictions.is_excluded_pair(&universe, 6, 9), true);
+
+        // Not excluded
+        assert_eq!(restrictions.is_excluded_pair(&universe, 4, 5), false);
+        assert_eq!(restrictions.is_excluded_pair(&universe, 0, 4), false);
+        assert_eq!(restrictions.is_excluded_pair(&universe, 8, 2), false);
+    }
+
+    #[test]
+    fn scale_14() {
+        let restrictions = PairRestriction::Scale14{scaling: 0.8};
+        let universe = testing_universe();
+        for i in 0..10 {
+            for j in 0..10 {
+                if universe.shortest_path(i, j) == 4 {
+                    assert_eq!(restrictions.scaling(&universe, i, j), 0.8);
+                } else {
+                    assert_eq!(restrictions.scaling(&universe, i, j), 1.0);
+                }
+            }
+        }
+
+        // Bonds
+        assert_eq!(restrictions.is_excluded_pair(&universe, 0, 1), true);
+        assert_eq!(restrictions.is_excluded_pair(&universe, 7, 6), true);
+
+        // Angles
+        assert_eq!(restrictions.is_excluded_pair(&universe, 0, 2), true);
+        assert_eq!(restrictions.is_excluded_pair(&universe, 1, 3), true);
+        assert_eq!(restrictions.is_excluded_pair(&universe, 7, 9), true);
+
+        // Dihedrals
+        assert_eq!(restrictions.is_excluded_pair(&universe, 0, 3), true);
+        assert_eq!(restrictions.is_excluded_pair(&universe, 1, 4), true);
+        assert_eq!(restrictions.is_excluded_pair(&universe, 6, 9), true);
+
+        // Not excluded
+        assert_eq!(restrictions.is_excluded_pair(&universe, 4, 5), false);
+        assert_eq!(restrictions.is_excluded_pair(&universe, 0, 4), false);
+        assert_eq!(restrictions.is_excluded_pair(&universe, 8, 2), false);
     }
 }
