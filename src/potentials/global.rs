@@ -17,6 +17,8 @@ use universe::Universe;
 use types::{Matrix3, Vector3D};
 use constants::ELCC;
 
+use super::PairRestriction;
+
 /// The `GlobalPotential` trait represent a potential acting on the whole
 /// universe at once.
 pub trait GlobalPotential {
@@ -46,6 +48,8 @@ pub struct Wolf {
     energy_cst: f64,
     /// Force constant for wolf computation
     force_cst: f64,
+    /// Restriction scheme
+    restriction: PairRestriction,
 }
 
 impl Wolf {
@@ -60,7 +64,13 @@ impl Wolf {
             cutoff: cutoff,
             energy_cst: e_cst,
             force_cst: f_cst,
+            restriction: PairRestriction::None,
         }
+    }
+
+    /// Set the restriction scheme to use to `restriction`.
+    pub fn set_restriction(&mut self, restriction: PairRestriction) {
+        self.restriction = restriction;
     }
 
     /// Compute the energy for the pair of particles with charge `qi` and `qj`,
@@ -103,8 +113,11 @@ impl GlobalPotential for Wolf {
                 if qi*qj == 0.0 {
                     continue;
                 }
-                let rij = universe.distance(i, j);
-                res += self.energy_pair(qi, qj, rij);
+                if !self.restriction.is_excluded_pair(universe, i, j) {
+                    let s = self.restriction.scaling(universe, i, j);
+                    let rij = universe.distance(i, j);
+                    res += s * self.energy_pair(qi, qj, rij);
+                }
             }
             // Remove self term
             res -= self.energy_self(qi);
@@ -122,10 +135,13 @@ impl GlobalPotential for Wolf {
                 if qi*qj == 0.0 {
                     continue;
                 }
-                let rij = universe.wrap_vector(i, j);
-                let force = self.force_pair(qi, qj, rij);
-                res[i] = res[i] + force;
-                res[j] = res[j] - force;
+                if !self.restriction.is_excluded_pair(universe, i, j) {
+                    let s = self.restriction.scaling(universe, i, j);
+                    let rij = universe.wrap_vector(i, j);
+                    let force = s * self.force_pair(qi, qj, rij);
+                    res[i] = res[i] + force;
+                    res[j] = res[j] - force;
+                }
             }
         }
         return res;
@@ -141,9 +157,12 @@ impl GlobalPotential for Wolf {
                 if qi*qj == 0.0 {
                     continue;
                 }
-                let rij = universe.wrap_vector(i, j);
-                let force = self.force_pair(qi, qj, rij);
-                res = res + force.tensorial(&rij);
+                if !self.restriction.is_excluded_pair(universe, i, j) {
+                    let s = self.restriction.scaling(universe, i, j);
+                    let rij = universe.wrap_vector(i, j);
+                    let force = s * self.force_pair(qi, qj, rij);
+                    res = res + force.tensorial(&rij);
+                }
             }
         }
         return res;
