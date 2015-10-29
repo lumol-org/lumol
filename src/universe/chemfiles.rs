@@ -64,10 +64,10 @@ impl ToCymbalum for chemfiles::Frame {
         let natoms = try!(self.natoms());
         let step = try!(self.step());
 
-        universe.set_step(step);
+        universe.set_step(step as u64);
 
         for i in 0..natoms {
-            let atom = try!(topology.atom(i as u64));
+            let atom = try!(topology.atom(i));
             let particle = try!(atom.to_cymbalum());
 
             universe.add_particle(particle);
@@ -90,14 +90,14 @@ impl ToCymbalum for chemfiles::Frame {
     }
 }
 
-fn apply_particle_permutation(bonds: &mut Vec<[u64; 2]>, perms: Vec<(usize, usize)>) {
+fn apply_particle_permutation(bonds: &mut Vec<[usize; 2]>, perms: Vec<(usize, usize)>) {
     'bonds: for bond in bonds {
         for perm in &perms {
-            if bond[0] == (perm.0 as u64) {
-                bond[0] = perm.1 as u64;
+            if bond[0] == perm.0 {
+                bond[0] = perm.1;
                 continue 'bonds;
-            } else if bond[1] == (perm.0 as u64) {
-                bond[1] = perm.1 as u64;
+            } else if bond[1] == perm.0 {
+                bond[1] = perm.1;
                 continue 'bonds;
             }
         }
@@ -154,9 +154,9 @@ impl ToChemfiles for Universe {
     fn to_chemfiles(&self) -> Result<chemfiles::Frame, Error> {
 
         let natoms = self.size();
-        let mut frame = try!(chemfiles::Frame::new(natoms as u64));
+        let mut frame = try!(chemfiles::Frame::new(natoms));
 
-        try!(frame.set_step(self.step()));
+        try!(frame.set_step(self.step() as usize));
 
         let mut topology = try!(chemfiles::Topology::new());
         let mut positions = vec![[0.0f32; 3]; natoms];
@@ -181,7 +181,7 @@ impl ToChemfiles for Universe {
 
         for molecule in self.molecules() {
             for bond in molecule.bonds() {
-                try!(topology.add_bond(bond.i() as u64, bond.j() as u64));
+                try!(topology.add_bond(bond.i(), bond.j()));
             }
         }
 
