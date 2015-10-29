@@ -1,0 +1,34 @@
+pairs:
+    # Lennard-Jones potential
+    - atoms: [A, B]
+      type: LennardJones
+      sigma: 3 A
+      epsilon: 5.9 kJ/mol
+    - atoms: [A, B]
+      type: lennard-jones
+      sigma: 3 A
+      epsilon: 5.9 kJ/mol
+      # Some additional data is not harmfull
+      life: 42
+    # Harmonic potential
+    - atoms: [A, B]
+      type: Harmonic
+      x0: 3 A
+      k: 5.9 kJ/mol/A^2
+    # Null potential
+    - atoms: [A, D]
+      type: Null
+    - atoms: [A, D]
+      type: NullPotential
+    # Computations
+    - atoms: [A, B]
+      type: Null
+      computation:
+        type: cutoff
+        cutoff: 8 A
+    - atoms: [A, B]
+      type: Null
+      computation:
+        type: table
+        max: 8 A
+        n: 5000

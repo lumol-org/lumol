@@ -159,9 +159,6 @@ fn read_pairs(universe: &mut Universe, pairs: &[Yaml], pair_potentials: bool) ->
 
 fn read_pair_potential(node: &Yaml) -> Result<Box<PairPotential>> {
     match node["type"].as_str() {
-        None => {
-            Err(Error::from("Missing 'type' section in pair potential"))
-        }
         Some(val) => {
             let val: &str = &val.to_lowercase();
             match val {
@@ -172,12 +169,14 @@ fn read_pair_potential(node: &Yaml) -> Result<Box<PairPotential>> {
                     Error::from(format!("Unknown potential type '{}'", val))
                 ),
             }
+        },
+        None => {
+            Err(Error::from("Missing 'type' section in pair potential"))
         }
     }
 }
 
 /******************************************************************************/
-
 fn read_angles(universe: &mut Universe, angles: &[Yaml]) -> Result<()> {
     for potential in angles {
         let (a, b, c) = match potential["atoms"].as_vec() {
@@ -206,11 +205,6 @@ fn read_angles(universe: &mut Universe, angles: &[Yaml]) -> Result<()> {
 
 fn read_angle_potential(node: &Yaml) -> Result<Box<AnglePotential>> {
     match node["type"].as_str() {
-        None => {
-            Err(Error::from(
-                format!("Missing 'type' section in: {:?}", node)
-            ))
-        }
         Some(val) => {
             let val: &str = &val.to_lowercase();
             match val {
@@ -221,12 +215,14 @@ fn read_angle_potential(node: &Yaml) -> Result<Box<AnglePotential>> {
                     Error::from(format!("Unknown potential type '{}'", val))
                 ),
             }
+        },
+        None => {
+            Err(Error::from(format!("Missing 'type' section in angle potential")))
         }
     }
 }
 
 /******************************************************************************/
-
 fn read_dihedrals(universe: &mut Universe, dihedrals: &[Yaml]) -> Result<()> {
     for potential in dihedrals {
         let (a, b, c, d) = match potential["atoms"].as_vec() {
@@ -255,11 +251,6 @@ fn read_dihedrals(universe: &mut Universe, dihedrals: &[Yaml]) -> Result<()> {
 
 fn read_dihedral_potential(node: &Yaml) -> Result<Box<DihedralPotential>> {
     match node["type"].as_str() {
-        None => {
-            Err(Error::from(
-                format!("Missing 'type' section in: {:?}", node)
-            ))
-        }
         Some(val) => {
             let val: &str = &val.to_lowercase();
             match val {
@@ -271,12 +262,14 @@ fn read_dihedral_potential(node: &Yaml) -> Result<Box<DihedralPotential>> {
                     Error::from(format!("Unknown potential type '{}'", val))
                 ),
             }
+        },
+        None => {
+            Err(Error::from(format!("Missing 'type' section in dihedral potential")))
         }
     }
 }
 
 /******************************************************************************/
-
 impl FromYaml for NullPotential {
     fn from_yaml(node: &Yaml) -> Result<NullPotential> {
         Ok(NullPotential)
@@ -340,15 +333,10 @@ impl FromYaml for Torsion {
 }
 
 /******************************************************************************/
-
 fn read_pair_computation(node: &Yaml) -> Result<Box<PairPotential>> {
     let pot = try!(read_pair_potential(node));
+    let node = &node["computation"];
     match node["type"].as_str() {
-        None => {
-            Err(Error::from(
-                format!("Missing 'type' section for potential computation in: {:?}", node)
-            ))
-        }
         Some(val) => {
             let val: &str = &val.to_lowercase();
             match val {
@@ -358,6 +346,9 @@ fn read_pair_computation(node: &Yaml) -> Result<Box<PairPotential>> {
                     Error::from(format!("Unknown computation type '{}'", val))
                 ),
             }
+        },
+        None => {
+            Err(Error::from(format!("Missing 'type' section for potential computation")))
         }
     }
 }
@@ -393,7 +384,6 @@ impl FromYamlWithPairPotential for TableComputation {
 }
 
 /******************************************************************************/
-
 fn read_coulomb(universe: &mut Universe, config: &Yaml) -> Result<()> {
     let potential = try!(read_coulomb_potential(config));
     universe.set_coulomb_interaction(potential);
@@ -406,17 +396,15 @@ fn read_coulomb(universe: &mut Universe, config: &Yaml) -> Result<()> {
 
 fn read_coulomb_potential(node: &Yaml) -> Result<Box<CoulombicPotential>> {
     match node["type"].as_str() {
-        None => {
-            Err(Error::from(
-                format!("Missing 'type' section for coulomb section in: {:?}", node)
-            ))
-        }
         Some(val) => {
             let val: &str = &val.to_lowercase();
             match val {
                 "wolf" => Ok(Box::new(try!(Wolf::from_yaml(node)))),
                 val => Err(Error::from(format!("Unknown coulomb solver type '{}'", val))),
             }
+        },
+        None => {
+            Err(Error::from(format!("Missing 'type' section for coulomb section")))
         }
     }
 }
@@ -455,4 +443,101 @@ fn assign_charges(universe: &mut Universe, config: &Yaml) -> Result<()> {
         }
     }
     Ok(())
+}
+
+/******************************************************************************/
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use universe::Universe;
+    use std::path::{Path, PathBuf};
+    use std::fs;
+
+    fn bad_files(motif: &str) -> Vec<PathBuf> {
+        let DATA = Path::new(file!()).parent().unwrap().join("data").join("bad");
+        let paths = fs::read_dir(DATA).unwrap();
+
+        // Convert the list of DirEntry to a list of PathBuf, and return only
+        // the one whose filename starts with the given motif
+        return paths.filter_map(|entry| entry.ok())
+                    .map(|entry| entry.path())
+                    .filter(|path| {
+                        path.file_name().unwrap().to_str().unwrap().starts_with(motif)
+                    }).collect();
+    }
+
+    #[test]
+    fn pairs() {
+        let DATA = Path::new(file!()).parent().unwrap().join("data");
+        let mut universe = Universe::new();
+        read_interactions(&mut universe, DATA.join("pairs.yml")).unwrap();
+    }
+
+    #[test]
+    fn bad_pairs() {
+        for path in bad_files("pairs") {
+            let mut universe = Universe::new();
+            assert!(read_interactions(&mut universe, path).is_err());
+        }
+    }
+
+    #[test]
+    fn bonds() {
+        let DATA = Path::new(file!()).parent().unwrap().join("data");
+        let mut universe = Universe::new();
+        read_interactions(&mut universe, DATA.join("bonds.yml")).unwrap();
+    }
+
+    #[test]
+    fn bad_bonds() {
+        for path in bad_files("bonds") {
+            let mut universe = Universe::new();
+            assert!(read_interactions(&mut universe, path).is_err());
+        }
+    }
+
+    #[test]
+    fn angles() {
+        let DATA = Path::new(file!()).parent().unwrap().join("data");
+        let mut universe = Universe::new();
+        read_interactions(&mut universe, DATA.join("angles.yml")).unwrap();
+    }
+
+    #[test]
+    fn bad_angles() {
+        for path in bad_files("angles") {
+            let mut universe = Universe::new();
+            assert!(read_interactions(&mut universe, path).is_err());
+        }
+    }
+
+    #[test]
+    fn dihedrals() {
+        let DATA = Path::new(file!()).parent().unwrap().join("data");
+        let mut universe = Universe::new();
+        read_interactions(&mut universe, DATA.join("dihedrals.yml")).unwrap();
+    }
+
+    #[test]
+    fn bad_dihedrals() {
+        for path in bad_files("dihedrals") {
+            let mut universe = Universe::new();
+            assert!(read_interactions(&mut universe, path).is_err());
+        }
+    }
+
+    #[test]
+    fn coulomb() {
+        let DATA = Path::new(file!()).parent().unwrap().join("data");
+        let mut universe = Universe::new();
+        read_interactions(&mut universe, DATA.join("coulomb.yml")).unwrap();
+    }
+
+    #[test]
+    fn bad_coulomb() {
+        for path in bad_files("coulomb") {
+            let mut universe = Universe::new();
+            assert!(read_interactions(&mut universe, path).is_err());
+        }
+    }
 }

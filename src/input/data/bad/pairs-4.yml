@@ -1,0 +1,4 @@
+pairs:
+    - atoms: [A, B]
+      type: harmonic
+      # Missing values for harmonic

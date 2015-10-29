@@ -1,0 +1,5 @@
+dihedrals:
+    - atoms: [A, B, C, D, E]  # Five atoms
+      type: Harmonic
+      k: 45 kJ/mol/A^2
+      x0: 3 A

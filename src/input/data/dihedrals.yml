@@ -1,0 +1,20 @@
+dihedrals:
+    - atoms: [A, B, C, D]
+      type: Harmonic
+      x0: 3 A
+      k: 5.9 kJ/mol/A^2
+    - atoms: [O, C, C, O]
+      type: CosineHarmonic
+      k: 67 kJ/mol/deg^2
+      x0: 120 deg
+    - atoms: [O, C, C, O]
+      type: cosine-harmonic
+      k: 67 kJ/mol/deg^2
+      x0: 120 deg
+    - atoms: [O, C, C, O]
+      type: Null
+    - atoms: [O, C, C, O]
+      type: torsion
+      n: 4
+      k: 67 kJ/mol
+      delta: 80 deg

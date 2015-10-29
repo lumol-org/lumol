@@ -1,0 +1,5 @@
+pairs:
+    - atoms: [A, B]
+      type: LennardJones
+      # missing epsilon
+      sigma: 3 A

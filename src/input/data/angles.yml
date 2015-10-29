@@ -1,0 +1,15 @@
+angles:
+    - atoms: [A, B, C]
+      type: Harmonic
+      x0: 3 A
+      k: 5.9 kJ/mol/A^2
+    - atoms: [O, C, C]
+      type: CosineHarmonic
+      k: 67 kJ/mol/deg^2
+      x0: 120 deg
+    - atoms: [O, C, O]
+      type: cosine-harmonic
+      k: 67 kJ/mol/deg^2
+      x0: 120 deg
+    - atoms: [O, C, O]
+      type: Null

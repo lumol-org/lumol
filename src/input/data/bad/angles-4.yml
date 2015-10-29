@@ -1,0 +1,3 @@
+angles:
+    - atoms: [A, B, D]
+      # Missing type
