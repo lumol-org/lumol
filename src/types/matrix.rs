@@ -163,8 +163,6 @@ impl Mul<Vector3D> for Matrix3 {
 }
 
 /******************************************************************************/
-// TODO: merge Matrix and Matrix3 when we have genericity over constants.
-
 /// Bidimensional square matrix, with cache locality and runtime size. This type
 /// only provide an indexable bidimensional storage.
 pub struct Matrix<T> {
@@ -172,6 +170,13 @@ pub struct Matrix<T> {
     data: Vec<T>,
     /// Size of the matrix (it is an NxN matrix)
     n: usize
+}
+
+impl<T> Matrix<T> {
+    /// Get the size of the matrix
+    pub fn size(&self) -> usize {
+        self.n
+    }
 }
 
 impl<T: Clone> Matrix<T> {
@@ -191,6 +196,30 @@ impl<T: Default + Clone> Matrix<T> {
     pub fn with_size(n: usize) -> Matrix<T> {
         let vec = vec![T::default(); n*n];
         Matrix{data: vec, n: n}
+    }
+
+    /// Resize the matrix to be of size `new_size * new_size`. If the new size
+    /// is bigger than the old size, the new values inserted are T::default().
+    /// Old values are preseved.
+    pub fn resize(&mut self, new_size: usize) {
+        if new_size == self.n { return;}
+        if new_size > self.n {
+            let mut new_data = vec![T::default(); new_size * new_size];
+            for i in 1..self.n {
+                for j in 1..self.n {
+                    new_data[i*new_size + j] = self[i][j].clone();
+                }
+            }
+            self.data = new_data;
+        } else {
+            for i in 1..new_size {
+                for j in 1..new_size {
+                    self.data[i*new_size + j] = self.data[i*self.n + j].clone();
+                }
+            }
+            self.data.truncate(new_size * new_size);
+        }
+        self.n = new_size;
     }
 }
 
@@ -219,182 +248,206 @@ impl<T> IndexMut<usize> for Matrix<T> {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use super::super::vectors::Vector3D;
+    pub use super::*;
 
-    #[test]
-    #[should_panic]
-    fn out_of_bounds_access_matrix() {
-        let a = Matrix::<f64>::with_size(4);
-        let _ = a[6][1];
-    }
+    mod matrix {
+        use super::*;
 
-    #[test]
-    fn matrix() {
-        let mut a = Matrix::<f64>::with_size(4);
-
-        for i in 0..4 {
-            for j in 0..4 {
-                assert_eq!(a[i][j], 0.0);
-            }
+        #[test]
+        #[should_panic]
+        fn out_of_bounds() {
+            let a = Matrix::<f64>::with_size(4);
+            let _ = a[6][1];
         }
 
-        a[2][3] = 7.0;
-        assert_eq!(a[2][3], 7.0);
+        #[test]
+        fn size() {
+            let mut a = Matrix::<f64>::with_size(4);
+            assert_eq!(a.size(), 4);
 
-        a = Matrix::<f64>::new(42.0, 4);
-        for i in 0..4 {
-            for j in 0..4 {
-                assert_eq!(a[i][j], 42.0);
+            for i in 0..4 {
+                for j in 0..4 {
+                    assert_eq!(a[i][j], 0.0);
+                }
             }
-        }
-    }
 
-    #[test]
-    #[should_panic]
-    fn out_of_bounds_access_matrix3() {
-        let a = Matrix3::zero();
-        let _ = a[(3, 1)];
-    }
+            a[2][3] = 7.0;
+            assert_eq!(a[2][3], 7.0);
 
-    #[test]
-    fn specials_matrix() {
-        let a = Matrix3::zero();
-        let b = Matrix3::one();
-
-        for i in (0..2) {
-            for j in (0..2) {
-                assert_eq!(a[(i, j)], 0.0);
-                if i == j {
-                    assert_eq!(b[(i, j)], 1.0);
-                } else {
-                    assert_eq!(b[(i, j)], 0.0);
+            a = Matrix::<f64>::new(42.0, 8);
+            assert_eq!(a.size(), 8);
+            for i in 0..8 {
+                for j in 0..8 {
+                    assert_eq!(a[i][j], 42.0);
                 }
             }
         }
-    }
 
+        #[test]
+        fn resize() {
+            let mut a = Matrix::<f64>::with_size(6);
+            assert_eq!(a.size(), 6);
+            a[2][3] = 42.0;
 
-    #[test]
-    fn add() {
-        let a = Matrix3::new(1.0, 2.0, 3.0,
-                             4.0, 5.0, 6.0,
-                             8.0, 9.0, 10.0);
-        let b = Matrix3::one();
-        let add = a + b;
+            a.resize(9);
+            assert_eq!(a.size(), 9);
+            assert_eq!(a[2][3], 42.0);
 
-        let res = Matrix3::new(2.0, 2.0, 3.0,
-                               4.0, 6.0, 6.0,
-                               8.0, 9.0, 11.0);
-
-        for i in (0..3) {
-            for j in (0..3) {
-                assert_eq!(add[(i, j)], res[(i, j)]);
-            }
+            a.resize(4);
+            assert_eq!(a[2][3], 42.0);
         }
     }
 
-    #[test]
-    fn sub() {
-        let a = Matrix3::new(1.0, 2.0, 3.0,
-                             4.0, 5.0, 6.0,
-                             8.0, 9.0, 10.0);
-        let b = Matrix3::one();
-        let sub = a - b;
+    mod matrix3 {
+        use super::*;
+        use types::Vector3D;
 
-        let res = Matrix3::new(0.0, 2.0, 3.0,
-                               4.0, 4.0, 6.0,
-                               8.0, 9.0, 9.0);
+        #[test]
+        #[should_panic]
+        fn out_of_bounds() {
+            let a = Matrix3::zero();
+            let _ = a[(3, 1)];
+        }
 
-        for i in (0..3) {
-            for j in (0..3) {
-                assert_eq!(sub[(i, j)], res[(i, j)]);
+        #[test]
+        fn specials_matrix() {
+            let a = Matrix3::zero();
+            let b = Matrix3::one();
+
+            for i in (0..2) {
+                for j in (0..2) {
+                    assert_eq!(a[(i, j)], 0.0);
+                    if i == j {
+                        assert_eq!(b[(i, j)], 1.0);
+                    } else {
+                        assert_eq!(b[(i, j)], 0.0);
+                    }
+                }
             }
         }
-    }
 
-    #[test]
-    fn mul_scalar() {
-        let a = Matrix3::new(1.0, 2.0, 3.0,
-                             4.0, 5.0, 6.0,
-                             8.0, 9.0, 10.0);
-        let b = 2.0;
-        let mul_r = a * b;
-        let mul_l = b * a;
 
-        let res = Matrix3::new(2.0, 4.0, 6.0,
-                               8.0, 10.0, 12.0,
-                               16.0, 18.0, 20.0);
+        #[test]
+        fn add() {
+            let a = Matrix3::new(1.0, 2.0, 3.0,
+                                 4.0, 5.0, 6.0,
+                                 8.0, 9.0, 10.0);
+            let b = Matrix3::one();
+            let add = a + b;
 
-        for i in (0..3) {
-            for j in (0..3) {
-                assert_eq!(mul_r[(i, j)], res[(i, j)]);
-                assert_eq!(mul_l[(i, j)], res[(i, j)]);
+            let res = Matrix3::new(2.0, 2.0, 3.0,
+                                   4.0, 6.0, 6.0,
+                                   8.0, 9.0, 11.0);
+
+            for i in (0..3) {
+                for j in (0..3) {
+                    assert_eq!(add[(i, j)], res[(i, j)]);
+                }
             }
         }
-    }
 
-    #[test]
-    fn mul_matrix() {
-        let unit = Matrix3::one();
-        let unit_sq = unit * unit;
+        #[test]
+        fn sub() {
+            let a = Matrix3::new(1.0, 2.0, 3.0,
+                                 4.0, 5.0, 6.0,
+                                 8.0, 9.0, 10.0);
+            let b = Matrix3::one();
+            let sub = a - b;
 
-        let a = Matrix3::new(2.0, 4.0, 6.0,
-                             8.0, 10.0, 12.0,
-                             16.0, 18.0, 20.0);
-        let mul_r = unit * a;
-        let mul_l = a * unit;
+            let res = Matrix3::new(0.0, 2.0, 3.0,
+                                   4.0, 4.0, 6.0,
+                                   8.0, 9.0, 9.0);
 
-        for i in 0..3 {
-            for j in 0..3 {
-                // 1-Matrix is the same as (1-Matrix)*(1-Matrix)
-                assert_eq!(unit[(i, j)], unit_sq[(i, j)]);
-                // (1-Matrix)*A is the same as A and A*(1-Matrix)
-                assert_eq!(mul_l[(i, j)], a[(i, j)]);
-                assert_eq!(mul_r[(i, j)], a[(i, j)]);
+            for i in (0..3) {
+                for j in (0..3) {
+                    assert_eq!(sub[(i, j)], res[(i, j)]);
+                }
             }
         }
-    }
 
-    #[test]
-    fn mul_vector() {
-        let A = Matrix3::new(1.0, 2.0, 3.0,
-                             4.0, 5.0, 6.0,
-                             8.0, 9.0, 10.0);
+        #[test]
+        fn mul_scalar() {
+            let a = Matrix3::new(1.0, 2.0, 3.0,
+                                 4.0, 5.0, 6.0,
+                                 8.0, 9.0, 10.0);
+            let b = 2.0;
+            let mul_r = a * b;
+            let mul_l = b * a;
 
-        let vec = Vector3D::new(1.0, 1.0, 1.0);
-        let mul = A * vec;
-        let res = Vector3D::new(6.0, 15.0, 27.0);
+            let res = Matrix3::new(2.0, 4.0, 6.0,
+                                   8.0, 10.0, 12.0,
+                                   16.0, 18.0, 20.0);
 
-        assert_eq!(mul.x, res.x);
-        assert_eq!(mul.y, res.y);
-        assert_eq!(mul.z, res.z);
+            for i in (0..3) {
+                for j in (0..3) {
+                    assert_eq!(mul_r[(i, j)], res[(i, j)]);
+                    assert_eq!(mul_l[(i, j)], res[(i, j)]);
+                }
+            }
+        }
 
-        let unit = Matrix3::one();
-        let vec = Vector3D::new(567.45, 356.8, 215673.12);
-        let mul = unit * vec;
-        let res = vec;
+        #[test]
+        fn mul_matrix() {
+            let unit = Matrix3::one();
+            let unit_sq = unit * unit;
 
-        assert_eq!(mul.x, res.x);
-        assert_eq!(mul.y, res.y);
-        assert_eq!(mul.z, res.z);
-    }
+            let a = Matrix3::new(2.0, 4.0, 6.0,
+                                 8.0, 10.0, 12.0,
+                                 16.0, 18.0, 20.0);
+            let mul_r = unit * a;
+            let mul_l = a * unit;
 
-    #[test]
-    fn inverse() {
-        let I = Matrix3::one();
-        let res = I.inverse();
+            for i in 0..3 {
+                for j in 0..3 {
+                    // 1-Matrix is the same as (1-Matrix)*(1-Matrix)
+                    assert_eq!(unit[(i, j)], unit_sq[(i, j)]);
+                    // (1-Matrix)*A is the same as A and A*(1-Matrix)
+                    assert_eq!(mul_l[(i, j)], a[(i, j)]);
+                    assert_eq!(mul_r[(i, j)], a[(i, j)]);
+                }
+            }
+        }
 
-        let A = Matrix3::new(1.0, 2.0, 3.0,
-                             2.0, 5.0, 3.0,
-                             1.0, 3.0, 8.0,);
-        let B = A.inverse();
-        let C = A*B;
+        #[test]
+        fn mul_vector() {
+            let A = Matrix3::new(1.0, 2.0, 3.0,
+                                 4.0, 5.0, 6.0,
+                                 8.0, 9.0, 10.0);
 
-        for i in 0..3 {
-            for j in 0..3 {
-                assert_eq!(I[(i, j)], res[(i, j)]);
-                assert_eq!(I[(i, j)], C[(i, j)]);
+            let vec = Vector3D::new(1.0, 1.0, 1.0);
+            let mul = A * vec;
+            let res = Vector3D::new(6.0, 15.0, 27.0);
+
+            assert_eq!(mul.x, res.x);
+            assert_eq!(mul.y, res.y);
+            assert_eq!(mul.z, res.z);
+
+            let unit = Matrix3::one();
+            let vec = Vector3D::new(567.45, 356.8, 215673.12);
+            let mul = unit * vec;
+            let res = vec;
+
+            assert_eq!(mul.x, res.x);
+            assert_eq!(mul.y, res.y);
+            assert_eq!(mul.z, res.z);
+        }
+
+        #[test]
+        fn inverse() {
+            let I = Matrix3::one();
+            let res = I.inverse();
+
+            let A = Matrix3::new(1.0, 2.0, 3.0,
+                                 2.0, 5.0, 3.0,
+                                 1.0, 3.0, 8.0,);
+            let B = A.inverse();
+            let C = A*B;
+
+            for i in 0..3 {
+                for j in 0..3 {
+                    assert_eq!(I[(i, j)], res[(i, j)]);
+                    assert_eq!(I[(i, j)], C[(i, j)]);
+                }
             }
         }
     }
