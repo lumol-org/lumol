@@ -12,6 +12,7 @@ use std::ops::{Index, IndexMut};
 use std::slice;
 use std::cmp::{min, max};
 use std::iter::IntoIterator;
+use std::u8;
 
 extern crate chemfiles;
 use self::chemfiles::{Trajectory, Frame};
@@ -22,8 +23,9 @@ use types::{Vector3D, Matrix3};
 
 use super::Particle;
 use super::Molecule;
+use super::{CONNECT_SELF, CONNECT_12, CONNECT_13, CONNECT_14, CONNECT_FAR};
 use super::UnitCell;
-use super::interactions::Interactions;
+use super::interactions::{Interactions, PairInteraction};
 use super::chemfiles::frame_to_universe;
 
 pub type Permutations = Vec<(usize, usize)>;
@@ -143,6 +145,30 @@ impl Universe {
     /// Get the list of molecules in the universe.
     #[inline] pub fn molecules(&self) -> &Vec<Molecule> {
         &self.molecules
+    }
+
+    /// Get the length of the shortest bond path to go from the particle `i` to
+    /// the particle `j`. This length is 0 if there is no path from `i` to `j`,
+    /// 1 if `i == j`, 2 if there is a bond between `i` and `j`, etc. 
+    pub fn shortest_path(&self, i: usize, j: usize) -> u8 {
+        if !(self.are_in_same_molecule(i, j)) {
+            0
+        } else {
+            let connect = self.molecule_containing(i).connectivity(i, j);
+            if connect.contains(CONNECT_SELF) {
+                1
+            } else if connect.contains(CONNECT_12) {
+                2
+            } else if connect.contains(CONNECT_13) {
+                3
+            } else if connect.contains(CONNECT_14) {
+                4
+            } else if connect.contains(CONNECT_FAR) {
+                u8::MAX
+            } else {
+                unreachable!();
+            }
+        }
     }
 
     /// Remove the molecule containing the particle at index `i`
@@ -349,7 +375,8 @@ impl Universe {
     }
 }
 
-static NO_PAIR_INTERACTION: &'static [Box<PairPotential>] = &[];
+static NO_PAIR_INTERACTION: &'static [PairInteraction] = &[];
+static NO_BOND_INTERACTION: &'static [Box<PairPotential>] = &[];
 static NO_ANGLE_INTERACTION: &'static [Box<AnglePotential>] = &[];
 static NO_DIHEDRAL_INTERACTION: &'static [Box<DihedralPotential>] = &[];
 
@@ -357,7 +384,7 @@ static NO_DIHEDRAL_INTERACTION: &'static [Box<DihedralPotential>] = &[];
 impl Universe {
     /// Get the list of pair interaction between the particles at indexes `i`
     /// and `j`.
-    pub fn pair_potentials(&self, i: usize, j: usize) -> &[Box<PairPotential>] {
+    pub fn pair_potentials(&self, i: usize, j: usize) -> &[PairInteraction] {
         let ikind = self.particles[i].kind;
         let jkind = self.particles[j].kind;
         match self.interactions.pairs(ikind, jkind) {
@@ -384,7 +411,7 @@ impl Universe {
                 let j = self.particles[j].name();
                 // TODO: add and use the warn_once! macro
                 warn!("No potential defined for the bond ({}, {})", i, j);
-                NO_PAIR_INTERACTION
+                NO_BOND_INTERACTION
             }
         }
     }

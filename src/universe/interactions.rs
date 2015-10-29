@@ -13,12 +13,16 @@ use std::cmp::max;
 
 use potentials::{PairPotential, AnglePotential, DihedralPotential};
 use potentials::{GlobalPotential, CoulombicPotential};
+use potentials::PairRestriction;
+
+/// Type associating a potential and a pair restriction
+pub type PairInteraction = (Box<PairPotential>, PairRestriction);
 
 /// The Interaction type hold all data about the potentials in the system,
 /// indexed by particle type.
 pub struct Interactions {
     /// Pair potentials
-    pairs: BTreeMap<(u16, u16), Vec<Box<PairPotential>>>,
+    pairs: BTreeMap<(u16, u16), Vec<PairInteraction>>,
     /// Bond potentials
     bonds: BTreeMap<(u16, u16), Vec<Box<PairPotential>>>,
     /// Angle potentials
@@ -43,23 +47,29 @@ impl Interactions {
         }
     }
 
-    /// Add a pair interaction to the pair `(i, j)`
+    /// Add the `potential` pair interaction to the pair `(i, j)`
     pub fn add_pair(&mut self, i: u16, j:u16, potential: Box<PairPotential>) {
+        self.add_pair_with_restriction(i, j, potential, PairRestriction::None);
+    }
+
+    /// Add the `potential` pair interaction to the pair `(i, j)`, with the
+    /// restriction scheme `restrict`.
+    pub fn add_pair_with_restriction(&mut self, i: u16, j:u16, potential: Box<PairPotential>, restrict: PairRestriction) {
         let (i, j) = sort_pair(i, j);
         if !self.pairs.contains_key(&(i, j)) {
             self.pairs.insert((i, j), Vec::new());
         }
         let pairs = self.pairs.get_mut(&(i, j)).unwrap();
-        pairs.push(potential);
+        pairs.push((potential, restrict));
     }
 
     /// Get all pair interactions corresponding to the pair `(i, j)`
-    pub fn pairs(&self, i: u16, j:u16) -> Option<&Vec<Box<PairPotential>>> {
+    pub fn pairs(&self, i: u16, j:u16) -> Option<&Vec<PairInteraction>> {
         let (i, j) = sort_pair(i, j);
         self.pairs.get(&(i, j))
     }
 
-    /// Add a bonded interaction to the pair `(i, j)`
+    /// Add the `potential` bonded interaction to the pair `(i, j)`
     pub fn add_bond(&mut self, i: u16, j:u16, potential: Box<PairPotential>) {
         let (i, j) = sort_pair(i, j);
         if !self.bonds.contains_key(&(i, j)) {
@@ -75,7 +85,7 @@ impl Interactions {
         self.bonds.get(&(i, j))
     }
 
-    /// Add an angle interaction to the angle `(i, j, k)`
+    /// Add the `potential` angle interaction to the angle `(i, j, k)`
     pub fn add_angle(&mut self, i: u16, j:u16, k:u16, potential: Box<AnglePotential>) {
         let (i, j, k) = sort_angle(i, j, k);
         if !self.angles.contains_key(&(i, j, k)) {
@@ -91,7 +101,7 @@ impl Interactions {
         self.angles.get(&(i, j, k))
     }
 
-    /// Add a dihedral interaction to the dihedral `(i, j, k, m)`
+    /// Add the `potential` dihedral interaction to the dihedral `(i, j, k, m)`
     pub fn add_dihedral(&mut self, i: u16, j:u16, k:u16, m:u16, potential: Box<DihedralPotential>) {
         let (i, j, k, m) = sort_dihedral(i, j, k, m);
         if !self.dihedrals.contains_key(&(i, j, k, m)) {
@@ -107,17 +117,17 @@ impl Interactions {
         self.dihedrals.get(&(i, j, k, m))
     }
 
-
+    /// Set the coulombic interaction for all pairs to `potential`
     pub fn set_coulomb(&mut self, potential: Box<CoulombicPotential>) {
-        self.coulomb = Some(potential)
+        self.coulomb = Some(potential);
     }
 
-
+    /// Get the coulombic interaction
     pub fn coulomb(&self) -> &Option<Box<CoulombicPotential>> {
         &self.coulomb
     }
 
-    /// Add a global interaction
+    /// Add the `potential` global interaction
     pub fn add_global(&mut self, potential: Box<GlobalPotential>) {
         self.globals.push(potential);
     }

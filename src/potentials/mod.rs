@@ -23,6 +23,9 @@ pub mod computations;
 pub use self::computations::Computation;
 pub use self::computations::{TableComputation, CutoffComputation};
 
+pub mod restrictions;
+pub use self::restrictions::PairRestriction;
+
 pub mod global;
 pub use self::global::{GlobalPotential, CoulombicPotential};
 pub use self::global::Wolf;

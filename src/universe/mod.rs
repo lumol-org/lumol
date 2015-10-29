@@ -29,6 +29,8 @@ pub use self::molecules::{CONNECT_SELF, CONNECT_12, CONNECT_13, CONNECT_14, CONN
 pub use self::molecules::Molecule;
 
 mod interactions;
+pub use self::interactions::PairInteraction;
+
 mod universes;
 pub use self::universes::Universe;
 
