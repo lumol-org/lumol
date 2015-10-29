@@ -23,7 +23,7 @@ use types::{Vector3D, Matrix3};
 
 use super::Particle;
 use super::Molecule;
-use super::{CONNECT_SELF, CONNECT_12, CONNECT_13, CONNECT_14, CONNECT_FAR};
+use super::{CONNECT_12, CONNECT_13, CONNECT_14, CONNECT_FAR};
 use super::UnitCell;
 use super::interactions::{Interactions, PairInteraction};
 use super::chemfiles::frame_to_universe;
@@ -149,15 +149,15 @@ impl Universe {
 
     /// Get the length of the shortest bond path to go from the particle `i` to
     /// the particle `j`. This length is 0 if there is no path from `i` to `j`,
-    /// 1 if `i == j`, 2 if there is a bond between `i` and `j`, etc. 
+    /// 1 if `i == j`, 2 if there is a bond between `i` and `j`, etc.
     pub fn shortest_path(&self, i: usize, j: usize) -> u8 {
         if !(self.are_in_same_molecule(i, j)) {
             0
+        } else if i == j {
+            1
         } else {
             let connect = self.molecule_containing(i).connectivity(i, j);
-            if connect.contains(CONNECT_SELF) {
-                1
-            } else if connect.contains(CONNECT_12) {
+            if connect.contains(CONNECT_12) {
                 2
             } else if connect.contains(CONNECT_13) {
                 3

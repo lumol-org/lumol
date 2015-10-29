@@ -25,7 +25,7 @@ pub use self::velocities::{BoltzmanVelocities, UniformVelocities};
 mod molecules;
 pub use self::molecules::{Bond, Angle, Dihedral};
 pub use self::molecules::Connectivity;
-pub use self::molecules::{CONNECT_SELF, CONNECT_12, CONNECT_13, CONNECT_14, CONNECT_FAR};
+pub use self::molecules::{CONNECT_12, CONNECT_13, CONNECT_14, CONNECT_FAR};
 pub use self::molecules::Molecule;
 
 mod interactions;

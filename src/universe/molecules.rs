@@ -115,8 +115,6 @@ mod connect {
         /// two particles in the molecule, i.e. the number of bonds between the
         /// particles.
         flags Connectivity: u16 {
-            /// The particles are the same
-            const CONNECT_SELF = 0b0000,
             /// The particles are separated by one bond
             const CONNECT_12   = 0b0001,
             /// The particles are separated by two bonds
@@ -136,7 +134,7 @@ mod connect {
 }
 
 pub use self::connect::Connectivity;
-pub use self::connect::{CONNECT_SELF, CONNECT_12, CONNECT_13, CONNECT_14, CONNECT_FAR};
+pub use self::connect::{CONNECT_12, CONNECT_13, CONNECT_14, CONNECT_FAR};
 
 /******************************************************************************/
 
@@ -251,12 +249,6 @@ impl Molecule {
     /// in the system.
     fn rebuild_connections(&mut self) {
         self.connections = Matrix::with_size(self.size());
-
-        for i in 0..self.size() {
-            let old_connect = self.connections[i][i];
-            self.connections[i][i] = old_connect | CONNECT_SELF;
-        }
-
         for bond in &self.bonds {
             let old_connect = self.connections[bond.i - self.first][bond.j - self.first];
             self.connections[bond.i - self.first][bond.j - self.first] = old_connect | CONNECT_12;
@@ -552,7 +544,6 @@ mod test {
         }
 
         /**********************************************************************/
-        assert!(molecule.connectivity(0, 0).contains(CONNECT_SELF));
         assert!(molecule.connectivity(0, 1).contains(CONNECT_12));
         assert!(molecule.connectivity(0, 7).contains(CONNECT_13));
         assert!(molecule.connectivity(3, 5).contains(CONNECT_14));
