@@ -10,6 +10,8 @@ use std::collections::HashSet;
 use std::iter::IntoIterator;
 use std::ops::Range;
 
+use types::Matrix;
+
 /// A `Bond` between the atoms at indexes `i` and `j`
 ///
 /// This structure ensure unicity of a `Bond` representation by enforcing
@@ -106,6 +108,37 @@ impl Dihedral {
 }
 
 /******************************************************************************/
+mod connect {
+    #![allow(dead_code)]
+    bitflags! {
+        /// The `Connectivity` bitflag encode the topological distance between
+        /// two particles in the molecule, i.e. the number of bonds between the
+        /// particles.
+        flags Connectivity: u16 {
+            /// The particles are the same
+            const CONNECT_SELF = 0b0000,
+            /// The particles are separated by one bond
+            const CONNECT_12   = 0b0001,
+            /// The particles are separated by two bonds
+            const CONNECT_13   = 0b0010,
+            /// The particles are separated by three bonds
+            const CONNECT_14   = 0b0100,
+            /// The particles are separated by more than three bonds
+            const CONNECT_FAR  = 0b1000,
+        }
+    }
+
+    impl Default for Connectivity {
+        fn default() -> Connectivity {
+            CONNECT_FAR
+        }
+    }
+}
+
+pub use self::connect::Connectivity;
+pub use self::connect::{CONNECT_SELF, CONNECT_12, CONNECT_13, CONNECT_14, CONNECT_FAR};
+
+/******************************************************************************/
 
 #[derive(Debug, Clone, PartialEq)]
 /// A molecule is the basic building block for a topology. It contains data
@@ -119,6 +152,10 @@ pub struct Molecule {
     /// All the dihedral angles in the molecule. This is rebuilt as needed from
     /// the bond list.
     dihedrals: HashSet<Dihedral>,
+    /// Matrix of connectivity in the molecule. The item at index `i, j` encode
+    /// the connectivity between the particles `i + self.first` and
+    /// `j + self.first`
+    connections: Matrix<Connectivity>,
     /// Index of the first atom in this molecule.
     first: usize,
     /// Index of the last (included) atom in this molecule.
@@ -132,6 +169,7 @@ impl Molecule {
             bonds: HashSet::new(),
             angles: HashSet::new(),
             dihedrals: HashSet::new(),
+            connections: Matrix::with_size(1),
             first: i,
             last: i,
         }
@@ -206,6 +244,42 @@ impl Molecule {
                 }
             }
         }
+        self.rebuild_connections();
+    }
+
+    /// Recompute the connectivity matrix from the bonds, angles and dihedrals
+    /// in the system.
+    fn rebuild_connections(&mut self) {
+        self.connections = Matrix::with_size(self.size());
+
+        for i in 0..self.size() {
+            let old_connect = self.connections[i][i];
+            self.connections[i][i] = old_connect | CONNECT_SELF;
+        }
+
+        for bond in &self.bonds {
+            let old_connect = self.connections[bond.i - self.first][bond.j - self.first];
+            self.connections[bond.i - self.first][bond.j - self.first] = old_connect | CONNECT_12;
+
+            let old_connect = self.connections[bond.j - self.first][bond.i - self.first];
+            self.connections[bond.j - self.first][bond.i - self.first] = old_connect | CONNECT_12;
+        }
+
+        for angle in &self.angles {
+            let old_connect = self.connections[angle.i - self.first][angle.k - self.first];
+            self.connections[angle.i - self.first][angle.k - self.first] = old_connect | CONNECT_13;
+
+            let old_connect = self.connections[angle.k - self.first][angle.i - self.first];
+            self.connections[angle.k - self.first][angle.i - self.first] = old_connect | CONNECT_13;
+        }
+
+        for dihedral in &self.dihedrals {
+            let old_connect = self.connections[dihedral.i - self.first][dihedral.m - self.first];
+            self.connections[dihedral.i - self.first][dihedral.m - self.first] = old_connect | CONNECT_14;
+
+            let old_connect = self.connections[dihedral.m - self.first][dihedral.i - self.first];
+            self.connections[dihedral.m - self.first][dihedral.i - self.first] = old_connect | CONNECT_14;
+        }
     }
 
     /// Merge this molecule with `other`. The first particle in `other` should
@@ -226,6 +300,8 @@ impl Molecule {
         for dihedral in other.dihedrals() {
             self.dihedrals.insert(dihedral.clone());
         }
+
+        self.rebuild_connections();
     }
 
     /// Translate all indexes in this molecule by `delta`.
@@ -322,6 +398,13 @@ impl Molecule {
     #[inline] pub fn dihedrals(&self) -> &HashSet<Dihedral> {
         &self.dihedrals
     }
+
+    /// Get the connectivity betweent the particles `i` and `j`
+    #[inline] pub fn connectivity(&self, i: usize, j: usize) -> Connectivity {
+        assert!(self.first <= i && i <= self.last);
+        assert!(self.first <= j && j <= self.last);
+        return self.connections[i - self.first][j - self.first];
+    }
 }
 
 impl IntoIterator for Molecule {
@@ -410,7 +493,7 @@ mod test {
 
     #[test]
     fn bonding() {
-        // Create a 2D ethane by hand, like this one
+        // Create ethane like this
         //       H    H               4    5
         //       |    |               |    |
         //   H - C -- C - H       3 - 0 -- 1 - 6
@@ -468,10 +551,39 @@ mod test {
             assert!(molecule.dihedrals().contains(dihedral));
         }
 
+        /**********************************************************************/
+        assert!(molecule.connectivity(0, 0).contains(CONNECT_SELF));
+        assert!(molecule.connectivity(0, 1).contains(CONNECT_12));
+        assert!(molecule.connectivity(0, 7).contains(CONNECT_13));
+        assert!(molecule.connectivity(3, 5).contains(CONNECT_14));
+
+        /**********************************************************************/
 
         molecule.remove_particle(6);
         assert_eq!(molecule.bonds().len(), 6);
         assert_eq!(molecule.angles().len(), 9);
         assert_eq!(molecule.dihedrals().len(), 6);
+    }
+
+    #[test]
+    fn cyclic() {
+        //   0 -- 1
+        //   |    |
+        //   3 -- 2
+        let mut molecule = Molecule::new(0);
+
+        for i in 1..4 {
+            molecule.merge_with(Molecule::new(i));
+        }
+        molecule.add_bond(0, 1);
+        molecule.add_bond(1, 2);
+        molecule.add_bond(2, 3);
+        molecule.add_bond(3, 0);
+
+        assert!(molecule.connectivity(0, 3).contains(CONNECT_12));
+        assert!(molecule.connectivity(0, 3).contains(CONNECT_14));
+
+        assert!(molecule.angles.contains(&Angle::new(0, 3, 2)));
+        assert!(molecule.angles.contains(&Angle::new(0, 1, 2)));
     }
 }

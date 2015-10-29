@@ -16,6 +16,7 @@ rand = "*"
 log = "*"
 yaml-rust = "*"
 special = "*"
+bitflags = "*"
 
 [dependencies.chemfiles]
 git = "https://github.com/chemfiles/chemfiles.rs"
