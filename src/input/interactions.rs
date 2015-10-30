@@ -123,8 +123,8 @@ pub fn read_interactions<P: AsRef<Path>>(universe: &mut Universe, path: P) -> Re
 /// is `true`, then the interactions are added to the pair interactions. Else,
 /// the interaction are added to the bond interactions.
 fn read_pairs(universe: &mut Universe, pairs: &[Yaml], pair_potentials: bool) -> Result<()> {
-    for potential in pairs {
-        let (a, b) = match potential["atoms"].as_vec() {
+    for node in pairs {
+        let (a, b) = match node["atoms"].as_vec() {
             Some(vec) => {
                 if vec.len() != 2 {
                     return Err(Error::from(
@@ -142,10 +142,12 @@ fn read_pairs(universe: &mut Universe, pairs: &[Yaml], pair_potentials: bool) ->
             }
         };
 
-        let potential = if potential["computation"].as_hash().is_some() {
-            try!(read_pair_computation(potential))
+
+        let potential = try!(read_pair_potential(node));
+        let potential = if node["computation"].as_hash().is_some() {
+            try!(read_pair_computation(&node["computation"], potential))
         } else {
-            try!(read_pair_potential(potential))
+            potential
         };
 
         if pair_potentials {
@@ -333,15 +335,13 @@ impl FromYaml for Torsion {
 }
 
 /******************************************************************************/
-fn read_pair_computation(node: &Yaml) -> Result<Box<PairPotential>> {
-    let pot = try!(read_pair_potential(node));
-    let node = &node["computation"];
+fn read_pair_computation(node: &Yaml, potential: Box<PairPotential>) -> Result<Box<PairPotential>> {
     match node["type"].as_str() {
         Some(val) => {
             let val: &str = &val.to_lowercase();
             match val {
-                "cutoff" => Ok(Box::new(try!(CutoffComputation::from_yaml(node, pot)))),
-                "table" => Ok(Box::new(try!(TableComputation::from_yaml(node, pot)))),
+                "cutoff" => Ok(Box::new(try!(CutoffComputation::from_yaml(node, potential)))),
+                "table" => Ok(Box::new(try!(TableComputation::from_yaml(node, potential)))),
                 val => Err(
                     Error::from(format!("Unknown computation type '{}'", val))
                 ),
