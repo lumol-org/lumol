@@ -19,6 +19,7 @@ use self::chemfiles::{Trajectory, Frame};
 
 use potentials::{PairPotential, AnglePotential, DihedralPotential};
 use potentials::{CoulombicPotential, GlobalPotential};
+use potentials::PairRestriction;
 use types::{Vector3D, Matrix3};
 
 use super::Particle;
@@ -475,6 +476,15 @@ impl Universe {
         let jkind = self.get_kind(j);
 
         self.interactions.add_pair(ikind, jkind, potential);
+    }
+
+    /// Add the `potential` pair potential between the particles with names
+    /// `i` and `j`, using the `restriction` restriction scheme.
+    pub fn add_pair_interaction_with_restriction(&mut self, i: &str, j: &str, potential: Box<PairPotential>, restriction: PairRestriction) {
+        let ikind = self.get_kind(i);
+        let jkind = self.get_kind(j);
+
+        self.interactions.add_pair_with_restriction(ikind, jkind, potential, restriction);
     }
 
     /// Add the `potential` bonded potentials between the particles with names

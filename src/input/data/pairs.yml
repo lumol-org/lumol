@@ -32,3 +32,29 @@ pairs:
         type: table
         max: 8 A
         n: 5000
+    # Restrictions
+    - atoms: [A, B]
+      type: Null
+      restriction:
+        type: intermolecular
+    - atoms: [A, B]
+      type: Null
+      restriction:
+        type: intramolecular
+    - atoms: [A, B]
+      type: Null
+      restriction:
+        type: exclude12
+    - atoms: [A, B]
+      type: Null
+      restriction:
+        type: exclude13
+    - atoms: [A, B]
+      type: Null
+      restriction:
+        type: exclude14
+    - atoms: [A, B]
+      type: Null
+      restriction:
+        type: scale14
+        scaling: 0.8

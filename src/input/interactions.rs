@@ -42,9 +42,9 @@ trait FromYaml where Self: Sized {
 ///     type: LennardJones
 ///     sigma: 3.8 A
 ///     epsilon: 0.67 kJ/mol
-///     computation:
-///       type: cutoff
-///       cutoff: 10 A
+///     # restriction section is also optional
+///     restriction:
+///       type: IntraMolecular
 ///   - atoms: [He, Ar]
 ///     type: NullPotential
 /// bond: # Bonded atoms pairs
@@ -77,6 +77,10 @@ trait FromYaml where Self: Sized {
 ///     charges:
 ///         O: -1.8
 ///         Na: 0.9
+///     # restriction section is optional here too
+///     restriction:
+///       type: Scale14
+///       scaling: 0.8
 /// ```
 ///
 /// The main items are the `"pairs"`, `"bonds"`, `"angles"` and `"dihedrals"`;
@@ -142,6 +146,11 @@ fn read_pairs(universe: &mut Universe, pairs: &[Yaml], pair_potentials: bool) ->
             }
         };
 
+        let restriction = if node["restriction"].as_hash().is_some() {
+            Some(try!(read_restriction(&node["restriction"])))
+        } else {
+            None
+        };
 
         let potential = try!(read_pair_potential(node));
         let potential = if node["computation"].as_hash().is_some() {
@@ -151,7 +160,11 @@ fn read_pairs(universe: &mut Universe, pairs: &[Yaml], pair_potentials: bool) ->
         };
 
         if pair_potentials {
-            universe.add_pair_interaction(a, b, potential);
+            if let Some(restriction) = restriction {
+                universe.add_pair_interaction_with_restriction(a, b, potential, restriction);
+            } else {
+                universe.add_pair_interaction(a, b, potential);
+            }
         } else {
             universe.add_bond_interaction(a, b, potential);
         }
@@ -174,6 +187,39 @@ fn read_pair_potential(node: &Yaml) -> Result<Box<PairPotential>> {
         },
         None => {
             Err(Error::from("Missing 'type' section in pair potential"))
+        }
+    }
+}
+/******************************************************************************/
+fn read_restriction(node: &Yaml) -> Result<PairRestriction> {
+    match node["type"].as_str() {
+        Some(val) => {
+            let val: &str = &val.to_lowercase();
+            match val {
+                "none" => Ok(PairRestriction::None),
+                "intramolecular" => Ok(PairRestriction::IntraMolecular),
+                "intermolecular" => Ok(PairRestriction::InterMolecular),
+                "exclude12" => Ok(PairRestriction::Exclude12),
+                "exclude13" => Ok(PairRestriction::Exclude13),
+                "exclude14" => Ok(PairRestriction::Exclude14),
+                "scale14" => {
+                    if let Some(scaling) = node["scaling"].as_f64() {
+                        if 0.0 <= scaling && scaling <= 1.0 {
+                            Ok(PairRestriction::Scale14{scaling: scaling})
+                        } else {
+                            Err(Error::from(format!("Scaling parameter for Scale14 restriction must be between 0 and 1")))
+                        }
+                    } else {
+                        Err(Error::from(format!("Missing 'scaling' parameter in Scale14 restriction")))
+                    }
+                },
+                val => Err(
+                    Error::from(format!("Unknown potential type '{}'", val))
+                ),
+            }
+        },
+        None => {
+            Err(Error::from("Missing 'type' parameter in restriction section"))
         }
     }
 }
