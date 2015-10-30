@@ -186,7 +186,7 @@ fn read_pair_potential(node: &Yaml) -> Result<Box<PairPotential>> {
             }
         },
         None => {
-            Err(Error::from("Missing 'type' section in pair potential"))
+            Err(Error::from("Missing 'type' parameter in pair potential"))
         }
     }
 }
@@ -265,7 +265,7 @@ fn read_angle_potential(node: &Yaml) -> Result<Box<AnglePotential>> {
             }
         },
         None => {
-            Err(Error::from(format!("Missing 'type' section in angle potential")))
+            Err(Error::from(format!("Missing 'type' parameter in angle potential")))
         }
     }
 }
@@ -312,7 +312,7 @@ fn read_dihedral_potential(node: &Yaml) -> Result<Box<DihedralPotential>> {
             }
         },
         None => {
-            Err(Error::from(format!("Missing 'type' section in dihedral potential")))
+            Err(Error::from(format!("Missing 'type' parameter in dihedral potential")))
         }
     }
 }
@@ -394,7 +394,7 @@ fn read_pair_computation(node: &Yaml, potential: Box<PairPotential>) -> Result<B
             }
         },
         None => {
-            Err(Error::from(format!("Missing 'type' section for potential computation")))
+            Err(Error::from(format!("Missing 'type' parameter for potential computation")))
         }
     }
 }
@@ -410,7 +410,7 @@ impl FromYamlWithPairPotential for CutoffComputation {
             Ok(CutoffComputation::new(potential, cutoff))
         } else {
             Err(
-                Error::from("Missing 'cutoff' value in cutoff computation")
+                Error::from("Missing 'cutoff' parameter in cutoff computation")
             )
         }
     }
@@ -423,7 +423,7 @@ impl FromYamlWithPairPotential for TableComputation {
             Ok(TableComputation::new(potential, n as usize, max))
         } else {
             Err(
-                Error::from("Missing 'max' or 'n' value in cutoff computation")
+                Error::from("Missing 'max' or 'n' parameter in cutoff computation")
             )
         }
     }
@@ -450,7 +450,7 @@ fn read_coulomb_potential(node: &Yaml) -> Result<Box<CoulombicPotential>> {
             }
         },
         None => {
-            Err(Error::from(format!("Missing 'type' section for coulomb section")))
+            Err(Error::from(format!("Missing 'type' parameter for coulomb section")))
         }
     }
 }
@@ -461,7 +461,7 @@ impl FromYaml for Wolf {
             let cutoff = try!(::units::from_str(cutoff));
             Ok(Wolf::new(cutoff))
         } else {
-            Err(Error::from("Missing 'cutoff' value in Wolf potential"))
+            Err(Error::from("Missing 'cutoff' parameter in Wolf potential"))
         }
     }
 }
