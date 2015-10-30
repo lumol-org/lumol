@@ -12,15 +12,13 @@ name = "cymbalum"
 doctest = false
 
 [dependencies]
+chemfiles = "*"
 rand = "*"
 log = "*"
 yaml-rust = "*"
 special = "*"
 bitflags = "*"
 clippy = {version = "*", optional = true}
-
-[dependencies.chemfiles]
-git = "https://github.com/chemfiles/chemfiles.rs"
 
 [features]
 default = []
