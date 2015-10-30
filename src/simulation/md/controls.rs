@@ -44,6 +44,7 @@ impl RescaleThermostat {
     /// Create a new `RescaleThermostat` acting at temperature `T`, with a
     /// tolerance of `5% T`.
     pub fn new(T: f64) -> RescaleThermostat {
+        assert!(T >= 0.0, "The temperature must be positive in thermostats.");
         let tol = 0.05 * T;
         RescaleThermostat::with_tolerance(T, tol)
     }
@@ -87,6 +88,8 @@ impl BerendsenThermostat {
     /// Create a new `BerendsenThermostat` acting at temperature `T`, with a
     /// timestep of `tau` times the integrator timestep.
     pub fn new(T: f64, tau: f64) -> BerendsenThermostat {
+        assert!(T >= 0.0, "The temperature must be positive in thermostats.");
+        assert!(tau >= 0.0, "The timestep must be positive in berendsen thermostat.");
         BerendsenThermostat{T: T, tau: tau}
     }
 }
@@ -156,4 +159,15 @@ mod tests {
         assert_approx_eq!(T1, 250.0, 1e-2);
     }
 
+    #[test]
+    #[should_panic]
+    fn negative_temperature_rescale() {
+        RescaleThermostat::new(-56.0);
+    }
+
+    #[test]
+    #[should_panic]
+    fn negative_temperature_berendsen() {
+        BerendsenThermostat::new(-56.0, 1000.0);
+    }
 }
