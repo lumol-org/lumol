@@ -467,6 +467,7 @@ mod tests {
         let c = Vector3D::new(0.784729, -0.5548997, 0.0);
 
         let (angle, d1, d2, d3) = cell.angle_and_derivatives(&a, &b, &c);
+        assert_eq!(angle, cell.angle(&a, &b, &c));
 
         // Check by comparison to finite differences
         for i in 0..3 {
@@ -515,6 +516,7 @@ mod tests {
         let d = Vector3D::new(-1.396, 1.211, 0.219);
 
         let (angle, d1, d2, d3, d4) = cell.dihedral_and_derivatives(&a, &b, &c, &d);
+        assert_eq!(angle, cell.dihedral(&a, &b, &c, &d));
 
         // Check by comparison to finite differences
         for i in 0..3 {
