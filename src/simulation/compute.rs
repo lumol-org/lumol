@@ -79,7 +79,7 @@ impl Compute for Forces {
                     res[i] = res[i] + f * d1;
                     res[j] = res[j] + f * d2;
                     res[k] = res[k] + f * d3;
-                    res[k] = res[k] + f * d4;
+                    res[m] = res[m] + f * d4;
                 }
             }
         }
