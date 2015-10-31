@@ -39,7 +39,7 @@ fn constant_energy() {
     let e_initial = universe.total_energy();
     simulation.run(&mut universe, 1000);
     let e_final = universe.total_energy();
-    assert!(f64::abs(e_initial - e_final)/e_final < 1e-6);
+    assert!(f64::abs((e_initial - e_final)/e_final) < 1e-6);
 }
 
 #[test]
