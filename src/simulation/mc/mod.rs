@@ -12,3 +12,4 @@ pub use self::monte_carlo::MonteCarlo;
 
 mod moves;
 pub use self::moves::MCMove;
+pub use self::moves::Translate;
