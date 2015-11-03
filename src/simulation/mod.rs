@@ -16,6 +16,9 @@ pub use self::simulations::Simulation;
 pub mod md;
 pub use self::md::*;
 
+pub mod mc;
+pub use self::mc::*;
+
 pub mod minimization;
 pub use self::minimization::*;
 
