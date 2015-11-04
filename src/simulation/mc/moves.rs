@@ -76,6 +76,12 @@ impl Translate {
     }
 }
 
+impl Default for Translate {
+    fn default() -> Translate {
+        Translate::new(1.0)
+    }
+}
+
 impl MCMove for Translate {
     fn describe(&self) -> &str {
         "molecular translation"
