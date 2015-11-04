@@ -4,10 +4,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-//! Global potential are potentials acting on the whole system at once
-//!
-//! They can be coulombic potentials, or external provided potential function
-//! for example.
+//! Wolf summation of coulombic potential
 extern crate special;
 use self::special::erfc;
 
@@ -16,25 +13,10 @@ use std::f64::consts::PI;
 use universe::Universe;
 use types::{Matrix3, Vector3D};
 use constants::ELCC;
+use potentials::PairRestriction;
 
-use super::PairRestriction;
+use super::{GlobalPotential, CoulombicPotential};
 
-/// The `GlobalPotential` trait represent a potential acting on the whole
-/// universe at once.
-pub trait GlobalPotential {
-    /// Compute the energetic contribution of this potential
-    fn energy(&self, universe: &Universe) -> f64;
-    /// Compute the force contribution of this potential
-    fn forces(&self, universe: &Universe) -> Vec<Vector3D>;
-    /// Compute the virial contribution of this potential
-    fn virial(&self, universe: &Universe) -> Matrix3;
-}
-
-/// Electrostatic potential solver should implement the `CoulombicPotential`
-/// trait.
-pub trait CoulombicPotential : GlobalPotential {}
-
-/******************************************************************************/
 /// Wolf summation for the coulombic potential, as defined in [Wolf1999]. This
 /// is a fast direct pairwise summation for coulombic potential.
 ///
@@ -171,13 +153,12 @@ impl GlobalPotential for Wolf {
 
 impl CoulombicPotential for Wolf {}
 
-/******************************************************************************/
-
 #[cfg(test)]
 mod tests {
     pub use super::*;
     use universe::{Universe, UnitCell, Particle};
     use types::Vector3D;
+    use potentials::GlobalPotential;
 
     const E_BRUTE_FORCE: f64 = -0.09262397663346732;
 
@@ -196,25 +177,32 @@ mod tests {
     }
 
     #[test]
-    fn wolf() {
-        let mut universe = testing_universe();
+    fn energy() {
+        let universe = testing_universe();
         let wolf = Wolf::new(8.0);
 
         let e = wolf.energy(&universe);
         // Wolf is not very good for inhomogeneous systems
         assert_approx_eq!(e, E_BRUTE_FORCE, 1e-2);
+    }
+
+    #[test]
+    fn forces() {
+        let mut universe = testing_universe();
+        let wolf = Wolf::new(8.0);
 
         let forces = wolf.forces(&universe);
         let norm = (forces[0] + forces[1]).norm();
         // Total force should be null
         assert_approx_eq!(norm, 0.0, 1e-9);
 
+        // Finite difference computation of the force
+        let e = wolf.energy(&universe);
         let eps = 1e-9;
         universe[0].position.x += eps;
 
         let e1 = wolf.energy(&universe);
         let force = wolf.forces(&universe)[0].x;
-        // Finite difference computation of the force
         assert_approx_eq!((e - e1)/eps, force, 1e-6);
     }
 }
