@@ -248,29 +248,30 @@ impl Molecule {
     /// Recompute the connectivity matrix from the bonds, angles and dihedrals
     /// in the system.
     fn rebuild_connections(&mut self) {
-        self.connections = Matrix::with_size(self.size());
-        for bond in &self.bonds {
-            let old_connect = self.connections[bond.i - self.first][bond.j - self.first];
-            self.connections[bond.i - self.first][bond.j - self.first] = old_connect | CONNECT_12;
+        let n = self.size();
+        self.connections = Matrix::with_size(n);
 
-            let old_connect = self.connections[bond.j - self.first][bond.i - self.first];
-            self.connections[bond.j - self.first][bond.i - self.first] = old_connect | CONNECT_12;
+        // Getting needed variables for the `add_connect_term` closure
+        let first = self.first;
+        let connections = &mut self.connections;
+        let mut add_connect_term = |i, j, term| {
+            let old_connect = connections[i - first][j - first];
+            connections[i - first][j - first] = old_connect | term;
+        };
+
+        for bond in self.bonds.iter() {
+            add_connect_term(bond.i, bond.j, CONNECT_12);
+            add_connect_term(bond.j, bond.i, CONNECT_12);
         }
 
         for angle in &self.angles {
-            let old_connect = self.connections[angle.i - self.first][angle.k - self.first];
-            self.connections[angle.i - self.first][angle.k - self.first] = old_connect | CONNECT_13;
-
-            let old_connect = self.connections[angle.k - self.first][angle.i - self.first];
-            self.connections[angle.k - self.first][angle.i - self.first] = old_connect | CONNECT_13;
+            add_connect_term(angle.i, angle.k, CONNECT_13);
+            add_connect_term(angle.k, angle.i, CONNECT_13);
         }
 
         for dihedral in &self.dihedrals {
-            let old_connect = self.connections[dihedral.i - self.first][dihedral.m - self.first];
-            self.connections[dihedral.i - self.first][dihedral.m - self.first] = old_connect | CONNECT_14;
-
-            let old_connect = self.connections[dihedral.m - self.first][dihedral.i - self.first];
-            self.connections[dihedral.m - self.first][dihedral.i - self.first] = old_connect | CONNECT_14;
+            add_connect_term(dihedral.i, dihedral.m, CONNECT_14);
+            add_connect_term(dihedral.m, dihedral.i, CONNECT_14);
         }
     }
 
@@ -545,8 +546,13 @@ mod test {
 
         /**********************************************************************/
         assert!(molecule.connectivity(0, 1).contains(CONNECT_12));
+        assert!(molecule.connectivity(1, 0).contains(CONNECT_12));
+
         assert!(molecule.connectivity(0, 7).contains(CONNECT_13));
+        assert!(molecule.connectivity(7, 0).contains(CONNECT_13));
+
         assert!(molecule.connectivity(3, 5).contains(CONNECT_14));
+        assert!(molecule.connectivity(5, 3).contains(CONNECT_14));
 
         /**********************************************************************/
 
