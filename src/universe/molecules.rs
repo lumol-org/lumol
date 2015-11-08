@@ -10,7 +10,7 @@ use std::collections::HashSet;
 use std::iter::IntoIterator;
 use std::ops::Range;
 
-use types::Matrix;
+use types::Array2;
 
 /// A `Bond` between the atoms at indexes `i` and `j`
 ///
@@ -153,7 +153,7 @@ pub struct Molecule {
     /// Matrix of connectivity in the molecule. The item at index `i, j` encode
     /// the connectivity between the particles `i + self.first` and
     /// `j + self.first`
-    connections: Matrix<Connectivity>,
+    connections: Array2<Connectivity>,
     /// Index of the first atom in this molecule.
     first: usize,
     /// Index of the last (included) atom in this molecule.
@@ -167,7 +167,7 @@ impl Molecule {
             bonds: HashSet::new(),
             angles: HashSet::new(),
             dihedrals: HashSet::new(),
-            connections: Matrix::with_size(1),
+            connections: Array2::with_size((1, 1)),
             first: i,
             last: i,
         }
@@ -249,14 +249,14 @@ impl Molecule {
     /// in the system.
     fn rebuild_connections(&mut self) {
         let n = self.size();
-        self.connections = Matrix::with_size(n);
+        self.connections = Array2::with_size((n, n));
 
         // Getting needed variables for the `add_connect_term` closure
         let first = self.first;
         let connections = &mut self.connections;
         let mut add_connect_term = |i, j, term| {
-            let old_connect = connections[i - first][j - first];
-            connections[i - first][j - first] = old_connect | term;
+            let old_connect = connections[(i - first, j - first)];
+            connections[(i - first, j - first)] = old_connect | term;
         };
 
         for bond in self.bonds.iter() {
@@ -396,7 +396,7 @@ impl Molecule {
     #[inline] pub fn connectivity(&self, i: usize, j: usize) -> Connectivity {
         assert!(self.first <= i && i <= self.last);
         assert!(self.first <= j && j <= self.last);
-        return self.connections[i - self.first][j - self.first];
+        return self.connections[(i - self.first, j - self.first)];
     }
 }
 

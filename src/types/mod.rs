@@ -8,7 +8,10 @@
 //! Some basic types used in all the other modules
 
 mod vectors;
-mod matrix;
-
 pub use self::vectors::Vector3D;
-pub use self::matrix::{Matrix, Matrix3};
+
+mod matrix;
+pub use self::matrix::Matrix3;
+
+mod arrays;
+pub use self::arrays::{Array2, Array3};

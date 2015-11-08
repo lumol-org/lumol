@@ -6,7 +6,6 @@
  */
 
 //! Matrix types: generic square matrix, and 3x3 matrix.
-use std::slice;
 use std::ops::{Add, Sub, Mul, Index, IndexMut};
 use super::vectors::Vector3D;
 
@@ -163,159 +162,10 @@ impl Mul<Vector3D> for Matrix3 {
 }
 
 /******************************************************************************/
-/// Bidimensional square matrix, with cache locality and runtime size. This type
-/// only provide an indexable bidimensional storage.
-#[derive(Debug)]
-pub struct Matrix<T> {
-    /// Data storage
-    data: Vec<T>,
-    /// Size of the matrix (it is an NxN matrix)
-    n: usize
-}
-
-impl<T> Matrix<T> {
-    /// Get the size of the matrix
-    pub fn size(&self) -> usize {
-        self.n
-    }
-}
-
-impl<T: Clone> Matrix<T> {
-    /// Create a new `Matrix` of size `n x n` filed with `value`.
-    pub fn new(value: T, n: usize) -> Matrix<T> {
-        let mut vec = Vec::with_capacity(n*n);
-        for _ in 0..n*n {
-            vec.push(value.clone())
-        }
-        Matrix{data: vec, n: n}
-    }
-}
-
-impl<T: Default + Clone> Matrix<T> {
-    /// Create a new `Matrix` of size `n x n` filed with the default value for
-    /// `T`.
-    pub fn with_size(n: usize) -> Matrix<T> {
-        let vec = vec![T::default(); n*n];
-        Matrix{data: vec, n: n}
-    }
-
-    /// Resize the matrix to be of size `new_size * new_size`. If the new size
-    /// is bigger than the old size, the new values inserted are T::default().
-    /// Old values are preseved.
-    pub fn resize(&mut self, new_size: usize) {
-        if new_size == self.n { return;}
-        if new_size > self.n {
-            let mut new_data = vec![T::default(); new_size * new_size];
-            for i in 1..self.n {
-                for j in 1..self.n {
-                    new_data[i*new_size + j] = self[i][j].clone();
-                }
-            }
-            self.data = new_data;
-        } else {
-            for i in 1..new_size {
-                for j in 1..new_size {
-                    self.data[i*new_size + j] = self.data[i*self.n + j].clone();
-                }
-            }
-            self.data.truncate(new_size * new_size);
-        }
-        self.n = new_size;
-    }
-}
-
-impl<T: PartialEq> PartialEq for Matrix<T> {
-    fn eq(&self, rhs: &Matrix<T>) -> bool {
-        if self.n != rhs.n {
-            return false;
-        }
-        return self.data == rhs.data;
-    }
-}
-
-impl<T: Clone> Clone for Matrix<T> {
-    fn clone(&self) -> Matrix<T> {
-        Matrix{
-            data: self.data.clone(),
-            n: self.n
-        }
-    }
-}
-
-impl<T> Index<usize> for Matrix<T> {
-    type Output = [T];
-    fn index(&self, i: usize) -> &[T] {
-        assert!(i < self.n, format!("index out of bounds: the len is {} but the index is {}", self.n, i));
-        unsafe {
-            let ptr = self.data.as_ptr().offset((i * self.n) as isize);
-            slice::from_raw_parts(ptr,self.n)
-        }
-    }
-}
-
-impl<T> IndexMut<usize> for Matrix<T> {
-    fn index_mut(&mut self, i: usize) -> &mut [T] {
-        assert!(i < self.n, format!("index out of bounds: the len is {} but the index is {}", self.n, i));
-        unsafe {
-            let ptr = self.data.as_mut_ptr().offset((i * self.n) as isize);
-            slice::from_raw_parts_mut(ptr, self.n)
-        }
-    }
-}
-
-/******************************************************************************/
 
 #[cfg(test)]
 mod tests {
     pub use super::*;
-
-    mod matrix {
-        use super::*;
-
-        #[test]
-        #[should_panic]
-        fn out_of_bounds() {
-            let a = Matrix::<f64>::with_size(4);
-            let _ = a[6][1];
-        }
-
-        #[test]
-        fn size() {
-            let mut a = Matrix::<f64>::with_size(4);
-            assert_eq!(a.size(), 4);
-
-            for i in 0..4 {
-                for j in 0..4 {
-                    assert_eq!(a[i][j], 0.0);
-                }
-            }
-
-            a[2][3] = 7.0;
-            assert_eq!(a[2][3], 7.0);
-
-            a = Matrix::<f64>::new(42.0, 8);
-            assert_eq!(a.size(), 8);
-            for i in 0..8 {
-                for j in 0..8 {
-                    assert_eq!(a[i][j], 42.0);
-                }
-            }
-        }
-
-        #[test]
-        fn resize() {
-            let mut a = Matrix::<f64>::with_size(6);
-            assert_eq!(a.size(), 6);
-            a[2][3] = 42.0;
-
-            a.resize(9);
-            assert_eq!(a.size(), 9);
-            assert_eq!(a[2][3], 42.0);
-
-            a.resize(4);
-            assert_eq!(a[2][3], 42.0);
-        }
-    }
 
     mod matrix3 {
         use super::*;
