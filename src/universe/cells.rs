@@ -15,7 +15,7 @@ use types::{Matrix3, Vector3D};
 
 /// The type of a cell determine how we will be able to compute the periodic
 /// boundaries condition.
-#[derive(Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum CellType {
     /// Infinite unit cell, with no boundaries
     Infinite,
@@ -26,7 +26,7 @@ pub enum CellType {
 }
 
 /// The Universe type hold all the data about a system.
-#[derive(Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct UnitCell {
     data: Matrix3,
     celltype: CellType,
