@@ -4,11 +4,9 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-
 //! Simulations in computational chemistry are often made using periodic
 //! boundaries conditions. The `UnitCell` type represents the enclosing box of
 //! a simulated system, with some type of periodic condition.
-
 use std::f64::consts::PI;
 
 use types::{Matrix3, Vector3D};
@@ -37,7 +35,7 @@ impl UnitCell {
     pub fn new() -> UnitCell {
         UnitCell{data: Matrix3::zero(), celltype: CellType::Infinite}
     }
-    /// Create an orthorombic unit cell
+    /// Create an orthorombic unit cell, with side lengths `a, b, c`.
     pub fn ortho(a: f64, b: f64, c: f64) -> UnitCell {
         assert!(a > 0.0 && b > 0.0 && c > 0.0, "Cell lengths must be positive");
         UnitCell{data: Matrix3::new(a, 0.0, 0.0,
@@ -45,7 +43,7 @@ impl UnitCell {
                                     0.0, 0.0, c),
                  celltype: CellType::Orthorombic}
     }
-    /// Create a cubic unit cell
+    /// Create a cubic unit cell, with side lengths `L, L, L`.
     pub fn cubic(L: f64) -> UnitCell {
         assert!(L > 0.0, "Cell lengths must be positive");
         UnitCell{data: Matrix3::new(L, 0.0, 0.0,
@@ -53,7 +51,8 @@ impl UnitCell {
                                     0.0, 0.0, L),
                  celltype: CellType::Orthorombic}
     }
-    /// Create a triclinic unit cell
+    /// Create a triclinic unit cell, with side lengths `a, b, c` and angles
+    /// `alpha, beta, gamma`.
     pub fn triclinic(a: f64, b: f64, c: f64, alpha: f64, beta: f64, gamma: f64) -> UnitCell {
         assert!(a > 0.0 && b > 0.0 && c > 0.0, "Cell lengths must be positive");
         let cos_alpha = deg2rad(alpha).cos();
@@ -77,7 +76,7 @@ impl UnitCell {
     #[inline] pub fn celltype(&self) -> CellType {
         self.celltype
     }
-    /// Set the cell type
+    /// Set the cell type to `ctype`
     #[inline] pub fn set_celltype(&mut self, ctype: CellType) {
         self.celltype = ctype;
     }
@@ -89,7 +88,8 @@ impl UnitCell {
         let z = self.data[(2, 0)];
         Vector3D::new(x, y, z)
     }
-    /// Get the first length of the cell
+    /// Get the first length of the cell (i.e. the norm of the first vector of
+    /// the cell)
     pub fn a(&self) -> f64 {
         match self.celltype {
             CellType::Triclinic => self.vect_a().norm(),
@@ -97,18 +97,37 @@ impl UnitCell {
         }
     }
 
-    /// Get the second length of the cell
+    /// Get the second vector of the cell
     pub fn vect_b(&self) -> Vector3D {
         let x = self.data[(0, 1)];
         let y = self.data[(1, 1)];
         let z = self.data[(2, 1)];
         Vector3D::new(x, y, z)
     }
-    /// Get the second length of the cell
+
+    /// Get the second length of the cell (i.e. the norm of the second vector of
+    /// the cell)
     pub fn b(&self) -> f64 {
         match self.celltype {
             CellType::Triclinic => self.vect_b().norm(),
             _ => self.data[(1, 1)],
+        }
+    }
+
+    /// Get the third vector of the cell
+    pub fn vect_c(&self) -> Vector3D {
+        let x = self.data[(0, 2)];
+        let y = self.data[(1, 2)];
+        let z = self.data[(2, 2)];
+        Vector3D::new(x, y, z)
+    }
+
+    /// Get the third length of the cell (i.e. the norm of the third vector of
+    /// the cell)
+    pub fn c(&self) -> f64 {
+        match self.celltype {
+            CellType::Triclinic => self.vect_c().norm(),
+            _ => self.data[(2, 2)],
         }
     }
 
@@ -127,21 +146,6 @@ impl UnitCell {
         let z = f64::abs(nc[0]*c[0] + nc[1]*c[1] + nc[2]*c[2]);
 
         return (x, y, z);
-    }
-
-    /// Get the third length of the cell
-    pub fn vect_c(&self) -> Vector3D {
-        let x = self.data[(0, 2)];
-        let y = self.data[(1, 2)];
-        let z = self.data[(2, 2)];
-        Vector3D::new(x, y, z)
-    }
-    /// Get the second length of the cell
-    pub fn c(&self) -> f64 {
-        match self.celltype {
-            CellType::Triclinic => self.vect_c().norm(),
-            _ => self.data[(2, 2)],
-        }
     }
 
     /// Get the first angle of the cell
@@ -197,17 +201,20 @@ impl UnitCell {
         return V;
     }
 
-    /// Scale this unit cell in-place by multiplying the H matrix by `s`.
+    /// Scale this unit cell in-place by multiplying the cell matrix by `s`.
     #[inline] pub fn scale_mut(&mut self, s: Matrix3) {
         self.data = s * self.data;
     }
 
-    /// Scale this unit cell by multiplying the H matrix by `s`, and return a
+    /// Scale this unit cell by multiplying the cell matrix by `s`, and return a
     /// new scaled unit cell
     #[inline] pub fn scale(&self, s: Matrix3) -> UnitCell {
         UnitCell{data: s * self.data, celltype: self.celltype}
     }
+}
 
+/// Geometric operations using periodic boundary conditions
+impl UnitCell {
     /// Wrap a vector in the unit cell, obeying the periodic boundary conditions
     pub fn wrap_vector(&self, vect: &mut Vector3D) {
         match self.celltype {
