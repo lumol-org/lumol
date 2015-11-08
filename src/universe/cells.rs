@@ -39,6 +39,7 @@ impl UnitCell {
     }
     /// Create an orthorombic unit cell
     pub fn ortho(a: f64, b: f64, c: f64) -> UnitCell {
+        assert!(a > 0.0 && b > 0.0 && c > 0.0, "Cell lengths must be positive");
         UnitCell{data: Matrix3::new(a, 0.0, 0.0,
                                     0.0, b, 0.0,
                                     0.0, 0.0, c),
@@ -46,6 +47,7 @@ impl UnitCell {
     }
     /// Create a cubic unit cell
     pub fn cubic(L: f64) -> UnitCell {
+        assert!(L > 0.0, "Cell lengths must be positive");
         UnitCell{data: Matrix3::new(L, 0.0, 0.0,
                                     0.0, L, 0.0,
                                     0.0, 0.0, L),
@@ -53,6 +55,7 @@ impl UnitCell {
     }
     /// Create a triclinic unit cell
     pub fn triclinic(a: f64, b: f64, c: f64, alpha: f64, beta: f64, gamma: f64) -> UnitCell {
+        assert!(a > 0.0 && b > 0.0 && c > 0.0, "Cell lengths must be positive");
         let cos_alpha = deg2rad(alpha).cos();
         let cos_beta = deg2rad(beta).cos();
         let (sin_gamma, cos_gamma) = deg2rad(gamma).sin_cos();
@@ -340,6 +343,24 @@ mod tests {
     use super::*;
     use types::*;
     use std::f64;
+
+    #[test]
+    #[should_panic]
+    fn negative_cubic() {
+        UnitCell::cubic(-4.0);
+    }
+
+    #[test]
+    #[should_panic]
+    fn negative_ortho() {
+        UnitCell::ortho(3.0, 0.0, -5.0);
+    }
+
+    #[test]
+    #[should_panic]
+    fn negative_triclinic() {
+        UnitCell::triclinic(3.0, 0.0, -5.0, 90.0, 90.0, 90.0);
+    }
 
     #[test]
     fn infinite() {
