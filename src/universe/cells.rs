@@ -109,6 +109,23 @@ impl UnitCell {
         }
     }
 
+    /// Get the distances between faces of the unit cell
+    pub fn lengths(&self) -> (f64, f64, f64) {
+        assert!(self.celltype != CellType::Infinite);
+
+        let (a, b, c) = (self.vect_a(), self.vect_b(), self.vect_c());
+        // Plans normal vectors
+        let na = (b ^ c).normalized();
+        let nb = (c ^ a).normalized();
+        let nc = (a ^ b).normalized();
+
+        let x = f64::abs(na[0]*a[0] + na[1]*a[1] + na[2]*a[2]);
+        let y = f64::abs(nb[0]*b[0] + nb[1]*b[1] + nb[2]*b[2]);
+        let z = f64::abs(nc[0]*c[0] + nc[1]*c[1] + nc[2]*c[2]);
+
+        return (x, y, z);
+    }
+
     /// Get the third length of the cell
     pub fn vect_c(&self) -> Vector3D {
         let x = self.data[(0, 2)];
@@ -378,6 +395,18 @@ mod tests {
         assert_eq!(cell.gamma(), 110.0);
 
         assert_approx_eq!(cell.volume(), 55.410529, 1e-6);
+    }
+
+    #[test]
+    fn lengths() {
+        let ortho = UnitCell::ortho(3.0, 4.0, 5.0);
+        assert_eq!(ortho.lengths(), (3.0, 4.0, 5.0));
+
+        let triclinic = UnitCell::triclinic(3.0, 4.0, 5.0, 90.0, 90.0, 90.0);
+        assert_eq!(triclinic.lengths(), (3.0, 4.0, 5.0));
+
+        let triclinic = UnitCell::triclinic(3.0, 4.0, 5.0, 90.0, 80.0, 100.0);
+        assert_eq!(triclinic.lengths(), (2.908132319388713, 3.9373265973230853, 4.921658246653857));
     }
 
     #[test]
