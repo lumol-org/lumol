@@ -211,6 +211,18 @@ impl UnitCell {
     #[inline] pub fn scale(&self, s: Matrix3) -> UnitCell {
         UnitCell{data: s * self.data, celltype: self.celltype}
     }
+
+    /// Get the reciprocal vectors of this unit cell
+    pub fn reciprocal_vectors(&self) -> (Vector3D, Vector3D, Vector3D) {
+        let volume = self.volume();
+        let (a, b, c) = (self.vect_a(), self.vect_b(), self.vect_c());
+
+        let rec_a = (2.0 * PI / volume) * (b ^ c);
+        let rec_b = (2.0 * PI / volume) * (c ^ a);
+        let rec_c = (2.0 * PI / volume) * (a ^ b);
+
+        return (rec_a, rec_b, rec_c);
+    }
 }
 
 /// Geometric operations using periodic boundary conditions
@@ -350,6 +362,7 @@ mod tests {
     use super::*;
     use types::*;
     use std::f64;
+    use std::f64::consts::PI;
 
     #[test]
     #[should_panic]
@@ -460,6 +473,30 @@ mod tests {
     }
 
     #[test]
+    fn reciprocal_vectors() {
+        let cell = UnitCell::ortho(3.0, 4.0, 5.0);
+        let v = 3.0 * 4.0 * 5.0;
+        let two_pi_vol = 2.0 * PI / v;
+        let (rec_a, rec_b, rec_c) = cell.reciprocal_vectors();
+
+        assert_eq!(rec_a, Vector3D::new(4.0 * 5.0 * two_pi_vol, 0.0, 0.0));
+        assert_eq!(rec_b, Vector3D::new(0.0, 3.0 * 5.0 * two_pi_vol, 0.0));
+        assert_eq!(rec_c, Vector3D::new(0.0, 0.0, 3.0 * 4.0 * two_pi_vol));
+
+        let cell = UnitCell::triclinic(3.0, 4.0, 5.0, 90.0, 90.0, 90.0);
+        let (rec_a, rec_b, rec_c) = cell.reciprocal_vectors();
+
+        let delta_a = rec_a - Vector3D::new(4.0 * 5.0 * two_pi_vol, 0.0, 0.0);
+        assert_approx_eq!(delta_a.norm(), 0.0, 1e-15);
+
+        let delta_b = rec_b - Vector3D::new(0.0, 3.0 * 5.0 * two_pi_vol, 0.0);
+        assert_approx_eq!(delta_b.norm(), 0.0, 1e-15);
+
+        let delta_c = rec_c - Vector3D::new(0.0, 0.0, 3.0 * 4.0 * two_pi_vol);
+        assert_approx_eq!(delta_c.norm(), 0.0, 1e-15);
+    }
+
+    #[test]
     fn distances() {
         // Orthorombic unit cell
         let cell = UnitCell::ortho(3.0, 4.0, 5.0);
@@ -507,7 +544,7 @@ mod tests {
         let a = Vector3D::new(1.0, 0.0, 0.0);
         let b = Vector3D::new(0.0, 0.0, 0.0);
         let c = Vector3D::new(0.0, 1.0, 0.0);
-        assert_eq!(cell.angle(&a, &b, &c), f64::consts::PI/2.0);
+        assert_eq!(cell.angle(&a, &b, &c), PI / 2.0);
 
         let a = Vector3D::new(1.0, 0.0, 0.0);
         let b = Vector3D::new(0.0, 0.0, 0.0);
@@ -554,7 +591,7 @@ mod tests {
         let b = Vector3D::new(1.0, 0.0, 0.0);
         let c = Vector3D::new(1.0, 1.0, 0.0);
         let d = Vector3D::new(2.0, 1.0, 0.0);
-        assert_eq!(cell.dihedral(&a, &b, &c, &d), f64::consts::PI);
+        assert_eq!(cell.dihedral(&a, &b, &c, &d), PI);
 
         let a = Vector3D::new(1.241, 0.444, 0.349);
         let b = Vector3D::new(-0.011, -0.441, 0.333);
