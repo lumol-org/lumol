@@ -24,7 +24,8 @@ macro_rules! assert_approx_eq {
                 }
             }
         }
-    )
+    );
+    ($left: expr, $right: expr) => (assert_approx_eq!(($left), ($right), 1e-15))
 }
 
 #[cfg(test)]
@@ -35,6 +36,18 @@ mod tests {
     fn approx_eq() {
         assert_approx_eq!(1.0, 1.0, 1e-90);
         assert_approx_eq!(1.1, 1.1000003, 1e-3);
+    }
+
+    #[test]
+    fn default_vaue() {
+        assert_approx_eq!(1.0, 1.0);
+        assert_approx_eq!(1.1, 1.1 + 1e-16);
+    }
+
+    #[test]
+    #[should_panic]
+    fn not_eq_default_vaue() {
+        assert_approx_eq!(1.1, 1.1 + 1e-15);
     }
 
     #[test]

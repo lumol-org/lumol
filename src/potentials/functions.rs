@@ -209,8 +209,8 @@ mod tests {
         assert_eq!(lj.energy(2.0), 0.0);
         assert_eq!(lj.energy(2.5), -0.6189584744448002);
 
-        assert_approx_eq!(lj.force(f64::powf(2.0, 1.0/6.0) * 2.0), 0.0, 1e-15);
-        assert_approx_eq!(lj.force(2.5), -0.95773475733504, 1e-15);
+        assert_approx_eq!(lj.force(f64::powf(2.0, 1.0/6.0) * 2.0), 0.0);
+        assert_approx_eq!(lj.force(2.5), -0.95773475733504);
 
         let e0 = lj.energy(4.0);
         let e1 = lj.energy(4.0 + EPS);

@@ -498,13 +498,13 @@ mod tests {
         let (rec_a, rec_b, rec_c) = cell.reciprocal_vectors();
 
         let delta_a = rec_a - Vector3D::new(4.0 * 5.0 * two_pi_vol, 0.0, 0.0);
-        assert_approx_eq!(delta_a.norm(), 0.0, 1e-15);
+        assert_approx_eq!(delta_a.norm(), 0.0);
 
         let delta_b = rec_b - Vector3D::new(0.0, 3.0 * 5.0 * two_pi_vol, 0.0);
-        assert_approx_eq!(delta_b.norm(), 0.0, 1e-15);
+        assert_approx_eq!(delta_b.norm(), 0.0);
 
         let delta_c = rec_c - Vector3D::new(0.0, 0.0, 3.0 * 4.0 * two_pi_vol);
-        assert_approx_eq!(delta_c.norm(), 0.0, 1e-15);
+        assert_approx_eq!(delta_c.norm(), 0.0);
     }
 
     #[test]
@@ -543,9 +543,9 @@ mod tests {
         let mut v = Vector3D::new(1.0, 1.5, 6.0);
         cell.wrap_vector(&mut v);
         let res = Vector3D::new(1.0, 1.5, 1.0);
-        assert_approx_eq!(v.x, res.x, 1e-15);
-        assert_approx_eq!(v.y, res.y, 1e-15);
-        assert_approx_eq!(v.z, res.z, 1e-15);
+        assert_approx_eq!(v.x, res.x);
+        assert_approx_eq!(v.y, res.y);
+        assert_approx_eq!(v.z, res.z);
     }
 
     #[test]
