@@ -237,17 +237,28 @@ impl UnitCell {
                 vect.z = vect.z - f64::round(vect.z/self.c())*self.c();
             },
             CellType::Triclinic => {
-                let inv = self.data.inverse();
-                let mut fractional = inv * (*vect);
+                let mut fractional = self.fractional(vect);
                 fractional.x = fractional.x - f64::round(fractional.x);
                 fractional.y = fractional.y - f64::round(fractional.y);
                 fractional.z = fractional.z - f64::round(fractional.z);
-                let res = self.data * fractional;
-                vect.x = res.x;
-                vect.y = res.y;
-                vect.z = res.z;
+                *vect = self.cartesian(&fractional);
             },
         }
+    }
+
+    /// Get the fractional representation of the `v` vector in this cell
+    #[inline]
+    pub fn fractional(&self, v: &Vector3D) -> Vector3D {
+        let inv = self.data.inverse();
+        let vect = v.clone();
+        return inv * vect;
+    }
+
+    /// Get the cartesian representation of the fractional `v` vector in this cell
+    #[inline]
+    pub fn cartesian(&self, v: &Vector3D) -> Vector3D {
+        let frac = v.clone();
+        return self.data * frac;
     }
 
     /// Periodic boundary conditions distance between the point `u` and the point `v`
@@ -535,6 +546,24 @@ mod tests {
         assert_approx_eq!(v.x, res.x, 1e-15);
         assert_approx_eq!(v.y, res.y, 1e-15);
         assert_approx_eq!(v.z, res.z, 1e-15);
+    }
+
+    #[test]
+    fn fractional_cartesian() {
+        let cell = UnitCell::cubic(5.0);
+
+        assert_eq!(cell.fractional(&Vector3D::new(0.0, 10.0, 4.0)), Vector3D::new(0.0, 2.0, 0.8));
+        assert_eq!(cell.cartesian(&Vector3D::new(0.0, 2.0, 0.8)), Vector3D::new(0.0, 10.0, 4.0));
+
+        let cell = UnitCell::triclinic(5.0, 6.0, 3.6, 90.0, 53.0, 77.0);
+        let tests = vec![Vector3D::new(0.0, 10.0, 4.0), Vector3D::new(-5.0, 12.0, 4.9)];
+
+        for test in &tests {
+            let transformed = cell.cartesian(&cell.fractional(test));
+            for i in 0..3 {
+                assert_approx_eq!(test[i], transformed[i], 1e-12);
+            }
+        }
     }
 
     #[test]
