@@ -15,3 +15,6 @@ pub use self::matrix::Matrix3;
 
 mod arrays;
 pub use self::arrays::{Array2, Array3};
+
+mod complex;
+pub use self::complex::Complex;
