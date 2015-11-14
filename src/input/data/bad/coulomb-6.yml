@@ -1,0 +1,4 @@
+coulomb:
+    type: Ewald
+    cutoff: 45 A
+    kmax: -145 # negative kmax

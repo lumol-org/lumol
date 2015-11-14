@@ -446,6 +446,7 @@ fn read_coulomb_potential(node: &Yaml) -> Result<Box<CoulombicPotential>> {
             let val: &str = &val.to_lowercase();
             match val {
                 "wolf" => Ok(Box::new(try!(Wolf::from_yaml(node)))),
+                "ewald" => Ok(Box::new(try!(Ewald::from_yaml(node)))),
                 val => Err(Error::from(format!("Unknown coulomb solver type '{}'", val))),
             }
         },
@@ -462,6 +463,21 @@ impl FromYaml for Wolf {
             Ok(Wolf::new(cutoff))
         } else {
             Err(Error::from("Missing 'cutoff' parameter in Wolf potential"))
+        }
+    }
+}
+
+impl FromYaml for Ewald {
+    fn from_yaml(node: &Yaml) -> Result<Ewald> {
+        if let (Some(cutoff), Some(kmax)) = (node["cutoff"].as_str(), node["kmax"].as_i64()) {
+            let cutoff = try!(::units::from_str(cutoff));
+            if kmax < 0 {
+                Err(Error::from("'kmax' can not be negative in Ewald potential"))
+            } else {
+                Ok(Ewald::new(cutoff, kmax as usize))
+            }
+        } else {
+            Err(Error::from("Missing 'cutoff' or 'kmax' parameter in Ewald potential"))
         }
     }
 }
@@ -576,7 +592,9 @@ mod tests {
     fn coulomb() {
         let DATA = Path::new(file!()).parent().unwrap().join("data");
         let mut universe = Universe::new();
-        read_interactions(&mut universe, DATA.join("coulomb.yml")).unwrap();
+        read_interactions(&mut universe, DATA.join("wolf.yml")).unwrap();
+
+        read_interactions(&mut universe, DATA.join("ewald.yml")).unwrap();
     }
 
     #[test]
