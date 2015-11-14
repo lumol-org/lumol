@@ -74,11 +74,6 @@ impl Ewald {
         }
     }
 
-    /// Set the restriction scheme to use to `restriction`.
-    pub fn set_restriction(&mut self, restriction: PairRestriction) {
-        self.restriction = restriction;
-    }
-
     fn precompute(&self, cell: &UnitCell) {
         if *cell == *self.previous_cell.borrow() {
             // Do not recompute
@@ -470,7 +465,11 @@ impl GlobalPotential for Ewald {
     }
 }
 
-impl CoulombicPotential for Ewald {}
+impl CoulombicPotential for Ewald {
+    fn set_restriction(&mut self, restriction: PairRestriction) {
+        self.restriction = restriction;
+    }
+}
 
 
 #[cfg(test)]

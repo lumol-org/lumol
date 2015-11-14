@@ -10,6 +10,7 @@
 //! for example.
 use universe::Universe;
 use types::{Matrix3, Vector3D};
+use super::PairRestriction;
 
 /// The `GlobalPotential` trait represent a potential acting on the whole
 /// universe at once.
@@ -24,7 +25,11 @@ pub trait GlobalPotential {
 
 /// Electrostatic potential solver should implement the `CoulombicPotential`
 /// trait.
-pub trait CoulombicPotential : GlobalPotential {}
+pub trait CoulombicPotential : GlobalPotential {
+    /// Set the restriction scheme to use to `restriction`. All future call to
+    /// `energy`, `force` or `virial` should use this restriction.
+    fn set_restriction(&mut self, restriction: PairRestriction);
+}
 
 mod wolf;
 pub use self::wolf::Wolf;

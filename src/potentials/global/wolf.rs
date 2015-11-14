@@ -50,11 +50,6 @@ impl Wolf {
         }
     }
 
-    /// Set the restriction scheme to use to `restriction`.
-    pub fn set_restriction(&mut self, restriction: PairRestriction) {
-        self.restriction = restriction;
-    }
-
     /// Compute the energy for the pair of particles with charge `qi` and `qj`,
     /// at the distance of `rij`.
     #[inline]
@@ -151,7 +146,11 @@ impl GlobalPotential for Wolf {
     }
 }
 
-impl CoulombicPotential for Wolf {}
+impl CoulombicPotential for Wolf {
+    fn set_restriction(&mut self, restriction: PairRestriction) {
+        self.restriction = restriction;
+    }
+}
 
 #[cfg(test)]
 mod tests {
