@@ -33,7 +33,7 @@ impl Compute for Forces {
 
         for i in 0..universe.size() {
             for j in (i+1)..universe.size() {
-                let d = universe.wrap_vector(i, j);
+                let d = universe.wraped_vector(i, j);
                 let dn = d.normalized();
                 let r = d.norm();
                 for &(ref potential, ref restriction) in universe.pair_potentials(i, j) {
@@ -50,7 +50,7 @@ impl Compute for Forces {
         for molecule in universe.molecules() {
             for bond in molecule.bonds() {
                 let (i, j) = (bond.i(), bond.j());
-                let d = universe.wrap_vector(i, j);
+                let d = universe.wraped_vector(i, j);
                 let dn = d.normalized();
                 let r = d.norm();
                 for potential in universe.bond_potentials(i, j) {
@@ -112,7 +112,7 @@ impl Compute for PotentialEnergy {
         let mut energy = 0.0;
         for i in 0..universe.size() {
             for j in (i+1)..universe.size() {
-                let r = universe.wrap_vector(i, j).norm();
+                let r = universe.wraped_vector(i, j).norm();
                 for &(ref potential, ref restriction) in universe.pair_potentials(i, j) {
                     if !restriction.is_excluded_pair(universe, i, j) {
                         let s = restriction.scaling(universe, i, j);
@@ -125,7 +125,7 @@ impl Compute for PotentialEnergy {
         for molecule in universe.molecules() {
             for bond in molecule.bonds() {
                 let (i, j) = (bond.i(), bond.j());
-                let r = universe.wrap_vector(i, j).norm();
+                let r = universe.wraped_vector(i, j).norm();
                 for potential in universe.bond_potentials(i, j) {
                     energy += potential.energy(r);
                 }
@@ -223,7 +223,7 @@ impl Compute for Virial {
                 for &(ref potential, ref restriction) in universe.pair_potentials(i, j) {
                     if !restriction.is_excluded_pair(universe, i, j) {
                         let s = restriction.scaling(universe, i, j);
-                        let d = universe.wrap_vector(i, j);
+                        let d = universe.wraped_vector(i, j);
                         res = res + 2.0 * s * potential.virial(&d);
                     }
                 }

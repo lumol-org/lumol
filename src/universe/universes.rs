@@ -562,8 +562,8 @@ impl Universe {
         self.cell.distance(&self.particles[i].position, &self.particles[j].position)
     }
 
-    /// Wrap the vector i->j in the cell.
-    pub fn wrap_vector(&self, i: usize, j:usize) -> Vector3D {
+    /// Get the vector ri - rj wrapped in the cell.
+    pub fn wraped_vector(&self, i: usize, j:usize) -> Vector3D {
         let mut res = self.particles[i].position - self.particles[j].position;
         self.cell.wrap_vector(&mut res);
         return res;

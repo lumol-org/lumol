@@ -150,7 +150,7 @@ impl Ewald {
                 let s = self.restriction.scaling(universe, i, j);
                 assert!(s == 1.0, "Scaling restriction scheme using Ewald are not implemented");
 
-                let rij = universe.wrap_vector(i, j);
+                let rij = universe.wraped_vector(i, j);
                 let r = rij.norm();
                 if r > self.rc {continue};
 
@@ -182,7 +182,7 @@ impl Ewald {
                 let s = self.restriction.scaling(universe, i, j);
                 assert!(s == 1.0, "Scaling restriction scheme using Ewald are not implemented");
 
-                let rij = universe.wrap_vector(i, j);
+                let rij = universe.wraped_vector(i, j);
                 let r = rij.norm();
                 if r > self.rc {continue};
 
@@ -337,7 +337,7 @@ impl Ewald {
                         for j in (i + 1)..universe.size() {
                             let qj = universe[j].charge;
                             let force = factor * self.kspace_force_factor(i, j, ikx, iky, ikz, qi, qj) * k;
-                            let rij = universe.wrap_vector(i, j);
+                            let rij = universe.wraped_vector(i, j);
 
                             res = res + force.tensorial(&rij);
                         }
@@ -391,7 +391,7 @@ impl Ewald {
                 let s = self.restriction.scaling(universe, i, j);
 
                 let qj = universe[j].charge;
-                let rij = universe.wrap_vector(i, j);
+                let rij = universe.wraped_vector(i, j);
                 let r = rij.norm();
                 assert!(r < self.rc, "Atoms in molecule are separated by more than the cutoff radius of Ewald sum.");
 
@@ -423,7 +423,7 @@ impl Ewald {
                 let s = self.restriction.scaling(universe, i, j);
 
                 let qj = universe[j].charge;
-                let rij = universe.wrap_vector(i, j);
+                let rij = universe.wraped_vector(i, j);
                 let r = rij.norm();
                 assert!(r < self.rc, "Atoms in molecule are separated by more than the cutoff radius of Ewald sum.");
 

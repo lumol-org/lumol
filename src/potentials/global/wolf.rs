@@ -114,7 +114,7 @@ impl GlobalPotential for Wolf {
                 }
                 if !self.restriction.is_excluded_pair(universe, i, j) {
                     let s = self.restriction.scaling(universe, i, j);
-                    let rij = universe.wrap_vector(i, j);
+                    let rij = universe.wraped_vector(i, j);
                     let force = s * self.force_pair(qi, qj, rij);
                     res[i] = res[i] + force;
                     res[j] = res[j] - force;
@@ -136,7 +136,7 @@ impl GlobalPotential for Wolf {
                 }
                 if !self.restriction.is_excluded_pair(universe, i, j) {
                     let s = self.restriction.scaling(universe, i, j);
-                    let rij = universe.wrap_vector(i, j);
+                    let rij = universe.wraped_vector(i, j);
                     let force = s * self.force_pair(qi, qj, rij);
                     res = res + force.tensorial(&rij);
                 }
