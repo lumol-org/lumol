@@ -28,3 +28,6 @@ pub trait CoulombicPotential : GlobalPotential {}
 
 mod wolf;
 pub use self::wolf::Wolf;
+
+mod ewald;
+pub use self::ewald::Ewald;
