@@ -431,7 +431,13 @@ impl FromYamlWithPairPotential for TableComputation {
 
 /******************************************************************************/
 fn read_coulomb(universe: &mut Universe, config: &Yaml) -> Result<()> {
-    let potential = try!(read_coulomb_potential(config));
+    let mut potential = try!(read_coulomb_potential(config));
+
+    if config["restriction"].as_hash().is_some() {
+        let restriction = try!(read_restriction(&config["restriction"]));
+        potential.set_restriction(restriction);
+    }
+
     universe.set_coulomb_interaction(potential);
 
     if config["charges"].as_hash().is_some() {
