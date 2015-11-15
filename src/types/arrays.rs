@@ -17,7 +17,7 @@ impl<T: Clone + PartialEq + Default> Data for T {}
 /******************************************************************************/
 /// Bidimensional array, with cache locality and runtime size. This type is
 /// intended for storage of data only, and do not provide any mathematical
-/// operations.
+/// operations. Data is stored in the row-major mode.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Array2<T: Data> {
     /// Data storage
@@ -115,7 +115,7 @@ impl<T: Data> IndexMut<(usize, usize)> for Array2<T> {
 /******************************************************************************/
 /// 3 dimmensional array type with cache locality, and runtime size. This type
 /// is intended for storage of data only, and do not provide any mathematical
-/// operations.
+/// operations. Data is stored in the row-major mode.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Array3<T: Data> {
     data: Vec<T>,
