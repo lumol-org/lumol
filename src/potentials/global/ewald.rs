@@ -214,14 +214,14 @@ impl Ewald {
     fn density_fft(&self, universe: &Universe) {
         let natoms = universe.size();
         let mut fourier_phases = self.fourier_phases.borrow_mut();
-        fourier_phases.resize((3, natoms, self.kmax));
+        fourier_phases.resize((self.kmax, natoms, 3));
 
         // Do the k=0, 1 cases first
         for i in 0..natoms {
             let ri = universe.cell().fractional(&universe[i].position);
             for j in 0..3 {
-                fourier_phases[(j, i, 0)] = 0.0;
-                fourier_phases[(j, i, 1)] = -2.0 * PI * ri[j];
+                fourier_phases[(0, i, j)] = 0.0;
+                fourier_phases[(1, i, j)] = -2.0 * PI * ri[j];
             }
         }
 
@@ -229,7 +229,7 @@ impl Ewald {
         for k in 2..self.kmax {
             for i in 0..natoms {
                 for j in 0..3 {
-                    fourier_phases[(j, i, k)] = fourier_phases[(j, i, k - 1)] + fourier_phases[(j, i, 1)];
+                    fourier_phases[(k, i, j)] = fourier_phases[(k - 1, i, j)] + fourier_phases[(1, i, j)];
                 }
             }
         }
@@ -240,7 +240,7 @@ impl Ewald {
                 for ikz in 0..self.kmax {
                     rho[(ikx, iky, ikz)] = Complex::polar(0.0, 0.0);
                     for j in 0..natoms {
-                        let phi = fourier_phases[(0, j, ikx)] + fourier_phases[(1, j, iky)] + fourier_phases[(2, j, ikz)];
+                        let phi = fourier_phases[(ikx, j, 0)] + fourier_phases[(iky, j, 1)] + fourier_phases[(ikz, j, 2)];
                         rho[(ikx, iky, ikz)] = rho[(ikx, iky, ikz)] + Complex::polar(universe[j].charge, phi);
                     }
                 }
@@ -309,8 +309,8 @@ impl Ewald {
         let fourier_phases = self.fourier_phases.borrow();
         let expfactors = self.expfactors.borrow();
 
-        let fourier_i = fourier_phases[(0, i, ikx)] + fourier_phases[(1, i, iky)] + fourier_phases[(2, i, ikz)];
-        let fourier_j = fourier_phases[(0, j, ikx)] + fourier_phases[(1, j, iky)] + fourier_phases[(2, j, ikz)];
+        let fourier_i = fourier_phases[(ikx, i, 0)] + fourier_phases[(iky, i, 1)] + fourier_phases[(ikz, i, 2)];
+        let fourier_j = fourier_phases[(ikx, j, 0)] + fourier_phases[(iky, j, 1)] + fourier_phases[(ikz, j, 2)];
         let sin_kr = f64::sin(fourier_i - fourier_j);
 
         return qi * qj * expfactors[(ikx, iky, ikz)] * sin_kr;
