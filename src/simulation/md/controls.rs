@@ -4,11 +4,10 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-
 //! While running a simulation, we often want to have control over some
 //! simulation parameters: the temperature, the pressure, etc. This is the goal
 //! of the control algorithms, all implmenting of the `Control` trait.
-
+use types::Vector3D;
 use universe::Universe;
 
 /// Trait for controling some parameters in an universe during a simulation.
@@ -104,6 +103,25 @@ impl Control for BerendsenThermostat {
     }
 }
 
+/******************************************************************************/
+/// Remove global translation from the universe
+pub struct RemoveTranslation;
+
+impl Control for RemoveTranslation {
+    fn control(&mut self, universe: &mut Universe) {
+        let total_mass = universe.iter().fold(0.0, |total_mass, particle| total_mass + particle.mass);
+
+        let total_velocity = universe.iter().fold(
+            Vector3D::new(0.0, 0.0, 0.0),
+            |total_velocity, particle| total_velocity + particle.velocity * particle.mass / total_mass
+        );
+
+        for particle in universe {
+            particle.velocity = particle.velocity - total_velocity;
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -169,5 +187,19 @@ mod tests {
     #[should_panic]
     fn negative_temperature_berendsen() {
         BerendsenThermostat::new(-56.0, 1000.0);
+    }
+
+    #[test]
+    fn remove_translation() {
+        let mut universe = Universe::from_cell(UnitCell::cubic(20.0));
+        universe.add_particle(Particle::new("Ag"));
+        universe.add_particle(Particle::new("Ag"));
+        universe[0].velocity = Vector3D::new(1.0, 2.0, 0.0);
+        universe[1].velocity = Vector3D::new(1.0, 0.0, 0.0);
+
+        RemoveTranslation.control(&mut universe);
+
+        assert_eq!(universe[0].velocity, Vector3D::new(0.0, 1.0, 0.0));
+        assert_eq!(universe[1].velocity, Vector3D::new(0.0, -1.0, 0.0));
     }
 }

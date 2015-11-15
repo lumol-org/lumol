@@ -18,6 +18,7 @@ pub use self::integrators::AnisoBerendsenBarostat;
 mod controls;
 pub use self::controls::Control;
 pub use self::controls::{RescaleThermostat, BerendsenThermostat};
+pub use self::controls::RemoveTranslation;
 
 mod molecular_dynamics;
 pub use self::molecular_dynamics::MolecularDynamics;
