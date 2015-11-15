@@ -23,3 +23,6 @@ clippy = {version = "*", optional = true}
 [features]
 default = []
 lint = ["clippy"]
+
+[profile.release]
+debug = true
