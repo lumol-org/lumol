@@ -91,20 +91,24 @@ impl<T: Data> Index<(usize, usize)> for Array2<T> {
     type Output = T;
     #[inline]
     fn index(&self, index: (usize, usize)) -> &T {
-        assert!(index.0 < self.size.0, format!("index out of bounds in dimmension 0: the len is {} but the index is {}", self.size.0, index.0));
-        assert!(index.1 < self.size.1, format!("index out of bounds in dimmension 1: the len is {} but the index is {}", self.size.1, index.1));
+        debug_assert!(index.0 < self.size.0, format!("index out of bounds in dimmension 0: the len is {} but the index is {}", self.size.0, index.0));
+        debug_assert!(index.1 < self.size.1, format!("index out of bounds in dimmension 1: the len is {} but the index is {}", self.size.1, index.1));
         let idx = self.get_index(index.0, index.1);
-        return &self.data[idx];
+        unsafe {
+            return self.data.get_unchecked(idx);
+        }
     }
 }
 
 impl<T: Data> IndexMut<(usize, usize)> for Array2<T> {
     #[inline]
     fn index_mut(&mut self, index: (usize, usize)) -> &mut T {
-        assert!(index.0 < self.size.0, format!("index out of bounds in dimmension 0: the len is {} but the index is {}", self.size.0, index.0));
-        assert!(index.1 < self.size.1, format!("index out of bounds in dimmension 1: the len is {} but the index is {}", self.size.1, index.1));
+        debug_assert!(index.0 < self.size.0, format!("index out of bounds in dimmension 0: the len is {} but the index is {}", self.size.0, index.0));
+        debug_assert!(index.1 < self.size.1, format!("index out of bounds in dimmension 1: the len is {} but the index is {}", self.size.1, index.1));
         let idx = self.get_index(index.0, index.1);
-        return &mut self.data[idx];
+        unsafe {
+            return self.data.get_unchecked_mut(idx);
+        }
     }
 }
 
@@ -187,22 +191,26 @@ impl<T: Data> Index<(usize, usize, usize)> for Array3<T> {
     type Output = T;
     #[inline]
     fn index(&self, index: (usize, usize, usize)) -> &T {
-        assert!(index.0 < self.size.0, format!("index out of bounds in dimmension 0: the len is {} but the index is {}", self.size.0, index.0));
-        assert!(index.1 < self.size.1, format!("index out of bounds in dimmension 1: the len is {} but the index is {}", self.size.1, index.1));
-        assert!(index.2 < self.size.2, format!("index out of bounds in dimmension 2: the len is {} but the index is {}", self.size.2, index.2));
+        debug_assert!(index.0 < self.size.0, format!("index out of bounds in dimmension 0: the len is {} but the index is {}", self.size.0, index.0));
+        debug_assert!(index.1 < self.size.1, format!("index out of bounds in dimmension 1: the len is {} but the index is {}", self.size.1, index.1));
+        debug_assert!(index.2 < self.size.2, format!("index out of bounds in dimmension 2: the len is {} but the index is {}", self.size.2, index.2));
         let idx = self.get_index(index.0, index.1, index.2);
-        return &self.data[idx];
+        unsafe {
+            return self.data.get_unchecked(idx);
+        }
     }
 }
 
 impl<T: Data> IndexMut<(usize, usize, usize)> for Array3<T> {
     #[inline]
     fn index_mut(&mut self, index: (usize, usize, usize)) -> &mut T {
-        assert!(index.0 < self.size.0, format!("index out of bounds in dimmension 0: the len is {} but the index is {}", self.size.0, index.0));
-        assert!(index.1 < self.size.1, format!("index out of bounds in dimmension 1: the len is {} but the index is {}", self.size.1, index.1));
-        assert!(index.2 < self.size.2, format!("index out of bounds in dimmension 2: the len is {} but the index is {}", self.size.2, index.2));
+        debug_assert!(index.0 < self.size.0, format!("index out of bounds in dimmension 0: the len is {} but the index is {}", self.size.0, index.0));
+        debug_assert!(index.1 < self.size.1, format!("index out of bounds in dimmension 1: the len is {} but the index is {}", self.size.1, index.1));
+        debug_assert!(index.2 < self.size.2, format!("index out of bounds in dimmension 2: the len is {} but the index is {}", self.size.2, index.2));
         let idx = self.get_index(index.0, index.1, index.2);
-        return &mut self.data[idx];
+        unsafe {
+            return self.data.get_unchecked_mut(idx);
+        }
     }
 }
 
