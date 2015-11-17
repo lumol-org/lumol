@@ -398,6 +398,11 @@ impl Molecule {
         assert!(self.first <= j && j <= self.last);
         return self.connections[(i - self.first, j - self.first)];
     }
+
+    /// Get an iterator over the particles in the molecule
+    #[inline] pub fn iter(&self) -> Range<usize> {
+        self.into_iter()
+    }
 }
 
 impl IntoIterator for Molecule {
