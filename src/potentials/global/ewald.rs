@@ -141,9 +141,10 @@ impl Ewald {
     }
 
     /// Real space contribution to the forces
-    fn real_space_forces(&self, universe: &Universe) -> Vec<Vector3D> {
+    fn real_space_forces(&self, universe: &Universe, res: &mut Vec<Vector3D>) {
         let natoms = universe.size();
-        let mut res = vec![Vector3D::new(0.0, 0.0, 0.0); natoms];
+        assert!(res.len() == universe.size());
+
         for i in 0..natoms {
             for j in (i + 1)..natoms {
                 if self.restriction.is_excluded_pair(universe, i, j) {continue}
@@ -160,7 +161,6 @@ impl Ewald {
                 res[j] = res[j] - force;
             }
         }
-        return res;
     }
 
     /// Get the real-space force factor at distance `r` for charges `qi` and `qj`
@@ -271,9 +271,9 @@ impl Ewald {
     }
 
     /// k-space contribution to the forces
-    fn kspace_forces(&self, universe: &Universe) -> Vec<Vector3D> {
+    fn kspace_forces(&self, universe: &Universe, res: &mut Vec<Vector3D>) {
+        assert!(res.len() == universe.size());
         self.density_fft(universe);
-        let mut res = vec![Vector3D::new(0.0, 0.0, 0.0); universe.size()];
 
         let factor = 4.0 * PI / (universe.cell().volume() * ELCC);
         let (rec_kx, rec_ky, rec_kz) = universe.cell().reciprocal_vectors();
@@ -299,7 +299,6 @@ impl Ewald {
                 }
             }
         }
-        return res;
     }
 
     /// Get the force factor for particles `i` and `j` with charges `qi` and
@@ -399,9 +398,9 @@ impl Ewald {
     }
 
     /// Molecular correction contribution to the forces
-    fn molcorrect_forces(&self, universe: &Universe) -> Vec<Vector3D> {
+    fn molcorrect_forces(&self, universe: &Universe, res: &mut Vec<Vector3D>) {
         let natoms = universe.size();
-        let mut res = vec![Vector3D::new(0.0, 0.0, 0.0); natoms];
+        assert!(res.len() == natoms);
 
         for i in 0..natoms {
             let qi = universe[i].charge;
@@ -420,7 +419,6 @@ impl Ewald {
                 res[i] = res[i] - factor * rij;
             }
         }
-        return res;
     }
 
     /// Get the force factor for particles with charges `qi` and `qj`, at
@@ -468,11 +466,12 @@ impl GlobalPotential for Ewald {
 
     fn forces(&self, universe: &Universe) -> Vec<Vector3D> {
         self.precompute(universe.cell());
-        let res = self.real_space_forces(universe);
+        let mut res = vec![Vector3D::new(0.0, 0.0, 0.0); universe.size()];
+        self.real_space_forces(universe, &mut res);
         /* No self force */
-        let res = res.iter().zip(self.kspace_forces(universe)).map(|(f1, f2)| *f1 + f2);
-        let res = res.zip(self.molcorrect_forces(universe)).map(|(f1, f2)| f1 + f2);
-        return res.collect();
+        self.kspace_forces(universe, &mut res);
+        self.molcorrect_forces(universe, &mut res);
+        return res;
     }
 
     fn virial(&self, universe: &Universe) -> Matrix3 {
