@@ -45,3 +45,6 @@ pub trait MCMove {
 
 mod translate;
 pub use self::translate::Translate;
+
+mod rotate;
+pub use self::rotate::Rotate;
