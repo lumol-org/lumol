@@ -159,6 +159,11 @@ impl Universe {
         &self.molecules
     }
 
+    /// Get the molecule at index `id`
+    #[inline] pub fn molecule(&self, id: usize) -> &Molecule {
+        &self.molecules[id]
+    }
+
     /// Get the length of the shortest bond path to go from the particle `i` to
     /// the particle `j`. This length is 0 if there is no path from `i` to `j`,
     /// 1 if `i == j`, 2 if there is a bond between `i` and `j`, etc.
@@ -826,15 +831,15 @@ mod tests {
 
         assert_eq!(universe.molecules().len(), 2);
 
-        let molecule = universe.molecules()[0].clone();
+        let molecule = universe.molecule(0).clone();
         assert!(molecule.bonds().contains(&Bond::new(0, 1)));
-        let molecule = universe.molecules()[1].clone();
+        let molecule = universe.molecule(1).clone();
         assert!(molecule.bonds().contains(&Bond::new(2, 3)));
 
         assert_eq!(universe.add_bond(1, 2), Some(vec![]));
         assert_eq!(universe.molecules().len(), 1);
 
-        let molecule = universe.molecules()[0].clone();
+        let molecule = universe.molecule(0).clone();
         assert!(molecule.angles().contains(&Angle::new(0, 1, 2)));
         assert!(molecule.angles().contains(&Angle::new(1, 2, 3)));
         assert!(molecule.dihedrals().contains(&Dihedral::new(0, 1, 2, 3)));

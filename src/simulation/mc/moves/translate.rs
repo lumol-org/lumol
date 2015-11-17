@@ -18,7 +18,7 @@ use universe::Universe;
 /// Monte-Carlo move for translating a molecule
 pub struct Translate {
     /// Index of the molecule to translate
-    molecule: usize,
+    molid: usize,
     /// Translation vector
     delta: Vector3D,
     /// Translation range for random number generation
@@ -33,7 +33,7 @@ impl Translate {
         assert!(dr > 0.0, "dr must be positive in Translate move");
         let dr = dr / f64::sqrt(3.0);
         Translate {
-            molecule: usize::MAX,
+            molid: usize::MAX,
             delta: Vector3D::new(0.0, 0.0, 0.0),
             delta_range: Range::new(-dr, dr),
             e_before: 0.0,
@@ -58,10 +58,10 @@ impl MCMove for Translate {
         self.delta.z = self.delta_range.sample(rng);
 
         let nmols = universe.molecules().len();
-        self.molecule = rng.gen_range(0, nmols);
+        self.molid = rng.gen_range(0, nmols);
 
         self.e_before = universe.potential_energy();
-        for i in &universe.molecules()[self.molecule] {
+        for i in universe.molecule(self.molid) {
             universe[i].position = universe[i].position + self.delta;
         }
     }
@@ -76,7 +76,7 @@ impl MCMove for Translate {
     }
 
     fn restore(&mut self, universe: &mut Universe) {
-        for i in &universe.molecules()[self.molecule] {
+        for i in universe.molecule(self.molid) {
             universe[i].position = universe[i].position - self.delta;
         }
     }
