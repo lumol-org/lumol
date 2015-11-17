@@ -216,23 +216,25 @@ impl<T: Data> IndexMut<(usize, usize, usize)> for Array3<T> {
 
 #[cfg(test)]
 mod tests {
-    pub use super::*;
-
     mod array_2 {
-        use super::*;
+        use types::Array2;
 
-        #[test]
-        #[should_panic]
-        fn out_of_bounds_dim_1() {
-            let a = Array2::<f64>::with_size((4, 5));
-            let _ = a[(6, 1)];
-        }
+        #[cfg(debug_assertions)]
+        mod out_of_bounds {
+            use types::Array2;
+            #[test]
+            #[should_panic]
+            fn dim_1() {
+                let a = Array2::<f64>::with_size((4, 5));
+                let _ = a[(6, 1)];
+            }
 
-        #[test]
-        #[should_panic]
-        fn out_of_bounds_dim_2() {
-            let a = Array2::<f64>::with_size((4, 5));
-            let _ = a[(1, 6)];
+            #[test]
+            #[should_panic]
+            fn dim_2() {
+                let a = Array2::<f64>::with_size((4, 5));
+                let _ = a[(1, 6)];
+            }
         }
 
         #[test]
@@ -278,27 +280,32 @@ mod tests {
     }
 
     mod array_3 {
-        use super::*;
+        use types::Array3;
 
-        #[test]
-        #[should_panic]
-        fn out_of_bounds_dim_1() {
-            let a = Array3::<f64>::with_size((4, 5, 6));
-            let _ = a[(6, 1, 3)];
-        }
+        #[cfg(debug_assertions)]
+        mod out_of_bounds {
+            use types::Array3;
 
-        #[test]
-        #[should_panic]
-        fn out_of_bounds_dim_2() {
-            let a = Array3::<f64>::with_size((4, 5, 6));
-            let _ = a[(1, 7, 3)];
-        }
+            #[test]
+            #[should_panic]
+            fn dim_1() {
+                let a = Array3::<f64>::with_size((4, 5, 6));
+                let _ = a[(6, 1, 3)];
+            }
 
-        #[test]
-        #[should_panic]
-        fn out_of_bounds_dim_3() {
-            let a = Array3::<f64>::with_size((4, 5, 6));
-            let _ = a[(0, 1, 8)];
+            #[test]
+            #[should_panic]
+            fn dim_2() {
+                let a = Array3::<f64>::with_size((4, 5, 6));
+                let _ = a[(1, 7, 3)];
+            }
+
+            #[test]
+            #[should_panic]
+            fn dim_3() {
+                let a = Array3::<f64>::with_size((4, 5, 6));
+                let _ = a[(0, 1, 8)];
+            }
         }
 
         #[test]
