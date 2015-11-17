@@ -76,8 +76,8 @@ mod ewald {
         );
 
         let e_initial = universe.total_energy();
-        simulation.run(&mut universe, 10);  // FIXME: Ewald is waaay too slow
+        simulation.run(&mut universe, 100);
         let e_final = universe.total_energy();
-        assert!(f64::abs((e_initial - e_final)/e_final) < 1e-5);
+        assert!(f64::abs((e_initial - e_final)/e_final) < 1e-4);
     }
 }

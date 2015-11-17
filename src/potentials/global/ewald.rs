@@ -311,7 +311,7 @@ impl Ewald {
 
         let fourier_i = fourier_phases[(ikx, i, 0)] + fourier_phases[(iky, i, 1)] + fourier_phases[(ikz, i, 2)];
         let fourier_j = fourier_phases[(ikx, j, 0)] + fourier_phases[(iky, j, 1)] + fourier_phases[(ikz, j, 2)];
-        let sin_kr = f64::sin(fourier_i - fourier_j);
+        let sin_kr = fast_sin(fourier_i - fourier_j);
 
         return qi * qj * expfactors[(ikx, iky, ikz)] * sin_kr;
     }
@@ -347,6 +347,27 @@ impl Ewald {
         }
         return res;
     }
+}
+
+/// This an implementation of the sin function which is faster than the libm
+/// sin function on my i7 processor. I'll have to benchmarck this on other
+/// architectures and OS.
+///
+/// Using this function in `kspace_force_factor` gives me a 40% speedup of the
+/// overall simulation time.
+///
+/// This code comes from http://forum.devmaster.net/t/fast-and-accurate-sine-cosine/9648/85
+fn fast_sin(mut x: f64) -> f64 {
+    const FRAC_1_TWO_PI: f64 = 1.0 / (2.0 * PI);
+    const A: f64 = 7.58946638440411;
+    const B: f64 = 1.6338434577536627;
+
+    x = x * FRAC_1_TWO_PI;
+    x = x - f64::floor(x + 0.5);
+    x = A * x * (0.5 - f64::abs(x));
+    x = x * (B + f64::abs(x));
+
+    return x;
 }
 
 /// Molecular correction for Ewald summation
