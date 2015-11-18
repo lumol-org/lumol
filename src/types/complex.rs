@@ -55,7 +55,13 @@ impl Complex {
     /// Get the norm of the complex
     #[inline]
     pub fn norm(&self) -> f64 {
-        f64::sqrt(self.real * self.real + self.imag * self.imag)
+        f64::sqrt(self.norm2())
+    }
+
+    /// Get the square of the norm if this complex
+    #[inline]
+    pub fn norm2(&self) -> f64 {
+        self.real * self.real + self.imag * self.imag
     }
 }
 
@@ -90,36 +96,34 @@ impl Neg for Complex {
 impl Mul<Complex> for Complex {
     type Output = Complex;
     fn mul(self, other: Complex) -> Complex {
-        let norm = self.norm() * other.norm();
-        let phase = self.phase() + other.phase();
-        Complex::polar(norm, phase)
+        let x = self.real() * other.real() - self.imag() * other.imag();
+        let y = self.real() * other.imag() + self.imag() * other.real();
+        Complex::cartesian(x, y)
     }
 }
 
 impl Mul<f64> for Complex {
     type Output = Complex;
     fn mul(self, other: f64) -> Complex {
-        let norm = self.norm() * other;
-        let phase = self.phase();
-        Complex::polar(norm, phase)
+        Complex::cartesian(self.real() * other, self.imag() * other)
     }
 }
 
 impl Mul<Complex> for f64 {
     type Output = Complex;
     fn mul(self, other: Complex) -> Complex {
-        let norm = self * other.norm();
-        let phase = other.phase();
-        Complex::polar(norm, phase)
+        Complex::cartesian(self * other.real(), self * other.imag())
     }
 }
 
 impl Div<Complex> for Complex {
     type Output = Complex;
     fn div(self, other: Complex) -> Complex {
-        let norm = self.norm() / other.norm();
-        let phase = self.phase() - other.phase();
-        Complex::polar(norm, phase)
+        let r = other.norm2();
+        let x = self.real() * other.real() + self.imag() * other.imag();
+        let y = - self.real() * other.imag() + self.imag() * other.real();
+
+        Complex::cartesian(x / r, y / r)
     }
 }
 
