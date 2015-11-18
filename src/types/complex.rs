@@ -63,6 +63,15 @@ impl Complex {
     pub fn norm2(&self) -> f64 {
         self.real * self.real + self.imag * self.imag
     }
+
+    /// Get the conjugate of the complex
+    #[inline]
+    pub fn conj(&self) -> Complex {
+        Complex {
+            real: self.real,
+            imag: -self.imag
+        }
+    }
 }
 
 impl Add<Complex> for Complex {
@@ -175,6 +184,18 @@ mod tests {
 
         let c = Complex::polar(-3.0, 0.0);
         assert_eq!(c.phase(), -consts::PI);
+    }
+
+    #[test]
+    fn conj() {
+        let c = Complex::cartesian(3.0, 5.0);
+        assert_eq!(c.conj(), Complex::cartesian(3.0, -5.0));
+
+        let c = Complex::cartesian(3.0, -5.0);
+        assert_eq!(c.conj(), Complex::cartesian(3.0, 5.0));
+
+        let c = Complex::cartesian(3.0, 0.0);
+        assert_eq!(c.conj(), Complex::cartesian(3.0, 0.0));
     }
 
     #[test]
