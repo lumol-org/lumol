@@ -12,7 +12,7 @@ use std::f64::consts::{PI, FRAC_2_SQRT_PI};
 use std::f64;
 use std::cell::{Cell, RefCell};
 
-use universe::{Universe, UnitCell};
+use universe::{Universe, UnitCell, CellType};
 use types::{Matrix3, Vector3D, Array3, Complex};
 use constants::ELCC;
 use potentials::PairRestriction;
@@ -78,6 +78,19 @@ impl Ewald {
         if *cell == *self.previous_cell.borrow() {
             // Do not recompute
             return;
+        }
+        match cell.celltype() {
+            CellType::Infinite => {
+                error!("Can not use Ewald sum with Infinite cell.");
+                panic!();
+            },
+            CellType::Triclinic => {
+                error!("Can not (yet) use Ewald sum with Triclinic cell.");
+                unimplemented!();
+            },
+            CellType::Orthorombic => {
+                // All good!
+            },
         }
         *self.previous_cell.borrow_mut() = *cell;
         let mut expfactors = self.expfactors.borrow_mut();
@@ -513,6 +526,24 @@ mod tests {
         universe[1].position = Vector3D::new(1.5, 0.0, 0.0);
 
         return universe;
+    }
+
+    #[test]
+    #[should_panic]
+    fn infinite_cell() {
+        let mut universe = testing_universe();
+        universe.set_cell(UnitCell::new());
+        let ewald = Ewald::new(8.0, 10);
+        ewald.energy(&universe);
+    }
+
+    #[test]
+    #[should_panic]
+    fn triclinic_cell() {
+        let mut universe = testing_universe();
+        universe.set_cell(UnitCell::triclinic(0.0, 0.0, 0.0, 0.0, 0.0, 0.0));
+        let ewald = Ewald::new(8.0, 10);
+        ewald.energy(&universe);
     }
 
     #[test]
