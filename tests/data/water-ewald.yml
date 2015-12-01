@@ -1,0 +1,28 @@
+# f-SPC model of water, using ewald summation for electrostatics
+pairs:
+    - atoms: [O, O]
+      type: Lennard-Jones
+      sigma: 3.16 A
+      epsilon: 0.155 kcal/mol
+    - atoms: [H, H]
+      type: harmonic
+      k: 79.8 kcal/mol/A^2
+      x0: 1.633 A
+      restriction:
+          type: IntraMolecular
+    - atoms: [H, O]
+      type: Null
+bonds:
+    - atoms: [O, H]
+      type: harmonic
+      k: 1054.2 kcal/mol/A^2
+      x0: 1.0 A
+angles:
+    - atoms: [H, O, H]
+      type: harmonic
+      k: 75.9 kcal/mol/rad
+      x0: 109.5 deg
+coulomb:
+    type: ewald
+    cutoff: 8.5 A
+    kmax: 8
