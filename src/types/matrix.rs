@@ -37,6 +37,11 @@ impl Matrix3 {
         Matrix3::new(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
     }
 
+    /// Compute the trace of the matrix
+    pub fn trace(&self) -> f64 {
+        return self[(0, 0)] + self[(1, 1)] + self[(2, 2)];
+    }
+
     /// Computes the inverse of a matrix, which is assumed to exist
     pub fn inverse(&self) -> Matrix3 {
         let mut determinant = 0.0;

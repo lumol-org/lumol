@@ -7,7 +7,7 @@
 //! While running a simulation, we often want to have control over some
 //! simulation parameters: the temperature, the pressure, etc. This is the goal
 //! of the control algorithms, all implmenting of the `Control` trait.
-use types::Vector3D;
+use types::{Matrix3, Vector3D};
 use universe::Universe;
 
 /// Trait for controling some parameters in an universe during a simulation.
@@ -122,6 +122,52 @@ impl Control for RemoveTranslation {
     }
 }
 
+/******************************************************************************/
+/// Remove global rotation from the universe
+pub struct RemoveRotation;
+
+impl Control for RemoveRotation {
+    fn control(&mut self, universe: &mut Universe) {
+        let total_mass = universe.iter().fold(0.0, |total_mass, particle| total_mass + particle.mass);
+        let com = universe.iter().fold(
+            Vector3D::new(0.0, 0.0, 0.0),
+            |com, particle| {
+                com + particle.position * particle.mass / total_mass
+            }
+        );
+
+        // Angular momentum
+        let moment = universe.iter().fold(
+            Vector3D::new(0.0, 0.0, 0.0),
+            |moment, particle| {
+                let delta = particle.position - com;
+                moment + particle.mass * (delta ^ particle.velocity)
+            }
+        );
+
+        let mut inertia = universe.iter().fold(
+            Matrix3::zero(),
+            |inertia, particle| {
+                let delta = particle.position - com;
+                inertia - particle.mass * delta.tensorial(&delta)
+            }
+        );
+
+        let trace = inertia.trace();
+        inertia[(0, 0)] += trace;
+        inertia[(1, 1)] += trace;
+        inertia[(2, 2)] += trace;
+
+        // The angular velocity omega is defined by `L = I w` with L the angular
+        // momentum, and I the inertia matrix.
+        let angular = inertia.inverse() * moment;
+        for particle in universe {
+            let delta = particle.position - com;
+            particle.velocity = particle.velocity - (delta ^ angular);
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -194,6 +240,8 @@ mod tests {
         let mut universe = Universe::from_cell(UnitCell::cubic(20.0));
         universe.add_particle(Particle::new("Ag"));
         universe.add_particle(Particle::new("Ag"));
+        universe[0].position = Vector3D::new(0.0, 0.0, 0.0);
+        universe[1].position = Vector3D::new(1.0, 1.0, 1.0);
         universe[0].velocity = Vector3D::new(1.0, 2.0, 0.0);
         universe[1].velocity = Vector3D::new(1.0, 0.0, 0.0);
 
@@ -201,5 +249,25 @@ mod tests {
 
         assert_eq!(universe[0].velocity, Vector3D::new(0.0, 1.0, 0.0));
         assert_eq!(universe[1].velocity, Vector3D::new(0.0, -1.0, 0.0));
+    }
+
+    #[test]
+    fn remove_rotation() {
+        let mut universe = Universe::from_cell(UnitCell::cubic(20.0));
+        universe.add_particle(Particle::new("Ag"));
+        universe.add_particle(Particle::new("Ag"));
+        universe[0].position = Vector3D::new(0.0, 0.0, 0.0);
+        universe[1].position = Vector3D::new(1.0, 0.0, 0.0);
+        universe[0].velocity = Vector3D::new(0.0, 1.0, 0.0);
+        universe[1].velocity = Vector3D::new(0.0, -1.0, 2.0);
+
+        RemoveRotation.control(&mut universe);
+
+        let vel_0 = Vector3D::new(0.0, 0.0, 1.0);
+        let vel_1 = Vector3D::new(0.0, 0.0, 1.0);
+        for i in 0..3 {
+            assert_approx_eq!(universe[0].velocity[i], vel_0[i]);
+            assert_approx_eq!(universe[1].velocity[i], vel_1[i]);
+        }
     }
 }
