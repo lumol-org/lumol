@@ -10,6 +10,7 @@
 use std::collections::HashMap;
 use std::ops::{Index, IndexMut};
 use std::slice;
+use std::hash::{SipHasher, Hash, Hasher};
 use std::cmp::{min, max};
 use std::iter::IntoIterator;
 use std::u8;
@@ -21,6 +22,7 @@ use potentials::{PairPotential, AnglePotential, DihedralPotential};
 use potentials::{CoulombicPotential, GlobalPotential};
 use potentials::PairRestriction;
 use types::{Vector3D, Matrix3};
+use utils::Bc;
 
 use super::Particle;
 use super::Molecule;
@@ -44,11 +46,11 @@ pub type Permutations = Vec<(usize, usize)>;
 /// molecules, and easier molecule removal in the universe.
 pub struct Universe {
     /// Unit cell of the universe
-    cell: UnitCell,
+    cell: Bc<UnitCell>,
     /// List of particles in the system
-    particles: Vec<Particle>,
+    particles: Bc<Vec<Particle>>,
     /// Molecules in the universe
-    molecules: Vec<Molecule>,
+    molecules: Bc<Vec<Molecule>>,
     /// Particles kinds, associating particles names and indexes
     kinds: HashMap<String, u16>,
     /// Interactions is a hash map associating particles kinds and potentials
@@ -61,11 +63,11 @@ impl Universe {
     /// Create a new empty Universe
     pub fn new() -> Universe {
         Universe{
-            particles: Vec::new(),
-            molecules: Vec::new(),
+            particles: Bc::new(Vec::new()),
+            molecules: Bc::new(Vec::new()),
             kinds: HashMap::new(),
             interactions: Interactions::new(),
-            cell: UnitCell::new(),
+            cell: Bc::new(UnitCell::new()),
             step: 0,
         }
     }
@@ -111,6 +113,9 @@ impl Universe {
     /// Reset the step of the universe to 0
     pub fn reset_step(&mut self) {
         self.step = 0;
+        self.cell.reset();
+        self.particles.reset();
+        self.molecules.reset();
     }
 
     /// Increment the universe step
@@ -555,7 +560,7 @@ impl Universe {
     /// Get a mutable reference to  the universe unit cell
     #[inline] pub fn cell_mut(&mut self) -> &mut UnitCell {&mut self.cell}
     /// Set the universe unit cell
-    #[inline] pub fn set_cell(&mut self, cell: UnitCell) {self.cell = cell;}
+    #[inline] pub fn set_cell(&mut self, cell: UnitCell) {self.cell = Bc::new(cell);}
 
     /// Get the distance between the particles at indexes `i` and `j`
     #[inline] pub fn distance(&self, i: usize, j:usize) -> f64 {
@@ -616,6 +621,20 @@ use simulation::{Virial, Stress, Pressure};
 
 /// Functions to get pysical properties of an universe.
 impl Universe {
+    /// Get a number representing the state of the universe. It is guaranted
+    /// that this number will change if the universe changes, but it is not
+    /// guaranted that if this number change, the universe have changed; i.e.
+    /// this value can change without the universe changing. This is not a hash
+    /// of the universe, and should be cheap to compute.
+    fn state(&self) -> u64 {
+        let mut hasher = SipHasher::new();
+        self.cell.count().hash(&mut hasher);
+        self.particles.count().hash(&mut hasher);
+        self.molecules.count().hash(&mut hasher);
+        self.step.hash(&mut hasher);
+        return hasher.finish()
+    }
+
     // TODO: This implementation recompute the properties each time. These can
     // be cached somehow.
 
