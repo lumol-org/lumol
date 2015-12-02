@@ -40,6 +40,8 @@ extern crate bitflags;
 #[macro_use]
 mod tests;
 
+mod utils;
+
 mod logging;
 pub use logging::{Logger, LogLevel};
 
