@@ -55,6 +55,8 @@ pub struct Universe {
     kinds: HashMap<String, u16>,
     /// Interactions is a hash map associating particles kinds and potentials
     interactions: Interactions,
+    /// Physical properties caching
+    cache: PropertiesCache,
     /// Current step of the simulation
     step: u64,
 }
@@ -68,6 +70,7 @@ impl Universe {
             kinds: HashMap::new(),
             interactions: Interactions::new(),
             cell: Bc::new(UnitCell::new()),
+            cache: PropertiesCache::new(),
             step: 0,
         }
     }
@@ -612,14 +615,116 @@ impl Universe {
 }
 
 /******************************************************************************/
-
 use simulation::Compute;
 use simulation::{PotentialEnergy, KineticEnergy, TotalEnergy};
 use simulation::Temperature;
 use simulation::Volume;
 use simulation::{Virial, Stress, Pressure};
 
-/// Functions to get pysical properties of an universe.
+use std::cell::Cell;
+
+/// Caching physical properties of an universe as `Cell<Option<T>>`. The `Cell`
+/// is for mutating values in immuatable borrow, and the Option to invalidate
+/// the cached values.
+struct PropertiesCache {
+    pub state: Cell<u64>,
+
+    pub kinetic_energy: Cell<Option<f64>>,
+    pub potential_energy: Cell<Option<f64>>,
+    pub total_energy: Cell<Option<f64>>,
+    pub temperature: Cell<Option<f64>>,
+
+    pub volume: Cell<Option<f64>>,
+
+    pub virial: Cell<Option<Matrix3>>,
+    pub pressure: Cell<Option<f64>>,
+    pub stress: Cell<Option<Matrix3>>,
+}
+
+/// This macro generate an `inherent impl` function for `PropertiesCache`, which
+/// check the universe state, and either returns the cached value or invalidate
+/// the full cache, adn update the it with the new value.
+macro_rules! make_cache_getter {
+    ($property: ident, $computer: ident, $T: ident) => {
+        fn $property(&self, universe: &Universe) -> $T {
+            if universe.state() == self.state.get() {
+                if let Some(val) = self.$property.get() {
+                    return val;
+                } else {
+                    let val = $computer.compute(universe);
+                    self.$property.set(Some(val));
+                    return val;
+                }
+            } else {
+                self.invalidate();
+                self.state.set(universe.state());
+                return self.$property(universe);
+            }
+        }
+    };
+}
+
+impl PropertiesCache {
+    fn new() -> PropertiesCache {
+        PropertiesCache{
+            state: Cell::new(0),
+
+            kinetic_energy: Cell::new(None),
+            potential_energy: Cell::new(None),
+            total_energy: Cell::new(None),
+            temperature: Cell::new(None),
+
+            volume: Cell::new(None),
+
+            virial: Cell::new(None),
+            pressure: Cell::new(None),
+            stress: Cell::new(None),
+        }
+    }
+
+    /// Invalidate the cache
+    fn invalidate(&self) {
+        self.kinetic_energy.set(None);
+        self.potential_energy.set(None);
+        self.total_energy.set(None);
+        self.temperature.set(None);
+
+        self.volume.set(None);
+
+        self.virial.set(None);
+        self.pressure.set(None);
+        self.stress.set(None);
+    }
+
+    /// Get the kinetic energy of the universe.
+    make_cache_getter!(kinetic_energy, KineticEnergy, f64);
+
+    /// Get the potential energy of the universe.
+    make_cache_getter!(potential_energy, PotentialEnergy, f64);
+
+    /// Get the total energy of the universe.
+    make_cache_getter!(total_energy, TotalEnergy, f64);
+
+    /// Get the temperature of the universe.
+    make_cache_getter!(temperature, Temperature, f64);
+
+    /// Get the volume of the universe.
+    make_cache_getter!(volume, Volume, f64);
+
+    /// Get the tensorial virial of the system.
+    make_cache_getter!(virial, Virial, Matrix3);
+
+    /// Get the pressure of the system, from the virial equation
+    make_cache_getter!(pressure, Pressure, f64);
+
+    /// Get the stress tensor of the system, from the virial equation
+    make_cache_getter!(stress, Stress, Matrix3);
+}
+
+/******************************************************************************/
+/// Functions to get pysical properties of an universe. These properties are
+/// cached, because they might be costly to compute and often depends the one on
+/// the others.
 impl Universe {
     /// Get a number representing the state of the universe. It is guaranted
     /// that this number will change if the universe changes, but it is not
@@ -635,27 +740,24 @@ impl Universe {
         return hasher.finish()
     }
 
-    // TODO: This implementation recompute the properties each time. These can
-    // be cached somehow.
-
     /// Get the kinetic energy of the system.
-    pub fn kinetic_energy(&self) -> f64 {KineticEnergy.compute(self)}
+    pub fn kinetic_energy(&self) -> f64 {self.cache.kinetic_energy(&self)}
     /// Get the potential energy of the system.
-    pub fn potential_energy(&self) -> f64 {PotentialEnergy.compute(self)}
+    pub fn potential_energy(&self) -> f64 {self.cache.potential_energy(&self)}
     /// Get the total energy of the system.
-    pub fn total_energy(&self) -> f64 {TotalEnergy.compute(self)}
+    pub fn total_energy(&self) -> f64 {self.cache.total_energy(&self)}
     /// Get the temperature of the system.
-    pub fn temperature(&self) -> f64 {Temperature.compute(self)}
+    pub fn temperature(&self) -> f64 {self.cache.temperature(&self)}
 
     /// Get the volume of the system.
-    pub fn volume(&self) -> f64 {Volume.compute(self)}
+    pub fn volume(&self) -> f64 {self.cache.volume(&self)}
 
     /// Get the tensorial virial of the system.
-    pub fn virial(&self) -> Matrix3 {Virial.compute(self)}
+    pub fn virial(&self) -> Matrix3 {self.cache.virial(&self)}
     /// Get the pressure of the system, from the virial equation
-    pub fn pressure(&self) -> f64 {Pressure.compute(self)}
+    pub fn pressure(&self) -> f64 {self.cache.pressure(&self)}
     /// Get the stress tensor of the system, from the virial equation
-    pub fn stress(&self) -> Matrix3 {Stress.compute(self)}
+    pub fn stress(&self) -> Matrix3 {self.cache.stress(&self)}
 }
 
 /******************************************************************************/
