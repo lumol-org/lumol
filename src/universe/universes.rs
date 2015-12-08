@@ -153,6 +153,17 @@ impl Universe {
         moltype(molecule, &self.particles[molecule.into_iter()])
     }
 
+    /// Get a list of molecules with `moltype` molecule type.
+    pub fn molecules_with_moltype(&self, moltype: u64) -> Vec<usize> {
+        let mut res = Vec::new();
+        for i in 0..self.molecules().len() {
+            if self.moltype(i) == moltype {
+                res.push(i);
+            }
+        }
+        return res;
+    }
+
     /// Get the molecule containing the particle `i`
     pub fn molecule_containing(&self, i:usize) -> &Molecule {
         let id = self.molecule_id(i);

@@ -25,7 +25,10 @@ pub trait MCMove {
     /// Prepare the move, by selecting the particles to move, and the parameters
     /// of the move. The `rng` random number generator should be used to
     /// generate the parameters of the move.
-    fn prepare(&mut self, universe: &mut Universe, rng: &mut Box<Rng>);
+    ///
+    /// This function should return true is we can perform the move, and false
+    /// otherwise.
+    fn prepare(&mut self, universe: &mut Universe, rng: &mut Box<Rng>) -> bool;
 
     /// Get the cost of performing this move, as the exponential factor. For
     /// simple NVT simulations, this cost is the energetic difference over
@@ -41,6 +44,28 @@ pub trait MCMove {
     /// Restore the universe to it's initial state, if it has been changed in
     /// `prepare`.
     fn restore(&mut self, universe: &mut Universe);
+}
+
+/// Select a random molecule in the universe using `rng` as random number
+/// generator. If `moltype` is `None`, any molecule can be choosen. If `moltype`
+/// is `Some(molecule_type)`, then a molecule with matching type is selected.
+///
+/// This function returns `None` if no matching molecule was found, and
+/// `Some(molid)` with `molid` the index of the molecule if a molecule was
+/// selected.
+fn select_molecule(universe: &Universe, moltype: Option<u64>, rng: &mut Box<Rng>) -> Option<usize> {
+    if let Some(moltype) = moltype {
+        // Pick a random molecule with matching moltype
+        let mols = universe.molecules_with_moltype(moltype);
+        return rng.choose(&mols).map(|id| *id);
+    } else {
+        let nmols = universe.molecules().len();
+        if nmols == 0 {
+            return None;
+        } else {
+            return Some(rng.gen_range(0, nmols));
+        }
+    }
 }
 
 mod translate;

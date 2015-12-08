@@ -99,7 +99,10 @@ impl Propagator for MonteCarlo {
         };
         trace!("Selected move is '{}'", mcmove.describe());
 
-        mcmove.prepare(universe, &mut self.rng);
+        if !mcmove.prepare(universe, &mut self.rng) {
+            trace!("    --> Can not perform the move");
+            return;
+        }
 
         let cost = mcmove.cost(universe, self.beta);
         trace!("    --> Move cost is {}", cost);

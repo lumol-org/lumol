@@ -9,18 +9,22 @@ use self::rand::distributions::{Normal, Range, Sample};
 use self::rand::Rng;
 
 use std::usize;
+use std::f64;
 
 use super::MCMove;
+use super::select_molecule;
 
 use types::Vector3D;
 use universe::Universe;
 
 /// Monte-Carlo move for rotating a rigid molecule
 pub struct Rotate {
+    /// Type of molecule to rotate. `None` means all molecules.
+    moltype: Option<u64>,
     /// Index of the molecule to rotate
     molid: usize,
-    /// Displacements for all the particles in the molecule
-    displacements: Vec<Vector3D>,
+    /// Previous positions for all the particles in the molecule
+    prevpos: Vec<Vector3D>,
     /// Normal distribution, for generation of the axis
     axis_rng: Normal,
     /// Range distribution, for generation of the angle
@@ -30,12 +34,25 @@ pub struct Rotate {
 }
 
 impl Rotate {
-    /// Create a new `Rotate` move, with maximum angular displacement of `theta`.
+    /// Create a new `Rotate` move, with maximum angular displacement of `theta`,
+    /// rotating all the molecules in the system.
     pub fn new(theta: f64) -> Rotate {
+        Rotate::create(theta, None)
+    }
+
+    /// Create a new `Rotate` move, with maximum angular displacement of `theta`,
+    /// rotating only molecules with `moltype` type.
+    pub fn with_moltype(theta: f64, moltype: u64) -> Rotate {
+        Rotate::create(theta, Some(moltype))
+    }
+
+    // Factorizing the constructors
+    fn create(theta: f64, moltype: Option<u64>) -> Rotate {
         assert!(theta > 0.0, "theta must be positive in Rotate move");
         Rotate {
+            moltype: moltype,
             molid: usize::MAX,
-            displacements: Vec::new(),
+            prevpos: Vec::new(),
             axis_rng: Normal::new(0.0, 1.0),
             angle_rng: Range::new(-theta, theta),
             e_before: 0.0,
@@ -54,7 +71,16 @@ impl MCMove for Rotate {
         "molecular rotation"
     }
 
-    fn prepare(&mut self, universe: &mut Universe, rng: &mut Box<Rng>) {
+    fn prepare(&mut self, universe: &mut Universe, rng: &mut Box<Rng>) -> bool {
+        if let Some(id) = select_molecule(universe, self.moltype, rng) {
+            self.molid = id;
+        } else {
+            warn!("Can not rotate molecule: no molecule of this type in the universe.");
+            return false;
+        }
+
+        self.e_before = universe.potential_energy();
+
         // Getting values from a 3D normal distribution gives an uniform
         // distribution on the R3 sphere.
         let axis = Vector3D::new(
@@ -64,21 +90,13 @@ impl MCMove for Rotate {
         ).normalized();
         let theta = self.angle_rng.sample(rng);
 
-        self.e_before = universe.potential_energy();
-        // Pick molecule
-        let nmols = universe.molecules().len();
-        self.molid = rng.gen_range(0, nmols);
-
-        self.displacements = vec![Vector3D::new(0.0, 0.0, 0.0); universe.molecule(self.molid).size()];
+        self.prevpos = vec![Vector3D::new(0.0, 0.0, 0.0); universe.molecule(self.molid).size()];
         for (i, idx) in universe.molecule(self.molid).iter().enumerate() {
-            self.displacements[i] = universe[idx].position;
+            self.prevpos[i] = universe[idx].position;
         }
 
         rotate_molecule_around_axis(universe, self.molid, axis, theta);
-
-        for (i, idx) in universe.molecule(self.molid).iter().enumerate() {
-            self.displacements[i] = universe[idx].position - self.displacements[i];
-        }
+        return true;
     }
 
     fn cost(&self, universe: &Universe, beta: f64) -> f64 {
@@ -92,7 +110,7 @@ impl MCMove for Rotate {
 
     fn restore(&mut self, universe: &mut Universe) {
         for (i, idx) in universe.molecule(self.molid).iter().enumerate() {
-            universe[idx].position = universe[idx].position - self.displacements[i];
+            universe[idx].position = self.prevpos[i];
         }
     }
 }
