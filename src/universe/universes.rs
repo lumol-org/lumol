@@ -32,6 +32,7 @@ use super::Molecule;
 use super::{CONNECT_12, CONNECT_13, CONNECT_14, CONNECT_FAR};
 use super::UnitCell;
 use super::interactions::{Interactions, PairInteraction};
+use super::molecules::moltype;
 use super::chemfiles::frame_to_universe;
 
 pub type Permutations = Vec<(usize, usize)>;
@@ -141,6 +142,15 @@ impl Universe {
         }
         error!("Could not find the molecule id for particle {}", i);
         unreachable!()
+    }
+
+    /// Get the type of the molecule at index `molid`. This type is a hash of
+    /// the atoms names, and the set of bonds in the molecule. This means that
+    /// two molecules will have the same type if and only if they contains the
+    /// same atoms and the same bonds, **in the same order**.
+    pub fn moltype(&self, molid: usize) -> u64 {
+        let molecule = self.molecule(molid);
+        moltype(molecule, &self.particles[molecule.into_iter()])
     }
 
     /// Get the molecule containing the particle `i`
@@ -957,5 +967,39 @@ mod tests {
         assert_eq!(universe.bond_potentials(0, 0).len(), 0);
         assert_eq!(universe.angle_potentials(0, 0, 0).len(), 0);
         assert_eq!(universe.dihedral_potentials(0, 0, 0, 0).len(), 0);
+    }
+
+    #[test]
+    fn moltype() {
+        let mut universe = Universe::new();
+        // One helium
+        universe.add_particle(Particle::new("He"));
+        // Two water molecules
+        universe.add_particle(Particle::new("H"));
+        universe.add_particle(Particle::new("O"));
+        universe.add_particle(Particle::new("H"));
+        universe.add_bond(1, 2);
+        universe.add_bond(2, 3);
+        universe.add_particle(Particle::new("H"));
+        universe.add_particle(Particle::new("O"));
+        universe.add_particle(Particle::new("H"));
+        universe.add_bond(4, 5);
+        universe.add_bond(5, 6);
+        // Another helium
+        universe.add_particle(Particle::new("He"));
+        // A water molecules, with different atoms order
+        universe.add_particle(Particle::new("O"));
+        universe.add_particle(Particle::new("H"));
+        universe.add_particle(Particle::new("H"));
+        universe.add_bond(8, 9);
+        universe.add_bond(8, 10);
+
+        assert_eq!(universe.molecules().len(), 5);
+        // The heliums
+        assert_eq!(universe.moltype(0), universe.moltype(3));
+
+        // The waters
+        assert!(universe.moltype(1) == universe.moltype(2));
+        assert!(universe.moltype(1) != universe.moltype(4));
     }
 }
