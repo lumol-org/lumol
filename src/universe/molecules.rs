@@ -365,7 +365,8 @@ impl Molecule {
             let mut new_bond = bond.clone();
             if new_bond.i > i {
                 new_bond.i -= 1;
-            } else if new_bond.j > i {
+            }
+            if new_bond.j > i {
                 new_bond.j -= 1;
             }
 
@@ -587,5 +588,29 @@ mod test {
 
         assert!(molecule.angles.contains(&Angle::new(0, 3, 2)));
         assert!(molecule.angles.contains(&Angle::new(0, 1, 2)));
+    }
+
+    #[test]
+    fn remove_particle() {
+        let mut molecule = Molecule::new(0);
+        for i in 1..4 {
+            molecule.merge_with(Molecule::new(i));
+        }
+
+        assert_eq!(molecule.bonds().len(), 0);
+        assert_eq!(molecule.size(), 4);
+
+        molecule.add_bond(0, 1);
+        molecule.add_bond(2, 3);
+        assert_eq!(molecule.bonds().len(), 2);
+        assert_eq!(molecule.size(), 4);
+
+        molecule.remove_particle(1);
+        assert_eq!(molecule.bonds().len(), 1);
+        assert_eq!(molecule.size(), 3);
+
+        molecule.merge_with(Molecule::new(3));
+        assert_eq!(molecule.bonds().len(), 1);
+        assert_eq!(molecule.size(), 4);
     }
 }
