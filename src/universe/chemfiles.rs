@@ -12,7 +12,7 @@ use universe::{Particle, Universe};
 use universe::cells::{UnitCell, CellType};
 use types::Vector3D;
 
-use self::chemfiles::Error;
+pub use self::chemfiles::Error;
 
 /// Convert chemfiles types to Cymbalum types
 trait ToCymbalum {
