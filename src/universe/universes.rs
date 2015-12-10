@@ -4,8 +4,11 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-
-//! `Universe` type definition and implementation.
+//! The base type for simulation data in `cymbalum` is the `Universe` type.
+//!
+//! An `Universe` consists of a list of `Particle`; a list of `Molecule`
+//! specifying how the particles are bonded together; an unit cell for boundary
+//! conditions; and the interactions between these particles.
 
 use std::collections::HashMap;
 use std::ops::{Index, IndexMut};
