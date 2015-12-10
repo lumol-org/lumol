@@ -22,16 +22,12 @@ fn get_universe() -> Universe {
     let mut universe = Universe::from_file(configuration.to_str().unwrap()).unwrap();
     universe.set_cell(UnitCell::cubic(10.0));
 
-    let mut velocities = BoltzmanVelocities::new(units::from(300.0, "K").unwrap());
-    velocities.init(&mut universe);
-
     universe.add_pair_interaction("He", "He",
         Box::new(LennardJones{
             sigma: units::from(2.0, "A").unwrap(),
             epsilon: units::from(0.2, "kJ/mol").unwrap()
         })
     );
-
     return universe;
 }
 
