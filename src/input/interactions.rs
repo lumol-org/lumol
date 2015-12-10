@@ -4,23 +4,66 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#![allow(unused_variables)]
+extern crate yaml_rust as yaml;
+use self::yaml::{ScanError, Yaml, YamlLoader};
 
 use std::io::prelude::*;
+use std::io;
+use std::result;
 use std::fs::File;
 use std::path::Path;
 
 use universe::Universe;
+use units::UnitParsingError;
 use potentials::*;
 
-use super::yaml::{YamlLoader, Yaml};
-use super::{Error, Result};
+#[derive(Debug)]
+/// Possible causes of error when reading potential files
+pub enum Error {
+    /// Error in the YAML input file
+    YAMLError(ScanError),
+    /// IO error
+    FileError(io::Error),
+    /// File content error: missing sections, bad data types
+    ConfigError{
+        /// Error message
+        msg: String,
+    },
+    /// Unit parsing error
+    UnitError(UnitParsingError),
+}
 
+impl From<ScanError> for Error {
+    fn from(err: ScanError) -> Error {Error::YAMLError(err)}
+}
+
+impl From<io::Error> for Error {
+    fn from(err: io::Error) -> Error {Error::FileError(err)}
+}
+
+impl<'a> From<&'a str> for Error {
+    fn from(err: &'a str) -> Error {
+        Error::ConfigError{msg: String::from(err)}
+    }
+}
+
+impl From<String> for Error {
+    fn from(err: String) -> Error {
+        Error::ConfigError{msg: err}
+    }
+}
+
+impl From<UnitParsingError> for Error {
+    fn from(err: UnitParsingError) -> Error {Error::UnitError(err)}
+}
+
+/// Custom Result for input files
+pub type Result<T> = result::Result<T, Error>;
+
+/******************************************************************************/
 trait FromYaml where Self: Sized {
     fn from_yaml(node: &Yaml) -> Result<Self>;
 }
-
-// TODO: Add support for * in atoms sections.
 
 /// Read a interactions from a Yaml file at `path`, and add these interactions
 /// to the `universe`.
@@ -319,7 +362,7 @@ fn read_dihedral_potential(node: &Yaml) -> Result<Box<DihedralPotential>> {
 
 /******************************************************************************/
 impl FromYaml for NullPotential {
-    fn from_yaml(node: &Yaml) -> Result<NullPotential> {
+    fn from_yaml(_: &Yaml) -> Result<NullPotential> {
         Ok(NullPotential)
     }
 }
