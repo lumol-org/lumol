@@ -14,7 +14,7 @@ use std::f64;
 use super::MCMove;
 use super::select_molecule;
 
-use types::Vector3D;
+use types::{Matrix3, Vector3D};
 use universe::Universe;
 
 /// Monte-Carlo move for rotating a rigid molecule
@@ -121,14 +121,44 @@ fn rotate_molecule_around_axis(universe: &mut Universe, molid: usize, axis: Vect
     let molecule = universe.molecule(molid).clone();
 
     // Get center of mass (com) of the molecule
-    let total_mass = molecule.iter().fold(0.0, |total_mass, i| total_mass + universe[i].mass);
-    let com = molecule.iter().fold(Vector3D::new(0.0, 0.0, 0.0), |com, i| com + universe[i].position / total_mass);
+    let total_mass = molecule.iter().fold(0.0,
+        |total_mass, i| total_mass + universe[i].mass
+    );
+    let com = molecule.iter().fold(Vector3D::new(0.0, 0.0, 0.0),
+        |com, i| com + universe[i].position * universe[i].mass / total_mass
+    );
 
+    let rotation = rotation_matrix(&axis, angle);
     for i in &molecule {
         let oldpos = universe[i].position.clone() - com;
-        let newpos = com + f64::cos(angle) * oldpos
-                         + f64::sin(angle) * axis ^ oldpos
-                         + (axis * oldpos) * (1.0 - f64::cos(angle)) * axis;
-        universe[i].position = newpos;
+        universe[i].position = com + rotation * oldpos;
     }
+}
+
+fn rotation_matrix(axis: &Vector3D, angle: f64) -> Matrix3 {
+    let sn = f64::sin(angle);
+    let cs = f64::cos(angle);
+
+    let x_sin = axis.x * sn;
+    let y_sin = axis.y * sn;
+    let z_sin = axis.z * sn;
+    let one_cos = 1.0 - cs;
+    let xym = axis.x * axis.y * one_cos;
+    let xzm = axis.x * axis.z * one_cos;
+    let yzm = axis.y * axis.z * one_cos;
+
+    // Build the rotation matrix
+    let rotation = Matrix3::new(
+        (axis.x * axis.x) * one_cos + cs,
+        xym + z_sin,
+        xzm - y_sin,
+        xym - z_sin,
+        (axis.y * axis.y) * one_cos + cs,
+        yzm + x_sin,
+        xzm + y_sin,
+        yzm - x_sin,
+        (axis.z * axis.z) * one_cos + cs
+    );
+
+    return rotation;
 }
