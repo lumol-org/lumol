@@ -133,7 +133,7 @@ impl ToChemfiles for UnitCell {
     fn to_chemfiles(&self) -> Result<chemfiles::UnitCell, Error> {
         let res = match self.celltype() {
             CellType::Infinite => {
-                unimplemented!()
+                try!(chemfiles::UnitCell::infinite())
             }
             CellType::Orthorombic => {
                 let (a, b, c) = (self.a(), self.b(), self.c());
