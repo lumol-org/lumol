@@ -15,7 +15,7 @@
 //!    on a specific molecule.
 
 mod interactions;
-pub use self::interactions::read_interactions;
+pub use self::interactions::{read_interactions, read_interactions_string};
 pub use self::interactions::Error;
 
 mod molecules;
