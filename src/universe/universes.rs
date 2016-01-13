@@ -32,6 +32,7 @@ use super::Molecule;
 use super::{CONNECT_12, CONNECT_13, CONNECT_14, CONNECT_FAR};
 use super::UnitCell;
 use super::interactions::{Interactions, PairInteraction};
+use super::EnergyEvaluator;
 use super::molecules::moltype;
 use super::chemfiles::frame_to_universe;
 
@@ -420,6 +421,11 @@ static NO_DIHEDRAL_INTERACTION: &'static [Box<DihedralPotential>] = &[];
 
 /// Potentials related functions
 impl Universe {
+    /// Get an helper struct to evaluate the energy of this universe.
+    pub fn energy_evaluator<'a>(&'a self) -> EnergyEvaluator<'a> {
+        EnergyEvaluator::new(self)
+    }
+
     /// Get the list of pair potential acting between the particles at indexes
     /// `i` and `j`.
     pub fn pair_potentials(&self, i: usize, j: usize) -> &[PairInteraction] {

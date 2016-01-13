@@ -110,51 +110,12 @@ impl Compute for PotentialEnergy {
     type Output = f64;
     fn compute(&self, universe: &Universe) -> f64 {
         let mut energy = 0.0;
-        for i in 0..universe.size() {
-            for j in (i+1)..universe.size() {
-                let r = universe.wraped_vector(i, j).norm();
-                for &(ref potential, ref restriction) in universe.pair_potentials(i, j) {
-                    if !restriction.is_excluded_pair(universe, i, j) {
-                        let s = restriction.scaling(universe, i, j);
-                        energy += s * potential.energy(r);
-                    }
-                }
-            }
-        }
+        let evaluator = universe.energy_evaluator();
 
-        for molecule in universe.molecules() {
-            for bond in molecule.bonds() {
-                let (i, j) = (bond.i(), bond.j());
-                let r = universe.wraped_vector(i, j).norm();
-                for potential in universe.bond_potentials(i, j) {
-                    energy += potential.energy(r);
-                }
-            }
-
-            for angle in molecule.angles() {
-                let (i, j, k) = (angle.i(), angle.j(), angle.k());
-                let theta = universe.angle(i, j, k);
-                for potential in universe.angle_potentials(i, j, k) {
-                    energy += potential.energy(theta);
-                }
-            }
-
-            for dihedral in molecule.dihedrals() {
-                let (i, j, k, m) = (dihedral.i(), dihedral.j(), dihedral.k(), dihedral.m());
-                let phi = universe.dihedral(i, j, k, m);
-                for potential in universe.dihedral_potentials(i, j, k, m) {
-                    energy += potential.energy(phi);
-                }
-            }
-        }
-
-        if let Some(ref coulomb) = *universe.coulomb_potential() {
-            energy += coulomb.energy(&universe);
-        }
-
-        for global in universe.global_potentials() {
-            energy += global.energy(&universe);
-        }
+        energy += evaluator.pairs();
+        energy += evaluator.molecules();
+        energy += evaluator.coulomb();
+        energy += evaluator.global();
 
         assert!(energy.is_finite(), "Potential energy is infinite!");
         return energy;
