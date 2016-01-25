@@ -18,7 +18,7 @@ log = "*"
 yaml-rust = "*"
 special = "*"
 bitflags = "*"
-clippy = {version = "*", optional = true}
+clippy = {git = "https://github.com/Manishearth/rust-clippy/", optional = true}
 
 [features]
 default = []
