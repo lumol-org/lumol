@@ -135,9 +135,9 @@ impl Error for UnitParsingError {
         match *self {
             UnitParsingError::PowerParsingError(ref err) => err.description(),
             UnitParsingError::ValueParsingError(ref err) => err.description(),
-            UnitParsingError::UnbalancedParentheses{unit: _} => "Parentheses are not equilibrated.",
-            UnitParsingError::BadBinary{op: _} => "Bad binary operator.",
-            UnitParsingError::NotFound{unit: _} => "Unit not found.",
+            UnitParsingError::UnbalancedParentheses{..} => "Parentheses are not equilibrated.",
+            UnitParsingError::BadBinary{..} => "Bad binary operator.",
+            UnitParsingError::NotFound{..} => "Unit not found.",
         }
     }
 }
@@ -148,9 +148,8 @@ fn conversion(unit: &str) -> Result<f64, UnitParsingError> {
     let unit = unit.trim();
     // First check if we do already have a known unit
     let factors = conversion_factors();
-    match factors.get(unit) {
-        Some(val) => return Ok(*val),
-        None => {} // Do nothing and try to parse the unit string.
+    if let Some(val) = factors.get(unit) {
+        return Ok(*val);
     }
 
     let chars: Vec<char> = unit.chars().collect();

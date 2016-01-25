@@ -30,7 +30,7 @@
 #![cfg_attr(feature="lint", feature(plugin))]
 #![cfg_attr(feature="lint", plugin(clippy))]
 #![cfg_attr(feature="lint", warn(clippy))]
-#![cfg_attr(feature="lint", allow(needless_return))]
+#![cfg_attr(feature="lint", allow(needless_return, needless_range_loop))]
 
 #[macro_use]
 extern crate log;

@@ -56,10 +56,7 @@ impl Interactions {
     /// restriction scheme `restrict`.
     pub fn add_pair_with_restriction(&mut self, i: u16, j:u16, potential: Box<PairPotential>, restrict: PairRestriction) {
         let (i, j) = sort_pair(i, j);
-        if !self.pairs.contains_key(&(i, j)) {
-            self.pairs.insert((i, j), Vec::new());
-        }
-        let pairs = self.pairs.get_mut(&(i, j)).unwrap();
+        let pairs = self.pairs.entry((i, j)).or_insert(Vec::new());
         pairs.push((potential, restrict));
     }
 
@@ -72,10 +69,7 @@ impl Interactions {
     /// Add the `potential` bonded interaction to the pair `(i, j)`
     pub fn add_bond(&mut self, i: u16, j:u16, potential: Box<PairPotential>) {
         let (i, j) = sort_pair(i, j);
-        if !self.bonds.contains_key(&(i, j)) {
-            self.bonds.insert((i, j), Vec::new());
-        }
-        let bonds = self.bonds.get_mut(&(i, j)).unwrap();
+        let bonds = self.bonds.entry((i, j)).or_insert(Vec::new());
         bonds.push(potential);
     }
 
@@ -88,10 +82,7 @@ impl Interactions {
     /// Add the `potential` angle interaction to the angle `(i, j, k)`
     pub fn add_angle(&mut self, i: u16, j:u16, k:u16, potential: Box<AnglePotential>) {
         let (i, j, k) = sort_angle(i, j, k);
-        if !self.angles.contains_key(&(i, j, k)) {
-            self.angles.insert((i, j, k), Vec::new());
-        }
-        let angles = self.angles.get_mut(&(i, j, k)).unwrap();
+        let angles = self.angles.entry((i, j, k)).or_insert(Vec::new());
         angles.push(potential);
     }
 
@@ -104,10 +95,7 @@ impl Interactions {
     /// Add the `potential` dihedral interaction to the dihedral `(i, j, k, m)`
     pub fn add_dihedral(&mut self, i: u16, j:u16, k:u16, m:u16, potential: Box<DihedralPotential>) {
         let (i, j, k, m) = sort_dihedral(i, j, k, m);
-        if !self.dihedrals.contains_key(&(i, j, k, m)) {
-            self.dihedrals.insert((i, j, k, m), Vec::new());
-        }
-        let dihedrals = self.dihedrals.get_mut(&(i, j, k, m)).unwrap();
+        let dihedrals = self.dihedrals.entry((i, j, k, m)).or_insert(Vec::new());
         dihedrals.push(potential);
     }
 

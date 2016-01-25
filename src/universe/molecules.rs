@@ -259,7 +259,7 @@ impl Molecule {
             connections[(i - first, j - first)] = old_connect | term;
         };
 
-        for bond in self.bonds.iter() {
+        for bond in &self.bonds {
             add_connect_term(bond.i, bond.j, CONNECT_12);
             add_connect_term(bond.j, bond.i, CONNECT_12);
         }

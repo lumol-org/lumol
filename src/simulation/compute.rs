@@ -84,7 +84,7 @@ impl Compute for Forces {
             }
         }
 
-        if let &Some(ref coulomb) = universe.coulomb_potential() {
+        if let Some(ref coulomb) = *universe.coulomb_potential() {
             let forces = coulomb.forces(&universe);
             debug_assert!(forces.len() == natoms, "Wrong `forces` size in coulomb potentials");
             for (i, force) in forces.iter().enumerate() {
@@ -148,7 +148,7 @@ impl Compute for PotentialEnergy {
             }
         }
 
-        if let &Some(ref coulomb) = universe.coulomb_potential() {
+        if let Some(ref coulomb) = *universe.coulomb_potential() {
             energy += coulomb.energy(&universe);
         }
 
@@ -233,7 +233,7 @@ impl Compute for Virial {
         // FIXME: implement virial computations for molecular potentials
         // (angles & dihedrals)
 
-        if let &Some(ref coulomb) = universe.coulomb_potential() {
+        if let Some(ref coulomb) = *universe.coulomb_potential() {
             res = res + coulomb.virial(&universe);
         }
 
