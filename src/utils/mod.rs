@@ -10,5 +10,7 @@
 mod bcount;
 pub use self::bcount::Bc;
 
+#[cfg(test)]
 mod xyz;
+#[cfg(test)]
 pub use self::xyz::universe_from_xyz;
