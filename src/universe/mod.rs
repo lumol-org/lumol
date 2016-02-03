@@ -35,6 +35,9 @@ pub use self::interactions::PairInteraction;
 mod energy;
 pub use self::energy::EnergyEvaluator;
 
+mod cache;
+pub use self::cache::EnergyCache;
+
 mod universes;
 pub use self::universes::Universe;
 
