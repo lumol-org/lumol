@@ -1,1 +1,104 @@
 # Interactions
+
+The interactions in an universe can be specified using YAML syntax. An
+interactions is the association of atomic types, potential function and optional
+restrictions and computation mode.
+
+The `pairs`, `bonds`, `angles` and `dihedrals` sections are array of
+interactions, listing all the possible atomic type combinations and the
+associated potentials. The `coulomb` section contains information about the
+long-range electrostatic interactions treatment, and contains the associated
+charges.
+
+An example of input file for the f-SPC model of water is given bellow:
+
+```yaml
+# Non-bonded pairs
+pairs:
+    - atoms: [O, O]
+      type: LennardJones
+      sigma:
+      epsilon:
+    - atoms: [O, H]
+      type: Null
+
+# Molecular interactions
+bonds:
+    - atoms: [O, H]
+      type: Harmonic
+      x0:
+      k:
+angles:
+    - atoms: [H, O, H]
+      type: Harmonic
+      x0:
+      k:
+
+# Coulombic interactions
+coulomb:
+    type: Ewald
+    cutoff: 10 A
+    kmax: 7
+    charges:
+        O: -0.82
+        H: 0.41
+```
+
+## Pairs and molecular interactions
+
+The `pairs`, `bonds`, `angles` and `dihedrals` sections are arrays, in which
+every entry must contains the `atoms` and `type` keys. The `atoms` key specify
+the atoms types on which the interaction should be applied; and the `type` key
+the [potential](input/potentials.html#Available%20potentials) to use. The
+`atoms` key should contains two atoms for `pairs` and `bonds`, three atoms for
+`angles` and four atoms for `dihedrals`.
+
+For example, to use an harmonic bond potential for all `C-H` bonds:
+
+```yaml
+bonds:
+    - atoms: [C, H]
+      type: Harmonic
+      # Theses key are specific to the Harmonic potential
+      x0: 3.405 A
+      k: 2385 kcal/mol/A^2
+```
+
+It is also possible to specify an additional
+[restrictions](input/potentials.html#Restrictions) using the `restriction` key;
+or a [computation method](input/potentials.html#Potential%20computations) using
+the `computation` key.
+
+```yaml
+pairs:
+    - atoms: [Ar, Ar]
+      type: LennardJones
+      sigma: 3.405 A
+      epsilon: 0.2385 kcal/mol
+      computation:
+          type: table
+          numpoints: 2000
+          max: 20.0 A
+      restriction:
+         type: IntraMolecular
+```
+
+## Coulombic interactions
+
+The method for treatment of coulombic interactions is specified in the `coulomb`
+section, and should contains the `type` and the `charges` keys. The `type` key
+indicate the method to use for computing the electrostatic energy, and the
+`charges` gives the partial charges for all the atom types. The available
+methods are described in the [coulombic
+potential](input/potentials.html#Electrostatic%20interactions) section.
+
+```yaml
+coulomb:
+    type: Ewald
+    charges:
+        Na: 1
+        Cl: -1
+    # These values are specific to Ewald method
+    cutoff: 10 A
+    kmax: 7
+```
