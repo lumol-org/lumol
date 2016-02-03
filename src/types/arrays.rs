@@ -85,6 +85,16 @@ impl<T: Data> Array2<T> {
         self.data = new_data;
         self.size = size;
     }
+
+    /// Fill this array with `value`
+    pub fn fill(&mut self, value: T) {
+        for i in 0..self.size.0 {
+            for j in 0..self.size.1 {
+                let idx = self.get_index(i, j);
+                self.data[idx] = value.clone();
+            }
+        }
+    }
 }
 
 impl<T: Data> Index<(usize, usize)> for Array2<T> {
@@ -185,6 +195,18 @@ impl<T: Data> Array3<T> {
         self.data = new_data;
         self.size = size;
     }
+
+    /// Fill this array with `value`
+    pub fn fill(&mut self, value: T) {
+        for i in 0..self.size.0 {
+            for j in 0..self.size.1 {
+                for k in 0..self.size.2 {
+                    let idx = self.get_index(i, j, k);
+                    self.data[idx] = value.clone();
+                }
+            }
+        }
+    }
 }
 
 impl<T: Data> Index<(usize, usize, usize)> for Array3<T> {
@@ -277,6 +299,23 @@ mod tests {
             let mut a = Array2::<f64>::with_size((6, 5));
             a.resize((0, 3));
         }
+
+        #[test]
+        fn fill() {
+            let mut a = Array2::<f64>::with_size((4, 8));
+            for i in 0..4 {
+                for j in 0..8 {
+                    assert_eq!(a[(i, j)], 0.0);
+                }
+            }
+
+            a.fill(42.0);
+            for i in 0..4 {
+                for j in 0..8 {
+                    assert_eq!(a[(i, j)], 42.0);
+                }
+            }
+        }
     }
 
     mod array_3 {
@@ -349,6 +388,27 @@ mod tests {
         fn resize_to_zero() {
             let mut a = Array3::<f64>::with_size((6, 5, 7));
             a.resize((0, 3, 2));
+        }
+
+        #[test]
+        fn fill() {
+            let mut a = Array3::<f64>::with_size((4, 5, 3));
+            for i in 0..4 {
+                for j in 0..5 {
+                    for k in 0..3 {
+                        assert_eq!(a[(i, j, k)], 0.0);
+                    }
+                }
+            }
+
+            a.fill(42.0);
+            for i in 0..4 {
+                for j in 0..5 {
+                    for k in 0..3 {
+                        assert_eq!(a[(i, j, k)], 42.0);
+                    }
+                }
+            }
         }
     }
 }
