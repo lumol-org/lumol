@@ -25,11 +25,11 @@ impl<'a> EnergyEvaluator<'a> {
 }
 
 impl<'a> EnergyEvaluator<'a> {
-    /// Compute the energy associated with the pair of particles `i, j`
+    /// Compute the energy associated with the pair of particles `i, j` at
+    /// distance `r`
     #[inline]
-    pub fn pair(&self, i: usize, j: usize) -> f64 {
+    pub fn pair(&self, r: f64, i: usize, j: usize) -> f64 {
         let mut energy = 0.0;
-        let r = self.universe.wraped_vector(i, j).norm();
         for &(ref potential, ref restriction) in self.universe.pair_potentials(i, j) {
             if !restriction.is_excluded_pair(self.universe, i, j) {
                 let s = restriction.scaling(self.universe, i, j);
@@ -44,17 +44,18 @@ impl<'a> EnergyEvaluator<'a> {
         let mut energy = 0.0;
         for i in 0..self.universe.size() {
             for j in (i+1)..self.universe.size() {
-                energy += self.pair(i, j);
+                let r = self.universe.wraped_vector(i, j).norm();
+                energy += self.pair(r, i, j);
             }
         }
         return energy;
     }
 
-    /// Compute the energy associated with the bonded particles `i, j`
+    /// Compute the energy associated with the bonded particles `i, j` at
+    /// distance `r`
     #[inline]
-    pub fn bond(&self, i: usize, j: usize) -> f64 {
+    pub fn bond(&self, r: f64, i: usize, j: usize) -> f64 {
         let mut energy = 0.0;
-        let r = self.universe.wraped_vector(i, j).norm();
         for potential in self.universe.bond_potentials(i, j) {
             energy += potential.energy(r);
         }
@@ -67,17 +68,17 @@ impl<'a> EnergyEvaluator<'a> {
         for molecule in self.universe.molecules() {
             for bond in molecule.bonds() {
                 let (i, j) = (bond.i(), bond.j());
-                energy += self.bond(i, j);
+                let r = self.universe.wraped_vector(i, j).norm();
+                energy += self.bond(r, i, j);
             }
         }
         return energy;
     }
 
-    /// Compute the energy associated with the angle `i, j, k`
+    /// Compute the energy associated with the angle `i, j, k` at angle `theta`
     #[inline]
-    pub fn angle(&self, i: usize, j: usize, k: usize) -> f64 {
+    pub fn angle(&self, theta: f64, i: usize, j: usize, k: usize) -> f64 {
         let mut energy = 0.0;
-        let theta = self.universe.angle(i, j, k);
         for potential in self.universe.angle_potentials(i, j, k) {
             energy += potential.energy(theta);
         }
@@ -90,17 +91,18 @@ impl<'a> EnergyEvaluator<'a> {
         for molecule in self.universe.molecules() {
             for angle in molecule.angles() {
                 let (i, j, k) = (angle.i(), angle.j(), angle.k());
-                energy += self.angle(i, j, k);
+                let theta = self.universe.angle(i, j, k);
+                energy += self.angle(theta, i, j, k);
             }
         }
         return energy;
     }
 
-    /// Compute the energy associated with the dihedral angle `i, j, k, m`
+    /// Compute the energy associated with the dihedral angle `i, j, k, m` at
+    /// angle `phi`
     #[inline]
-    pub fn dihedral(&self, i: usize, j: usize, k: usize, m: usize) -> f64 {
+    pub fn dihedral(&self, phi: f64, i: usize, j: usize, k: usize, m: usize) -> f64 {
         let mut energy = 0.0;
-        let phi = self.universe.dihedral(i, j, k, m);
         for potential in self.universe.dihedral_potentials(i, j, k, m) {
             energy += potential.energy(phi);
         }
@@ -113,7 +115,8 @@ impl<'a> EnergyEvaluator<'a> {
         for molecule in self.universe.molecules() {
             for dihedral in molecule.dihedrals() {
                 let (i, j, k, m) = (dihedral.i(), dihedral.j(), dihedral.k(), dihedral.m());
-                energy += self.dihedral(i, j, k, m);
+                let phi = self.universe.dihedral(i, j, k, m);
+                energy += self.dihedral(phi, i, j, k, m);
             }
         }
         return energy;
