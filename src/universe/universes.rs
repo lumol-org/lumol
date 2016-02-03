@@ -177,7 +177,7 @@ impl Universe {
     }
 
     /// Get the list of molecules in the universe.
-    #[inline] pub fn molecules(&self) -> &Vec<Molecule> {
+    #[inline] pub fn molecules(&self) -> &[Molecule] {
         &self.molecules
     }
 
