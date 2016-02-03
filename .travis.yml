@@ -16,7 +16,7 @@ rust:
     - beta
 install:
     - pip install --user travis-cargo codecov
-    - export PATH=$HOME/.local/bin:$PATH
+    - export PATH=$HOME/.local/bin:$PATH:$HOME/.cargo/bin
     - export CC=gcc-4.9
     - export CXX=g++-4.9
 script:
@@ -24,6 +24,12 @@ script:
     - cargo test --lib
     - cargo test --release
     - travis-cargo --only stable doc
+    - |
+      if test "${TRAVIS_RUST_VERSION}" == "stable"; then
+        cargo install mdbook
+        mdbook build doc
+        cp -r doc/book target/doc
+      fi
 after_success:
     - travis-cargo --only stable doc-upload
     - |
