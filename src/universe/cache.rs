@@ -16,7 +16,7 @@ use super::Universe;
 use types::{Vector3D, Array2};
 
 // Yep, this is a type ...
-type UpdateCallback = Option<Box<Fn(&mut EnergyCache)>>;
+type UpdateCallback = Box<Fn(&mut EnergyCache)>;
 
 /// This is a cache for energy computation.
 ///
@@ -38,9 +38,8 @@ pub struct EnergyCache {
     coulomb: f64,
     /// Energy of global interactions
     global: f64,
-
-    /// TODO
-    update_particles_moved: UpdateCallback
+    /// Callback to be called to update the cache if the universe is modified
+    updater: Option<UpdateCallback>
 }
 
 impl EnergyCache {
@@ -54,8 +53,7 @@ impl EnergyCache {
             dihedrals: 0.0,
             coulomb: 0.0,
             global: 0.0,
-
-            update_particles_moved: None,
+            updater: None,
         }
     }
 
@@ -107,6 +105,19 @@ impl EnergyCache {
         energy += self.coulomb;
         energy += self.global;
         return energy;
+    }
+
+    /// Update the cache after a call to a `*_cost` function.
+    pub fn update(&mut self) {
+        let mut updater = None;
+        swap(&mut self.updater, &mut updater);
+        if let Some(updater) = updater {
+            updater(self);
+        } else {
+            error!("Error in `EnergyCache::update`: \
+                    This function MUST be called after a call to a `*_cost` function");
+            panic!()
+        }
     }
 }
 
@@ -202,7 +213,7 @@ impl EnergyCache {
                                + (dihedrals - self.dihedrals)
                                + coulomb_delta + global_delta;
 
-        self.update_particles_moved = Some(Box::new(move |cache| {
+        self.updater = Some(Box::new(move |cache| {
             cache.bonds = bonds;
             cache.angles = angles;
             cache.dihedrals = dihedrals;
@@ -224,22 +235,6 @@ impl EnergyCache {
             }
         }));
         return cost;
-    }
-
-    /// Update the cache after a corresponding call to `move_particles_cost`.
-    ///
-    /// # Panic
-    /// If not called after `move_particles_cost`.
-    pub fn update_particles_moved(&mut self) {
-        let mut update = None;
-        swap(&mut self.update_particles_moved, &mut update);
-        if let Some(update) = update {
-            update(self);
-        } else {
-            error!("Error in `update_particles_moved`: \
-                    This function MUST be called after a call to `move_particles_cost`");
-            panic!()
-        }
     }
 }
 
@@ -331,7 +326,7 @@ mod tests {
         let new_e = universe.potential_energy();
         assert_approx_eq!(cost, new_e - old_e);
 
-        cache.update_particles_moved();
+        cache.update();
         assert_approx_eq!(cache.energy(), new_e);
 
         // Check that the cache is really updated
