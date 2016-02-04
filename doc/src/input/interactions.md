@@ -96,7 +96,9 @@ section, and should contains the `type` and the `charges` keys. The `type` key
 indicate the method to use for computing the electrostatic energy, and the
 `charges` gives the partial charges for all the atom types. The available
 methods are described in the [coulombic
-potential](input/potentials.html#Electrostatic%20interactions) section.
+potential](input/potentials.html#Electrostatic%20interactions) section. An
+additional [restrictions](input/potentials.html#Restrictions) can be used with
+the `restriction` key;
 
 ```yaml
 coulomb:
