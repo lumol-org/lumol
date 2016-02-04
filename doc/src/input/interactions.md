@@ -17,22 +17,28 @@ An example of input file for the f-SPC model of water is given bellow:
 pairs:
     - atoms: [O, O]
       type: LennardJones
-      sigma:
-      epsilon:
+      sigma: 3.16 A
+      epsilon: 0.155 kcal/mol
     - atoms: [O, H]
       type: Null
+    - atoms: [H, H]
+      type: harmonic
+      k: 79.8 kcal/mol/A^2
+      x0: 1.633 A
+      restriction:
+          type: IntraMolecular
 
 # Molecular interactions
 bonds:
     - atoms: [O, H]
       type: Harmonic
-      x0:
-      k:
+      k: 1054.2 kcal/mol/A^2
+      x0: 1.0 A
 angles:
     - atoms: [H, O, H]
       type: Harmonic
-      x0:
-      k:
+      k: 75.9 kcal/mol/rad
+      x0: 109.5 deg
 
 # Coulombic interactions
 coulomb:
