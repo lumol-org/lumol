@@ -14,7 +14,7 @@ use super::PairRestriction;
 
 /// The `GlobalPotential` trait represent a potential acting on the whole
 /// universe at once.
-pub trait GlobalPotential {
+pub trait GlobalPotential: BoxCloneGlobal {
     /// Compute the energetic contribution of this potential
     fn energy(&self, universe: &Universe) -> f64;
     /// Compute the force contribution of this potential
@@ -25,11 +25,14 @@ pub trait GlobalPotential {
 
 /// Electrostatic potential solver should implement the `CoulombicPotential`
 /// trait.
-pub trait CoulombicPotential : GlobalPotential {
+pub trait CoulombicPotential : GlobalPotential + BoxCloneCoulombic {
     /// Set the restriction scheme to use to `restriction`. All future call to
     /// `energy`, `force` or `virial` should use this restriction.
     fn set_restriction(&mut self, restriction: PairRestriction);
 }
+
+impl_box_clone!(GlobalPotential, BoxCloneGlobal, box_clone_gobal);
+impl_box_clone!(CoulombicPotential, BoxCloneCoulombic, box_clone_coulombic);
 
 mod wolf;
 pub use self::wolf::Wolf;

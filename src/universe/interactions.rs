@@ -20,6 +20,7 @@ pub type PairInteraction = (Box<PairPotential>, PairRestriction);
 
 /// The Interaction type hold all data about the potentials in the system,
 /// indexed by particle type.
+#[derive(Clone)]
 pub struct Interactions {
     /// Pair potentials
     pairs: BTreeMap<(u16, u16), Vec<PairInteraction>>,

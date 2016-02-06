@@ -49,6 +49,7 @@ pub type Permutations = Vec<(usize, usize)>;
 /// In this implementation, the particles contained in a molecule are guaranted
 /// to be contiguous in memory. This allow for faster access when iterating over
 /// molecules, and easier molecule removal in the universe.
+#[derive(Clone)]
 pub struct Universe {
     /// Unit cell of the universe
     cell: Bc<UnitCell>,
@@ -661,6 +662,7 @@ use std::cell::Cell;
 /// Caching physical properties of an universe as `Cell<Option<T>>`. The `Cell`
 /// is for mutating values in immuatable borrow, and the Option to invalidate
 /// the cached values.
+#[derive(Clone)]
 struct PropertiesCache {
     pub state: Cell<u64>,
 

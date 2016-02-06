@@ -32,7 +32,7 @@ use super::{GlobalPotential, CoulombicPotential};
 /// For more informations about this algorithm see [FS2002].
 ///
 /// [FS2002] Frenkel, D. & Smit, B. Understanding molecular simulation. (Academic press, 2002).
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct Ewald {
     /// Splitting parameter between k-space and real space
     alpha: f64,

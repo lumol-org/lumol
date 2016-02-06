@@ -21,6 +21,7 @@ use super::{GlobalPotential, CoulombicPotential};
 /// is a fast direct pairwise summation for coulombic potential.
 ///
 /// [Wolf1999]: Wolf, D. et al. J. Chem. Phys. 110, 8254 (1999).
+#[derive(Clone)]
 pub struct Wolf {
     /// Spliting parameter
     alpha: f64,

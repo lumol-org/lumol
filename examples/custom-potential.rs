@@ -9,6 +9,7 @@ use cymbalum::*;
 ///  V =  -----  -  -----
 ///       r^12       r^6
 ///
+#[derive(Clone)]
 struct LJ {
     a: f64,
     b: f64

@@ -15,15 +15,17 @@ use types::{Matrix3, Vector3D};
 ///
 /// The scalar variable will be the distance for pair potentials, the angle for
 /// angles or dihedral angles potentials, *etc.*
-pub trait PotentialFunction : Sync + Send {
+pub trait PotentialFunction : Sync + Send + BoxClonePotential {
     /// Get the energy corresponding to the variable `x`
     fn energy(&self, x: f64) -> f64;
     /// Get the force norm corresponding to the variable `x`
     fn force(&self, x: f64) -> f64;
 }
 
+impl_box_clone!(PotentialFunction, BoxClonePotential, box_clone_potential);
+
 /// Pair potential can be expressed by implenting the `PairPotential` trait.
-pub trait PairPotential : PotentialFunction {
+pub trait PairPotential : PotentialFunction + BoxClonePair {
     /// Compute the virial contribution corresponding to the distance `r` between the particles
     fn virial(&self, r: &Vector3D) -> Matrix3 {
         let fact = self.force(r.norm());
@@ -33,12 +35,16 @@ pub trait PairPotential : PotentialFunction {
     }
 }
 
+impl_box_clone!(PairPotential, BoxClonePair, box_clone_pair);
+
 /// Angle potential can be expressed by implenting the `AnglePotential` trait.
-pub trait AnglePotential : PotentialFunction {}
+pub trait AnglePotential : PotentialFunction + BoxCloneAngle {}
+impl_box_clone!(AnglePotential, BoxCloneAngle, box_clone_angle);
 
 /// Dihedral angles potential can be expressed by implenting the
 /// `DihedralPotential` trait.
-pub trait DihedralPotential : PotentialFunction {}
+pub trait DihedralPotential : PotentialFunction + BoxCloneDihedral {}
+impl_box_clone!(DihedralPotential, BoxCloneDihedral, box_clone_dihedral);
 
 /******************************************************************************/
 /// The `NullPotential` always returns 0.0 as energy and force.
