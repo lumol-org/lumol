@@ -112,8 +112,13 @@ impl Interactions {
     }
 
     /// Get the coulombic interaction
-    pub fn coulomb(&self) -> &Option<Box<CoulombicPotential>> {
-        &self.coulomb
+    pub fn coulomb(&self) -> Option<&Box<CoulombicPotential>> {
+        self.coulomb.as_ref()
+    }
+
+    /// Get the coulombic interaction as a mutable reference
+    pub fn coulomb_mut(&mut self) -> Option<&mut Box<CoulombicPotential>> {
+        self.coulomb.as_mut()
     }
 
     /// Add the `potential` global interaction
@@ -122,8 +127,13 @@ impl Interactions {
     }
 
     /// Get all global interactions
-    pub fn globals(&self) -> &Vec<Box<GlobalPotential>> {
+    pub fn globals(&self) -> &[Box<GlobalPotential>] {
         &self.globals
+    }
+
+    /// Get all global interactions as mutable references
+    pub fn globals_mut(&mut self) -> &mut[Box<GlobalPotential>] {
+        &mut self.globals
     }
 }
 

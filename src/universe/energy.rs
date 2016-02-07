@@ -132,7 +132,7 @@ impl<'a> EnergyEvaluator<'a> {
     /// Compute the energy of the electrostatic interactions
     #[inline]
     pub fn coulomb(&self) -> f64 {
-        if let Some(ref coulomb) = *self.universe.coulomb_potential() {
+        if let Some(coulomb) = self.universe.coulomb_potential() {
             coulomb.energy(self.universe)
         } else {
             0.0

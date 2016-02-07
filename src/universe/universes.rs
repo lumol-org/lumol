@@ -504,13 +504,23 @@ impl Universe {
     }
 
     /// Get the current coulombic solver
-    pub fn coulomb_potential(&self) -> &Option<Box<CoulombicPotential>> {
+    pub fn coulomb_potential(&self) -> Option<&Box<CoulombicPotential>> {
         self.interactions.coulomb()
     }
 
+    /// Get the current coulombic solver as a mutable reference
+    pub fn coulomb_potential_mut(&mut self) -> Option<&mut Box<CoulombicPotential>> {
+        self.interactions.coulomb_mut()
+    }
+
     /// Get all the global potentials
-    pub fn global_potentials(&self) -> &Vec<Box<GlobalPotential>> {
+    pub fn global_potentials(&self) -> &[Box<GlobalPotential>] {
         self.interactions.globals()
+    }
+
+    /// Get all the global potentials as mutable references
+    pub fn global_potentials_mut(&mut self) -> &mut [Box<GlobalPotential>] {
+        self.interactions.globals_mut()
     }
 
     /// Add the `potential` pair potential between the particles with names

@@ -14,9 +14,11 @@ use std::mem::swap;
 
 use super::Universe;
 use types::{Vector3D, Array2};
+use potentials::global::GlobalCache;
 
-// Yep, this is a type ...
-type UpdateCallback = Box<Fn(&mut EnergyCache)>;
+/// Callback for updating a cache. It also take an `&mut Universe` argument for
+/// updating the cache inside the global potentials.
+type UpdateCallback = Box<Fn(&mut EnergyCache, &mut Universe)>;
 
 /// This is a cache for energy computation.
 ///
@@ -108,11 +110,11 @@ impl EnergyCache {
     }
 
     /// Update the cache after a call to a `*_cost` function.
-    pub fn update(&mut self) {
+    pub fn update(&mut self, universe: &mut Universe) {
         let mut updater = None;
         swap(&mut self.updater, &mut updater);
         if let Some(updater) = updater {
-            updater(self);
+            updater(self, universe);
         } else {
             error!("Error in `EnergyCache::update`: \
                     This function MUST be called after a call to a `*_cost` function");
@@ -198,14 +200,15 @@ impl EnergyCache {
             }
         }
 
-        let coulomb_delta = 0.0;
-        if let Some(_) = *universe.coulomb_potential() {
-            unimplemented!();
-        }
+        let coulomb_delta = universe.coulomb_potential()
+                                    .as_ref()
+                                    .map_or(0.0, |coulomb|
+            coulomb.move_particles_cost(universe, &idxes, newpos)
+        );
 
-        let global_delta = 0.0;
-        if universe.global_potentials().len() != 0 {
-            unimplemented!();
+        let mut global_delta = 0.0;
+        for potential in universe.global_potentials() {
+            global_delta += potential.move_particles_cost(universe, &idxes, newpos);
         }
 
         let cost = pairs_delta + (bonds - self.bonds)
@@ -213,7 +216,7 @@ impl EnergyCache {
                                + (dihedrals - self.dihedrals)
                                + coulomb_delta + global_delta;
 
-        self.updater = Some(Box::new(move |cache| {
+        self.updater = Some(Box::new(move |cache, universe| {
             cache.bonds = bonds;
             cache.angles = angles;
             cache.dihedrals = dihedrals;
@@ -232,6 +235,11 @@ impl EnergyCache {
                         cache.pairs_cache[(i, j)] = new_pairs[(i, j)];
                     }
                 }
+            }
+            // Update the cache for the global potentials
+            universe.coulomb_potential_mut().as_mut().and_then(|coulomb| Some(coulomb.update()));
+            for potential in universe.global_potentials_mut() {
+                potential.update();
             }
         }));
         return cost;
@@ -295,6 +303,12 @@ mod tests {
               type: Harmonic
               x0: 180 deg
               k: 800 kJ/mol/deg^2
+        coulomb:
+            type: Wolf
+            cutoff: 8 A
+            charges:
+                O: -0.5
+                H: 0.5
         ").unwrap();
 
         return universe;
@@ -326,7 +340,7 @@ mod tests {
         let new_e = universe.potential_energy();
         assert_approx_eq!(cost, new_e - old_e);
 
-        cache.update();
+        cache.update(&mut universe);
         assert_approx_eq!(cache.energy(), new_e);
 
         // Check that the cache is really updated
