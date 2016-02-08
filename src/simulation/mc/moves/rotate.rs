@@ -23,8 +23,8 @@ pub struct Rotate {
     moltype: Option<u64>,
     /// Index of the molecule to rotate
     molid: usize,
-    /// Previous positions for all the particles in the molecule
-    prevpos: Vec<Vector3D>,
+    /// New positions of the atom in the rotated molecule
+    newpos: Vec<Vector3D>,
     /// Normal distribution, for generation of the axis
     axis_rng: Normal,
     /// Range distribution, for generation of the angle
@@ -52,7 +52,7 @@ impl Rotate {
         Rotate {
             moltype: moltype,
             molid: usize::MAX,
-            prevpos: Vec::new(),
+            newpos: Vec::new(),
             axis_rng: Normal::new(0.0, 1.0),
             angle_rng: Range::new(-theta, theta),
             e_before: 0.0,
@@ -90,49 +90,50 @@ impl MCMove for Rotate {
         ).normalized();
         let theta = self.angle_rng.sample(rng);
 
-        self.prevpos = vec![Vector3D::new(0.0, 0.0, 0.0); universe.molecule(self.molid).size()];
-        for (i, idx) in universe.molecule(self.molid).iter().enumerate() {
-            self.prevpos[i] = universe[idx].position;
+        self.newpos.clear();
+        let molecule = universe.molecule(self.molid);
+        let mut masses = vec![0.0; molecule.size()];
+        for (i, pi) in molecule.iter().enumerate() {
+            masses[i] = universe[pi].mass;
+            self.newpos.push(universe[pi].position);
         }
 
-        rotate_molecule_around_axis(universe, self.molid, axis, theta);
+        rotate_around_axis(&mut self.newpos, &mut masses, axis, theta);
         return true;
     }
 
     fn cost(&self, universe: &Universe, beta: f64, cache: &mut EnergyCache) -> f64 {
-        cache.unused();
-        let e_after = universe.potential_energy();
-        return (e_after - self.e_before)/beta;
+        let idxes = universe.molecule(self.molid).iter().collect::<Vec<_>>();
+        let cost = cache.move_particles_cost(universe, idxes, &self.newpos);
+        return cost/beta;
     }
 
-    fn apply(&mut self, _: &mut Universe) {
-        // Nothing to do
-    }
-
-    fn restore(&mut self, universe: &mut Universe) {
-        for (i, idx) in universe.molecule(self.molid).iter().enumerate() {
-            universe[idx].position = self.prevpos[i];
+    fn apply(&mut self, universe: &mut Universe) {
+        for (i, pi) in universe.molecule(self.molid).iter().enumerate() {
+            universe[pi].position = self.newpos[i];
         }
+    }
+
+    fn restore(&mut self, _: &mut Universe) {
+        // Nothing to do
     }
 }
 
-/// Rotate the molecule at index `molid` in universe around the `axis` axis by
-/// `angle`.
-fn rotate_molecule_around_axis(universe: &mut Universe, molid: usize, axis: Vector3D, angle: f64) {
-    let molecule = universe.molecule(molid).clone();
-
+/// Rotate the particles at `positions` with the masses in `masses` around the
+/// `axis` axis by `angle`. The `positions` array is overwritten with the new
+/// positions.
+fn rotate_around_axis(positions: &mut [Vector3D], masses: &[f64], axis: Vector3D, angle: f64) {
+    debug_assert!(positions.len() == masses.len());
     // Get center of mass (com) of the molecule
-    let total_mass = molecule.iter().fold(0.0,
-        |total_mass, i| total_mass + universe[i].mass
-    );
-    let com = molecule.iter().fold(Vector3D::new(0.0, 0.0, 0.0),
-        |com, i| com + universe[i].position * universe[i].mass / total_mass
+    let total_mass = masses.iter().fold(0.0, |total, m| total + m);
+    let com = positions.iter().zip(masses).fold(Vector3D::new(0.0, 0.0, 0.0),
+        |com, (&position, &mass)| com + position * mass / total_mass
     );
 
     let rotation = rotation_matrix(&axis, angle);
-    for i in &molecule {
-        let oldpos = universe[i].position.clone() - com;
-        universe[i].position = com + rotation * oldpos;
+    for position in positions {
+        let oldpos = position.clone() - com;
+        *position = com + rotation * oldpos;
     }
 }
 

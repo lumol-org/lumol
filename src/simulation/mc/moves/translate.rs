@@ -22,12 +22,12 @@ pub struct Translate {
     moltype: Option<u64>,
     /// Index of the molecule to translate
     molid: usize,
+    /// New positions of the atom in the translated molecule
+    newpos: Vec<Vector3D>,
     /// Translation vector
     delta: Vector3D,
     /// Translation range for random number generation
     delta_range: Range<f64>,
-    /// Potential energy before the move
-    e_before: f64,
 }
 
 impl Translate {
@@ -50,9 +50,9 @@ impl Translate {
         Translate {
             moltype: moltype,
             molid: usize::MAX,
+            newpos: Vec::new(),
             delta: Vector3D::new(0.0, 0.0, 0.0),
             delta_range: Range::new(-dr, dr),
-            e_before: 0.0,
         }
     }
 }
@@ -80,26 +80,26 @@ impl MCMove for Translate {
         self.delta.y = self.delta_range.sample(rng);
         self.delta.z = self.delta_range.sample(rng);
 
-        self.e_before = universe.potential_energy();
+        self.newpos.clear();
         for i in universe.molecule(self.molid) {
-            universe[i].position = universe[i].position + self.delta;
+            self.newpos.push(universe[i].position + self.delta);
         }
         return true;
     }
 
     fn cost(&self, universe: &Universe, beta: f64, cache: &mut EnergyCache) -> f64 {
-        cache.unused();
-        let e_after = universe.potential_energy();
-        return (e_after - self.e_before)/beta;
+        let idxes = universe.molecule(self.molid).iter().collect::<Vec<_>>();
+        let cost = cache.move_particles_cost(universe, idxes, &self.newpos);
+        return cost/beta;
     }
 
-    fn apply(&mut self, _: &mut Universe) {
-        // Nothing to do
-    }
-
-    fn restore(&mut self, universe: &mut Universe) {
-        for i in universe.molecule(self.molid) {
-            universe[i].position = universe[i].position - self.delta;
+    fn apply(&mut self, universe: &mut Universe) {
+        for (i, pi) in universe.molecule(self.molid).iter().enumerate() {
+            universe[pi].position = self.newpos[i];
         }
+    }
+
+    fn restore(&mut self, _: &mut Universe) {
+        // Nothing to do
     }
 }
