@@ -14,7 +14,7 @@
 extern crate rand;
 use self::rand::Rng;
 
-use universe::Universe;
+use universe::{Universe, EnergyCache};
 
 /// The `MCMove` trait correspond to the set of methods used in Monte-Carlo
 /// simulations.
@@ -30,12 +30,13 @@ pub trait MCMove {
     /// otherwise.
     fn prepare(&mut self, universe: &mut Universe, rng: &mut Box<Rng>) -> bool;
 
-    /// Get the cost of performing this move, as the exponential factor. For
+    /// Get the cost of performing this move on `universe`. For example in
     /// simple NVT simulations, this cost is the energetic difference over
-    /// `beta`.
-    ///
-    /// The cost must be dimmensionless, and will be placed in an exponential.
-    fn cost(&self, universe: &Universe, beta: f64) -> f64;
+    /// `beta`. The cost must be dimmensionless, and will be placed in an
+    /// exponential. The `cache` should be used to compute the cost, or the
+    /// `cache.unused` function should be used to ensure that the cache is
+    /// updated  as needed after this move.
+    fn cost(&self, universe: &Universe, beta: f64, cache: &mut EnergyCache) -> f64;
 
     /// Effectivelly apply the move, if it has not already been done in
     /// `prepare`.

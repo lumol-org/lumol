@@ -14,7 +14,7 @@ use super::MCMove;
 use super::select_molecule;
 
 use types::Vector3D;
-use universe::Universe;
+use universe::{Universe, EnergyCache};
 
 /// Monte-Carlo move for translating a molecule
 pub struct Translate {
@@ -87,7 +87,8 @@ impl MCMove for Translate {
         return true;
     }
 
-    fn cost(&self, universe: &Universe, beta: f64) -> f64 {
+    fn cost(&self, universe: &Universe, beta: f64, cache: &mut EnergyCache) -> f64 {
+        cache.unused();
         let e_after = universe.potential_energy();
         return (e_after - self.e_before)/beta;
     }
