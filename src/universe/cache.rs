@@ -10,7 +10,7 @@
 //! In most of Monte-Carlo moves, only a very small subset of the system changes.
 //! We can use that property to remove the need of recomputing most of the
 //! energy components, by storing them and providing update callbacks.
-use std::mem::swap;
+use std::mem;
 
 use super::Universe;
 use types::{Vector3D, Array2};
@@ -109,10 +109,10 @@ impl EnergyCache {
         return energy;
     }
 
-    /// Update the cache after a call to a `*_cost` function.
+    /// Update the cache after a call to a `EnergyCache::*_cost` function or
+    /// `EnergyCache::unused`.
     pub fn update(&mut self, universe: &mut Universe) {
-        let mut updater = None;
-        swap(&mut self.updater, &mut updater);
+        let updater = mem::replace(&mut self.updater, None);
         if let Some(updater) = updater {
             updater(self, universe);
         } else {
@@ -120,6 +120,15 @@ impl EnergyCache {
                     This function MUST be called after a call to a `*_cost` function");
             panic!()
         }
+    }
+
+    /// This function should be called whenever the cache is not used, but one
+    /// still want it to be updated. Future call to `EnergyCache::update` will
+    /// recompute the full cache.
+    pub fn unused(&mut self) {
+        self.updater = Some(Box::new(|cache, universe| {
+            cache.init(universe);
+        }))
     }
 }
 
