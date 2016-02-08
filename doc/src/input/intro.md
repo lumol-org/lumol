@@ -39,3 +39,21 @@ bar: foo
 Bar: Foo
 BAR: Foo
 ```
+
+## Units in input
+
+When defining a value with an unit in the input file, a string must be given,
+and the unit will be parsed and converted to the [internal unit
+system](input/units.html). If there is no unit in the string, the internal unit
+for this type is used. No homogeneity check is performed, and it is up to the
+code users to check the given units.
+
+```yaml
+# cutoff is a distance
+cutoff: 8 A  # OK
+cutoff: "8"  # OK
+cutoff: 8 m  # OK, but big !
+
+cutoff: 8 ps # OK, but probably not what you want. Will be interpreted as 8000 A
+cutoff: 8    # invalid, must be a Yaml string
+```

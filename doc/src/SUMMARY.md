@@ -10,6 +10,7 @@
     - [Interactions](input/interactions.md)
     - [Potentials](input/potentials.md)
     - [Initial configuration](input/initial.md)
+    - [Units](input/units.md)
 
 - [Extending Cymbalum](extending/intro.md)
     - [Adding potentials](extending/potential.md)
