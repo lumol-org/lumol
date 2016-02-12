@@ -5,8 +5,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
 
-//! The `universe` module provide a way to store data about a simulated system.
-//! These systems are represented by an `Universe` instance, made of a list of
+//! The `system` module provide a way to store data about a simulated system.
+//! These systems are represented by an `System` instance, made of a list of
 //! `Particle`, an enclosing `UnitCell` and some interactions.
 
 mod periodic;
@@ -38,7 +38,7 @@ pub use self::energy::EnergyEvaluator;
 mod cache;
 pub use self::cache::EnergyCache;
 
-mod universes;
-pub use self::universes::Universe;
+mod systems;
+pub use self::systems::System;
 
 pub mod chemfiles;

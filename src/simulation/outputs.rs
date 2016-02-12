@@ -15,8 +15,8 @@ use std::fs::File;
 use std::path::Path;
 
 use units;
-use universe::Universe;
-use universe::chemfiles::universe_to_frame;
+use system::System;
+use system::chemfiles::system_to_frame;
 
 /// The `Output` trait define the interface for all the quantities outputed by
 /// the simulation during the run. An Output can be a text or a binary data
@@ -24,13 +24,13 @@ use universe::chemfiles::universe_to_frame;
 pub trait Output {
     /// Function called once at the beggining of the simulation, which allow
     /// for some setup of the output if needed.
-    fn setup(&mut self, _: &Universe) {}
+    fn setup(&mut self, _: &System) {}
 
-    /// Write the output from the universe.
-    fn write(&mut self, universe: &Universe);
+    /// Write the output from the system.
+    fn write(&mut self, system: &System);
 
     /// Function called once at the end of the simulation.
-    fn finish(&mut self, _: &Universe) {}
+    fn finish(&mut self, _: &System) {}
 }
 
 /******************************************************************************/
@@ -52,8 +52,8 @@ impl TrajectoryOutput {
 }
 
 impl Output for TrajectoryOutput {
-    fn write(&mut self, universe: &Universe) {
-        let frame = match universe_to_frame(universe) {
+    fn write(&mut self, system: &System) {
+        let frame = match system_to_frame(system) {
             Ok(val) => val,
             Err(err) => {
                 error!("Error in Chemharp runtime while converting data: {}", err.message());
@@ -93,7 +93,7 @@ impl CellOutput {
 }
 
 impl Output for CellOutput {
-    fn setup(&mut self, _: &Universe) {
+    fn setup(&mut self, _: &System) {
         if let Err(e) = writeln!(&mut self.file, "# Unit cell of the simulation") {
             // Do panic in early time
             panic!("Could not write to file '{}': {:?}", self.path, e);
@@ -103,11 +103,11 @@ impl Output for CellOutput {
         }
     }
 
-    fn write(&mut self, universe: &Universe) {
-        let cell = universe.cell();
+    fn write(&mut self, system: &System) {
+        let cell = system.cell();
         if let Err(e) = writeln!(
             &mut self.file, "{} {} {} {} {} {} {}",
-            universe.step(), cell.a(), cell.b(), cell.c(), cell.alpha(), cell.beta(), cell.gamma()
+            system.step(), cell.a(), cell.b(), cell.c(), cell.alpha(), cell.beta(), cell.gamma()
         ) {
             // Do not panic during the simulation
             error!("Could not write to file '{}': {:?}", self.path, e);
@@ -136,7 +136,7 @@ impl EnergyOutput {
 }
 
 impl Output for EnergyOutput {
-    fn setup(&mut self, _: &Universe) {
+    fn setup(&mut self, _: &System) {
         if let Err(e) = writeln!(&mut self.file, "# Energy of the simulation (kJ/mol)") {
             panic!("Could not write to file '{}': {:?}", self.path, e);
         }
@@ -145,18 +145,18 @@ impl Output for EnergyOutput {
         }
     }
 
-    fn write(&mut self, universe: &Universe) {
-        let potential = units::to(universe.potential_energy(), "kJ/mol").unwrap();
-        let kinetic = units::to(universe.kinetic_energy(), "kJ/mol").unwrap();
-        let total = units::to(universe.total_energy(), "kJ/mol").unwrap();
-        if let Err(e) = writeln!(&mut self.file, "{} {} {} {}", universe.step(), potential, kinetic, total) {
+    fn write(&mut self, system: &System) {
+        let potential = units::to(system.potential_energy(), "kJ/mol").unwrap();
+        let kinetic = units::to(system.kinetic_energy(), "kJ/mol").unwrap();
+        let total = units::to(system.total_energy(), "kJ/mol").unwrap();
+        if let Err(e) = writeln!(&mut self.file, "{} {} {} {}", system.step(), potential, kinetic, total) {
             error!("Could not write to file '{}': {:?}", self.path, e);
         }
     }
 }
 
 /******************************************************************************/
-/// The `PropertiesOutput` write various physical properties of the universe to
+/// The `PropertiesOutput` write various physical properties of the system to
 /// a file. These properties are:
 ///
 /// - volume of the unit cell;
@@ -180,7 +180,7 @@ impl PropertiesOutput {
 }
 
 impl Output for PropertiesOutput {
-    fn setup(&mut self, _: &Universe) {
+    fn setup(&mut self, _: &System) {
         if let Err(e) = writeln!(&mut self.file, "# Physical properties of the simulation") {
             panic!("Could not write to file '{}': {:?}", self.path, e);
         }
@@ -189,11 +189,11 @@ impl Output for PropertiesOutput {
         }
     }
 
-    fn write(&mut self, universe: &Universe) {
-        let V = units::to(universe.volume(), "A^3").unwrap();
-        let T = units::to(universe.temperature(), "K").unwrap();
-        let P = units::to(universe.pressure(), "bar").unwrap();
-        if let Err(e) = writeln!(&mut self.file, "{} {} {} {}", universe.step(), V, T, P) {
+    fn write(&mut self, system: &System) {
+        let V = units::to(system.volume(), "A^3").unwrap();
+        let T = units::to(system.temperature(), "K").unwrap();
+        let P = units::to(system.pressure(), "bar").unwrap();
+        if let Err(e) = writeln!(&mut self.file, "{} {} {} {}", system.step(), V, T, P) {
             error!("Could not write to file '{}': {:?}", self.path, e);
         }
     }
@@ -205,23 +205,23 @@ mod tests {
     use std::fs;
 
     use super::*;
-    use universe::*;
+    use system::*;
     use types::*;
     use potentials::*;
     use units;
 
-    fn testing_universe() -> Universe {
-        let mut universe = Universe::from_cell(UnitCell::cubic(10.0));;
+    fn testing_system() -> System {
+        let mut system = System::from_cell(UnitCell::cubic(10.0));;
 
-        universe.add_particle(Particle::new("F"));
-        universe[0].position = Vector3D::new(0.0, 0.0, 0.0);
+        system.add_particle(Particle::new("F"));
+        system[0].position = Vector3D::new(0.0, 0.0, 0.0);
 
-        universe.add_particle(Particle::new("F"));
-        universe[1].position = Vector3D::new(1.3, 0.0, 0.0);
+        system.add_particle(Particle::new("F"));
+        system[1].position = Vector3D::new(1.3, 0.0, 0.0);
 
-        universe.add_pair_interaction("F", "F",
+        system.add_pair_interaction("F", "F",
             Box::new(Harmonic{k: units::from(300.0, "kJ/mol/A^2").unwrap(), x0: units::from(1.2, "A").unwrap()}));
-        return universe;
+        return system;
     }
 
     fn check_file_content(filename: &str, content: &str) {
@@ -235,12 +235,12 @@ mod tests {
     #[test]
     fn trajectory() {
         let filename = "testing-trajectory-output.xyz";
-        let universe = testing_universe();
+        let system = testing_system();
         {
             let mut out = TrajectoryOutput::new(filename).unwrap();
-            out.setup(&universe);
-            out.write(&universe);
-            out.finish(&universe);
+            out.setup(&system);
+            out.write(&system);
+            out.finish(&system);
         }
 
         check_file_content(filename, "2\nWritten by the chemfiles library\nF 0 0 0\nF 1.3 0 0\n");
@@ -250,12 +250,12 @@ mod tests {
     #[test]
     fn energy() {
         let filename = "testing-energy-output.dat";
-        let universe = testing_universe();
+        let system = testing_system();
         {
             let mut out = EnergyOutput::new(filename).unwrap();
-            out.setup(&universe);
-            out.write(&universe);
-            out.finish(&universe);
+            out.setup(&system);
+            out.write(&system);
+            out.finish(&system);
         }
 
         check_file_content(filename, "# Energy of the simulation (kJ/mol)\n# Step Potential Kinetic Total\n0 1.5000000000000027 0 1.5000000000000027\n");
@@ -265,12 +265,12 @@ mod tests {
     #[test]
     fn cell() {
         let filename = "testing-cell-output.dat";
-        let universe = testing_universe();
+        let system = testing_system();
         {
             let mut out = CellOutput::new(filename).unwrap();
-            out.setup(&universe);
-            out.write(&universe);
-            out.finish(&universe);
+            out.setup(&system);
+            out.write(&system);
+            out.finish(&system);
         }
 
         check_file_content(filename, "# Unit cell of the simulation\n# Step A/Å B/Å C/Å α/deg β/deg γ/deg\n0 10 10 10 90 90 90\n");
@@ -280,12 +280,12 @@ mod tests {
     #[test]
     fn properties() {
         let filename = "testing-properties-output.dat";
-        let universe = testing_universe();
+        let system = testing_system();
         {
             let mut out = PropertiesOutput::new(filename).unwrap();
-            out.setup(&universe);
-            out.write(&universe);
-            out.finish(&universe);
+            out.setup(&system);
+            out.write(&system);
+            out.finish(&system);
         }
 
         check_file_content(filename, "# Physical properties of the simulation\n# Step Volume/A^3 Temperature/K Pressure/bar\n0 1000 0 -431.7400836223091\n");

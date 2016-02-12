@@ -4,9 +4,9 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-//! The base type for simulation data in `cymbalum` is the `Universe` type.
+//! The base type for simulation data in `cymbalum` is the `System` type.
 //!
-//! An `Universe` consists of a list of `Particle`; a list of `Molecule`
+//! An `System` consists of a list of `Particle`; a list of `Molecule`
 //! specifying how the particles are bonded together; an unit cell for boundary
 //! conditions; and the interactions between these particles.
 
@@ -34,11 +34,13 @@ use super::UnitCell;
 use super::interactions::{Interactions, PairInteraction};
 use super::EnergyEvaluator;
 use super::molecules::moltype;
-use super::chemfiles::frame_to_universe;
+use super::chemfiles::frame_to_system;
 
 pub type Permutations = Vec<(usize, usize)>;
 
-/// The Universe type hold all the data about a system. This data contains:
+/// The System type hold all the data about a simulated system.
+///
+/// This data contains:
 ///
 ///   - an unit cell, containing the system;
 ///   - a list of particles in the system;
@@ -46,16 +48,16 @@ pub type Permutations = Vec<(usize, usize)>;
 ///   - a list of interactions, associating particles kinds and potentials
 ///   - a hash map associating particles names and particles kinds.
 ///
-/// In this implementation, the particles contained in a molecule are guaranted
+/// In the implementation, the particles contained in a molecule are guaranted
 /// to be contiguous in memory. This allow for faster access when iterating over
-/// molecules, and easier molecule removal in the universe.
+/// molecules, and easier molecule removal in the system.
 #[derive(Clone)]
-pub struct Universe {
-    /// Unit cell of the universe
+pub struct System {
+    /// Unit cell of the system
     cell: Bc<UnitCell>,
     /// List of particles in the system
     particles: Bc<Vec<Particle>>,
-    /// Molecules in the universe
+    /// Molecules in the system
     molecules: Bc<Vec<Molecule>>,
     /// Particles kinds, associating particles names and indexes
     kinds: HashMap<String, u16>,
@@ -67,10 +69,10 @@ pub struct Universe {
     step: u64,
 }
 
-impl Universe {
-    /// Create a new empty Universe
-    pub fn new() -> Universe {
-        Universe{
+impl System {
+    /// Create a new empty System
+    pub fn new() -> System {
+        System{
             particles: Bc::new(Vec::new()),
             molecules: Bc::new(Vec::new()),
             kinds: HashMap::new(),
@@ -81,45 +83,45 @@ impl Universe {
         }
     }
 
-    /// Read a trajectory file and create an Universe from it. For a list of
+    /// Read a trajectory file and create a System from it. For a list of
     /// supported formats, please refer to
     /// [Chemharp](http://chemfiles.readthedocs.org/en/latest/formats.html)
     /// documentation.
-    pub fn from_file(path: &str) -> Result<Universe, chemfiles::Error> {
+    pub fn from_file(path: &str) -> Result<System, chemfiles::Error> {
         let mut trajectory = try!(Trajectory::open(path));
         let mut frame = try!(Frame::new(0));
         try!(trajectory.read(&mut frame));
-        return frame_to_universe(frame);
+        return frame_to_system(frame);
     }
 
     /// Do the same work that the `from_file` function, and guess bonds in the
-    /// universe based on the distances between the particles.
-    pub fn from_file_auto_bonds(path: &str) -> Result<Universe, chemfiles::Error> {
+    /// system based on the distances between the particles.
+    pub fn from_file_auto_bonds(path: &str) -> Result<System, chemfiles::Error> {
         let mut trajectory = try!(Trajectory::open(path));
         let mut frame = try!(Frame::new(0));
         try!(trajectory.read(&mut frame));
         try!(frame.guess_topology(true));
-        return frame_to_universe(frame);
+        return frame_to_system(frame);
     }
 
-    /// Create an empty universe with a specific UnitCell
-    pub fn from_cell(cell: UnitCell) -> Universe {
-        let mut universe = Universe::new();
-        universe.set_cell(cell);
-        return universe;
+    /// Create an empty system with a specific UnitCell
+    pub fn from_cell(cell: UnitCell) -> System {
+        let mut system = System::new();
+        system.set_cell(cell);
+        return system;
     }
 
-    /// Get the current step of the universe
+    /// Get the current step of the system
     #[inline] pub fn step(&self) -> u64 {
         self.step
     }
 
-    /// Set the current step of the universe to `step`
+    /// Set the current step of the system to `step`
     #[inline] pub fn set_step(&mut self, step: u64) {
         self.step = step;
     }
 
-    /// Reset the step of the universe to 0
+    /// Reset the step of the system to 0
     pub fn reset_step(&mut self) {
         self.step = 0;
         self.cell.reset();
@@ -127,14 +129,14 @@ impl Universe {
         self.molecules.reset();
     }
 
-    /// Increment the universe step
+    /// Increment the system step
     pub fn increment_step(&mut self) {
         self.step += 1;
     }
 }
 
 /// Topology and particles related functions
-impl Universe {
+impl System {
     /// Get the index of the molecule containing the particle `i`
     fn molecule_id(&self, i: usize) -> usize {
         for (idx, mol) in self.molecules.iter().enumerate() {
@@ -177,7 +179,7 @@ impl Universe {
         self.molecule_id(i) == self.molecule_id(j)
     }
 
-    /// Get the list of molecules in the universe.
+    /// Get the list of molecules in the system.
     #[inline] pub fn molecules(&self) -> &[Molecule] {
         &self.molecules
     }
@@ -326,15 +328,15 @@ impl Universe {
         self.molecules.push(Molecule::new(self.particles.len() - 1));
     }
 
-    /// Get the number of particles in this universe
+    /// Get the number of particles in this system
     #[inline] pub fn size(&self) -> usize {self.particles.len()}
 
-    /// Get an iterator over the `Particle` in this universe
+    /// Get an iterator over the `Particle` in this system
     #[inline] pub fn iter(&self) -> slice::Iter<Particle> {
         self.particles.iter()
     }
 
-    /// Get a mutable iterator over the `Particle` in this universe
+    /// Get a mutable iterator over the `Particle` in this system
     #[inline] pub fn iter_mut(&mut self) -> slice::IterMut<Particle> {
         self.particles.iter_mut()
     }
@@ -421,8 +423,8 @@ static NO_ANGLE_INTERACTION: &'static [Box<AnglePotential>] = &[];
 static NO_DIHEDRAL_INTERACTION: &'static [Box<DihedralPotential>] = &[];
 
 /// Potentials related functions
-impl Universe {
-    /// Get an helper struct to evaluate the energy of this universe.
+impl System {
+    /// Get an helper struct to evaluate the energy of this system.
     pub fn energy_evaluator<'a>(&'a self) -> EnergyEvaluator<'a> {
         EnergyEvaluator::new(self)
     }
@@ -576,13 +578,13 @@ impl Universe {
         self.interactions.set_coulomb(potential);
     }
 
-    /// Add a global interaction to the universe
+    /// Add a global interaction to the system
     pub fn add_global_interaction(&mut self, potential: Box<GlobalPotential>) {
         self.interactions.add_global(potential);
     }
 }
 
-impl<'a> IntoIterator for &'a Universe {
+impl<'a> IntoIterator for &'a System {
     type Item = &'a Particle;
     type IntoIter = slice::Iter<'a, Particle>;
 
@@ -592,7 +594,7 @@ impl<'a> IntoIterator for &'a Universe {
     }
 }
 
-impl<'a> IntoIterator for &'a mut Universe {
+impl<'a> IntoIterator for &'a mut System {
     type Item = &'a mut Particle;
     type IntoIter = slice::IterMut<'a, Particle>;
 
@@ -603,12 +605,12 @@ impl<'a> IntoIterator for &'a mut Universe {
 }
 
 /// UnitCell related functions
-impl Universe {
-    /// Get a reference to  the universe unit cell
+impl System {
+    /// Get a reference to  the system unit cell
     #[inline] pub fn cell(&self) -> &UnitCell {&self.cell}
-    /// Get a mutable reference to  the universe unit cell
+    /// Get a mutable reference to  the system unit cell
     #[inline] pub fn cell_mut(&mut self) -> &mut UnitCell {&mut self.cell}
-    /// Set the universe unit cell
+    /// Set the system unit cell
     #[inline] pub fn set_cell(&mut self, cell: UnitCell) {self.cell = Bc::new(cell);}
 
     /// Get the distance between the particles at indexes `i` and `j`
@@ -669,7 +671,7 @@ use simulation::{Virial, Stress, Pressure};
 
 use std::cell::Cell;
 
-/// Caching physical properties of an universe as `Cell<Option<T>>`. The `Cell`
+/// Caching physical properties of a system as `Cell<Option<T>>`. The `Cell`
 /// is for mutating values in immuatable borrow, and the Option to invalidate
 /// the cached values.
 #[derive(Clone)]
@@ -689,23 +691,23 @@ struct PropertiesCache {
 }
 
 /// This macro generate an `inherent impl` function for `PropertiesCache`, which
-/// check the universe state, and either returns the cached value or invalidate
+/// check the system state, and either returns the cached value or invalidate
 /// the full cache, adn update the it with the new value.
 macro_rules! make_cache_getter {
     ($property: ident, $computer: ident, $T: ident) => {
-        fn $property(&self, universe: &Universe) -> $T {
-            if universe.state() == self.state.get() {
+        fn $property(&self, system: &System) -> $T {
+            if system.state() == self.state.get() {
                 if let Some(val) = self.$property.get() {
                     return val;
                 } else {
-                    let val = $computer.compute(universe);
+                    let val = $computer.compute(system);
                     self.$property.set(Some(val));
                     return val;
                 }
             } else {
                 self.invalidate();
-                self.state.set(universe.state());
-                return self.$property(universe);
+                self.state.set(system.state());
+                return self.$property(system);
             }
         }
     };
@@ -743,19 +745,19 @@ impl PropertiesCache {
         self.stress.set(None);
     }
 
-    /// Get the kinetic energy of the universe.
+    /// Get the kinetic energy of the system.
     make_cache_getter!(kinetic_energy, KineticEnergy, f64);
 
-    /// Get the potential energy of the universe.
+    /// Get the potential energy of the system.
     make_cache_getter!(potential_energy, PotentialEnergy, f64);
 
-    /// Get the total energy of the universe.
+    /// Get the total energy of the system.
     make_cache_getter!(total_energy, TotalEnergy, f64);
 
-    /// Get the temperature of the universe.
+    /// Get the temperature of the system.
     make_cache_getter!(temperature, Temperature, f64);
 
-    /// Get the volume of the universe.
+    /// Get the volume of the system.
     make_cache_getter!(volume, Volume, f64);
 
     /// Get the tensorial virial of the system.
@@ -769,15 +771,15 @@ impl PropertiesCache {
 }
 
 /******************************************************************************/
-/// Functions to get pysical properties of an universe. These properties are
+/// Functions to get pysical properties of a system. These properties are
 /// cached, because they might be costly to compute and often depends the one on
 /// the others.
-impl Universe {
-    /// Get a number representing the state of the universe. It is guaranted
-    /// that this number will change if the universe changes, but it is not
-    /// guaranted that if this number change, the universe have changed; i.e.
-    /// this value can change without the universe changing. This is not a hash
-    /// of the universe, and should be cheap to compute.
+impl System {
+    /// Get a number representing the state of the system. It is guaranted
+    /// that this number will change if the system changes, but it is not
+    /// guaranted that if this number change, the system have changed; i.e.
+    /// this value can change without the system changing. This is not a hash
+    /// of the system, and should be cheap to compute.
     fn state(&self) -> u64 {
         let mut hasher = SipHasher::new();
         self.cell.count().hash(&mut hasher);
@@ -808,7 +810,7 @@ impl Universe {
 }
 
 /******************************************************************************/
-impl Index<usize> for Universe {
+impl Index<usize> for System {
     type Output = Particle;
     #[inline]
     fn index(&self, index: usize) -> &Particle {
@@ -816,7 +818,7 @@ impl Index<usize> for Universe {
     }
 }
 
-impl IndexMut<usize> for Universe {
+impl IndexMut<usize> for System {
     #[inline]
     fn index_mut(&mut self, index: usize) -> &mut Particle {
         &mut self.particles[index]
@@ -825,210 +827,210 @@ impl IndexMut<usize> for Universe {
 
 #[cfg(test)]
 mod tests {
-    use universe::*;
+    use system::*;
     use types::*;
     use potentials::*;
 
     #[test]
     fn step() {
-        let mut universe = Universe::new();
+        let mut system = System::new();
 
-        assert_eq!(universe.step(), 0);
+        assert_eq!(system.step(), 0);
 
-        universe.increment_step();
-        universe.increment_step();
-        universe.increment_step();
+        system.increment_step();
+        system.increment_step();
+        system.increment_step();
 
-        assert_eq!(universe.step(), 3);
-        universe.reset_step();
-        assert_eq!(universe.step(), 0);
+        assert_eq!(system.step(), 3);
+        system.reset_step();
+        assert_eq!(system.step(), 0);
     }
 
     #[test]
     fn cell() {
-        let mut universe = Universe::from_cell(UnitCell::cubic(67.0));
+        let mut system = System::from_cell(UnitCell::cubic(67.0));
         {
-            let cell = universe.cell();
+            let cell = system.cell();
             assert_eq!(cell.a(), 67.0);
         }
 
-        universe.set_cell(UnitCell::cubic(10.0));
-        let cell = universe.cell();
+        system.set_cell(UnitCell::cubic(10.0));
+        let cell = system.cell();
         assert_eq!(cell.a(), 10.0);
     }
 
     #[test]
     fn molecules() {
-        let mut universe = Universe::new();
-        universe.add_particle(Particle::new("H"));
-        universe.add_particle(Particle::new("O"));
-        universe.add_particle(Particle::new("O"));
-        universe.add_particle(Particle::new("H"));
+        let mut system = System::new();
+        system.add_particle(Particle::new("H"));
+        system.add_particle(Particle::new("O"));
+        system.add_particle(Particle::new("O"));
+        system.add_particle(Particle::new("H"));
 
-        assert_eq!(universe.add_bond(0, 1), Some(vec![]));
-        assert_eq!(universe.add_bond(2, 3), Some(vec![]));
+        assert_eq!(system.add_bond(0, 1), Some(vec![]));
+        assert_eq!(system.add_bond(2, 3), Some(vec![]));
 
-        assert_eq!(universe.molecules().len(), 2);
+        assert_eq!(system.molecules().len(), 2);
 
-        let molecule = universe.molecule(0).clone();
+        let molecule = system.molecule(0).clone();
         assert!(molecule.bonds().contains(&Bond::new(0, 1)));
-        let molecule = universe.molecule(1).clone();
+        let molecule = system.molecule(1).clone();
         assert!(molecule.bonds().contains(&Bond::new(2, 3)));
 
-        assert_eq!(universe.add_bond(1, 2), Some(vec![]));
-        assert_eq!(universe.molecules().len(), 1);
+        assert_eq!(system.add_bond(1, 2), Some(vec![]));
+        assert_eq!(system.molecules().len(), 1);
 
-        let molecule = universe.molecule(0).clone();
+        let molecule = system.molecule(0).clone();
         assert!(molecule.angles().contains(&Angle::new(0, 1, 2)));
         assert!(molecule.angles().contains(&Angle::new(1, 2, 3)));
         assert!(molecule.dihedrals().contains(&Dihedral::new(0, 1, 2, 3)));
 
-        universe.remove_particle(2);
-        assert_eq!(universe.molecules().len(), 1);
+        system.remove_particle(2);
+        assert_eq!(system.molecules().len(), 1);
 
-        universe.remove_molecule_containing(1);
-        assert_eq!(universe.molecules().len(), 0);
-        assert_eq!(universe.size(), 0);
+        system.remove_molecule_containing(1);
+        assert_eq!(system.molecules().len(), 0);
+        assert_eq!(system.size(), 0);
     }
 
     #[test]
     fn shortest_path() {
-        let mut universe = Universe::new();
-        universe.add_particle(Particle::new("C"));
-        universe.add_particle(Particle::new("C"));
-        universe.add_particle(Particle::new("C"));
-        universe.add_particle(Particle::new("C"));
-        universe.add_particle(Particle::new("C"));
-        universe.add_particle(Particle::new("Zn"));
+        let mut system = System::new();
+        system.add_particle(Particle::new("C"));
+        system.add_particle(Particle::new("C"));
+        system.add_particle(Particle::new("C"));
+        system.add_particle(Particle::new("C"));
+        system.add_particle(Particle::new("C"));
+        system.add_particle(Particle::new("Zn"));
 
-        universe.add_bond(0, 1);
-        universe.add_bond(1, 2);
-        universe.add_bond(2, 3);
-        universe.add_bond(3, 4);
+        system.add_bond(0, 1);
+        system.add_bond(1, 2);
+        system.add_bond(2, 3);
+        system.add_bond(3, 4);
 
-        assert_eq!(universe.shortest_path(0, 0), 1);
-        assert_eq!(universe.shortest_path(0, 1), 2);
-        assert_eq!(universe.shortest_path(0, 2), 3);
-        assert_eq!(universe.shortest_path(0, 3), 4);
-        assert!(universe.shortest_path(0, 4) > 4);
-        assert_eq!(universe.shortest_path(0, 5), 0);
+        assert_eq!(system.shortest_path(0, 0), 1);
+        assert_eq!(system.shortest_path(0, 1), 2);
+        assert_eq!(system.shortest_path(0, 2), 3);
+        assert_eq!(system.shortest_path(0, 3), 4);
+        assert!(system.shortest_path(0, 4) > 4);
+        assert_eq!(system.shortest_path(0, 5), 0);
     }
 
     #[test]
     fn molecules_permutations() {
-        let mut universe = Universe::new();
-        universe.add_particle(Particle::new("N"));
-        universe.add_particle(Particle::new("H"));
-        universe.add_particle(Particle::new("H"));
-        universe.add_particle(Particle::new("H"));
-        universe.add_particle(Particle::new("N"));
-        universe.add_particle(Particle::new("H"));
-        universe.add_particle(Particle::new("H"));
-        universe.add_particle(Particle::new("H"));
+        let mut system = System::new();
+        system.add_particle(Particle::new("N"));
+        system.add_particle(Particle::new("H"));
+        system.add_particle(Particle::new("H"));
+        system.add_particle(Particle::new("H"));
+        system.add_particle(Particle::new("N"));
+        system.add_particle(Particle::new("H"));
+        system.add_particle(Particle::new("H"));
+        system.add_particle(Particle::new("H"));
 
-        assert_eq!(universe.add_bond(0, 3), Some(vec![(3, 1), (1, 2), (2, 3)]));
-        assert_eq!(universe.add_bond(0, 3), Some(vec![(3, 2), (2, 3)]));
-        assert_eq!(universe.add_bond(0, 3), Some(vec![]));
+        assert_eq!(system.add_bond(0, 3), Some(vec![(3, 1), (1, 2), (2, 3)]));
+        assert_eq!(system.add_bond(0, 3), Some(vec![(3, 2), (2, 3)]));
+        assert_eq!(system.add_bond(0, 3), Some(vec![]));
 
-        assert_eq!(universe.add_bond(4, 5), Some(vec![]));
-        assert_eq!(universe.add_bond(4, 7), Some(vec![(7, 6), (6, 7)]));
-        assert_eq!(universe.add_bond(4, 7), Some(vec![]));
+        assert_eq!(system.add_bond(4, 5), Some(vec![]));
+        assert_eq!(system.add_bond(4, 7), Some(vec![(7, 6), (6, 7)]));
+        assert_eq!(system.add_bond(4, 7), Some(vec![]));
     }
 
     #[test]
     fn particles() {
-        let mut universe = Universe::new();
-        universe.add_particle(Particle::new("O"));
-        universe.add_particle(Particle::new("H"));
-        universe.add_particle(Particle::new("H"));
+        let mut system = System::new();
+        system.add_particle(Particle::new("O"));
+        system.add_particle(Particle::new("H"));
+        system.add_particle(Particle::new("H"));
 
-        assert_eq!(universe.size(), 3);
-        assert_eq!(universe[0].name(), "O");
-        assert_eq!(universe[1].name(), "H");
-        assert_eq!(universe[2].name(), "H");
+        assert_eq!(system.size(), 3);
+        assert_eq!(system[0].name(), "O");
+        assert_eq!(system[1].name(), "H");
+        assert_eq!(system[2].name(), "H");
     }
 
     #[test]
     fn distances() {
-        let mut universe = Universe::from_cell(UnitCell::cubic(5.0));
-        universe.add_particle(Particle::new("O"));
-        universe.add_particle(Particle::new("H"));
+        let mut system = System::from_cell(UnitCell::cubic(5.0));
+        system.add_particle(Particle::new("O"));
+        system.add_particle(Particle::new("H"));
 
-        universe[0].position = Vector3D::new(9.0, 0.0, 0.0);
-        universe[1].position = Vector3D::new(0.0, 0.0, 0.0);
-        assert_eq!(universe.distance(0, 1), 1.0);
+        system[0].position = Vector3D::new(9.0, 0.0, 0.0);
+        system[1].position = Vector3D::new(0.0, 0.0, 0.0);
+        assert_eq!(system.distance(0, 1), 1.0);
 
-        universe.set_cell(UnitCell::new());
-        assert_eq!(universe.distance(0, 1), 9.0);
+        system.set_cell(UnitCell::new());
+        assert_eq!(system.distance(0, 1), 9.0);
     }
 
     #[test]
     fn interactions() {
-        let mut universe = Universe::new();
-        universe.add_particle(Particle::new("He"));
+        let mut system = System::new();
+        system.add_particle(Particle::new("He"));
 
-        universe.add_pair_interaction("He", "He", Box::new(LennardJones{sigma: 0.3, epsilon: 2.0}));
-        universe.add_pair_interaction("He", "He", Box::new(Harmonic{k: 100.0, x0: 1.1}));
-        assert_eq!(universe.pair_potentials(0, 0).len(), 2);
+        system.add_pair_interaction("He", "He", Box::new(LennardJones{sigma: 0.3, epsilon: 2.0}));
+        system.add_pair_interaction("He", "He", Box::new(Harmonic{k: 100.0, x0: 1.1}));
+        assert_eq!(system.pair_potentials(0, 0).len(), 2);
 
-        universe.add_bond_interaction("He", "He", Box::new(Harmonic{k: 100.0, x0: 1.1}));
-        assert_eq!(universe.bond_potentials(0, 0).len(), 1);
+        system.add_bond_interaction("He", "He", Box::new(Harmonic{k: 100.0, x0: 1.1}));
+        assert_eq!(system.bond_potentials(0, 0).len(), 1);
 
-        universe.add_angle_interaction("He", "He", "He", Box::new(Harmonic{k: 100.0, x0: 1.1}));
-        assert_eq!(universe.angle_potentials(0, 0, 0).len(), 1);
+        system.add_angle_interaction("He", "He", "He", Box::new(Harmonic{k: 100.0, x0: 1.1}));
+        assert_eq!(system.angle_potentials(0, 0, 0).len(), 1);
 
-        universe.add_dihedral_interaction("He", "He", "He", "He", Box::new(CosineHarmonic::new(0.3, 2.0)));
-        assert_eq!(universe.dihedral_potentials(0, 0, 0, 0).len(), 1);
+        system.add_dihedral_interaction("He", "He", "He", "He", Box::new(CosineHarmonic::new(0.3, 2.0)));
+        assert_eq!(system.dihedral_potentials(0, 0, 0, 0).len(), 1);
 
-        assert!(universe.coulomb_potential().is_none());
-        universe.set_coulomb_interaction(Box::new(Wolf::new(1.0)));
-        assert!(universe.coulomb_potential().is_some());
+        assert!(system.coulomb_potential().is_none());
+        system.set_coulomb_interaction(Box::new(Wolf::new(1.0)));
+        assert!(system.coulomb_potential().is_some());
 
-        universe.add_global_interaction(Box::new(Wolf::new(1.0)));
-        assert_eq!(universe.global_potentials().len(), 1);
+        system.add_global_interaction(Box::new(Wolf::new(1.0)));
+        assert_eq!(system.global_potentials().len(), 1);
     }
 
     #[test]
     fn missing_interaction() {
-        let mut universe = Universe::new();
-        universe.add_particle(Particle::new("He"));
-        assert_eq!(universe.pair_potentials(0, 0).len(), 0);
-        assert_eq!(universe.bond_potentials(0, 0).len(), 0);
-        assert_eq!(universe.angle_potentials(0, 0, 0).len(), 0);
-        assert_eq!(universe.dihedral_potentials(0, 0, 0, 0).len(), 0);
+        let mut system = System::new();
+        system.add_particle(Particle::new("He"));
+        assert_eq!(system.pair_potentials(0, 0).len(), 0);
+        assert_eq!(system.bond_potentials(0, 0).len(), 0);
+        assert_eq!(system.angle_potentials(0, 0, 0).len(), 0);
+        assert_eq!(system.dihedral_potentials(0, 0, 0, 0).len(), 0);
     }
 
     #[test]
     fn moltype() {
-        let mut universe = Universe::new();
+        let mut system = System::new();
         // One helium
-        universe.add_particle(Particle::new("He"));
+        system.add_particle(Particle::new("He"));
         // Two water molecules
-        universe.add_particle(Particle::new("H"));
-        universe.add_particle(Particle::new("O"));
-        universe.add_particle(Particle::new("H"));
-        universe.add_bond(1, 2);
-        universe.add_bond(2, 3);
-        universe.add_particle(Particle::new("H"));
-        universe.add_particle(Particle::new("O"));
-        universe.add_particle(Particle::new("H"));
-        universe.add_bond(4, 5);
-        universe.add_bond(5, 6);
+        system.add_particle(Particle::new("H"));
+        system.add_particle(Particle::new("O"));
+        system.add_particle(Particle::new("H"));
+        system.add_bond(1, 2);
+        system.add_bond(2, 3);
+        system.add_particle(Particle::new("H"));
+        system.add_particle(Particle::new("O"));
+        system.add_particle(Particle::new("H"));
+        system.add_bond(4, 5);
+        system.add_bond(5, 6);
         // Another helium
-        universe.add_particle(Particle::new("He"));
+        system.add_particle(Particle::new("He"));
         // A water molecules, with different atoms order
-        universe.add_particle(Particle::new("O"));
-        universe.add_particle(Particle::new("H"));
-        universe.add_particle(Particle::new("H"));
-        universe.add_bond(8, 9);
-        universe.add_bond(8, 10);
+        system.add_particle(Particle::new("O"));
+        system.add_particle(Particle::new("H"));
+        system.add_particle(Particle::new("H"));
+        system.add_bond(8, 9);
+        system.add_bond(8, 10);
 
-        assert_eq!(universe.molecules().len(), 5);
+        assert_eq!(system.molecules().len(), 5);
         // The heliums
-        assert_eq!(universe.moltype(0), universe.moltype(3));
+        assert_eq!(system.moltype(0), system.moltype(3));
 
         // The waters
-        assert!(universe.moltype(1) == universe.moltype(2));
-        assert!(universe.moltype(1) != universe.moltype(4));
+        assert!(system.moltype(1) == system.moltype(2));
+        assert!(system.moltype(1) != system.moltype(4));
     }
 }

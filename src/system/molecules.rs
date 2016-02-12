@@ -12,7 +12,7 @@ use std::ops::Range;
 use std::hash::{Hash, SipHasher, Hasher};
 
 use types::Array2;
-use universe::Particle;
+use system::Particle;
 
 /// A `Bond` between the atoms at indexes `i` and `j`
 ///
@@ -437,7 +437,7 @@ impl Molecule {
 
 /// Get the molecule type of the given `molecule` containing the `particles`.
 /// This type can be used to identify all the molecules containing the same
-/// bonds and particles (see `Universe::moltype` for more information).
+/// bonds and particles (see `System::moltype` for more information).
 pub fn moltype(molecule: &Molecule, particles: &[Particle]) -> u64 {
     assert!(particles.len() == molecule.size());
     let mut hasher = SipHasher::new();

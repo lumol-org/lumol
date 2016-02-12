@@ -10,7 +10,7 @@ use self::special::erfc;
 
 use std::f64::consts::PI;
 
-use universe::Universe;
+use system::System;
 use types::{Matrix3, Vector3D};
 use constants::ELCC;
 use potentials::PairRestriction;
@@ -81,19 +81,19 @@ impl Wolf {
 }
 
 impl GlobalPotential for Wolf {
-    fn energy(&self, universe: &Universe) -> f64 {
-        let natoms = universe.size();
+    fn energy(&self, system: &System) -> f64 {
+        let natoms = system.size();
         let mut res = 0.0;
         for i in 0..natoms {
-            let qi = universe[i].charge;
+            let qi = system[i].charge;
             for j in i+1..natoms {
-                let qj = universe[j].charge;
+                let qj = system[j].charge;
                 if qi*qj == 0.0 {
                     continue;
                 }
-                if !self.restriction.is_excluded_pair(universe, i, j) {
-                    let s = self.restriction.scaling(universe, i, j);
-                    let rij = universe.distance(i, j);
+                if !self.restriction.is_excluded_pair(system, i, j) {
+                    let s = self.restriction.scaling(system, i, j);
+                    let rij = system.distance(i, j);
                     res += s * self.energy_pair(qi, qj, rij);
                 }
             }
@@ -103,19 +103,19 @@ impl GlobalPotential for Wolf {
         return res;
     }
 
-    fn forces(&self, universe: &Universe) -> Vec<Vector3D> {
-        let natoms = universe.size();
+    fn forces(&self, system: &System) -> Vec<Vector3D> {
+        let natoms = system.size();
         let mut res = vec![Vector3D::new(0.0, 0.0, 0.0); natoms];
         for i in 0..natoms {
-            let qi = universe[i].charge;
+            let qi = system[i].charge;
             for j in i+1..natoms {
-                let qj = universe[j].charge;
+                let qj = system[j].charge;
                 if qi*qj == 0.0 {
                     continue;
                 }
-                if !self.restriction.is_excluded_pair(universe, i, j) {
-                    let s = self.restriction.scaling(universe, i, j);
-                    let rij = universe.wraped_vector(i, j);
+                if !self.restriction.is_excluded_pair(system, i, j) {
+                    let s = self.restriction.scaling(system, i, j);
+                    let rij = system.wraped_vector(i, j);
                     let force = s * self.force_pair(qi, qj, rij);
                     res[i] = res[i] + force;
                     res[j] = res[j] - force;
@@ -125,19 +125,19 @@ impl GlobalPotential for Wolf {
         return res;
     }
 
-    fn virial(&self, universe: &Universe) -> Matrix3 {
-        let natoms = universe.size();
+    fn virial(&self, system: &System) -> Matrix3 {
+        let natoms = system.size();
         let mut res = Matrix3::zero();
         for i in 0..natoms {
-            let qi = universe[i].charge;
+            let qi = system[i].charge;
             for j in i+1..natoms {
-                let qj = universe[j].charge;
+                let qj = system[j].charge;
                 if qi*qj == 0.0 {
                     continue;
                 }
-                if !self.restriction.is_excluded_pair(universe, i, j) {
-                    let s = self.restriction.scaling(universe, i, j);
-                    let rij = universe.wraped_vector(i, j);
+                if !self.restriction.is_excluded_pair(system, i, j) {
+                    let s = self.restriction.scaling(system, i, j);
+                    let rij = system.wraped_vector(i, j);
                     let force = s * self.force_pair(qi, qj, rij);
                     res = res + force.tensorial(&rij);
                 }
@@ -158,53 +158,53 @@ impl DefaultGlobalCache for Wolf {}
 #[cfg(test)]
 mod tests {
     pub use super::*;
-    use universe::{Universe, UnitCell, Particle};
+    use system::{System, UnitCell, Particle};
     use types::Vector3D;
     use potentials::GlobalPotential;
 
     const E_BRUTE_FORCE: f64 = -0.09262397663346732;
 
-    pub fn testing_universe() -> Universe {
-        let mut universe = Universe::from_cell(UnitCell::cubic(20.0));
+    pub fn testing_system() -> System {
+        let mut system = System::from_cell(UnitCell::cubic(20.0));
 
-        universe.add_particle(Particle::new("Cl"));
-        universe[0].charge = -1.0;
-        universe[0].position = Vector3D::new(0.0, 0.0, 0.0);
+        system.add_particle(Particle::new("Cl"));
+        system[0].charge = -1.0;
+        system[0].position = Vector3D::new(0.0, 0.0, 0.0);
 
-        universe.add_particle(Particle::new("Na"));
-        universe[1].charge = 1.0;
-        universe[1].position = Vector3D::new(1.5, 0.0, 0.0);
+        system.add_particle(Particle::new("Na"));
+        system[1].charge = 1.0;
+        system[1].position = Vector3D::new(1.5, 0.0, 0.0);
 
-        return universe;
+        return system;
     }
 
     #[test]
     fn energy() {
-        let universe = testing_universe();
+        let system = testing_system();
         let wolf = Wolf::new(8.0);
 
-        let e = wolf.energy(&universe);
+        let e = wolf.energy(&system);
         // Wolf is not very good for inhomogeneous systems
         assert_approx_eq!(e, E_BRUTE_FORCE, 1e-2);
     }
 
     #[test]
     fn forces() {
-        let mut universe = testing_universe();
+        let mut system = testing_system();
         let wolf = Wolf::new(8.0);
 
-        let forces = wolf.forces(&universe);
+        let forces = wolf.forces(&system);
         let norm = (forces[0] + forces[1]).norm();
         // Total force should be null
         assert_approx_eq!(norm, 0.0, 1e-9);
 
         // Finite difference computation of the force
-        let e = wolf.energy(&universe);
+        let e = wolf.energy(&system);
         let eps = 1e-9;
-        universe[0].position.x += eps;
+        system[0].position.x += eps;
 
-        let e1 = wolf.energy(&universe);
-        let force = wolf.forces(&universe)[0].x;
+        let e1 = wolf.energy(&system);
+        let force = wolf.forces(&system)[0].x;
         assert_approx_eq!((e - e1)/eps, force, 1e-6);
     }
 }

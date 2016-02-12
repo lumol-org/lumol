@@ -1,13 +1,13 @@
 //! Molecular dynamics simulation of an Argon crystal melt.
 //!
-//! In this example, we do everything by hand, from the universe setup to the
+//! In this example, we do everything by hand, from the system setup to the
 //! simulation run.
 extern crate cymbalum;
 use cymbalum::*;
 
 fn main() {
     Logger::stdout();
-    let mut universe = Universe::from_cell(UnitCell::cubic(17.0));
+    let mut system = System::from_cell(UnitCell::cubic(17.0));
 
     // Create a cubic crystal of Argon by hand.
     for i in 0..5 {
@@ -19,17 +19,17 @@ fn main() {
                         j as f64 * 3.4,
                         k as f64 * 3.4
                 );
-                universe.add_particle(part);
+                system.add_particle(part);
             }
         }
     }
-    universe.add_pair_interaction("Ar", "Ar", Box::new(LennardJones{
+    system.add_pair_interaction("Ar", "Ar", Box::new(LennardJones{
                                                 sigma: units::from(3.4, "A").unwrap(),
                                                 epsilon: units::from(1.0, "kJ/mol").unwrap()}));
 
     let mut velocities = BoltzmanVelocities::new(units::from(300.0, "K").unwrap());
     velocities.seed(129);
-    velocities.init(&mut universe);
+    velocities.init(&mut system);
 
     let mut simulation = Simulation::new(MolecularDynamics::new(units::from(1.0, "fs").unwrap()));
     // Write the trajectory to `trajectory.xyz` every 10 steps
@@ -37,7 +37,7 @@ fn main() {
     // Write the energy to `energy.dat` every step
     simulation.add_output(EnergyOutput::new("energy.dat").unwrap());
 
-    simulation.run(&mut universe, 5000);
+    simulation.run(&mut system, 5000);
 
     println!("All done!")
 }

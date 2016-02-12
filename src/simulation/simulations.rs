@@ -5,7 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
 
-use universe::Universe;
+use system::System;
 
 use super::Propagator;
 use super::Output;
@@ -14,7 +14,7 @@ use super::Output;
 struct OutputFrequency {
     /// The output to use
     output: Box<Output>,
-    /// The frequency. `output` will be used everytime the universe step matches
+    /// The frequency. `output` will be used everytime the system step matches
     /// this frequency.
     frequency: u64,
 }
@@ -36,23 +36,23 @@ impl OutputFrequency {
 }
 
 impl Output for OutputFrequency {
-    fn setup(&mut self, universe: &Universe) {
-        self.output.setup(universe);
+    fn setup(&mut self, system: &System) {
+        self.output.setup(system);
     }
 
-    fn write(&mut self, universe: &Universe) {
-        if universe.step() % self.frequency == 0 {
-            self.output.write(universe);
+    fn write(&mut self, system: &System) {
+        if system.step() % self.frequency == 0 {
+            self.output.write(system);
         }
     }
 
-    fn finish(&mut self, universe: &Universe) {
-        self.output.finish(universe);
+    fn finish(&mut self, system: &System) {
+        self.output.finish(system);
     }
 }
 
 /// The Simulation struct holds all the needed algorithms for running the
-/// simulation. It should be use together with an Universe to perform the
+/// simulation. It should be use together with a `System` to perform the
 /// simulation.
 pub struct Simulation {
     propagator: Box<Propagator>,
@@ -68,17 +68,17 @@ impl Simulation {
         }
     }
 
-    /// Run the simulation on Universe for `nsteps` steps.
-    pub fn run(&mut self, universe: &mut Universe, nsteps: usize) {
-        self.setup(universe);
+    /// Run the simulation on System for `nsteps` steps.
+    pub fn run(&mut self, system: &mut System, nsteps: usize) {
+        self.setup(system);
         for _ in 0..nsteps {
-            self.propagator.propagate(universe);
-            universe.increment_step();
+            self.propagator.propagate(system);
+            system.increment_step();
             for output in &mut self.outputs {
-                output.write(universe);
+                output.write(system);
             }
         }
-        self.finish(universe);
+        self.finish(system);
     }
 
     /// Add a new `Output` algorithm in the outputs list
@@ -87,23 +87,23 @@ impl Simulation {
     }
 
     /// Add a new `Output` algorithm in the outputs list, which will be used
-    /// at the given frequency. The output will be used everytime the universe
+    /// at the given frequency. The output will be used everytime the system
     ///  step matches this frequency.
     pub fn add_output_with_frequency<O>(&mut self, output: O, frequency: u64) where O: Output + 'static {
         self.outputs.push(OutputFrequency::with_frequency(output, frequency));
     }
 
-    fn setup(&mut self, universe: &mut Universe) {
-        self.propagator.setup(universe);
+    fn setup(&mut self, system: &mut System) {
+        self.propagator.setup(system);
         for output in &mut self.outputs {
-            output.setup(universe);
+            output.setup(system);
         }
     }
 
-    fn finish(&mut self, universe: &mut Universe) {
-        self.propagator.finish(universe);
+    fn finish(&mut self, system: &mut System) {
+        self.propagator.finish(system);
         for output in &mut self.outputs {
-            output.finish(universe);
+            output.finish(system);
         }
     }
 }

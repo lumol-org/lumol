@@ -12,7 +12,7 @@ pub use self::bcount::Bc;
 #[cfg(test)]
 mod xyz;
 #[cfg(test)]
-pub use self::xyz::universe_from_xyz;
+pub use self::xyz::system_from_xyz;
 
 /// A simple macro to implement Clone for Box<Trait>, without requiring that
 /// Trait is Clone. This works by creating a new trait (`BoxCloneTrait`) and

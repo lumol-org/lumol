@@ -7,7 +7,7 @@
 
 use types::{Vector3D, Matrix3};
 use simulation::{Compute, Forces};
-use universe::Universe;
+use system::System;
 
 /// The Integrator trait define integrators interface for Molecular Dynamics.
 /// An integrator is an algorithm responsible for propagating the equations of
@@ -15,10 +15,10 @@ use universe::Universe;
 pub trait Integrator {
     /// Setup the integrator. This function is called once by every simulation
     /// run.
-    fn setup(&mut self, _: &Universe) {}
+    fn setup(&mut self, _: &System) {}
     /// Integrate the equations of motion. This is called at every step of the
     /// simulation.
-    fn integrate(&mut self, universe: &mut Universe);
+    fn integrate(&mut self, system: &mut System);
 }
 
 /// Velocity-Verlet integrator. This one is reversible and symplectic.
@@ -40,23 +40,23 @@ impl VelocityVerlet {
 }
 
 impl Integrator for VelocityVerlet {
-    fn setup(&mut self, universe: &Universe) {
-        self.accelerations = vec![Vector3D::new(0.0, 0.0, 0.0); universe.size()];
+    fn setup(&mut self, system: &System) {
+        self.accelerations = vec![Vector3D::new(0.0, 0.0, 0.0); system.size()];
     }
 
-    fn integrate(&mut self, universe: &mut Universe) {
+    fn integrate(&mut self, system: &mut System) {
         let dt = self.timestep;
 
         // Update velocities at t + ∆t/2 and positions at t + ∆t
-        for (i, part) in universe.iter_mut().enumerate() {
+        for (i, part) in system.iter_mut().enumerate() {
             part.velocity = part.velocity + 0.5 * dt * self.accelerations[i];
             let dr = part.velocity * dt;
             part.position = part.position + dr;
         }
 
-        let forces = Forces.compute(&universe);
+        let forces = Forces.compute(&system);
         // Update accelerations at t + ∆t and velocities at t + ∆t
-        for (i, part) in universe.iter_mut().enumerate() {
+        for (i, part) in system.iter_mut().enumerate() {
             self.accelerations[i] = forces[i] / part.mass;
             part.velocity = part.velocity + 0.5 * dt * self.accelerations[i];
         }
@@ -83,22 +83,22 @@ impl Verlet {
 }
 
 impl Integrator for Verlet {
-    fn setup(&mut self, universe: &Universe) {
-        self.prevpos = vec![Vector3D::new(0.0, 0.0, 0.0); universe.size()];
+    fn setup(&mut self, system: &System) {
+        self.prevpos = vec![Vector3D::new(0.0, 0.0, 0.0); system.size()];
 
         let dt = self.timestep;
         // Approximate the positions at t - ∆t
-        for (i, part) in universe.iter().enumerate() {
+        for (i, part) in system.iter().enumerate() {
             self.prevpos[i] = part.position - part.velocity * dt;
         }
     }
 
-    fn integrate(&mut self, universe: &mut Universe) {
+    fn integrate(&mut self, system: &mut System) {
         let dt = self.timestep;
         let dt2 = self.timestep * self.timestep;
 
-        let forces = Forces.compute(&universe);
-        for (i, part) in universe.iter_mut().enumerate() {
+        let forces = Forces.compute(&system);
+        for (i, part) in system.iter_mut().enumerate() {
             // Save positions at t
             let tmp = part.position.clone();
             // Update positions at t + ∆t
@@ -134,20 +134,20 @@ impl LeapFrog {
 }
 
 impl Integrator for LeapFrog {
-    fn setup(&mut self, universe: &Universe) {
-        self.accelerations = vec![Vector3D::new(0.0, 0.0, 0.0); universe.size()];
+    fn setup(&mut self, system: &System) {
+        self.accelerations = vec![Vector3D::new(0.0, 0.0, 0.0); system.size()];
     }
 
-    fn integrate(&mut self, universe: &mut Universe) {
+    fn integrate(&mut self, system: &mut System) {
         let dt = self.timestep;
         let dt2 = self.timestep * self.timestep;
 
-        for (i, part) in universe.iter_mut().enumerate() {
+        for (i, part) in system.iter_mut().enumerate() {
             part.position = part.position + part.velocity * dt + 0.5 * self.accelerations[i] * dt2;
         }
 
-        let forces = Forces.compute(&universe);
-        for (i, part) in universe.iter_mut().enumerate() {
+        let forces = Forces.compute(&system);
+        for (i, part) in system.iter_mut().enumerate() {
             let mass = part.mass;
             let acceleration = forces[i]/mass;
             part.velocity = part.velocity + 0.5 * (self.accelerations[i] + acceleration)* dt;
@@ -201,28 +201,28 @@ impl BerendsenBarostat {
 }
 
 impl Integrator for BerendsenBarostat {
-    fn setup(&mut self, universe: &Universe) {
-        self.accelerations = vec![Vector3D::new(0.0, 0.0, 0.0); universe.size()];
+    fn setup(&mut self, system: &System) {
+        self.accelerations = vec![Vector3D::new(0.0, 0.0, 0.0); system.size()];
     }
 
-    fn integrate(&mut self, universe: &mut Universe) {
+    fn integrate(&mut self, system: &mut System) {
         let dt = self.timestep;
 
         // Update velocities at t + ∆t/2 and positions at t + ∆t
-        for (i, part) in universe.iter_mut().enumerate() {
+        for (i, part) in system.iter_mut().enumerate() {
             part.velocity = part.velocity + 0.5 * dt * self.accelerations[i];
             // Scale all positions
             part.position = self.eta * part.position;
             part.position = part.position + part.velocity * dt;
         }
 
-        universe.cell_mut().scale_mut(self.eta*self.eta*self.eta * Matrix3::one());
+        system.cell_mut().scale_mut(self.eta*self.eta*self.eta * Matrix3::one());
 
-        self.eta = f64::cbrt(1.0 - WATER_COMPRESSIBILITY / self.baro_timestep * (self.pressure - universe.pressure()));
+        self.eta = f64::cbrt(1.0 - WATER_COMPRESSIBILITY / self.baro_timestep * (self.pressure - system.pressure()));
 
-        let forces = Forces.compute(&universe);
+        let forces = Forces.compute(&system);
         // Update accelerations at t + ∆t and velocities at t + ∆t
-        for (i, part) in universe.iter_mut().enumerate() {
+        for (i, part) in system.iter_mut().enumerate() {
             self.accelerations[i] = forces[i] / part.mass;
             part.velocity = part.velocity + 0.5 * dt * self.accelerations[i];
         }
@@ -277,25 +277,25 @@ impl AnisoBerendsenBarostat {
 }
 
 impl Integrator for AnisoBerendsenBarostat {
-    fn setup(&mut self, universe: &Universe) {
-        self.accelerations = vec![Vector3D::new(0.0, 0.0, 0.0); universe.size()];
+    fn setup(&mut self, system: &System) {
+        self.accelerations = vec![Vector3D::new(0.0, 0.0, 0.0); system.size()];
     }
 
-    fn integrate(&mut self, universe: &mut Universe) {
+    fn integrate(&mut self, system: &mut System) {
         let dt = self.timestep;
 
         // Update velocities at t + ∆t/2 and positions at t + ∆t
-        for (i, part) in universe.iter_mut().enumerate() {
+        for (i, part) in system.iter_mut().enumerate() {
             part.velocity = part.velocity + 0.5 * dt * self.accelerations[i];
             // Scale all positions
             part.position = self.eta * part.position;
             part.position = part.position + part.velocity * dt;
         }
 
-        universe.cell_mut().scale_mut(self.eta);
+        system.cell_mut().scale_mut(self.eta);
 
         let factor = self.timestep * WATER_COMPRESSIBILITY / self.baro_timestep;
-        self.eta = Matrix3::one() - factor * (self.stress - universe.stress());
+        self.eta = Matrix3::one() - factor * (self.stress - system.stress());
 
         // Make the eta matrix symetric here
         for i in 0..3 {
@@ -305,9 +305,9 @@ impl Integrator for AnisoBerendsenBarostat {
             }
         }
 
-        let forces = Forces.compute(&universe);
+        let forces = Forces.compute(&system);
         // Update accelerations at t + ∆t and velocities at t + ∆t
-        for (i, part) in universe.iter_mut().enumerate() {
+        for (i, part) in system.iter_mut().enumerate() {
             self.accelerations[i] = forces[i] / part.mass;
             part.velocity = part.velocity + 0.5 * dt * self.accelerations[i];
         }

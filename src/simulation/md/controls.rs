@@ -8,19 +8,19 @@
 //! simulation parameters: the temperature, the pressure, etc. This is the goal
 //! of the control algorithms, all implmenting of the `Control` trait.
 use types::{Matrix3, Vector3D};
-use universe::Universe;
+use system::System;
 
-/// Trait for controling some parameters in an universe during a simulation.
+/// Trait for controling some parameters in a system during a simulation.
 pub trait Control {
     /// Function called once at the beggining of the simulation, which allow
     /// for some setup of the control algorithm if needed.
-    fn setup(&mut self, _: &Universe) {}
+    fn setup(&mut self, _: &System) {}
 
     /// Do your job, control algorithm!
-    fn control(&mut self, universe: &mut Universe);
+    fn control(&mut self, system: &mut System);
 
     /// Function called once at the end of the simulation.
-    fn finish(&mut self, _: &Universe) {}
+    fn finish(&mut self, _: &System) {}
 }
 
 
@@ -56,11 +56,11 @@ impl RescaleThermostat {
 }
 
 impl Control for RescaleThermostat {
-    fn control(&mut self, universe: &mut Universe) {
-        let T_inst = universe.temperature();
+    fn control(&mut self, system: &mut System) {
+        let T_inst = system.temperature();
         if f64::abs(T_inst - self.T) > self.tol {
             let factor = f64::sqrt(self.T / T_inst);
-            for particle in universe {
+            for particle in system {
                 particle.velocity = factor * particle.velocity;
             }
         }
@@ -94,42 +94,42 @@ impl BerendsenThermostat {
 }
 
 impl Control for BerendsenThermostat {
-    fn control(&mut self, universe: &mut Universe) {
-        let T_inst = universe.temperature();
+    fn control(&mut self, system: &mut System) {
+        let T_inst = system.temperature();
         let factor = f64::sqrt(1.0 + 1.0 / self.tau * (self.T / T_inst - 1.0));
-        for particle in universe {
+        for particle in system {
             particle.velocity = factor * particle.velocity;
         }
     }
 }
 
 /******************************************************************************/
-/// Remove global translation from the universe
+/// Remove global translation from the system
 pub struct RemoveTranslation;
 
 impl Control for RemoveTranslation {
-    fn control(&mut self, universe: &mut Universe) {
-        let total_mass = universe.iter().fold(0.0, |total_mass, particle| total_mass + particle.mass);
+    fn control(&mut self, system: &mut System) {
+        let total_mass = system.iter().fold(0.0, |total_mass, particle| total_mass + particle.mass);
 
-        let total_velocity = universe.iter().fold(
+        let total_velocity = system.iter().fold(
             Vector3D::new(0.0, 0.0, 0.0),
             |total_velocity, particle| total_velocity + particle.velocity * particle.mass / total_mass
         );
 
-        for particle in universe {
+        for particle in system {
             particle.velocity = particle.velocity - total_velocity;
         }
     }
 }
 
 /******************************************************************************/
-/// Remove global rotation from the universe
+/// Remove global rotation from the system
 pub struct RemoveRotation;
 
 impl Control for RemoveRotation {
-    fn control(&mut self, universe: &mut Universe) {
-        let total_mass = universe.iter().fold(0.0, |total_mass, particle| total_mass + particle.mass);
-        let com = universe.iter().fold(
+    fn control(&mut self, system: &mut System) {
+        let total_mass = system.iter().fold(0.0, |total_mass, particle| total_mass + particle.mass);
+        let com = system.iter().fold(
             Vector3D::new(0.0, 0.0, 0.0),
             |com, particle| {
                 com + particle.position * particle.mass / total_mass
@@ -137,7 +137,7 @@ impl Control for RemoveRotation {
         );
 
         // Angular momentum
-        let moment = universe.iter().fold(
+        let moment = system.iter().fold(
             Vector3D::new(0.0, 0.0, 0.0),
             |moment, particle| {
                 let delta = particle.position - com;
@@ -145,7 +145,7 @@ impl Control for RemoveRotation {
             }
         );
 
-        let mut inertia = universe.iter().fold(
+        let mut inertia = system.iter().fold(
             Matrix3::zero(),
             |inertia, particle| {
                 let delta = particle.position - com;
@@ -161,7 +161,7 @@ impl Control for RemoveRotation {
         // The angular velocity omega is defined by `L = I w` with L the angular
         // momentum, and I the inertia matrix.
         let angular = inertia.inverse() * moment;
-        for particle in universe {
+        for particle in system {
             let delta = particle.position - com;
             particle.velocity = particle.velocity - (delta ^ angular);
         }
@@ -171,55 +171,55 @@ impl Control for RemoveRotation {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use universe::*;
+    use system::*;
     use types::*;
 
-    fn testing_universe() -> Universe {
-        let mut universe = Universe::from_cell(UnitCell::cubic(20.0));;
+    fn testing_system() -> System {
+        let mut system = System::from_cell(UnitCell::cubic(20.0));;
 
         for i in 0..10 {
             for j in 0..10 {
                 for k in 0..10 {
                     let mut p = Particle::new("Cl");
                     p.position = Vector3D::new(i as f64*2.0, j as f64*2.0, k as f64*2.0);
-                    universe.add_particle(p);
+                    system.add_particle(p);
                 }
             }
         }
 
         let mut velocities = BoltzmanVelocities::new(300.0);
-        velocities.init(&mut universe);
-        return universe;
+        velocities.init(&mut system);
+        return system;
     }
 
     #[test]
     fn rescale_thermostat() {
-        let mut universe = testing_universe();
-        let T0 = universe.temperature();
+        let mut system = testing_system();
+        let T0 = system.temperature();
         assert_approx_eq!(T0, 300.0, 1e-12);
 
         let mut thermostat = RescaleThermostat::with_tolerance(250.0, 100.0);
-        thermostat.control(&mut universe);
-        let T1 = universe.temperature();
+        thermostat.control(&mut system);
+        let T1 = system.temperature();
         assert_approx_eq!(T1, 300.0, 1e-12);
 
         let mut thermostat = RescaleThermostat::with_tolerance(250.0, 10.0);
-        thermostat.control(&mut universe);
-        let T2 = universe.temperature();
+        thermostat.control(&mut system);
+        let T2 = system.temperature();
         assert_approx_eq!(T2, 250.0, 1e-12);
     }
 
     #[test]
     fn berendsen_thermostat() {
-        let mut universe = testing_universe();
-        let T0 = universe.temperature();
+        let mut system = testing_system();
+        let T0 = system.temperature();
         assert_approx_eq!(T0, 300.0, 1e-12);
 
         let mut thermostat = BerendsenThermostat::new(250.0, 100.0);
         for _ in 0..1000 {
-            thermostat.control(&mut universe);
+            thermostat.control(&mut system);
         }
-        let T1 = universe.temperature();
+        let T1 = system.temperature();
         assert_approx_eq!(T1, 250.0, 1e-2);
     }
 
@@ -237,37 +237,37 @@ mod tests {
 
     #[test]
     fn remove_translation() {
-        let mut universe = Universe::from_cell(UnitCell::cubic(20.0));
-        universe.add_particle(Particle::new("Ag"));
-        universe.add_particle(Particle::new("Ag"));
-        universe[0].position = Vector3D::new(0.0, 0.0, 0.0);
-        universe[1].position = Vector3D::new(1.0, 1.0, 1.0);
-        universe[0].velocity = Vector3D::new(1.0, 2.0, 0.0);
-        universe[1].velocity = Vector3D::new(1.0, 0.0, 0.0);
+        let mut system = System::from_cell(UnitCell::cubic(20.0));
+        system.add_particle(Particle::new("Ag"));
+        system.add_particle(Particle::new("Ag"));
+        system[0].position = Vector3D::new(0.0, 0.0, 0.0);
+        system[1].position = Vector3D::new(1.0, 1.0, 1.0);
+        system[0].velocity = Vector3D::new(1.0, 2.0, 0.0);
+        system[1].velocity = Vector3D::new(1.0, 0.0, 0.0);
 
-        RemoveTranslation.control(&mut universe);
+        RemoveTranslation.control(&mut system);
 
-        assert_eq!(universe[0].velocity, Vector3D::new(0.0, 1.0, 0.0));
-        assert_eq!(universe[1].velocity, Vector3D::new(0.0, -1.0, 0.0));
+        assert_eq!(system[0].velocity, Vector3D::new(0.0, 1.0, 0.0));
+        assert_eq!(system[1].velocity, Vector3D::new(0.0, -1.0, 0.0));
     }
 
     #[test]
     fn remove_rotation() {
-        let mut universe = Universe::from_cell(UnitCell::cubic(20.0));
-        universe.add_particle(Particle::new("Ag"));
-        universe.add_particle(Particle::new("Ag"));
-        universe[0].position = Vector3D::new(0.0, 0.0, 0.0);
-        universe[1].position = Vector3D::new(1.0, 0.0, 0.0);
-        universe[0].velocity = Vector3D::new(0.0, 1.0, 0.0);
-        universe[1].velocity = Vector3D::new(0.0, -1.0, 2.0);
+        let mut system = System::from_cell(UnitCell::cubic(20.0));
+        system.add_particle(Particle::new("Ag"));
+        system.add_particle(Particle::new("Ag"));
+        system[0].position = Vector3D::new(0.0, 0.0, 0.0);
+        system[1].position = Vector3D::new(1.0, 0.0, 0.0);
+        system[0].velocity = Vector3D::new(0.0, 1.0, 0.0);
+        system[1].velocity = Vector3D::new(0.0, -1.0, 2.0);
 
-        RemoveRotation.control(&mut universe);
+        RemoveRotation.control(&mut system);
 
         let vel_0 = Vector3D::new(0.0, 0.0, 1.0);
         let vel_1 = Vector3D::new(0.0, 0.0, 1.0);
         for i in 0..3 {
-            assert_approx_eq!(universe[0].velocity[i], vel_0[i]);
-            assert_approx_eq!(universe[1].velocity[i], vel_1[i]);
+            assert_approx_eq!(system[0].velocity[i], vel_0[i]);
+            assert_approx_eq!(system[1].velocity[i], vel_1[i]);
         }
     }
 }

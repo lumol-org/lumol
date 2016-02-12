@@ -6,7 +6,7 @@
  */
 
 use units;
-use Universe;
+use System;
 use simulation::Propagator;
 use simulation::{Compute, PotentialEnergy, Forces};
 
@@ -54,12 +54,12 @@ impl SteepestDescent {
 }
 
 impl Propagator for SteepestDescent {
-    fn setup(&mut self, _: &Universe) {
+    fn setup(&mut self, _: &System) {
         self.is_converged = false;
     }
 
-    fn propagate(&mut self, universe: &mut Universe) {
-        let forces = Forces.compute(&universe);
+    fn propagate(&mut self, system: &mut System) {
+        let forces = Forces.compute(&system);
         // Get the maximal value in the vector.
         // How can you know that fold(cte, cte) will do it ?
         let max_force_norm2 = forces.iter().map(|&f| f.norm2()).fold(-1./0. /* -inf */, f64::max);
@@ -68,15 +68,15 @@ impl Propagator for SteepestDescent {
             return;
         }
 
-        let energy = PotentialEnergy.compute(&universe);
+        let energy = PotentialEnergy.compute(&system);
         if energy < self.dE {
             self.is_converged = true;
             return;
         }
 
         // Store the current coordinates
-        let mut positions = Vec::with_capacity(universe.size());
-        for p in universe.iter() {
+        let mut positions = Vec::with_capacity(system.size());
+        for p in system.iter() {
             positions.push(p.position.clone());
         }
         let positions = positions;
@@ -85,10 +85,10 @@ impl Propagator for SteepestDescent {
         // Update coordinates, reducing gamma until we find a configuration of
         // lower energy
         loop {
-            for (i, p) in universe.iter_mut().enumerate() {
+            for (i, p) in system.iter_mut().enumerate() {
                 p.position = positions[i] + self.gamma * forces[i];
             }
-            let new_energy = PotentialEnergy.compute(&universe);
+            let new_energy = PotentialEnergy.compute(&system);
             if new_energy <= energy {
                 break;
             }
@@ -107,25 +107,25 @@ impl Propagator for SteepestDescent {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use universe::*;
+    use system::*;
     use types::*;
     use potentials::*;
     use simulation::Propagator;
 
     #[test]
     fn minization() {
-        let mut universe = Universe::from_cell(UnitCell::cubic(20.0));;
-        universe.add_particle(Particle::new("Cl"));
-        universe[0].position = Vector3D::new(0.0, 0.0, 0.0);
-        universe.add_particle(Particle::new("Cl"));
-        universe[1].position = Vector3D::new(0.0, 0.0, 2.0);
-        universe.add_pair_interaction("Cl", "Cl", Box::new(Harmonic{x0: 2.3, k: 0.1}));
+        let mut system = System::from_cell(UnitCell::cubic(20.0));;
+        system.add_particle(Particle::new("Cl"));
+        system[0].position = Vector3D::new(0.0, 0.0, 0.0);
+        system.add_particle(Particle::new("Cl"));
+        system[1].position = Vector3D::new(0.0, 0.0, 2.0);
+        system.add_pair_interaction("Cl", "Cl", Box::new(Harmonic{x0: 2.3, k: 0.1}));
 
         let mut minization = SteepestDescent::new();
         for _ in 0..100 {
-            minization.propagate(&mut universe);
+            minization.propagate(&mut system);
         }
         assert!(minization.converged());
-        assert_approx_eq!(universe.distance(0, 1), 2.3, 1e-4);
+        assert_approx_eq!(system.distance(0, 1), 2.3, 1e-4);
     }
 }

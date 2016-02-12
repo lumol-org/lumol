@@ -33,15 +33,15 @@ impl PairPotential for LJ {}
 
 fn main() {
     Logger::stdout();
-    let mut universe = Universe::new();
+    let mut system = System::new();
 
-    universe.add_particle(Particle::new("F"));
-    universe[0].position = Vector3D::new(0.0, 0.0, 0.0);
-    universe.add_particle(Particle::new("F"));
-    universe[1].position = Vector3D::new(1.5, 0.0, 0.0);
+    system.add_particle(Particle::new("F"));
+    system[0].position = Vector3D::new(0.0, 0.0, 0.0);
+    system.add_particle(Particle::new("F"));
+    system[1].position = Vector3D::new(1.5, 0.0, 0.0);
 
-    // We can now use our new potential in the universe
-    universe.add_pair_interaction("F", "F",
+    // We can now use our new potential in the system
+    system.add_pair_interaction("F", "F",
         Box::new(LJ{
             a: units::from(675.5, "kJ/mol/A^12").unwrap(),
             b: units::from(40.26, "kJ/mol/A^6").unwrap()
@@ -49,5 +49,5 @@ fn main() {
     ));
 
     let mut simulation = Simulation::new(MolecularDynamics::new(units::from(1.0, "fs").unwrap()));
-    simulation.run(&mut universe, 1000);
+    simulation.run(&mut system, 1000);
 }

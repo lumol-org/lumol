@@ -4,9 +4,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-
-//! This module provides some ways to initialize the velocities in an `Universe`
-
+//! This module provides some ways to initialize the velocities in a `System`
 extern crate rand;
 use self::rand::distributions::{Range, Normal};
 use self::rand::distributions::Sample;
@@ -16,22 +14,22 @@ use self::rand::SeedableRng;
 use constants::K_BOLTZMANN;
 use types::Vector3D;
 use simulation::{Compute, Temperature};
-use super::Universe;
+use super::System;
 
-/// Scale all velocities in the `Universe` such that the `universe` temperature
+/// Scale all velocities in the `System` such that the `system` temperature
 /// is `T`.
-pub fn scale(universe: &mut Universe, T: f64) {
-    let instant_temperature = Temperature.compute(universe);
+pub fn scale(system: &mut System, T: f64) {
+    let instant_temperature = Temperature.compute(system);
     let factor = f64::sqrt(T / instant_temperature);
-    for particle in universe {
+    for particle in system {
         particle.velocity = factor * particle.velocity;
     }
 }
 
-/// Random initializer for the velocities of an universe.
+/// Random initializer for the velocities of a system.
 pub trait InitVelocities {
-    /// Initialize the velocities of the universe.
-    fn init(&mut self, universe: &mut Universe);
+    /// Initialize the velocities of the system.
+    fn init(&mut self, system: &mut System);
     /// Set the seed of the random number generator. The default seed is 42.
     fn seed(&mut self, seed: u64);
 }
@@ -56,15 +54,15 @@ impl BoltzmanVelocities {
 }
 
 impl InitVelocities for BoltzmanVelocities {
-    fn init(&mut self, universe: &mut Universe) {
-        for particle in universe.iter_mut() {
+    fn init(&mut self, system: &mut System) {
+        for particle in system.iter_mut() {
             let m_inv = 1.0 / particle.mass;
             let x = f64::sqrt(m_inv) * self.dist.sample(&mut self.rng);
             let y = f64::sqrt(m_inv) * self.dist.sample(&mut self.rng);
             let z = f64::sqrt(m_inv) * self.dist.sample(&mut self.rng);
             particle.velocity = Vector3D::new(x, y, z);
         }
-        scale(universe, self.T);
+        scale(system, self.T);
     }
 
     fn seed(&mut self, seed: u64) {
@@ -93,15 +91,15 @@ impl UniformVelocities {
 }
 
 impl InitVelocities for UniformVelocities {
-    fn init(&mut self, universe: &mut Universe) {
-        for particle in universe.iter_mut() {
+    fn init(&mut self, system: &mut System) {
+        for particle in system.iter_mut() {
             let m_inv = 1.0 / particle.mass;
             let x = f64::sqrt(m_inv) * self.dist.sample(&mut self.rng);
             let y = f64::sqrt(m_inv) * self.dist.sample(&mut self.rng);
             let z = f64::sqrt(m_inv) * self.dist.sample(&mut self.rng);
             particle.velocity = Vector3D::new(x, y, z);
         }
-        scale(universe, self.T);
+        scale(system, self.T);
     }
 
     fn seed(&mut self, seed: u64) {
@@ -114,33 +112,33 @@ mod test {
     use super::*;
     use simulation::{Compute, Temperature};
 
-    use universe::{Universe, Particle};
+    use system::{System, Particle};
 
-    fn testing_universe() -> Universe {
-        let mut universe = Universe::new();
+    fn testing_system() -> System {
+        let mut system = System::new();
         for _ in 0..10000 {
-            universe.add_particle(Particle::new("F"));
+            system.add_particle(Particle::new("F"));
         }
-        return universe;
+        return system;
     }
 
     #[test]
     fn init_boltzmann() {
-        let mut universe = testing_universe();
+        let mut system = testing_system();
         let mut velocities = BoltzmanVelocities::new(300.0);
         velocities.seed(1234);
-        velocities.init(&mut universe);
-        let T = Temperature.compute(&universe);
+        velocities.init(&mut system);
+        let T = Temperature.compute(&system);
         assert_approx_eq!(T, 300.0, 1e-9);
     }
 
     #[test]
     fn init_uniform() {
-        let mut universe = testing_universe();
+        let mut system = testing_system();
         let mut velocities = UniformVelocities::new(300.0);
         velocities.seed(1234);
-        velocities.init(&mut universe);
-        let T = Temperature.compute(&universe);
+        velocities.init(&mut system);
+        let T = Temperature.compute(&system);
         assert_approx_eq!(T, 300.0, 1e-9);
     }
 }

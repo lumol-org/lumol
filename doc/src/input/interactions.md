@@ -1,6 +1,6 @@
 # Interactions
 
-The interactions in an universe can be specified using YAML syntax. An
+The interactions in a system can be specified using YAML syntax. An
 interactions is the association of atomic types, potential function and optional
 restrictions and computation mode.
 

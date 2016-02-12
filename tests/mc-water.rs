@@ -14,15 +14,15 @@ use std::path::Path;
 use std::sync::{Once, ONCE_INIT};
 static START: Once = ONCE_INIT;
 
-fn get_universe(potential: &str) -> Universe {
+fn get_system(potential: &str) -> System {
     let data_dir = Path::new(file!()).parent().unwrap().join("data");
     let configuration = data_dir.join("water.xyz");
-    let mut universe = Universe::from_file(configuration.to_str().unwrap()).unwrap();
-    universe.set_cell(UnitCell::cubic(18.0));
+    let mut system = System::from_file(configuration.to_str().unwrap()).unwrap();
+    system.set_cell(UnitCell::cubic(18.0));
 
     let potentials = data_dir.join(potential);
-    input::read_interactions(&mut universe, potentials).unwrap();
-    return universe;
+    input::read_interactions(&mut system, potentials).unwrap();
+    return system;
 }
 
 // This test only run a Monte-Carlo simulation of water, but do not test
@@ -30,7 +30,7 @@ fn get_universe(potential: &str) -> Universe {
 #[test]
 fn run() {
     START.call_once(|| {Logger::stdout();});
-    let mut universe = get_universe("water-wolf.yml");
+    let mut system = get_system("water-wolf.yml");
 
     let mut mc = MonteCarlo::new(units::from(300.0, "K").unwrap());
     mc.add(Box::new(Translate::new(units::from(3.0, "A").unwrap())), 1.0);
@@ -38,5 +38,5 @@ fn run() {
     let mut simulation = Simulation::new(mc);
 
     // TODO: increase this value when the cache is implemented
-    simulation.run(&mut universe, 500);
+    simulation.run(&mut system, 500);
 }

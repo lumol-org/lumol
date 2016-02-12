@@ -12,13 +12,13 @@
 //! energy components, by storing them and providing update callbacks.
 use std::mem;
 
-use super::Universe;
+use super::System;
 use types::{Vector3D, Array2};
 use potentials::global::GlobalCache;
 
-/// Callback for updating a cache. It also take an `&mut Universe` argument for
+/// Callback for updating a cache. It also take an `&mut System` argument for
 /// updating the cache inside the global potentials.
-type UpdateCallback = Box<Fn(&mut EnergyCache, &mut Universe)>;
+type UpdateCallback = Box<Fn(&mut EnergyCache, &mut System)>;
 
 /// This is a cache for energy computation.
 ///
@@ -40,7 +40,7 @@ pub struct EnergyCache {
     coulomb: f64,
     /// Energy of global interactions
     global: f64,
-    /// Callback to be called to update the cache if the universe is modified
+    /// Callback to be called to update the cache if the system is modified
     updater: Option<UpdateCallback>
 }
 
@@ -70,17 +70,17 @@ impl EnergyCache {
         self.global = 0.0;
     }
 
-    /// Initialize the cache to be used with `universe`. After a call to this
-    /// function, the cache is only usable with the same universe. To change
-    /// the associated universe, one must call this fucntion again.
-    pub fn init(&mut self, universe: &Universe) {
+    /// Initialize the cache to be used with `system`. After a call to this
+    /// function, the cache is only usable with the same system. To change
+    /// the associated system, one must call this fucntion again.
+    pub fn init(&mut self, system: &System) {
         self.clear();
-        self.pairs_cache.resize((universe.size(), universe.size()));
-        let evaluator = universe.energy_evaluator();
+        self.pairs_cache.resize((system.size(), system.size()));
+        let evaluator = system.energy_evaluator();
 
-        for i in 0..universe.size() {
-            for j in (i + 1)..universe.size() {
-                let r = universe.wraped_vector(i, j).norm();
+        for i in 0..system.size() {
+            for j in (i + 1)..system.size() {
+                let r = system.wraped_vector(i, j).norm();
                 let energy = evaluator.pair(r, i, j);
                 self.pairs_cache[(i, j)] = energy;
                 self.pairs_cache[(j, i)] = energy;
@@ -111,10 +111,10 @@ impl EnergyCache {
 
     /// Update the cache after a call to a `EnergyCache::*_cost` function or
     /// `EnergyCache::unused`.
-    pub fn update(&mut self, universe: &mut Universe) {
+    pub fn update(&mut self, system: &mut System) {
         let updater = mem::replace(&mut self.updater, None);
         if let Some(updater) = updater {
-            updater(self, universe);
+            updater(self, system);
         } else {
             error!("Error in `EnergyCache::update`: \
                     This function MUST be called after a call to a `*_cost` function");
@@ -126,8 +126,8 @@ impl EnergyCache {
     /// still want it to be updated. Future call to `EnergyCache::update` will
     /// recompute the full cache.
     pub fn unused(&mut self) {
-        self.updater = Some(Box::new(|cache, universe| {
-            cache.init(universe);
+        self.updater = Some(Box::new(|cache, system| {
+            cache.init(system);
         }))
     }
 }
@@ -137,19 +137,19 @@ impl EnergyCache {
     /// `newpos`. This function DO NOT update the cache, the
     /// `update_particles_moved` function MUST be called if the particles are
     /// effectively moved.
-    pub fn move_particles_cost(&mut self, universe: &Universe, idxes: Vec<usize>, newpos: &[Vector3D]) -> f64 {
-        let evaluator = universe.energy_evaluator();
+    pub fn move_particles_cost(&mut self, system: &System, idxes: Vec<usize>, newpos: &[Vector3D]) -> f64 {
+        let evaluator = system.energy_evaluator();
 
         // First, go for pair interactions
-        let mut new_pairs = Array2::<f64>::with_size((universe.size(), universe.size()));
+        let mut new_pairs = Array2::<f64>::with_size((system.size(), system.size()));
         let mut pairs_delta = 0.0;
         // Interactions with the sub-system not being moved
         for (i, &part_i) in idxes.iter().enumerate() {
-            for part_j in 0..universe.size() {
+            for part_j in 0..system.size() {
                 // Exclude interactions inside the sub-system.
                 if idxes.contains(&part_j) {continue}
 
-                let r = universe.cell().distance(&universe[part_j].position, &newpos[i]);
+                let r = system.cell().distance(&system[part_j].position, &newpos[i]);
                 let energy = evaluator.pair(r, part_i, part_j);
 
                 pairs_delta += energy;
@@ -163,7 +163,7 @@ impl EnergyCache {
         // Interactions withing the sub-system being moved
         for (i, &part_i) in idxes.iter().enumerate() {
             for (j, &part_j) in idxes.iter().enumerate().skip(i + 1) {
-                let r = universe.cell().distance(&newpos[i], &newpos[j]);
+                let r = system.cell().distance(&newpos[i], &newpos[j]);
                 let energy = evaluator.pair(r, part_i, part_j);
 
                 pairs_delta += energy;
@@ -180,44 +180,44 @@ impl EnergyCache {
         let mut bonds = 0.0;
         let mut angles = 0.0;
         let mut dihedrals = 0.0;
-        for molecule in universe.molecules() {
+        for molecule in system.molecules() {
             for bond in molecule.bonds() {
                 let (i, j) = (bond.i(), bond.j());
-                let ri = new_position(universe, i, &idxes, newpos);
-                let rj = new_position(universe, j, &idxes, newpos);
-                let r = universe.cell().distance(ri, rj);
+                let ri = new_position(system, i, &idxes, newpos);
+                let rj = new_position(system, j, &idxes, newpos);
+                let r = system.cell().distance(ri, rj);
                 bonds += evaluator.bond(r, i, j);
             }
 
             for angle in molecule.angles() {
                 let (i, j, k) = (angle.i(), angle.j(), angle.k());
-                let ri = new_position(universe, i, &idxes, newpos);
-                let rj = new_position(universe, j, &idxes, newpos);
-                let rk = new_position(universe, k, &idxes, newpos);
-                let theta = universe.cell().angle(ri, rj, rk);
+                let ri = new_position(system, i, &idxes, newpos);
+                let rj = new_position(system, j, &idxes, newpos);
+                let rk = new_position(system, k, &idxes, newpos);
+                let theta = system.cell().angle(ri, rj, rk);
                 angles += evaluator.angle(theta, i, j, k);
             }
 
             for dihedral in molecule.dihedrals() {
                 let (i, j, k, m) = (dihedral.i(), dihedral.j(), dihedral.k(), dihedral.m());
-                let ri = new_position(universe, i, &idxes, newpos);
-                let rj = new_position(universe, j, &idxes, newpos);
-                let rk = new_position(universe, k, &idxes, newpos);
-                let rm = new_position(universe, m, &idxes, newpos);
-                let phi = universe.cell().dihedral(ri, rj, rk, rm);
+                let ri = new_position(system, i, &idxes, newpos);
+                let rj = new_position(system, j, &idxes, newpos);
+                let rk = new_position(system, k, &idxes, newpos);
+                let rm = new_position(system, m, &idxes, newpos);
+                let phi = system.cell().dihedral(ri, rj, rk, rm);
                 dihedrals += evaluator.dihedral(phi, i, j, k, m);
             }
         }
 
-        let coulomb_delta = universe.coulomb_potential()
+        let coulomb_delta = system.coulomb_potential()
                                     .as_ref()
                                     .map_or(0.0, |coulomb|
-            coulomb.move_particles_cost(universe, &idxes, newpos)
+            coulomb.move_particles_cost(system, &idxes, newpos)
         );
 
         let mut global_delta = 0.0;
-        for potential in universe.global_potentials() {
-            global_delta += potential.move_particles_cost(universe, &idxes, newpos);
+        for potential in system.global_potentials() {
+            global_delta += potential.move_particles_cost(system, &idxes, newpos);
         }
 
         let cost = pairs_delta + (bonds - self.bonds)
@@ -225,7 +225,7 @@ impl EnergyCache {
                                + (dihedrals - self.dihedrals)
                                + coulomb_delta + global_delta;
 
-        self.updater = Some(Box::new(move |cache, universe| {
+        self.updater = Some(Box::new(move |cache, system| {
             cache.bonds = bonds;
             cache.angles = angles;
             cache.dihedrals = dihedrals;
@@ -246,8 +246,8 @@ impl EnergyCache {
                 }
             }
             // Update the cache for the global potentials
-            universe.coulomb_potential_mut().as_mut().and_then(|coulomb| Some(coulomb.update()));
-            for potential in universe.global_potentials_mut() {
+            system.coulomb_potential_mut().as_mut().and_then(|coulomb| Some(coulomb.update()));
+            for potential in system.global_potentials_mut() {
                 potential.update();
             }
         }));
@@ -256,35 +256,35 @@ impl EnergyCache {
 }
 
 /// Return either the new position of a particle (from `newpos`) if its index
-/// is in `idxes`, or its old position in the universe.
-fn new_position<'a>(universe: &'a Universe, i: usize, idxes: &[usize], newpos: &'a[Vector3D]) -> &'a Vector3D {
+/// is in `idxes`, or its old position in the system.
+fn new_position<'a>(system: &'a System, i: usize, idxes: &[usize], newpos: &'a[Vector3D]) -> &'a Vector3D {
     for (idx, &particle) in idxes.iter().enumerate() {
         if particle == i {
             return &newpos[idx];
         }
     }
-    return &universe[i].position;
+    return &system[i].position;
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use universe::{Universe, UnitCell};
-    use utils::universe_from_xyz;
+    use system::{System, UnitCell};
+    use utils::system_from_xyz;
     use input::read_interactions_string;
     use types::Vector3D;
 
-    fn testing_universe() -> Universe {
-        let mut universe = universe_from_xyz("4
+    fn testing_system() -> System {
+        let mut system = system_from_xyz("4
         bonds
         O     0.000000     0.000000     0.000000
         O     0.000000     0.000000     1.480000
         H     0.895669     0.000000    -0.316667
         H    -0.895669     0.000000     1.796667");
-        universe.set_cell(UnitCell::cubic(10.0));
-        assert!(universe.molecules().len() == 1);
+        system.set_cell(UnitCell::cubic(10.0));
+        assert!(system.molecules().len() == 1);
 
-        read_interactions_string(&mut universe, "
+        read_interactions_string(&mut system, "
         # Values are completely random, just having a bit of all the types
         pairs:
             - atoms: [H, H]
@@ -320,46 +320,46 @@ mod tests {
                 H: 0.5
         ").unwrap();
 
-        return universe;
+        return system;
     }
 
     #[test]
     fn cache_energy() {
-        let universe = testing_universe();
+        let system = testing_system();
         let mut cache = EnergyCache::new();
-        cache.init(&universe);
+        cache.init(&system);
 
-        assert_approx_eq!(cache.energy(), universe.potential_energy());
+        assert_approx_eq!(cache.energy(), system.potential_energy());
     }
 
     #[test]
     fn move_atoms() {
-        let mut universe = testing_universe();
+        let mut system = testing_system();
         let mut cache = EnergyCache::new();
-        let old_e = universe.potential_energy();
-        cache.init(&universe);
+        let old_e = system.potential_energy();
+        cache.init(&system);
 
         let idxes = vec![0, 3];
         let newpos = &[Vector3D::new(0.0, 0.0, 0.5), Vector3D::new(-0.7, 0.2, 1.5)];
 
-        let cost = cache.move_particles_cost(&universe, idxes, newpos);
+        let cost = cache.move_particles_cost(&system, idxes, newpos);
 
-        universe[0].position = newpos[0];
-        universe[3].position = newpos[1];
-        let new_e = universe.potential_energy();
+        system[0].position = newpos[0];
+        system[3].position = newpos[1];
+        let new_e = system.potential_energy();
         assert_approx_eq!(cost, new_e - old_e);
 
-        cache.update(&mut universe);
+        cache.update(&mut system);
         assert_approx_eq!(cache.energy(), new_e);
 
         // Check that the cache is really updated
         let old_e = new_e;
         let idxes = vec![2, 3];
         let newpos = &[Vector3D::new(0.9, 0.2, -0.4), Vector3D::new(-0.9, 0.0, 1.8)];
-        let cost = cache.move_particles_cost(&universe, idxes, newpos);
-        universe[2].position = newpos[0];
-        universe[3].position = newpos[1];
-        let new_e = universe.potential_energy();
+        let cost = cache.move_particles_cost(&system, idxes, newpos);
+        system[2].position = newpos[0];
+        system[3].position = newpos[1];
+        let new_e = system.potential_energy();
         assert_approx_eq!(cost, new_e - old_e);
     }
 }

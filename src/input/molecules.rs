@@ -10,9 +10,9 @@ use self::chemfiles::{Trajectory, Frame};
 
 use std::path::Path;
 
-use universe::chemfiles::Error;
-use universe::chemfiles::frame_to_universe;
-use universe::{Molecule, Particle};
+use system::chemfiles::Error;
+use system::chemfiles::frame_to_system;
+use system::{Molecule, Particle};
 
 /// Read the first molecule in the first frame of the file at `path`, and return
 /// this molecule and the corresponding list of particles. If `guess_bonds` is
@@ -24,12 +24,12 @@ pub fn molecule_from_file<P: AsRef<Path>>(path: P, guess_bonds: bool) -> Result<
     let mut frame = try!(Frame::new(0));
     try!(trajectory.read(&mut frame));
     try!(frame.guess_topology(guess_bonds));
-    let universe = try!(frame_to_universe(frame));
+    let system = try!(frame_to_system(frame));
 
-    let molecule = universe.molecule(0).clone();
+    let molecule = system.molecule(0).clone();
     let mut particles = Vec::new();
     for i in &molecule {
-        particles.push(universe[i].clone());
+        particles.push(system[i].clone());
     }
 
     return Ok((molecule, particles));
@@ -39,7 +39,7 @@ pub fn molecule_from_file<P: AsRef<Path>>(path: P, guess_bonds: bool) -> Result<
 mod tests {
     use super::*;
     use std::path::Path;
-    use universe::moltype;
+    use system::moltype;
 
     #[test]
     fn read() {

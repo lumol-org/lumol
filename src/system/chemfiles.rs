@@ -8,8 +8,7 @@
 //! [Chemfiles](https://github.com/chemfiles/chemfiles/) adaptators for Cymbalum.
 
 extern crate chemfiles;
-use universe::{Particle, Universe};
-use universe::cells::{UnitCell, CellType};
+use system::{System, Particle, UnitCell, CellType};
 use types::Vector3D;
 
 pub use self::chemfiles::Error;
@@ -54,39 +53,39 @@ impl ToCymbalum for chemfiles::UnitCell {
 }
 
 impl ToCymbalum for chemfiles::Frame {
-    type Output = Universe;
-    fn to_cymbalum(self) -> Result<Universe, Error> {
+    type Output = System;
+    fn to_cymbalum(self) -> Result<System, Error> {
         let cell = try!(self.cell());
         let cell = try!(cell.to_cymbalum());
-        let mut universe = Universe::from_cell(cell);
+        let mut system = System::from_cell(cell);
         let topology = try!(self.topology());
         let positions = try!(self.positions());
         let natoms = try!(self.natoms());
         let step = try!(self.step());
 
-        universe.set_step(step as u64);
+        system.set_step(step as u64);
 
         for i in 0..natoms {
             let atom = try!(topology.atom(i));
             let particle = try!(atom.to_cymbalum());
 
-            universe.add_particle(particle);
+            system.add_particle(particle);
             let position = Vector3D::new(
                 positions[i][0] as f64,
                 positions[i][1] as f64,
                 positions[i][2] as f64
             );
-            universe[i].position = position;
+            system[i].position = position;
         }
 
         let mut bonds = try!(topology.bonds());
         while !bonds.is_empty() {
             let bond = bonds.pop().unwrap();
-            if let Some(perms) = universe.add_bond(bond[0] as usize, bond[1] as usize) {
+            if let Some(perms) = system.add_bond(bond[0] as usize, bond[1] as usize) {
                 apply_particle_permutation(&mut bonds, perms);
             }
         }
-        Ok(universe)
+        Ok(system)
     }
 }
 
@@ -104,8 +103,8 @@ fn apply_particle_permutation(bonds: &mut Vec<[usize; 2]>, perms: Vec<(usize, us
     }
 }
 
-/// Convert a chemfiles `Frame` to an `Universe`
-pub fn frame_to_universe(frame: chemfiles::Frame) -> Result<Universe, Error> {
+/// Convert a chemfiles `Frame` to an `System`
+pub fn frame_to_system(frame: chemfiles::Frame) -> Result<System, Error> {
     frame.to_cymbalum()
 }
 
@@ -149,7 +148,7 @@ impl ToChemfiles for UnitCell {
     }
 }
 
-impl ToChemfiles for Universe {
+impl ToChemfiles for System {
     type Output = chemfiles::Frame;
     fn to_chemfiles(&self) -> Result<chemfiles::Frame, Error> {
 
@@ -195,7 +194,7 @@ impl ToChemfiles for Universe {
     }
 }
 
-/// Convert an `Universe` to a chemfiles `Frame`
-pub fn universe_to_frame(universe: &Universe) -> Result<chemfiles::Frame, Error> {
-    universe.to_chemfiles()
+/// Convert an `System` to a chemfiles `Frame`
+pub fn system_to_frame(system: &System) -> Result<chemfiles::Frame, Error> {
+    system.to_chemfiles()
 }

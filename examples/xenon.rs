@@ -5,10 +5,10 @@ use cymbalum::*;
 fn main() {
     Logger::stdout();
 
-    let mut universe = Universe::from_file("data/NaCl.xyz").unwrap();
-    universe.set_cell(UnitCell::cubic(units::from(21.65, "A").unwrap()));
+    let mut system = System::from_file("data/NaCl.xyz").unwrap();
+    system.set_cell(UnitCell::cubic(units::from(21.65, "A").unwrap()));
 
-    universe.add_pair_interaction("Xe", "Xe",
+    system.add_pair_interaction("Xe", "Xe",
         Box::new(LennardJones{
             sigma: units::from(4.57, "A").unwrap(),
             epsilon: units::from(1.87, "kJ/mol").unwrap()
@@ -25,5 +25,5 @@ fn main() {
     let mut simulation = Simulation::new(mc);
     simulation.add_output_with_frequency(TrajectoryOutput::new("trajectory.xyz").unwrap(), 50);
 
-    simulation.run(&mut universe, 20000);
+    simulation.run(&mut system, 20000);
 }

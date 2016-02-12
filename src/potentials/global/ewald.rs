@@ -12,7 +12,7 @@ use std::f64::consts::{PI, FRAC_2_SQRT_PI};
 use std::f64;
 use std::cell::{Cell, RefCell};
 
-use universe::{Universe, UnitCell, CellType};
+use system::{System, UnitCell, CellType};
 use types::{Matrix3, Vector3D, Array3, Complex};
 use constants::ELCC;
 use potentials::PairRestriction;
@@ -135,40 +135,40 @@ impl Ewald {
 /// Real space part of the summation
 impl Ewald {
     /// Real space contribution to the energy
-    fn real_space_energy(&self, universe: &Universe) -> f64 {
-        let natoms = universe.size();
+    fn real_space_energy(&self, system: &System) -> f64 {
+        let natoms = system.size();
         let mut energy = 0.0;
         for i in 0..natoms {
             for j in (i + 1)..natoms {
-                if self.restriction.is_excluded_pair(universe, i, j) {continue}
-                let s = self.restriction.scaling(universe, i, j);
+                if self.restriction.is_excluded_pair(system, i, j) {continue}
+                let s = self.restriction.scaling(system, i, j);
                 assert!(s == 1.0, "Scaling restriction scheme using Ewald are not implemented");
 
-                let r = universe.distance(i, j);
+                let r = system.distance(i, j);
                 if r > self.rc {continue};
 
-                energy += s * universe[i].charge * universe[j].charge * erfc(self.alpha * r) / r;
+                energy += s * system[i].charge * system[j].charge * erfc(self.alpha * r) / r;
             }
         }
         return energy / ELCC;
     }
 
     /// Real space contribution to the forces
-    fn real_space_forces(&self, universe: &Universe, res: &mut Vec<Vector3D>) {
-        let natoms = universe.size();
-        assert!(res.len() == universe.size());
+    fn real_space_forces(&self, system: &System, res: &mut Vec<Vector3D>) {
+        let natoms = system.size();
+        assert!(res.len() == system.size());
 
         for i in 0..natoms {
             for j in (i + 1)..natoms {
-                if self.restriction.is_excluded_pair(universe, i, j) {continue}
-                let s = self.restriction.scaling(universe, i, j);
+                if self.restriction.is_excluded_pair(system, i, j) {continue}
+                let s = self.restriction.scaling(system, i, j);
                 assert!(s == 1.0, "Scaling restriction scheme using Ewald are not implemented");
 
-                let rij = universe.wraped_vector(i, j);
+                let rij = system.wraped_vector(i, j);
                 let r = rij.norm();
                 if r > self.rc {continue};
 
-                let factor = s * self.real_space_force_factor(r, universe[i].charge, universe[j].charge);
+                let factor = s * self.real_space_force_factor(r, system[i].charge, system[j].charge);
                 let force = factor * rij;
                 res[i] = res[i] + force;
                 res[j] = res[j] - force;
@@ -186,20 +186,20 @@ impl Ewald {
     }
 
     /// Real space contribution to the virial
-    fn real_space_virial(&self, universe: &Universe) -> Matrix3 {
-        let natoms = universe.size();
+    fn real_space_virial(&self, system: &System) -> Matrix3 {
+        let natoms = system.size();
         let mut res = Matrix3::zero();
         for i in 0..natoms {
             for j in (i + 1)..natoms {
-                if self.restriction.is_excluded_pair(universe, i, j) {continue}
-                let s = self.restriction.scaling(universe, i, j);
+                if self.restriction.is_excluded_pair(system, i, j) {continue}
+                let s = self.restriction.scaling(system, i, j);
                 assert!(s == 1.0, "Scaling restriction scheme using Ewald are not implemented");
 
-                let rij = universe.wraped_vector(i, j);
+                let rij = system.wraped_vector(i, j);
                 let r = rij.norm();
                 if r > self.rc {continue};
 
-                let factor = s * self.real_space_force_factor(r, universe[i].charge, universe[j].charge);
+                let factor = s * self.real_space_force_factor(r, system[i].charge, system[j].charge);
                 let force = -factor * rij;
 
                 res = res + force.tensorial(&rij);
@@ -212,10 +212,10 @@ impl Ewald {
 /// Self-interaction corection
 impl Ewald {
     /// Self-interaction contribution to the energy
-    fn self_energy(&self, universe: &Universe) -> f64 {
+    fn self_energy(&self, system: &System) -> f64 {
         let mut q2 = 0.0;
-        for i in 0..universe.size() {
-            q2 += universe[i].charge * universe[i].charge;
+        for i in 0..system.size() {
+            q2 += system[i].charge * system[i].charge;
         }
         return -self.alpha / f64::sqrt(PI) * q2 / ELCC;
     }
@@ -224,14 +224,14 @@ impl Ewald {
 /// k-space part of the summation
 impl Ewald {
     /// Compute the Fourier transform of the electrostatic density
-    fn density_fft(&self, universe: &Universe) {
-        let natoms = universe.size();
+    fn density_fft(&self, system: &System) {
+        let natoms = system.size();
         let mut fourier_phases = self.fourier_phases.borrow_mut();
         fourier_phases.resize((self.kmax, natoms, 3));
 
         // Do the k=0, 1 cases first
         for i in 0..natoms {
-            let ri = universe.cell().fractional(&universe[i].position);
+            let ri = system.cell().fractional(&system[i].position);
             for j in 0..3 {
                 fourier_phases[(0, i, j)] = 0.0;
                 fourier_phases[(1, i, j)] = -2.0 * PI * ri[j];
@@ -254,7 +254,7 @@ impl Ewald {
                     rho[(ikx, iky, ikz)] = Complex::polar(0.0, 0.0);
                     for j in 0..natoms {
                         let phi = fourier_phases[(ikx, j, 0)] + fourier_phases[(iky, j, 1)] + fourier_phases[(ikz, j, 2)];
-                        rho[(ikx, iky, ikz)] = rho[(ikx, iky, ikz)] + Complex::polar(universe[j].charge, phi);
+                        rho[(ikx, iky, ikz)] = rho[(ikx, iky, ikz)] + Complex::polar(system[j].charge, phi);
                     }
                 }
             }
@@ -262,8 +262,8 @@ impl Ewald {
     }
 
     /// k-space contribution to the energy
-    fn kspace_energy(&self, universe: &Universe) -> f64 {
-        self.density_fft(universe);
+    fn kspace_energy(&self, system: &System) -> f64 {
+        self.density_fft(system);
         let mut energy = 0.0;
 
         let expfactors = self.expfactors.borrow();
@@ -279,17 +279,17 @@ impl Ewald {
                 }
             }
         }
-        energy *= 2.0 * PI / (universe.cell().volume() * ELCC);
+        energy *= 2.0 * PI / (system.cell().volume() * ELCC);
         return energy;
     }
 
     /// k-space contribution to the forces
-    fn kspace_forces(&self, universe: &Universe, res: &mut Vec<Vector3D>) {
-        assert!(res.len() == universe.size());
-        self.density_fft(universe);
+    fn kspace_forces(&self, system: &System, res: &mut Vec<Vector3D>) {
+        assert!(res.len() == system.size());
+        self.density_fft(system);
 
-        let factor = 4.0 * PI / (universe.cell().volume() * ELCC);
-        let (rec_kx, rec_ky, rec_kz) = universe.cell().reciprocal_vectors();
+        let factor = 4.0 * PI / (system.cell().volume() * ELCC);
+        let (rec_kx, rec_ky, rec_kz) = system.cell().reciprocal_vectors();
 
         let expfactors = self.expfactors.borrow();
         for ikx in 0..self.kmax {
@@ -299,10 +299,10 @@ impl Ewald {
                     // expfactors.
                     if expfactors[(ikx, iky, ikz)].abs() < f64::MIN {continue}
                     let k = (ikx as f64) * rec_kx + (iky as f64) * rec_ky + (ikz as f64) * rec_kz;
-                    for i in 0..universe.size() {
-                        let qi = universe[i].charge;
-                        for j in (i + 1)..universe.size() {
-                            let qj = universe[j].charge;
+                    for i in 0..system.size() {
+                        let qi = system[i].charge;
+                        for j in (i + 1)..system.size() {
+                            let qj = system[j].charge;
                             let force = factor * self.kspace_force_factor(i, j, ikx, iky, ikz, qi, qj) * k;
 
                             res[i] = res[i] - force;
@@ -329,12 +329,12 @@ impl Ewald {
     }
 
     /// k-space contribution to the virial
-    fn kspace_virial(&self, universe: &Universe) -> Matrix3 {
-        self.density_fft(universe);
+    fn kspace_virial(&self, system: &System) -> Matrix3 {
+        self.density_fft(system);
         let mut res = Matrix3::zero();
 
-        let factor = 4.0 * PI / (universe.cell().volume() * ELCC);
-        let (rec_kx, rec_ky, rec_kz) = universe.cell().reciprocal_vectors();
+        let factor = 4.0 * PI / (system.cell().volume() * ELCC);
+        let (rec_kx, rec_ky, rec_kz) = system.cell().reciprocal_vectors();
 
         let expfactors = self.expfactors.borrow();
         for ikx in 0..self.kmax {
@@ -344,12 +344,12 @@ impl Ewald {
                     // expfactors.
                     if expfactors[(ikx, iky, ikz)].abs() < f64::MIN {continue}
                     let k = (ikx as f64) * rec_kx + (iky as f64) * rec_ky + (ikz as f64) * rec_kz;
-                    for i in 0..universe.size() {
-                        let qi = universe[i].charge;
-                        for j in (i + 1)..universe.size() {
-                            let qj = universe[j].charge;
+                    for i in 0..system.size() {
+                        let qi = system[i].charge;
+                        for j in (i + 1)..system.size() {
+                            let qj = system[j].charge;
                             let force = factor * self.kspace_force_factor(i, j, ikx, iky, ikz, qi, qj) * k;
-                            let rij = universe.wraped_vector(i, j);
+                            let rij = system.wraped_vector(i, j);
 
                             res = res + force.tensorial(&rij);
                         }
@@ -385,23 +385,23 @@ fn fast_sin(mut x: f64) -> f64 {
 /// Molecular correction for Ewald summation
 impl Ewald {
     /// Molecular correction contribution to the energy
-    fn molcorrect_energy(&self, universe: &Universe) -> f64 {
-        let natoms = universe.size();
+    fn molcorrect_energy(&self, system: &System) -> f64 {
+        let natoms = system.size();
         let mut energy = 0.0;
 
         for i in 0..natoms {
-            let qi = universe[i].charge;
+            let qi = system[i].charge;
             // I can not manage to get this work with a loop from (i+1) to N. The finite
             // difference test (testing that the force is the same that the finite difference
             // of the energy) always fail. So let's use it that way for now.
             for j in 0..natoms {
                 if i == j {continue}
                 // Only account for excluded pairs
-                if !self.restriction.is_excluded_pair(universe, i, j) {continue}
-                let s = self.restriction.scaling(universe, i, j);
+                if !self.restriction.is_excluded_pair(system, i, j) {continue}
+                let s = self.restriction.scaling(system, i, j);
 
-                let qj = universe[j].charge;
-                let r = universe.distance(i, j);
+                let qj = system[j].charge;
+                let r = system.distance(i, j);
                 assert!(r < self.rc, "Atoms in molecule are separated by more than the cutoff radius of Ewald sum.");
 
                 energy += 0.5 * qi * qj * s / ELCC * erf(self.alpha * r)/r;
@@ -411,20 +411,20 @@ impl Ewald {
     }
 
     /// Molecular correction contribution to the forces
-    fn molcorrect_forces(&self, universe: &Universe, res: &mut Vec<Vector3D>) {
-        let natoms = universe.size();
+    fn molcorrect_forces(&self, system: &System, res: &mut Vec<Vector3D>) {
+        let natoms = system.size();
         assert!(res.len() == natoms);
 
         for i in 0..natoms {
-            let qi = universe[i].charge;
+            let qi = system[i].charge;
             for j in 0..natoms {
                 if i == j {continue}
                 // Only account for excluded pairs
-                if !self.restriction.is_excluded_pair(universe, i, j) {continue}
-                let s = self.restriction.scaling(universe, i, j);
+                if !self.restriction.is_excluded_pair(system, i, j) {continue}
+                let s = self.restriction.scaling(system, i, j);
 
-                let qj = universe[j].charge;
-                let rij = universe.wraped_vector(i, j);
+                let qj = system[j].charge;
+                let rij = system.wraped_vector(i, j);
                 let r = rij.norm();
                 assert!(r < self.rc, "Atoms in molecule are separated by more than the cutoff radius of Ewald sum.");
 
@@ -442,20 +442,20 @@ impl Ewald {
     }
 
     /// Molecular correction contribution to the virial
-    fn molcorrect_virial(&self, universe: &Universe) -> Matrix3 {
-        let natoms = universe.size();
+    fn molcorrect_virial(&self, system: &System) -> Matrix3 {
+        let natoms = system.size();
         let mut res = Matrix3::zero();
 
         for i in 0..natoms {
-            let qi = universe[i].charge;
+            let qi = system[i].charge;
             for j in 0..natoms {
                 if i == j {continue}
                 // Only account for excluded pairs
-                if !self.restriction.is_excluded_pair(universe, i, j) {continue}
-                let s = self.restriction.scaling(universe, i, j);
+                if !self.restriction.is_excluded_pair(system, i, j) {continue}
+                let s = self.restriction.scaling(system, i, j);
 
-                let qj = universe[j].charge;
-                let rij = universe.wraped_vector(i, j);
+                let qj = system[j].charge;
+                let rij = system.wraped_vector(i, j);
                 let r = rij.norm();
                 assert!(r < self.rc, "Atoms in molecule are separated by more than the cutoff radius of Ewald sum.");
 
@@ -468,31 +468,31 @@ impl Ewald {
 }
 
 impl GlobalPotential for Ewald {
-    fn energy(&self, universe: &Universe) -> f64 {
-        self.precompute(universe.cell());
-        let real = self.real_space_energy(universe);
-        let self_e = self.self_energy(universe);
-        let kspace = self.kspace_energy(universe);
-        let molecular = self.molcorrect_energy(universe);
+    fn energy(&self, system: &System) -> f64 {
+        self.precompute(system.cell());
+        let real = self.real_space_energy(system);
+        let self_e = self.self_energy(system);
+        let kspace = self.kspace_energy(system);
+        let molecular = self.molcorrect_energy(system);
         return real + self_e + kspace + molecular;
     }
 
-    fn forces(&self, universe: &Universe) -> Vec<Vector3D> {
-        self.precompute(universe.cell());
-        let mut res = vec![Vector3D::new(0.0, 0.0, 0.0); universe.size()];
-        self.real_space_forces(universe, &mut res);
+    fn forces(&self, system: &System) -> Vec<Vector3D> {
+        self.precompute(system.cell());
+        let mut res = vec![Vector3D::new(0.0, 0.0, 0.0); system.size()];
+        self.real_space_forces(system, &mut res);
         /* No self force */
-        self.kspace_forces(universe, &mut res);
-        self.molcorrect_forces(universe, &mut res);
+        self.kspace_forces(system, &mut res);
+        self.molcorrect_forces(system, &mut res);
         return res;
     }
 
-    fn virial(&self, universe: &Universe) -> Matrix3 {
-        self.precompute(universe.cell());
-        let real = self.real_space_virial(universe);
+    fn virial(&self, system: &System) -> Matrix3 {
+        self.precompute(system.cell());
+        let real = self.real_space_virial(system);
         /* No self virial */
-        let kspace = self.kspace_virial(universe);
-        let molecular = self.molcorrect_virial(universe);
+        let kspace = self.kspace_virial(system);
+        let molecular = self.molcorrect_virial(system);
         return real + kspace + molecular;
     }
 }
@@ -508,81 +508,81 @@ impl DefaultGlobalCache for Ewald {}
 #[cfg(test)]
 mod tests {
     pub use super::*;
-    use universe::{Universe, UnitCell, Particle};
+    use system::{System, UnitCell, Particle};
     use types::Vector3D;
     use potentials::GlobalPotential;
 
     const E_BRUTE_FORCE: f64 = -0.09262397663346732;
 
-    pub fn testing_universe() -> Universe {
-        let mut universe = Universe::from_cell(UnitCell::cubic(20.0));
+    pub fn testing_system() -> System {
+        let mut system = System::from_cell(UnitCell::cubic(20.0));
 
-        universe.add_particle(Particle::new("Cl"));
-        universe[0].charge = -1.0;
-        universe[0].position = Vector3D::new(0.0, 0.0, 0.0);
+        system.add_particle(Particle::new("Cl"));
+        system[0].charge = -1.0;
+        system[0].position = Vector3D::new(0.0, 0.0, 0.0);
 
-        universe.add_particle(Particle::new("Na"));
-        universe[1].charge = 1.0;
-        universe[1].position = Vector3D::new(1.5, 0.0, 0.0);
+        system.add_particle(Particle::new("Na"));
+        system[1].charge = 1.0;
+        system[1].position = Vector3D::new(1.5, 0.0, 0.0);
 
-        return universe;
+        return system;
     }
 
     #[test]
     #[should_panic]
     fn infinite_cell() {
-        let mut universe = testing_universe();
-        universe.set_cell(UnitCell::new());
+        let mut system = testing_system();
+        system.set_cell(UnitCell::new());
         let ewald = Ewald::new(8.0, 10);
-        ewald.energy(&universe);
+        ewald.energy(&system);
     }
 
     #[test]
     #[should_panic]
     fn triclinic_cell() {
-        let mut universe = testing_universe();
-        universe.set_cell(UnitCell::triclinic(0.0, 0.0, 0.0, 0.0, 0.0, 0.0));
+        let mut system = testing_system();
+        system.set_cell(UnitCell::triclinic(0.0, 0.0, 0.0, 0.0, 0.0, 0.0));
         let ewald = Ewald::new(8.0, 10);
-        ewald.energy(&universe);
+        ewald.energy(&system);
     }
 
     #[test]
     fn energy() {
-        let universe = testing_universe();
+        let system = testing_system();
         let ewald = Ewald::new(8.0, 10);
 
-        let e = ewald.energy(&universe);
+        let e = ewald.energy(&system);
         assert_approx_eq!(e, E_BRUTE_FORCE, 1e-4);
     }
 
     #[test]
     fn forces() {
-        let mut universe = testing_universe();
+        let mut system = testing_system();
         let ewald = Ewald::new(8.0, 10);
 
-        let forces = ewald.forces(&universe);
+        let forces = ewald.forces(&system);
         let norm = (forces[0] + forces[1]).norm();
         // Total force should be null
         assert_approx_eq!(norm, 0.0, 1e-9);
 
         // Finite difference computation of the force
-        let e = ewald.energy(&universe);
+        let e = ewald.energy(&system);
         let eps = 1e-9;
-        universe[0].position.x += eps;
+        system[0].position.x += eps;
 
-        let e1 = ewald.energy(&universe);
-        let force = ewald.forces(&universe)[0].x;
+        let e1 = ewald.energy(&system);
+        let force = ewald.forces(&system)[0].x;
         assert_approx_eq!((e - e1)/eps, force, 1e-6);
     }
 
     #[test]
     fn virial() {
-        let universe = testing_universe();
+        let system = testing_system();
         let ewald = Ewald::new(8.0, 10);
 
-        let virial = ewald.virial(&universe);
+        let virial = ewald.virial(&system);
 
-        let force = ewald.forces(&universe)[0];
+        let force = ewald.forces(&system)[0];
         let w = force.tensorial(&Vector3D::new(1.5, 0.0, 0.0));
 
         for i in 0..3 {

@@ -15,7 +15,7 @@ use super::MCMove;
 use super::select_molecule;
 
 use types::{Matrix3, Vector3D};
-use universe::{Universe, EnergyCache};
+use system::{System, EnergyCache};
 
 /// Monte-Carlo move for rotating a rigid molecule
 pub struct Rotate {
@@ -71,15 +71,15 @@ impl MCMove for Rotate {
         "molecular rotation"
     }
 
-    fn prepare(&mut self, universe: &mut Universe, rng: &mut Box<Rng>) -> bool {
-        if let Some(id) = select_molecule(universe, self.moltype, rng) {
+    fn prepare(&mut self, system: &mut System, rng: &mut Box<Rng>) -> bool {
+        if let Some(id) = select_molecule(system, self.moltype, rng) {
             self.molid = id;
         } else {
-            warn!("Can not rotate molecule: no molecule of this type in the universe.");
+            warn!("Can not rotate molecule: no molecule of this type in the system.");
             return false;
         }
 
-        self.e_before = universe.potential_energy();
+        self.e_before = system.potential_energy();
 
         // Getting values from a 3D normal distribution gives an uniform
         // distribution on the R3 sphere.
@@ -91,30 +91,30 @@ impl MCMove for Rotate {
         let theta = self.angle_rng.sample(rng);
 
         self.newpos.clear();
-        let molecule = universe.molecule(self.molid);
+        let molecule = system.molecule(self.molid);
         let mut masses = vec![0.0; molecule.size()];
         for (i, pi) in molecule.iter().enumerate() {
-            masses[i] = universe[pi].mass;
-            self.newpos.push(universe[pi].position);
+            masses[i] = system[pi].mass;
+            self.newpos.push(system[pi].position);
         }
 
         rotate_around_axis(&mut self.newpos, &mut masses, axis, theta);
         return true;
     }
 
-    fn cost(&self, universe: &Universe, beta: f64, cache: &mut EnergyCache) -> f64 {
-        let idxes = universe.molecule(self.molid).iter().collect::<Vec<_>>();
-        let cost = cache.move_particles_cost(universe, idxes, &self.newpos);
+    fn cost(&self, system: &System, beta: f64, cache: &mut EnergyCache) -> f64 {
+        let idxes = system.molecule(self.molid).iter().collect::<Vec<_>>();
+        let cost = cache.move_particles_cost(system, idxes, &self.newpos);
         return cost/beta;
     }
 
-    fn apply(&mut self, universe: &mut Universe) {
-        for (i, pi) in universe.molecule(self.molid).iter().enumerate() {
-            universe[pi].position = self.newpos[i];
+    fn apply(&mut self, system: &mut System) {
+        for (i, pi) in system.molecule(self.molid).iter().enumerate() {
+            system[pi].position = self.newpos[i];
         }
     }
 
-    fn restore(&mut self, _: &mut Universe) {
+    fn restore(&mut self, _: &mut System) {
         // Nothing to do
     }
 }

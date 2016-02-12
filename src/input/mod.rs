@@ -6,10 +6,10 @@
  */
 //! Reading input files for cymbalum.
 //!
-//! Configuration files uses the YAML format to define the `Universe` or the
+//! Configuration files uses the YAML format to define the `System` or the
 //! `Simulation` in an human-readable way, and without writing any code.
 //!
-//!  * The `read_interactions` function read interaction into an `Universe`.
+//!  * The `read_interactions` function read interaction into an `System`.
 //!  * The `molecule_from_file` function read the first molecule of the first
 //!    frame of a file. This is be useful to define Monte-Carlo moves operating
 //!    on a specific molecule.

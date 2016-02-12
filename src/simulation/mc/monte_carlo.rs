@@ -10,7 +10,7 @@ extern crate rand;
 use self::rand::SeedableRng;
 
 use constants::K_BOLTZMANN;
-use universe::{Universe, EnergyCache};
+use system::{System, EnergyCache};
 use simulation::Propagator;
 
 use super::MCMove;
@@ -86,12 +86,12 @@ impl MonteCarlo {
 }
 
 impl Propagator for MonteCarlo {
-    fn setup(&mut self, universe: &Universe) {
+    fn setup(&mut self, system: &System) {
         self.normalize_frequencies();
-        self.cache.init(universe);
+        self.cache.init(system);
     }
 
-    fn propagate(&mut self, universe: &mut Universe) {
+    fn propagate(&mut self, system: &mut System) {
         let mcmove = {
             let probability = self.rng.next_f64();
             // Get the index of the first move with frequency >= move_f.
@@ -103,23 +103,23 @@ impl Propagator for MonteCarlo {
         };
         trace!("Selected move is '{}'", mcmove.describe());
 
-        if !mcmove.prepare(universe, &mut self.rng) {
+        if !mcmove.prepare(system, &mut self.rng) {
             trace!("    --> Can not perform the move");
             return;
         }
 
-        let cost = mcmove.cost(universe, self.beta, &mut self.cache);
+        let cost = mcmove.cost(system, self.beta, &mut self.cache);
         trace!("    --> Move cost is {}", cost);
 
         let accepted = cost <= 0.0 || self.rng.next_f64() < f64::exp(-cost);
 
         if accepted {
             trace!("    --> Move was accepted");
-            mcmove.apply(universe);
-            self.cache.update(universe);
+            mcmove.apply(system);
+            self.cache.update(system);
         } else {
             trace!("    --> Move was rejected");
-            mcmove.restore(universe);
+            mcmove.restore(system);
         }
     }
 }

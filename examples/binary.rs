@@ -5,16 +5,16 @@ use cymbalum::*;
 fn main() {
     Logger::stdout();
 
-    let mut universe = Universe::from_file("data/binary.xyz").unwrap();
+    let mut system = System::from_file("data/binary.xyz").unwrap();
 
     // Add bonds in the system
-    for i in 0..universe.molecules().len() / 3 {
-        universe.add_bond(3 * i,     3 * i + 1);
-        universe.add_bond(3 * i + 1, 3 * i + 2);
+    for i in 0..system.molecules().len() / 3 {
+        system.add_bond(3 * i,     3 * i + 1);
+        system.add_bond(3 * i + 1, 3 * i + 2);
     }
 
-    universe.set_cell(UnitCell::cubic(25.0));
-    input::read_interactions(&mut universe, "data/binary.yml").unwrap();
+    system.set_cell(UnitCell::cubic(25.0));
+    input::read_interactions(&mut system, "data/binary.yml").unwrap();
 
     let co2 = {
         // We can read files to get moltype
@@ -43,5 +43,5 @@ fn main() {
     mc.add(Box::new(Rotate::with_moltype(units::from(20.0, "deg").unwrap(), h2o)), 2.0);
 
     let mut simulation = Simulation::new(mc);
-    simulation.run(&mut universe, 200_000_000);
+    simulation.run(&mut system, 200_000_000);
 }

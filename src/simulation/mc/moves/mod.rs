@@ -14,7 +14,7 @@
 extern crate rand;
 use self::rand::Rng;
 
-use universe::{Universe, EnergyCache};
+use system::{System, EnergyCache};
 
 /// The `MCMove` trait correspond to the set of methods used in Monte-Carlo
 /// simulations.
@@ -28,39 +28,39 @@ pub trait MCMove {
     ///
     /// This function should return true is we can perform the move, and false
     /// otherwise.
-    fn prepare(&mut self, universe: &mut Universe, rng: &mut Box<Rng>) -> bool;
+    fn prepare(&mut self, system: &mut System, rng: &mut Box<Rng>) -> bool;
 
-    /// Get the cost of performing this move on `universe`. For example in
+    /// Get the cost of performing this move on `system`. For example in
     /// simple NVT simulations, this cost is the energetic difference over
     /// `beta`. The cost must be dimmensionless, and will be placed in an
     /// exponential. The `cache` should be used to compute the cost, or the
     /// `cache.unused` function should be used to ensure that the cache is
     /// updated  as needed after this move.
-    fn cost(&self, universe: &Universe, beta: f64, cache: &mut EnergyCache) -> f64;
+    fn cost(&self, system: &System, beta: f64, cache: &mut EnergyCache) -> f64;
 
     /// Effectivelly apply the move, if it has not already been done in
     /// `prepare`.
-    fn apply(&mut self, universe: &mut Universe);
+    fn apply(&mut self, system: &mut System);
 
-    /// Restore the universe to it's initial state, if it has been changed in
+    /// Restore the system to it's initial state, if it has been changed in
     /// `prepare`.
-    fn restore(&mut self, universe: &mut Universe);
+    fn restore(&mut self, system: &mut System);
 }
 
-/// Select a random molecule in the universe using `rng` as random number
+/// Select a random molecule in the system using `rng` as random number
 /// generator. If `moltype` is `None`, any molecule can be choosen. If `moltype`
 /// is `Some(molecule_type)`, then a molecule with matching type is selected.
 ///
 /// This function returns `None` if no matching molecule was found, and
 /// `Some(molid)` with `molid` the index of the molecule if a molecule was
 /// selected.
-fn select_molecule(universe: &Universe, moltype: Option<u64>, rng: &mut Box<Rng>) -> Option<usize> {
+fn select_molecule(system: &System, moltype: Option<u64>, rng: &mut Box<Rng>) -> Option<usize> {
     if let Some(moltype) = moltype {
         // Pick a random molecule with matching moltype
-        let mols = universe.molecules_with_moltype(moltype);
+        let mols = system.molecules_with_moltype(moltype);
         return rng.choose(&mols).map(|id| *id);
     } else {
-        let nmols = universe.molecules().len();
+        let nmols = system.molecules().len();
         if nmols == 0 {
             return None;
         } else {

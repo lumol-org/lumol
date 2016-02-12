@@ -14,7 +14,7 @@ use super::MCMove;
 use super::select_molecule;
 
 use types::Vector3D;
-use universe::{Universe, EnergyCache};
+use system::{System, EnergyCache};
 
 /// Monte-Carlo move for translating a molecule
 pub struct Translate {
@@ -68,11 +68,11 @@ impl MCMove for Translate {
         "molecular translation"
     }
 
-    fn prepare(&mut self, universe: &mut Universe, rng: &mut Box<Rng>) -> bool {
-        if let Some(id) = select_molecule(universe, self.moltype, rng) {
+    fn prepare(&mut self, system: &mut System, rng: &mut Box<Rng>) -> bool {
+        if let Some(id) = select_molecule(system, self.moltype, rng) {
             self.molid = id;
         } else {
-            warn!("Can not translate molecule: no molecule of this type in the universe.");
+            warn!("Can not translate molecule: no molecule of this type in the system.");
             return false;
         }
 
@@ -81,25 +81,25 @@ impl MCMove for Translate {
         self.delta.z = self.delta_range.sample(rng);
 
         self.newpos.clear();
-        for i in universe.molecule(self.molid) {
-            self.newpos.push(universe[i].position + self.delta);
+        for i in system.molecule(self.molid) {
+            self.newpos.push(system[i].position + self.delta);
         }
         return true;
     }
 
-    fn cost(&self, universe: &Universe, beta: f64, cache: &mut EnergyCache) -> f64 {
-        let idxes = universe.molecule(self.molid).iter().collect::<Vec<_>>();
-        let cost = cache.move_particles_cost(universe, idxes, &self.newpos);
+    fn cost(&self, system: &System, beta: f64, cache: &mut EnergyCache) -> f64 {
+        let idxes = system.molecule(self.molid).iter().collect::<Vec<_>>();
+        let cost = cache.move_particles_cost(system, idxes, &self.newpos);
         return cost/beta;
     }
 
-    fn apply(&mut self, universe: &mut Universe) {
-        for (i, pi) in universe.molecule(self.molid).iter().enumerate() {
-            universe[pi].position = self.newpos[i];
+    fn apply(&mut self, system: &mut System) {
+        for (i, pi) in system.molecule(self.molid).iter().enumerate() {
+            system[pi].position = self.newpos[i];
         }
     }
 
-    fn restore(&mut self, _: &mut Universe) {
+    fn restore(&mut self, _: &mut System) {
         // Nothing to do
     }
 }

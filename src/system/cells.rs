@@ -23,7 +23,7 @@ pub enum CellType {
     Triclinic,
 }
 
-/// The Universe type hold all the data about a system.
+/// The System type hold all the data about a system.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct UnitCell {
     data: Matrix3,

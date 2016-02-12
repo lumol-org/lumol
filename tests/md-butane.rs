@@ -14,28 +14,28 @@ use std::path::Path;
 use std::sync::{Once, ONCE_INIT};
 static START: Once = ONCE_INIT;
 
-fn setup_universe() -> Universe {
+fn setup_system() -> System {
     let data_dir = Path::new(file!()).parent().unwrap().join("data");
     let configuration = data_dir.join("butane.xyz");
-    let mut universe = Universe::from_file_auto_bonds(configuration.to_str().unwrap()).unwrap();
-    universe.set_cell(UnitCell::cubic(20.0));
+    let mut system = System::from_file_auto_bonds(configuration.to_str().unwrap()).unwrap();
+    system.set_cell(UnitCell::cubic(20.0));
 
     let interactions = data_dir.join("butane.yml");
-    input::read_interactions(&mut universe, interactions).unwrap();
+    input::read_interactions(&mut system, interactions).unwrap();
 
     let mut velocities = BoltzmanVelocities::new(units::from(300.0, "K").unwrap());
-    velocities.init(&mut universe);
+    velocities.init(&mut system);
 
-    return universe;
+    return system;
 }
 
 #[test]
 fn bonds_detection() {
     START.call_once(|| {Logger::stdout();});
-    let universe = setup_universe();
-    assert_eq!(universe.molecules().len(), 50);
+    let system = setup_system();
+    assert_eq!(system.molecules().len(), 50);
 
-    for molecule in universe.molecules() {
+    for molecule in system.molecules() {
         assert_eq!(molecule.bonds().len(), 3);
         assert_eq!(molecule.angles().len(), 2);
         assert_eq!(molecule.dihedrals().len(), 1);
@@ -45,14 +45,14 @@ fn bonds_detection() {
 #[test]
 fn constant_energy() {
     START.call_once(|| {Logger::stdout();});
-    let mut universe = setup_universe();
+    let mut system = setup_system();
 
     let mut simulation = Simulation::new(
         MolecularDynamics::new(units::from(1.0, "fs").unwrap())
     );
 
-    let e_initial = universe.total_energy();
-    simulation.run(&mut universe, 1000);
-    let e_final = universe.total_energy();
+    let e_initial = system.total_energy();
+    simulation.run(&mut system, 1000);
+    let e_final = system.total_energy();
     assert!(f64::abs((e_initial - e_final)/e_final) < 1e-3);
 }

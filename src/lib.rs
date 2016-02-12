@@ -12,7 +12,7 @@
 //!  - any algorithm used in the simulation can be replaced by another one. This
 //!    allow for modularity and easy developement of novel algorithms.
 //!  - data and algorithms should be separated. This is accomplished through the
-//!    use of the `Universe` (for data) and `Simulation` (for algorithms) types,
+//!    use of the `System` (for data) and `Simulation` (for algorithms) types,
 //!    interacting together to run the simulation on some data.
 //!
 //!  Rust provides a nice way to implement these two ideas with the concept of
@@ -50,12 +50,12 @@ pub mod constants;
 
 pub mod types;
 pub mod potentials;
-pub mod universe;
+pub mod system;
 pub mod simulation;
 
 pub use types::*;
 pub use potentials::*;
-pub use universe::*;
+pub use system::*;
 pub use simulation::*;
 
 pub mod input;

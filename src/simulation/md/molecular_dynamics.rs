@@ -5,7 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
 
-use universe::Universe;
+use system::System;
 use simulation::Propagator;
 
 use super::Integrator;
@@ -43,23 +43,23 @@ impl MolecularDynamics {
 }
 
 impl Propagator for MolecularDynamics {
-    fn setup(&mut self, universe: &Universe) {
-        self.integrator.setup(universe);
+    fn setup(&mut self, system: &System) {
+        self.integrator.setup(system);
         for control in &mut self.controls {
-            control.setup(universe);
+            control.setup(system);
         }
     }
 
-    fn propagate(&mut self, universe: &mut Universe) {
-        self.integrator.integrate(universe);
+    fn propagate(&mut self, system: &mut System) {
+        self.integrator.integrate(system);
         for control in &mut self.controls {
-            control.control(universe);
+            control.control(system);
         }
     }
 
-    fn finish(&mut self, universe: &Universe) {
+    fn finish(&mut self, system: &System) {
         for control in &mut self.controls {
-            control.finish(universe);
+            control.finish(system);
         }
     }
 }

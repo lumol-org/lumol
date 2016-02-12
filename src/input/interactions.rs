@@ -13,7 +13,7 @@ use std::result;
 use std::fs::File;
 use std::path::Path;
 
-use universe::Universe;
+use system::System;
 use units::UnitParsingError;
 use potentials::*;
 
@@ -66,7 +66,7 @@ trait FromYaml where Self: Sized {
 }
 
 /// Read a interactions from a Yaml file at `path`, and add these interactions
-/// to the `universe`.
+/// to the `system`.
 ///
 /// The following format is accepted:
 ///
@@ -137,35 +137,35 @@ trait FromYaml where Self: Sized {
 /// It should contains the `type` and `charge` key, with data about charges to
 /// assign to the system, and which method to use to compute these interactions.
 /// Additional keys can exist depending on the actual coulombic solver used.
-pub fn read_interactions<P: AsRef<Path>>(universe: &mut Universe, path: P) -> Result<()> {
+pub fn read_interactions<P: AsRef<Path>>(system: &mut System, path: P) -> Result<()> {
     let mut file = try!(File::open(path));
     let mut buffer = String::new();
     try!(file.read_to_string(&mut buffer));
-    return read_interactions_string(universe, &buffer);
+    return read_interactions_string(system, &buffer);
 }
 
 /// This is the same as `read_interactions`, but directly read a YAML formated
 /// string.
-pub fn read_interactions_string(universe: &mut Universe, string: &str) -> Result<()> {
+pub fn read_interactions_string(system: &mut System, string: &str) -> Result<()> {
     let doc = &try!(YamlLoader::load_from_str(string))[0];
     if let Some(config) = doc["pairs"].as_vec() {
-        try!(read_pairs(universe, config, true));
+        try!(read_pairs(system, config, true));
     }
 
     if let Some(config) = doc["bonds"].as_vec() {
-        try!(read_pairs(universe, config, false));
+        try!(read_pairs(system, config, false));
     }
 
     if let Some(config) = doc["angles"].as_vec() {
-        try!(read_angles(universe, config));
+        try!(read_angles(system, config));
     }
 
     if let Some(config) = doc["dihedrals"].as_vec() {
-        try!(read_dihedrals(universe, config));
+        try!(read_dihedrals(system, config));
     }
 
     if doc["coulomb"].as_hash().is_some() {
-        try!(read_coulomb(universe, &doc["coulomb"]));
+        try!(read_coulomb(system, &doc["coulomb"]));
     }
 
     Ok(())
@@ -174,7 +174,7 @@ pub fn read_interactions_string(universe: &mut Universe, string: &str) -> Result
 /// Read the "pairs" or the "bonds" section in the file. If `pair_potentials`
 /// is `true`, then the interactions are added to the pair interactions. Else,
 /// the interaction are added to the bond interactions.
-fn read_pairs(universe: &mut Universe, pairs: &[Yaml], pair_potentials: bool) -> Result<()> {
+fn read_pairs(system: &mut System, pairs: &[Yaml], pair_potentials: bool) -> Result<()> {
     for node in pairs {
         let (a, b) = match node["atoms"].as_vec() {
             Some(vec) => {
@@ -209,12 +209,12 @@ fn read_pairs(universe: &mut Universe, pairs: &[Yaml], pair_potentials: bool) ->
 
         if pair_potentials {
             if let Some(restriction) = restriction {
-                universe.add_pair_interaction_with_restriction(a, b, potential, restriction);
+                system.add_pair_interaction_with_restriction(a, b, potential, restriction);
             } else {
-                universe.add_pair_interaction(a, b, potential);
+                system.add_pair_interaction(a, b, potential);
             }
         } else {
-            universe.add_bond_interaction(a, b, potential);
+            system.add_bond_interaction(a, b, potential);
         }
     }
     Ok(())
@@ -273,7 +273,7 @@ fn read_restriction(node: &Yaml) -> Result<PairRestriction> {
 }
 
 /******************************************************************************/
-fn read_angles(universe: &mut Universe, angles: &[Yaml]) -> Result<()> {
+fn read_angles(system: &mut System, angles: &[Yaml]) -> Result<()> {
     for potential in angles {
         let (a, b, c) = match potential["atoms"].as_vec() {
             Some(vec) => {
@@ -294,7 +294,7 @@ fn read_angles(universe: &mut Universe, angles: &[Yaml]) -> Result<()> {
         };
 
         let potential = try!(read_angle_potential(potential));
-        universe.add_angle_interaction(a, b, c, potential);
+        system.add_angle_interaction(a, b, c, potential);
     }
     Ok(())
 }
@@ -319,7 +319,7 @@ fn read_angle_potential(node: &Yaml) -> Result<Box<AnglePotential>> {
 }
 
 /******************************************************************************/
-fn read_dihedrals(universe: &mut Universe, dihedrals: &[Yaml]) -> Result<()> {
+fn read_dihedrals(system: &mut System, dihedrals: &[Yaml]) -> Result<()> {
     for potential in dihedrals {
         let (a, b, c, d) = match potential["atoms"].as_vec() {
             Some(vec) => {
@@ -340,7 +340,7 @@ fn read_dihedrals(universe: &mut Universe, dihedrals: &[Yaml]) -> Result<()> {
         };
 
         let potential = try!(read_dihedral_potential(potential));
-        universe.add_dihedral_interaction(a, b, c, d, potential);
+        system.add_dihedral_interaction(a, b, c, d, potential);
     }
     Ok(())
 }
@@ -478,7 +478,7 @@ impl FromYamlWithPairPotential for TableComputation {
 }
 
 /******************************************************************************/
-fn read_coulomb(universe: &mut Universe, config: &Yaml) -> Result<()> {
+fn read_coulomb(system: &mut System, config: &Yaml) -> Result<()> {
     let mut potential = try!(read_coulomb_potential(config));
 
     if config["restriction"].as_hash().is_some() {
@@ -486,10 +486,10 @@ fn read_coulomb(universe: &mut Universe, config: &Yaml) -> Result<()> {
         potential.set_restriction(restriction);
     }
 
-    universe.set_coulomb_interaction(potential);
+    system.set_coulomb_interaction(potential);
 
     if config["charges"].as_hash().is_some() {
-        try!(assign_charges(universe, &config["charges"]));
+        try!(assign_charges(system, &config["charges"]));
     }
     Ok(())
 }
@@ -536,12 +536,12 @@ impl FromYaml for Ewald {
     }
 }
 
-fn assign_charges(universe: &mut Universe, config: &Yaml) -> Result<()> {
+fn assign_charges(system: &mut System, config: &Yaml) -> Result<()> {
     let charges = config.as_hash().unwrap();
     for (name, charge) in charges {
         if let (Some(name), Some(charge)) = (name.as_str(), charge.as_f64()) {
             let mut n_changed = 0;
-            for particle in universe.iter_mut() {
+            for particle in system.iter_mut() {
                 if particle.name() == name {
                     particle.charge = charge;
                     n_changed += 1;
@@ -565,7 +565,7 @@ fn assign_charges(universe: &mut Universe, config: &Yaml) -> Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use universe::Universe;
+    use system::System;
     use std::path::{Path, PathBuf};
     use std::fs;
 
@@ -585,77 +585,77 @@ mod tests {
     #[test]
     fn pairs() {
         let DATA = Path::new(file!()).parent().unwrap().join("data");
-        let mut universe = Universe::new();
-        read_interactions(&mut universe, DATA.join("pairs.yml")).unwrap();
+        let mut system = System::new();
+        read_interactions(&mut system, DATA.join("pairs.yml")).unwrap();
     }
 
     #[test]
     fn bad_pairs() {
         for path in bad_files("pairs") {
-            let mut universe = Universe::new();
-            assert!(read_interactions(&mut universe, path).is_err());
+            let mut system = System::new();
+            assert!(read_interactions(&mut system, path).is_err());
         }
     }
 
     #[test]
     fn bonds() {
         let DATA = Path::new(file!()).parent().unwrap().join("data");
-        let mut universe = Universe::new();
-        read_interactions(&mut universe, DATA.join("bonds.yml")).unwrap();
+        let mut system = System::new();
+        read_interactions(&mut system, DATA.join("bonds.yml")).unwrap();
     }
 
     #[test]
     fn bad_bonds() {
         for path in bad_files("bonds") {
-            let mut universe = Universe::new();
-            assert!(read_interactions(&mut universe, path).is_err());
+            let mut system = System::new();
+            assert!(read_interactions(&mut system, path).is_err());
         }
     }
 
     #[test]
     fn angles() {
         let DATA = Path::new(file!()).parent().unwrap().join("data");
-        let mut universe = Universe::new();
-        read_interactions(&mut universe, DATA.join("angles.yml")).unwrap();
+        let mut system = System::new();
+        read_interactions(&mut system, DATA.join("angles.yml")).unwrap();
     }
 
     #[test]
     fn bad_angles() {
         for path in bad_files("angles") {
-            let mut universe = Universe::new();
-            assert!(read_interactions(&mut universe, path).is_err());
+            let mut system = System::new();
+            assert!(read_interactions(&mut system, path).is_err());
         }
     }
 
     #[test]
     fn dihedrals() {
         let DATA = Path::new(file!()).parent().unwrap().join("data");
-        let mut universe = Universe::new();
-        read_interactions(&mut universe, DATA.join("dihedrals.yml")).unwrap();
+        let mut system = System::new();
+        read_interactions(&mut system, DATA.join("dihedrals.yml")).unwrap();
     }
 
     #[test]
     fn bad_dihedrals() {
         for path in bad_files("dihedrals") {
-            let mut universe = Universe::new();
-            assert!(read_interactions(&mut universe, path).is_err());
+            let mut system = System::new();
+            assert!(read_interactions(&mut system, path).is_err());
         }
     }
 
     #[test]
     fn coulomb() {
         let DATA = Path::new(file!()).parent().unwrap().join("data");
-        let mut universe = Universe::new();
-        read_interactions(&mut universe, DATA.join("wolf.yml")).unwrap();
+        let mut system = System::new();
+        read_interactions(&mut system, DATA.join("wolf.yml")).unwrap();
 
-        read_interactions(&mut universe, DATA.join("ewald.yml")).unwrap();
+        read_interactions(&mut system, DATA.join("ewald.yml")).unwrap();
     }
 
     #[test]
     fn bad_coulomb() {
         for path in bad_files("coulomb") {
-            let mut universe = Universe::new();
-            assert!(read_interactions(&mut universe, path).is_err());
+            let mut system = System::new();
+            assert!(read_interactions(&mut system, path).is_err());
         }
     }
 }
