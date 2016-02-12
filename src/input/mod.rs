@@ -9,7 +9,14 @@
 //! Configuration files uses the YAML format to define the `Universe` or the
 //! `Simulation` in an human-readable way, and without writing any code.
 //!
-//! The `read_interactions` function read interaction into an `Universe`.
+//!  * The `read_interactions` function read interaction into an `Universe`.
+//!  * The `molecule_from_file` function read the first molecule of the first
+//!    frame of a file. This is be useful to define Monte-Carlo moves operating
+//!    on a specific molecule.
+
 mod interactions;
-pub use self::interactions::read_interactions;
-pub use self::interactions::{Result, Error};
+pub use self::interactions::{read_interactions, read_interactions_string};
+pub use self::interactions::Error;
+
+mod molecules;
+pub use self::molecules::molecule_from_file;

@@ -139,10 +139,15 @@ trait FromYaml where Self: Sized {
 /// Additional keys can exist depending on the actual coulombic solver used.
 pub fn read_interactions<P: AsRef<Path>>(universe: &mut Universe, path: P) -> Result<()> {
     let mut file = try!(File::open(path));
-    let mut buff = String::new();
-    try!(file.read_to_string(&mut buff));
+    let mut buffer = String::new();
+    try!(file.read_to_string(&mut buffer));
+    return read_interactions_string(universe, &buffer);
+}
 
-    let doc = &try!(YamlLoader::load_from_str(&buff))[0];
+/// This is the same as `read_interactions`, but directly read a YAML formated
+/// string.
+pub fn read_interactions_string(universe: &mut Universe, string: &str) -> Result<()> {
+    let doc = &try!(YamlLoader::load_from_str(string))[0];
     if let Some(config) = doc["pairs"].as_vec() {
         try!(read_pairs(universe, config, true));
     }

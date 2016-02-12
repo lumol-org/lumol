@@ -32,6 +32,8 @@ use super::Molecule;
 use super::{CONNECT_12, CONNECT_13, CONNECT_14, CONNECT_FAR};
 use super::UnitCell;
 use super::interactions::{Interactions, PairInteraction};
+use super::EnergyEvaluator;
+use super::molecules::moltype;
 use super::chemfiles::frame_to_universe;
 
 pub type Permutations = Vec<(usize, usize)>;
@@ -47,6 +49,7 @@ pub type Permutations = Vec<(usize, usize)>;
 /// In this implementation, the particles contained in a molecule are guaranted
 /// to be contiguous in memory. This allow for faster access when iterating over
 /// molecules, and easier molecule removal in the universe.
+#[derive(Clone)]
 pub struct Universe {
     /// Unit cell of the universe
     cell: Bc<UnitCell>,
@@ -143,6 +146,26 @@ impl Universe {
         unreachable!()
     }
 
+    /// Get the type of the molecule at index `molid`. This type is a hash of
+    /// the atoms names, and the set of bonds in the molecule. This means that
+    /// two molecules will have the same type if and only if they contains the
+    /// same atoms and the same bonds, **in the same order**.
+    pub fn moltype(&self, molid: usize) -> u64 {
+        let molecule = self.molecule(molid);
+        moltype(molecule, &self.particles[molecule.into_iter()])
+    }
+
+    /// Get a list of molecules with `moltype` molecule type.
+    pub fn molecules_with_moltype(&self, moltype: u64) -> Vec<usize> {
+        let mut res = Vec::new();
+        for i in 0..self.molecules().len() {
+            if self.moltype(i) == moltype {
+                res.push(i);
+            }
+        }
+        return res;
+    }
+
     /// Get the molecule containing the particle `i`
     pub fn molecule_containing(&self, i:usize) -> &Molecule {
         let id = self.molecule_id(i);
@@ -155,8 +178,13 @@ impl Universe {
     }
 
     /// Get the list of molecules in the universe.
-    #[inline] pub fn molecules(&self) -> &Vec<Molecule> {
+    #[inline] pub fn molecules(&self) -> &[Molecule] {
         &self.molecules
+    }
+
+    /// Get the molecule at index `id`
+    #[inline] pub fn molecule(&self, id: usize) -> &Molecule {
+        &self.molecules[id]
     }
 
     /// Get the length of the shortest bond path to go from the particle `i` to
@@ -394,6 +422,11 @@ static NO_DIHEDRAL_INTERACTION: &'static [Box<DihedralPotential>] = &[];
 
 /// Potentials related functions
 impl Universe {
+    /// Get an helper struct to evaluate the energy of this universe.
+    pub fn energy_evaluator<'a>(&'a self) -> EnergyEvaluator<'a> {
+        EnergyEvaluator::new(self)
+    }
+
     /// Get the list of pair potential acting between the particles at indexes
     /// `i` and `j`.
     pub fn pair_potentials(&self, i: usize, j: usize) -> &[PairInteraction] {
@@ -471,13 +504,23 @@ impl Universe {
     }
 
     /// Get the current coulombic solver
-    pub fn coulomb_potential(&self) -> &Option<Box<CoulombicPotential>> {
+    pub fn coulomb_potential(&self) -> Option<&Box<CoulombicPotential>> {
         self.interactions.coulomb()
     }
 
+    /// Get the current coulombic solver as a mutable reference
+    pub fn coulomb_potential_mut(&mut self) -> Option<&mut Box<CoulombicPotential>> {
+        self.interactions.coulomb_mut()
+    }
+
     /// Get all the global potentials
-    pub fn global_potentials(&self) -> &Vec<Box<GlobalPotential>> {
+    pub fn global_potentials(&self) -> &[Box<GlobalPotential>] {
         self.interactions.globals()
+    }
+
+    /// Get all the global potentials as mutable references
+    pub fn global_potentials_mut(&mut self) -> &mut [Box<GlobalPotential>] {
+        self.interactions.globals_mut()
     }
 
     /// Add the `potential` pair potential between the particles with names
@@ -629,6 +672,7 @@ use std::cell::Cell;
 /// Caching physical properties of an universe as `Cell<Option<T>>`. The `Cell`
 /// is for mutating values in immuatable borrow, and the Option to invalidate
 /// the cached values.
+#[derive(Clone)]
 struct PropertiesCache {
     pub state: Cell<u64>,
 
@@ -826,15 +870,15 @@ mod tests {
 
         assert_eq!(universe.molecules().len(), 2);
 
-        let molecule = universe.molecules()[0].clone();
+        let molecule = universe.molecule(0).clone();
         assert!(molecule.bonds().contains(&Bond::new(0, 1)));
-        let molecule = universe.molecules()[1].clone();
+        let molecule = universe.molecule(1).clone();
         assert!(molecule.bonds().contains(&Bond::new(2, 3)));
 
         assert_eq!(universe.add_bond(1, 2), Some(vec![]));
         assert_eq!(universe.molecules().len(), 1);
 
-        let molecule = universe.molecules()[0].clone();
+        let molecule = universe.molecule(0).clone();
         assert!(molecule.angles().contains(&Angle::new(0, 1, 2)));
         assert!(molecule.angles().contains(&Angle::new(1, 2, 3)));
         assert!(molecule.dihedrals().contains(&Dihedral::new(0, 1, 2, 3)));
@@ -952,5 +996,39 @@ mod tests {
         assert_eq!(universe.bond_potentials(0, 0).len(), 0);
         assert_eq!(universe.angle_potentials(0, 0, 0).len(), 0);
         assert_eq!(universe.dihedral_potentials(0, 0, 0, 0).len(), 0);
+    }
+
+    #[test]
+    fn moltype() {
+        let mut universe = Universe::new();
+        // One helium
+        universe.add_particle(Particle::new("He"));
+        // Two water molecules
+        universe.add_particle(Particle::new("H"));
+        universe.add_particle(Particle::new("O"));
+        universe.add_particle(Particle::new("H"));
+        universe.add_bond(1, 2);
+        universe.add_bond(2, 3);
+        universe.add_particle(Particle::new("H"));
+        universe.add_particle(Particle::new("O"));
+        universe.add_particle(Particle::new("H"));
+        universe.add_bond(4, 5);
+        universe.add_bond(5, 6);
+        // Another helium
+        universe.add_particle(Particle::new("He"));
+        // A water molecules, with different atoms order
+        universe.add_particle(Particle::new("O"));
+        universe.add_particle(Particle::new("H"));
+        universe.add_particle(Particle::new("H"));
+        universe.add_bond(8, 9);
+        universe.add_bond(8, 10);
+
+        assert_eq!(universe.molecules().len(), 5);
+        // The heliums
+        assert_eq!(universe.moltype(0), universe.moltype(3));
+
+        // The waters
+        assert!(universe.moltype(1) == universe.moltype(2));
+        assert!(universe.moltype(1) != universe.moltype(4));
     }
 }

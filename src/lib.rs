@@ -39,7 +39,7 @@ extern crate bitflags;
 
 #[macro_use]
 mod tests;
-
+#[macro_use]
 mod utils;
 
 mod logging;

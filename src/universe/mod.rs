@@ -27,9 +27,16 @@ pub use self::molecules::{Bond, Angle, Dihedral};
 pub use self::molecules::Connectivity;
 pub use self::molecules::{CONNECT_12, CONNECT_13, CONNECT_14, CONNECT_FAR};
 pub use self::molecules::Molecule;
+pub use self::molecules::moltype;
 
 mod interactions;
 pub use self::interactions::PairInteraction;
+
+mod energy;
+pub use self::energy::EnergyEvaluator;
+
+mod cache;
+pub use self::cache::EnergyCache;
 
 mod universes;
 pub use self::universes::Universe;

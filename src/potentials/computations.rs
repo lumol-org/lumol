@@ -9,12 +9,12 @@
 //! expression (represented by a `PotentialFunction`). The same potential can be
 //! computed either direcly, or using a cutoff, or by a table interpolation, ...
 
-use super::{PotentialFunction, PairPotential, AnglePotential, DihedralPotential};
+use super::{PotentialFunction, PairPotential};
 
 /// A `Computation` is a way to compute a potential.
-pub trait Computation: Sized + Sync + Send {
-    /// Kind of potential we can apply this computation to
-    type Potential: ?Sized + PotentialFunction;
+pub trait Computation: Sync + Send {
+    // / Kind of potential we can apply this computation to
+    // type Potential: PotentialFunction + ?Sized;
 
     /// Compute the energy value at `r`
     fn compute_energy(&self, r: f64) -> f64;
@@ -23,7 +23,7 @@ pub trait Computation: Sized + Sync + Send {
     fn compute_force(&self, r: f64) -> f64;
 }
 
-impl<P: Computation> PotentialFunction for P {
+impl<P: Computation + Clone + 'static> PotentialFunction for P {
     #[inline] fn energy(&self, r:f64) -> f64 {
         self.compute_energy(r)
     }
@@ -33,14 +33,10 @@ impl<P: Computation> PotentialFunction for P {
     }
 }
 
-// FIXME: use the custom implementation of virial here if any
-impl<P> PairPotential for P where P: Computation<Potential = PairPotential>{}
-impl<P> AnglePotential for P where P: Computation<Potential = AnglePotential>{}
-impl<P> DihedralPotential for P where P: Computation<Potential = DihedralPotential>{}
-
 /******************************************************************************/
 /// Direct computation of the potential with a cutoff applied. The computed
 /// energy is shifted to ensure `E(rc) = 0`, where `rc` is the cutoff distance.
+#[derive(Clone)]
 pub struct CutoffComputation {
     /// Potential to compute
     potential: Box<PairPotential>,
@@ -60,7 +56,6 @@ impl CutoffComputation {
 }
 
 impl Computation for CutoffComputation {
-    type Potential = PairPotential;
     #[inline]
     fn compute_energy(&self, r: f64) -> f64 {
         if r > self.cutoff {
@@ -80,12 +75,15 @@ impl Computation for CutoffComputation {
     }
 }
 
+impl PairPotential for CutoffComputation {}
+
 /******************************************************************************/
 /// Computation of a potential using tabulated values. This can be faster than
 /// direct computation for smooth potentials, but will either uses more memory
 /// or is less precise than direct computation. Values are tabulated in the `[0,
 /// max)` range, and a cutoff is applied after `max`. Energy is shifted before
 /// the cutoff to ensure that `E(max) = 0`
+#[derive(Clone)]
 pub struct TableComputation {
     // TODO: use genericity over static values here if it ever comes out
     // see https://internals.rust-lang.org/t/pre-rfc-genericity-over-static-values/1538/19
@@ -120,7 +118,6 @@ impl TableComputation {
 }
 
 impl Computation for TableComputation {
-    type Potential = PairPotential;
     fn compute_energy(&self, r: f64) -> f64 {
         let bin = f64::floor(r / self.delta) as usize;
         if bin < self.N - 1 {
@@ -143,6 +140,8 @@ impl Computation for TableComputation {
         }
     }
 }
+
+impl PairPotential for TableComputation {}
 
 /******************************************************************************/
 

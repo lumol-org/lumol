@@ -18,7 +18,7 @@ use universe::Universe;
 ///
 /// Some pairs can be excluded from the energy computation; this enum lists the
 /// possible case of exclusion.
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub enum PairRestriction {
     /// No pair should be excluded
     None,

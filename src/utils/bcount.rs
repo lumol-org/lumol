@@ -12,6 +12,7 @@
 use std::ops::{Deref, DerefMut};
 
 /// The borrow counter struct for type `T`.
+#[derive(Clone)]
 pub struct Bc<T> {
     counter: usize,
     val: T

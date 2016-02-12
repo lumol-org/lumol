@@ -12,7 +12,7 @@ use universe::{Particle, Universe};
 use universe::cells::{UnitCell, CellType};
 use types::Vector3D;
 
-use self::chemfiles::Error;
+pub use self::chemfiles::Error;
 
 /// Convert chemfiles types to Cymbalum types
 trait ToCymbalum {
@@ -133,7 +133,7 @@ impl ToChemfiles for UnitCell {
     fn to_chemfiles(&self) -> Result<chemfiles::UnitCell, Error> {
         let res = match self.celltype() {
             CellType::Infinite => {
-                unimplemented!()
+                try!(chemfiles::UnitCell::infinite())
             }
             CellType::Orthorombic => {
                 let (a, b, c) = (self.a(), self.b(), self.c());

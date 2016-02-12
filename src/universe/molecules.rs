@@ -9,14 +9,16 @@ use std::cmp::{min, max};
 use std::collections::HashSet;
 use std::iter::IntoIterator;
 use std::ops::Range;
+use std::hash::{Hash, SipHasher, Hasher};
 
 use types::Array2;
+use universe::Particle;
 
 /// A `Bond` between the atoms at indexes `i` and `j`
 ///
 /// This structure ensure unicity of a `Bond` representation by enforcing
 /// `i < j`
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Bond {
     i: usize,
     j: usize,
@@ -158,6 +160,14 @@ pub struct Molecule {
     first: usize,
     /// Index of the last (included) atom in this molecule.
     last: usize,
+    /// Hashed value of the set of bonds in the system
+    cached_hash: u64
+}
+
+impl Hash for Molecule {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.cached_hash.hash(state);
+    }
 }
 
 impl Molecule {
@@ -170,6 +180,7 @@ impl Molecule {
             connections: Array2::with_size((1, 1)),
             first: i,
             last: i,
+            cached_hash: 0
         }
     }
 
@@ -186,6 +197,22 @@ impl Molecule {
     /// Get the last atom of this molecule
     pub fn last(&self) -> usize {
         self.last
+    }
+
+    /// Cache the hash of the bonds
+    fn rehash(&mut self) {
+        let mut hasher = SipHasher::new();
+        (self.last - self.first).hash(&mut hasher);
+
+        let mut bonds = self.bonds.iter()
+                              .map(|bond| Bond::new(bond.i() - self.first, bond.j() - self.first))
+                              .collect::<Vec<_>>();
+        bonds.sort();
+        for bond in &bonds {
+            bond.i().hash(&mut hasher);
+            bond.j().hash(&mut hasher);
+        }
+        self.cached_hash = hasher.finish();
     }
 
     /// Cleanup cached data
@@ -243,6 +270,7 @@ impl Molecule {
             }
         }
         self.rebuild_connections();
+        self.rehash();
     }
 
     /// Recompute the connectivity matrix from the bonds, angles and dihedrals
@@ -295,6 +323,7 @@ impl Molecule {
         }
 
         self.rebuild_connections();
+        self.rehash();
     }
 
     /// Translate all indexes in this molecule by `delta`.
@@ -365,7 +394,8 @@ impl Molecule {
             let mut new_bond = bond.clone();
             if new_bond.i > i {
                 new_bond.i -= 1;
-            } else if new_bond.j > i {
+            }
+            if new_bond.j > i {
                 new_bond.j -= 1;
             }
 
@@ -398,6 +428,24 @@ impl Molecule {
         assert!(self.first <= j && j <= self.last);
         return self.connections[(i - self.first, j - self.first)];
     }
+
+    /// Get an iterator over the particles in the molecule
+    #[inline] pub fn iter(&self) -> Range<usize> {
+        self.into_iter()
+    }
+}
+
+/// Get the molecule type of the given `molecule` containing the `particles`.
+/// This type can be used to identify all the molecules containing the same
+/// bonds and particles (see `Universe::moltype` for more information).
+pub fn moltype(molecule: &Molecule, particles: &[Particle]) -> u64 {
+    assert!(particles.len() == molecule.size());
+    let mut hasher = SipHasher::new();
+    molecule.cached_hash.hash(&mut hasher);
+    for particle in particles {
+        particle.name().hash(&mut hasher);
+    }
+    hasher.finish()
 }
 
 impl IntoIterator for Molecule {
@@ -424,7 +472,7 @@ impl<'a> IntoIterator for &'a Molecule {
     }
 }
 
-
+/******************************************************************************/
 #[cfg(test)]
 mod test {
     use super::*;
@@ -582,5 +630,56 @@ mod test {
 
         assert!(molecule.angles.contains(&Angle::new(0, 3, 2)));
         assert!(molecule.angles.contains(&Angle::new(0, 1, 2)));
+    }
+
+    #[test]
+    fn remove_particle() {
+        let mut molecule = Molecule::new(0);
+        for i in 1..4 {
+            molecule.merge_with(Molecule::new(i));
+        }
+
+        assert_eq!(molecule.bonds().len(), 0);
+        assert_eq!(molecule.size(), 4);
+
+        molecule.add_bond(0, 1);
+        molecule.add_bond(2, 3);
+        assert_eq!(molecule.bonds().len(), 2);
+        assert_eq!(molecule.size(), 4);
+
+        molecule.remove_particle(1);
+        assert_eq!(molecule.bonds().len(), 1);
+        assert_eq!(molecule.size(), 3);
+
+        molecule.merge_with(Molecule::new(3));
+        assert_eq!(molecule.bonds().len(), 1);
+        assert_eq!(molecule.size(), 4);
+    }
+
+    #[test]
+    fn hash() {
+        let mut molecule = Molecule::new(0);
+        assert_eq!(molecule.cached_hash, 0);
+
+        for i in 1..4 {
+            molecule.merge_with(Molecule::new(i));
+        }
+
+        let hash = molecule.cached_hash;
+        assert!(hash != 0);
+
+        molecule.add_bond(0, 1);
+        molecule.add_bond(2, 3);
+        assert!(molecule.cached_hash != hash);
+        let hash = molecule.cached_hash;
+
+        molecule.remove_particle(1);
+        assert!(molecule.cached_hash != hash);
+        let hash = molecule.cached_hash;
+
+        // Hash should be the same when translating the molecule
+        molecule.translate_by(67);
+        molecule.rehash();
+        assert_eq!(molecule.cached_hash, hash);
     }
 }

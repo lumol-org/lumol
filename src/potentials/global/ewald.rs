@@ -17,7 +17,7 @@ use types::{Matrix3, Vector3D, Array3, Complex};
 use constants::ELCC;
 use potentials::PairRestriction;
 
-use super::{GlobalPotential, CoulombicPotential};
+use super::{GlobalPotential, CoulombicPotential, DefaultGlobalCache};
 
 /// Ewald summation of the coulombic interactions. The Ewald summation is based
 /// on a separation of the coulombic potential U in two parts, using the trivial
@@ -32,7 +32,7 @@ use super::{GlobalPotential, CoulombicPotential};
 /// For more informations about this algorithm see [FS2002].
 ///
 /// [FS2002] Frenkel, D. & Smit, B. Understanding molecular simulation. (Academic press, 2002).
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct Ewald {
     /// Splitting parameter between k-space and real space
     alpha: f64,
@@ -493,7 +493,6 @@ impl GlobalPotential for Ewald {
         /* No self virial */
         let kspace = self.kspace_virial(universe);
         let molecular = self.molcorrect_virial(universe);
-        println!("{:?} {:?} {:?}", real, kspace, molecular);
         return real + kspace + molecular;
     }
 }
@@ -504,6 +503,7 @@ impl CoulombicPotential for Ewald {
     }
 }
 
+impl DefaultGlobalCache for Ewald {}
 
 #[cfg(test)]
 mod tests {

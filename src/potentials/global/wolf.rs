@@ -15,12 +15,13 @@ use types::{Matrix3, Vector3D};
 use constants::ELCC;
 use potentials::PairRestriction;
 
-use super::{GlobalPotential, CoulombicPotential};
+use super::{GlobalPotential, CoulombicPotential, DefaultGlobalCache};
 
 /// Wolf summation for the coulombic potential, as defined in [Wolf1999]. This
 /// is a fast direct pairwise summation for coulombic potential.
 ///
 /// [Wolf1999]: Wolf, D. et al. J. Chem. Phys. 110, 8254 (1999).
+#[derive(Clone)]
 pub struct Wolf {
     /// Spliting parameter
     alpha: f64,
@@ -151,6 +152,8 @@ impl CoulombicPotential for Wolf {
         self.restriction = restriction;
     }
 }
+
+impl DefaultGlobalCache for Wolf {}
 
 #[cfg(test)]
 mod tests {

@@ -6,8 +6,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/
 */
-#![allow(non_snake_case)]
-//! Testing physical properties of a Lennard-Jones gaz of Helium.
+//! Testing physical properties of a Lennard-Jones gaz of Helium using Molecular
+//! dynamics
 extern crate cymbalum;
 use self::cymbalum::*;
 
@@ -48,10 +48,10 @@ fn constant_energy_velocity_verlet() {
             VelocityVerlet::new(units::from(1.0, "fs").unwrap())
         )
     );
-    let E_initial = universe.total_energy();
+    let e_initial = universe.total_energy();
     simulation.run(&mut universe, 1000);
-    let E_final = universe.total_energy();
-    assert!(f64::abs((E_initial - E_final)/E_final) < 1e-3);
+    let e_final = universe.total_energy();
+    assert!(f64::abs((e_initial - e_final)/e_final) < 1e-3);
 }
 
 
@@ -64,10 +64,10 @@ fn constant_energy_verlet() {
             Verlet::new(units::from(1.0, "fs").unwrap())
         )
     );
-    let E_initial = universe.total_energy();
+    let e_initial = universe.total_energy();
     simulation.run(&mut universe, 1000);
-    let E_final = universe.total_energy();
-    assert!(f64::abs((E_initial - E_final)/E_final) < 1e-2);
+    let e_final = universe.total_energy();
+    assert!(f64::abs((e_initial - e_final)/e_final) < 1e-2);
 }
 
 
@@ -80,10 +80,10 @@ fn constant_energy_leap_frog() {
             LeapFrog::new(units::from(1.0, "fs").unwrap())
         )
     );
-    let E_initial = universe.total_energy();
+    let e_initial = universe.total_energy();
     simulation.run(&mut universe, 1000);
-    let E_final = universe.total_energy();
-    assert!(f64::abs((E_initial - E_final)/E_final) < 1e-3);
+    let e_final = universe.total_energy();
+    assert!(f64::abs((e_initial - e_final)/e_final) < 1e-3);
 }
 
 #[test]
@@ -103,12 +103,12 @@ fn perfect_gaz() {
     universe.set_cell(UnitCell::cubic(100.0));
 
     simulation.run(&mut universe, 1000);
-    let P = universe.pressure();
-    let V = universe.volume();
-    let T = universe.temperature();
-    let N = universe.size() as f64;
+    let pressure = universe.pressure();
+    let volume = universe.volume();
+    let temperature = universe.temperature();
+    let n = universe.size() as f64;
 
-    assert!(f64::abs(P * V - N * constants::K_BOLTZMANN * T) < 1e-3);
+    assert!(f64::abs(pressure * volume - n * constants::K_BOLTZMANN * temperature) < 1e-3);
 }
 
 #[test]
@@ -151,10 +151,10 @@ fn cutoff_computation() {
     );
     simulation.run(&mut universe, 100);
 
-    let E_initial = universe.total_energy();
+    let e_initial = universe.total_energy();
     simulation.run(&mut universe, 1000);
-    let E_final = universe.total_energy();
-    assert!(f64::abs((E_initial - E_final)/E_final) < 2e-3);
+    let e_final = universe.total_energy();
+    assert!(f64::abs((e_initial - e_final)/e_final) < 2e-3);
 }
 
 
@@ -181,8 +181,8 @@ fn table_computation() {
     );
     simulation.run(&mut universe, 100);
 
-    let E_initial = universe.total_energy();
+    let e_initial = universe.total_energy();
     simulation.run(&mut universe, 1000);
-    let E_final = universe.total_energy();
-    assert!(f64::abs((E_initial - E_final)/E_final) < 2e-3);
+    let e_final = universe.total_energy();
+    assert!(f64::abs((e_initial - e_final)/e_final) < 2e-3);
 }
