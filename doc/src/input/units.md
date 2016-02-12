@@ -30,7 +30,7 @@ The accepted units are:
 | Pressure    | Pa, kPa, MPa, bar, atm            |
 
 In the input files, the unit are specified as strings, and must be spelled
-exactly as in the above table, and can be combined with other units using one of
-the ` .*` character for multiplication, the `/` character for division, and the
+exactly as in the above table, and can be combined with other units using either
+a space, `.` or `*` for multiplication, the `/` character for division, and the
 `^` character for power raising. Some valid units string are `kcal/mol`,
 `J * mol * A^-2`, `m.fs^{-1}`.

@@ -1,1 +1,0 @@
-# Cymbalum: extensible simulation engine
