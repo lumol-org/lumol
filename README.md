@@ -35,10 +35,11 @@ Currently, the following algorithms are implemented:
 - Electrostatic interactions using Ewald or Wolf method;
 - Energy minimization;
 - Molecular dynamics simulations in the NVE, NVT and NPT ensembles;
+- Monte-Carlo simulations in the NVT ensemble;
 
 In a short-term, I'd like to add:
-- Monte-Carlo simulations in the NVT, NPT, and µVT ensembles;
-- Extended ensemble integration for molecular dynamics;
+- Monte-Carlo moves for the NPT and µVT ensembles;
+- Extended ensemble (Nose-Hoover) integration for molecular dynamics;
 
 ## Getting started
 
