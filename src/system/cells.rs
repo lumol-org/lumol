@@ -1,9 +1,6 @@
-/* Cymbalum, Molecular Simulation in Rust - Copyright (C) 2015 Guillaume Fraux
- *
- * This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/
- */
+// Cymbalum, an extensible molecular simulation engine
+// Copyright (C) 2015-2016 G. Fraux — BSD license
+
 //! Simulations in computational chemistry are often made using periodic
 //! boundaries conditions. The `UnitCell` type represents the enclosing box of
 //! a simulated system, with some type of periodic condition.

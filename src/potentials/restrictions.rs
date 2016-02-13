@@ -1,9 +1,5 @@
-/* Cymbalum, Molecular Simulation in Rust - Copyright (C) 2015 Guillaume Fraux
- *
- * This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/
- */
+// Cymbalum, an extensible molecular simulation engine
+// Copyright (C) 2015-2016 G. Fraux — BSD license
 
 //! Encoding restrictions in interactions.
 //!
@@ -11,7 +7,6 @@
 //! possible pairs. For example, we may want to have Lennard-Jones interactions
 //! between atoms in different molecules only, or rescale the coulombic
 //! interactions if the particles are at 1-4 distance.
-
 use system::System;
 
 /// Possible restrictions on the pair interactions.

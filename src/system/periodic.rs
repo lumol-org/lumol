@@ -1,9 +1,5 @@
-/* Cymbalum, Molecular Simulation in Rust - Copyright (C) 2015 Guillaume Fraux
- *
- * This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/
- */
+// Cymbalum, an extensible molecular simulation engine
+// Copyright (C) 2015-2016 G. Fraux — BSD license
 
 //! The periodic module give access to information about "extended" elements.
 //! These elements can be real element like Hydrogen or Carbon, or composed
@@ -12,8 +8,6 @@
 //! There are two way to access this information. The `PERIODIC_TABLE` array
 //! contains all the data about real elements. The `PeriodicTable` struct
 //! provides helper functions, and a way to add new elements in the list.
-
-
 use std::sync::{Once, ONCE_INIT};
 use std::mem;
 

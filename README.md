@@ -94,6 +94,9 @@ requests. Feel free to contact me to discuss about your contributions!
 
 ## License
 
-All this code brought to you under the terms of the Mozilla Public License v2.0.
-The documentation is subject to CC-BY-SA license. By contributing to Cymbalum,
-you agree that your contributions are released under the corresponding licenses.
+This software is licensed under the BSD license, see the LICENSE file for legal
+text.
+
+Unless you explicitly state otherwise, any contribution intentionally submitted
+for inclusion in the work by you, shall be licensed under the same BSD license,
+without any additional terms or conditions.

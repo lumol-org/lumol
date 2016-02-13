@@ -1,14 +1,9 @@
-/* Cymbalum, Molecular Simulation in Rust - Copyright (C) 2015 Guillaume Fraux
- *
- * This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/
- */
+// Cymbalum, an extensible molecular simulation engine
+// Copyright (C) 2015-2016 G. Fraux — BSD license
 
 //! A potential computation is a way of computing a potential given its
 //! expression (represented by a `PotentialFunction`). The same potential can be
 //! computed either direcly, or using a cutoff, or by a table interpolation, ...
-
 use super::{PotentialFunction, PairPotential};
 
 /// A `Computation` is a way to compute a potential.
