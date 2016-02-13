@@ -43,6 +43,20 @@ In a short-term, I'd like to add:
 
 ## Getting started
 
+### Documentation
+
+As Cymbalum is a library, there are multiple ways to use it, and multiple
+corresponding documentations.
+
+To use Cymbalum as a library inside your own code, use the [API
+documentation](http://luthaf.github.io/cymbalum/cymbalum/), in which
+every struct and function are documented. You can also have a look at the
+examples folder to get a taste of the usage.
+
+To use Cymbalum as a simulation engine — without writing code — you should use
+the [user documentation](http://luthaf.github.io/cymbalum/book/). It is very
+incomplete at the moment, but it is improving!
+
 ### Installation
 
 You will need a stable [Rust](https://www.rust-lang.org) compiler, [grab
@@ -71,26 +85,15 @@ cargo test
 Any failing test is an issue, please [report
 it](https://github.com/Luthaf/cymbalum/issues/new)!
 
-### Documentation
-
-As Cymbalum is a library, there are multiple ways to use it, and multiple
-corresponding documentations.
-
-To use Cymbalum as a library inside your own code, use the [API
-documentation](http://luthaf.github.io/cymbalum/cymbalum/), in which
-every struct and function are documented. You can also have a look at the
-examples folder to get a taste of the usage.
-
-To use Cymbalum as a simulation engine — without writing code — you should use
-the [user documentation](http://luthaf.github.io/cymbalum/book/). It is very
-incomplete at the moment, but it is improving!
-
 ## Contributing
 
 If you want to contribute to Cymbalum, there are several ways to go: improving
 the documentation and the usage of English language; testing the code on your
 systems to find bugs; adding new algorithms and potentials; providing feature
 requests. Feel free to contact me to discuss about your contributions!
+
+See the [contribution recomendation](https://github.com/Luthaf/cymbalum/blob/master/Contributing.md)
+for more informations.
 
 ## License
 
