@@ -12,12 +12,12 @@ name = "cymbalum"
 doctest = false
 
 [dependencies]
-chemfiles = "*"
-rand = "*"
-log = "*"
-yaml-rust = "*"
-special = "*"
-bitflags = "*"
+chemfiles = "0.4.0"
+rand = "0.3.14"
+log = "0.3.5"
+yaml-rust = "0.3.0"
+special = "0.5.1"
+bitflags = "0.4.0"
 clippy = {git = "https://github.com/Manishearth/rust-clippy/", optional = true}
 
 [features]
