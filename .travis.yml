@@ -15,7 +15,7 @@ rust:
     - stable
     - beta
 install:
-    - pip install --user travis-cargo codecov
+    - pip install --user codecov
     - export PATH=$HOME/.local/bin:$PATH:$HOME/.cargo/bin
     - export CC=gcc-4.9
     - export CXX=g++-4.9
@@ -23,15 +23,15 @@ script:
     - cargo build
     - cargo test --lib
     - cargo test --release
-    - travis-cargo --only stable doc
     - |
       if test "${TRAVIS_RUST_VERSION}" == "stable"; then
+        cargo doc
         cargo install mdbook
         mdbook build doc
         cp -r doc/book target/doc
+        cp doc/index.html target/doc
       fi
 after_success:
-    - travis-cargo --only stable doc-upload
     - |
       if [ -f $HOME/local/bin/kcov ]; then
           echo "Using cached kcov from ~/local/bin/kcov"
@@ -48,6 +48,11 @@ after_success:
           export PATH=$HOME/local/bin:$PATH
           kcov --include-pattern=$(pwd) target/kcov target/debug/cymbalum-*
           codecov --file target/kcov/cymbalum-*/cobertura.xml
+      fi
+    - |
+      if ["${TRAVIS_RUST_VERSION}" == "stable" && "${TRAVIS_PULL_REQUEST}" == "false" && "${TRAVIS_BRANCH}" == "master"]; then
+          git clone https://github.com/davisp/ghp-import
+          python ghp-import/ghp_import.py -n -p target/doc
       fi
 cache:
   directories:
