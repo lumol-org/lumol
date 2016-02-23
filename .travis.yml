@@ -16,7 +16,7 @@ rust:
     - beta
 install:
     - pip install --user codecov
-    - export PATH=$HOME/.local/bin:$PATH:$HOME/.cargo/bin
+    - export PATH=$HOME/.local/bin:$PATH:HOME/local/bin:$HOME/.cargo/bin
     - export CC=gcc-4.9
     - export CXX=g++-4.9
 script:
@@ -31,18 +31,20 @@ script:
         cp -r doc/book target/doc
         cp doc/index.html target/doc
       fi
-after_success:
+    # Build and cache kcov
     - |
       if [ -f $HOME/local/bin/kcov ]; then
           echo "Using cached kcov from ~/local/bin/kcov"
       else
+          mkdip -p $HOME/local
           cd $HOME/local
           wget https://github.com/SimonKagstrom/kcov/archive/master.tar.gz
           tar xzf master.tar.gz && mkdir kcov-master/build && cd kcov-master/build
-          cmake -DCMAKE_INSTALL_PREFIX=$HOME/.local ..
+          cmake -DCMAKE_INSTALL_PREFIX=$HOME/local ..
           make install
           cd $TRAVIS_BUILD_DIR
       fi
+after_success:
     - |
       if test "${TRAVIS_RUST_VERSION}" == "stable"; then
           export PATH=$HOME/local/bin:$PATH
