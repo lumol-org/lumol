@@ -284,7 +284,8 @@ impl Compute for Pressure {
 mod test {
     use super::*;
     use types::*;
-    use system::*;
+    use system::{System, Particle, UnitCell};
+    use system::{InitVelocities, BoltzmanVelocities};
     use potentials::Harmonic;
     use units;
 

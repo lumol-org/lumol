@@ -658,12 +658,13 @@ impl System {
 }
 
 /******************************************************************************/
-use simulation::Compute;
-use simulation::{PotentialEnergy, KineticEnergy, TotalEnergy};
-use simulation::Temperature;
-use simulation::Volume;
-use simulation::{Virial, Stress, Pressure};
-use simulation::{StressAtTemperature, PressureAtTemperature};
+use system::Compute;
+use system::{PotentialEnergy, KineticEnergy, TotalEnergy};
+use system::Forces;
+use system::Temperature;
+use system::Volume;
+use system::{Virial, Stress, Pressure};
+use system::{StressAtTemperature, PressureAtTemperature};
 
 use std::cell::Cell;
 
@@ -815,6 +816,11 @@ impl System {
     /// given `temperature`.
     pub fn stress_at_temperature(&self, temperature: f64) -> Matrix3 {
         StressAtTemperature{temperature: temperature}.compute(self)
+    }
+
+    /// Get the forces acting on all the particles in the system
+    pub fn forces(&self) -> Vec<Vector3D> {
+        Forces.compute(self)
     }
 }
 

@@ -8,13 +8,12 @@ use rand::SeedableRng;
 
 use constants::K_BOLTZMANN;
 use types::Vector3D;
-use simulation::{Compute, Temperature};
 use super::System;
 
 /// Scale all velocities in the `System` such that the `system` temperature
 /// is `temperature`.
 pub fn scale(system: &mut System, temperature: f64) {
-    let instant_temperature = Temperature.compute(system);
+    let instant_temperature = system.temperature();
     let factor = f64::sqrt(temperature / instant_temperature);
     for particle in system {
         particle.velocity = factor * particle.velocity;
@@ -105,8 +104,6 @@ impl InitVelocities for UniformVelocities {
 #[cfg(test)]
 mod test {
     use super::*;
-    use simulation::{Compute, Temperature};
-
     use system::{System, Particle};
 
     fn testing_system() -> System {
@@ -123,7 +120,7 @@ mod test {
         let mut velocities = BoltzmanVelocities::new(300.0);
         velocities.seed(1234);
         velocities.init(&mut system);
-        let temperature = Temperature.compute(&system);
+        let temperature = system.temperature();
         assert_approx_eq!(temperature, 300.0, 1e-9);
     }
 
@@ -133,7 +130,7 @@ mod test {
         let mut velocities = UniformVelocities::new(300.0);
         velocities.seed(1234);
         velocities.init(&mut system);
-        let temperature = Temperature.compute(&system);
+        let temperature = system.temperature();
         assert_approx_eq!(temperature, 300.0, 1e-9);
     }
 }

@@ -4,7 +4,6 @@
 use units;
 use System;
 use simulation::Propagator;
-use simulation::{Compute, PotentialEnergy, Forces};
 
 /// Steepest gradient descent for energy minization.
 ///
@@ -57,7 +56,7 @@ impl Propagator for SteepestDescent {
     }
 
     fn propagate(&mut self, system: &mut System) {
-        let forces = Forces.compute(&system);
+        let forces = system.forces();
         // Get the maximal value in the vector.
         // How can you know that fold(cte, cte) will do it ?
         let max_force_norm2 = forces.iter().map(|&f| f.norm2()).fold(-1./0. /* -inf */, f64::max);
@@ -66,7 +65,7 @@ impl Propagator for SteepestDescent {
             return;
         }
 
-        let energy = PotentialEnergy.compute(&system);
+        let energy = system.potential_energy();
         if energy < self.energy_crit {
             self.is_converged = true;
             return;
@@ -86,7 +85,7 @@ impl Propagator for SteepestDescent {
             for (i, p) in system.iter_mut().enumerate() {
                 p.position = positions[i] + self.gamma * forces[i];
             }
-            let new_energy = PotentialEnergy.compute(&system);
+            let new_energy = system.potential_energy();
             if new_energy <= energy {
                 break;
             }

@@ -1,7 +1,6 @@
 // Cymbalum, an extensible molecular simulation engine
 // Copyright (C) 2015-2016 G. Fraux — BSD license
 use types::{Vector3D, Matrix3, One};
-use simulation::{Compute, Forces};
 use system::System;
 
 /// The Integrator trait define integrators interface for Molecular Dynamics.
@@ -49,7 +48,7 @@ impl Integrator for VelocityVerlet {
             part.position = part.position + dr;
         }
 
-        let forces = Forces.compute(&system);
+        let forces = system.forces();
         // Update accelerations at t + ∆t and velocities at t + ∆t
         for (i, part) in system.iter_mut().enumerate() {
             self.accelerations[i] = forces[i] / part.mass;
@@ -92,7 +91,7 @@ impl Integrator for Verlet {
         let dt = self.timestep;
         let dt2 = self.timestep * self.timestep;
 
-        let forces = Forces.compute(&system);
+        let forces = system.forces();
         for (i, part) in system.iter_mut().enumerate() {
             // Save positions at t
             let tmp = part.position.clone();
@@ -141,7 +140,7 @@ impl Integrator for LeapFrog {
             part.position = part.position + part.velocity * dt + 0.5 * self.accelerations[i] * dt2;
         }
 
-        let forces = Forces.compute(&system);
+        let forces = system.forces();
         for (i, part) in system.iter_mut().enumerate() {
             let mass = part.mass;
             let acceleration = forces[i]/mass;
@@ -215,7 +214,7 @@ impl Integrator for BerendsenBarostat {
 
         self.eta = f64::cbrt(1.0 - WATER_COMPRESSIBILITY / self.baro_timestep * (self.pressure - system.pressure()));
 
-        let forces = Forces.compute(&system);
+        let forces = system.forces();
         // Update accelerations at t + ∆t and velocities at t + ∆t
         for (i, part) in system.iter_mut().enumerate() {
             self.accelerations[i] = forces[i] / part.mass;
@@ -300,7 +299,7 @@ impl Integrator for AnisoBerendsenBarostat {
             }
         }
 
-        let forces = Forces.compute(&system);
+        let forces = system.forces();
         // Update accelerations at t + ∆t and velocities at t + ∆t
         for (i, part) in system.iter_mut().enumerate() {
             self.accelerations[i] = forces[i] / part.mass;
