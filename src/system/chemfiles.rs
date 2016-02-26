@@ -54,12 +54,12 @@ impl ToCymbalum for chemfiles::Frame {
         let cell = try!(cell.to_cymbalum());
         let mut system = System::from_cell(cell);
         let topology = try!(self.topology());
-        let positions = try!(self.positions());
         let natoms = try!(self.natoms());
         let step = try!(self.step());
 
         system.set_step(step as u64);
 
+        let positions = try!(self.positions());
         for i in 0..natoms {
             let atom = try!(topology.atom(i));
             let particle = try!(atom.to_cymbalum());
@@ -98,7 +98,7 @@ fn apply_particle_permutation(bonds: &mut Vec<[usize; 2]>, perms: Vec<(usize, us
     }
 }
 
-/// Convert a chemfiles `Frame` to an `System`
+/// Convert a chemfiles `Frame` to a `System`
 pub fn frame_to_system(frame: chemfiles::Frame) -> Result<System, Error> {
     frame.to_cymbalum()
 }
@@ -152,26 +152,33 @@ impl ToChemfiles for System {
 
         try!(frame.set_step(self.step() as usize));
 
+        {
+            let positions = try!(frame.positions_mut());
+            for (i, p) in self.iter().enumerate() {
+                let pos = p.position;
+                positions[i][0] = pos.x as f32;
+                positions[i][1] = pos.y as f32;
+                positions[i][2] = pos.z as f32;
+            }
+        }
+
+        {
+            try!(frame.add_velocities());
+            let velocities = try!(frame.velocities_mut());
+            for (i, p) in self.iter().enumerate() {
+                let vel = p.velocity;
+                velocities[i][0] = vel.x as f32;
+                velocities[i][1] = vel.y as f32;
+                velocities[i][2] = vel.z as f32;
+            }
+        }
+
         let mut topology = try!(chemfiles::Topology::new());
-        let mut positions = vec![[0.0f32; 3]; natoms];
-        let mut velocities = vec![[0.0f32; 3]; natoms];
-
-        for (i, p) in self.iter().enumerate() {
-            let pos = p.position;
-            positions[i][0] = pos.x as f32;
-            positions[i][1] = pos.y as f32;
-            positions[i][2] = pos.z as f32;
-
-            let vel = p.velocity;
-            velocities[i][0] = vel.x as f32;
-            velocities[i][1] = vel.y as f32;
-            velocities[i][2] = vel.z as f32;
-
-            let atom = try!(p.to_chemfiles());
+        for particle in self {
+            let atom = try!(particle.to_chemfiles());
             try!(topology.push(&atom));
         }
-        try!(frame.set_positions(positions));
-        try!(frame.set_velocities(velocities));
+
 
         for molecule in self.molecules() {
             for bond in molecule.bonds() {
