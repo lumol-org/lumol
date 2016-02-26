@@ -663,6 +663,7 @@ use simulation::{PotentialEnergy, KineticEnergy, TotalEnergy};
 use simulation::Temperature;
 use simulation::Volume;
 use simulation::{Virial, Stress, Pressure};
+use simulation::{StressAtTemperature, PressureAtTemperature};
 
 use std::cell::Cell;
 
@@ -798,10 +799,23 @@ impl System {
 
     /// Get the tensorial virial of the system.
     pub fn virial(&self) -> Matrix3 {self.cache.virial(&self)}
-    /// Get the pressure of the system, from the virial equation
+    /// Get the pressure of the system from the virial equation, at the system
+    /// instananeous temperature.
     pub fn pressure(&self) -> f64 {self.cache.pressure(&self)}
-    /// Get the stress tensor of the system, from the virial equation
+    /// Get the stress tensor of the system from the virial equation, at the
+    /// system instananeous temperature.
     pub fn stress(&self) -> Matrix3 {self.cache.stress(&self)}
+
+    /// Get the pressure of the system from the virial equation, at the given
+    /// `temperature`.
+    pub fn pressure_at_temperature(&self, temperature: f64) -> f64 {
+        PressureAtTemperature{temperature: temperature}.compute(self)
+    }
+    /// Get the stress tensor of the system from the virial equation, at the
+    /// given `temperature`.
+    pub fn stress_at_temperature(&self, temperature: f64) -> Matrix3 {
+        StressAtTemperature{temperature: temperature}.compute(self)
+    }
 }
 
 /******************************************************************************/

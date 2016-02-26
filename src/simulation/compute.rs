@@ -3,7 +3,7 @@
 
 //! Computing properties of a system
 use constants::K_BOLTZMANN;
-use types::{Matrix3, Vector3D, Zero};
+use types::{Matrix3, Vector3D, Zero, One};
 use system::System;
 
 /// The compute trait allow to compute properties of a system, whithout
@@ -202,6 +202,46 @@ impl Compute for Virial {
 }
 
 /******************************************************************************/
+/// Compute the pressure of the system from the virial equation, at the given
+/// temperature.
+pub struct PressureAtTemperature {
+    /// Temperature for the pressure computation
+    pub temperature: f64
+}
+
+impl Compute for PressureAtTemperature {
+    type Output = f64;
+    fn compute(&self, system: &System) -> f64 {
+        assert!(self.temperature >= 0.0);
+        let virial_tensor = system.virial();
+        let virial = virial_tensor.trace();
+        let volume = system.volume();
+        let natoms = system.size() as f64;
+        return natoms * K_BOLTZMANN * self.temperature / volume - virial / (3.0 * volume);
+    }
+}
+
+/******************************************************************************/
+/// Compute the stress tensor of the system from the virial equation, at the
+/// given temperature.
+pub struct StressAtTemperature {
+    /// Temperature for the stress tensor computation
+    pub temperature: f64
+}
+
+impl Compute for StressAtTemperature {
+    type Output = Matrix3;
+    fn compute(&self, system: &System) -> Matrix3 {
+        assert!(self.temperature >= 0.0);
+        let virial = system.virial();
+        let volume = system.volume();
+        let natoms = system.size() as f64;
+        let kinetic = natoms * K_BOLTZMANN * self.temperature * Matrix3::one();
+        return 1.0 / volume * (kinetic - virial);
+    }
+}
+
+/******************************************************************************/
 /// Compute the stress tensor of the system
 pub struct Stress;
 impl Compute for Stress {
@@ -236,12 +276,7 @@ pub struct Pressure;
 impl Compute for Pressure {
     type Output = f64;
     fn compute(&self, system: &System) -> f64 {
-        let virial_tensor = Virial.compute(system);
-        let virial = virial_tensor.trace();
-        let volume = Volume.compute(system);
-        let natoms = system.size() as f64;
-        let temperature = Temperature.compute(system);
-        return natoms * K_BOLTZMANN * temperature / volume - virial / (3.0 * volume);
+        return PressureAtTemperature{temperature: system.temperature()}.compute(system);
     }
 }
 
@@ -413,6 +448,45 @@ mod test {
             }
         }
         assert_eq!(virial, system.virial());
+    }
+
+    #[test]
+    #[should_panic]
+    fn pressure_at_temperature_negative_temperature() {
+        let system = &testing_system();
+        let pressure = PressureAtTemperature{temperature: -4.0};
+        pressure.compute(system);
+    }
+
+    #[test]
+    fn pressure_at_temperature() {
+        let system = &testing_system();
+        let P = PressureAtTemperature{temperature: 550.0}.compute(system);
+        assert_approx_eq!(P, units::from(-279.86871562230914, "bar").unwrap(), 1e-9);
+        assert_eq!(P, system.pressure_at_temperature(550.0));
+
+        let pressure = PressureAtTemperature{temperature: system.temperature()};
+        let P = pressure.compute(system);
+        assert_eq!(P, system.pressure());
+    }
+
+    #[test]
+    #[should_panic]
+    fn stress_at_temperature_negative_temperature() {
+        let system = &testing_system();
+        let stress = StressAtTemperature{temperature: -4.0};
+        stress.compute(system);
+    }
+
+    #[test]
+    fn stress_at_temperature() {
+        let system = &testing_system();
+        let stress = StressAtTemperature{temperature: 550.0}.compute(system);
+        let P = PressureAtTemperature{temperature: 550.0}.compute(system);
+
+        let trace = (stress[(0, 0)] + stress[(1, 1)] + stress[(2, 2)]) / 3.0;
+        assert_approx_eq!(trace, P, 1e-9);
+        assert_eq!(stress, system.stress_at_temperature(550.0));
     }
 
     #[test]
