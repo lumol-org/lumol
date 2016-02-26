@@ -24,8 +24,6 @@ pub struct Rotate {
     axis_rng: Normal,
     /// Range distribution, for generation of the angle
     angle_rng: Range<f64>,
-    /// Potential energy before the move
-    e_before: f64,
 }
 
 impl Rotate {
@@ -50,7 +48,6 @@ impl Rotate {
             newpos: Vec::new(),
             axis_rng: Normal::new(0.0, 1.0),
             angle_rng: Range::new(-theta, theta),
-            e_before: 0.0,
         }
     }
 }
@@ -73,8 +70,6 @@ impl MCMove for Rotate {
             warn!("Can not rotate molecule: no molecule of this type in the system.");
             return false;
         }
-
-        self.e_before = system.potential_energy();
 
         // Getting values from a 3D normal distribution gives an uniform
         // distribution on the R3 sphere.
