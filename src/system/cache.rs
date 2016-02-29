@@ -45,7 +45,7 @@ impl EnergyCache {
     /// Create a new empty energy cache.
     pub fn new() -> EnergyCache {
         EnergyCache {
-            pairs_cache: Array2::new(),
+            pairs_cache: Array2::zeros((0, 0)),
             pairs: 0.0,
             bonds: 0.0,
             angles: 0.0,
@@ -58,7 +58,7 @@ impl EnergyCache {
 
     /// Clear all values in the cache by setting them to 0
     fn clear(&mut self) {
-        self.pairs_cache.fill(0.0);
+        self.pairs_cache.assign_scalar(&0.0);
         self.pairs = 0.0;
         self.bonds = 0.0;
         self.angles = 0.0;
@@ -69,10 +69,13 @@ impl EnergyCache {
 
     /// Initialize the cache to be used with `system`. After a call to this
     /// function, the cache is only usable with the same system. To change
-    /// the associated system, one must call this fucntion again.
+    /// the associated system, one must call this function again.
     pub fn init(&mut self, system: &System) {
         self.clear();
-        self.pairs_cache.resize((system.size(), system.size()));
+        if self.pairs_cache.shape() != &[system.size(), system.size()] {
+            self.pairs_cache = Array2::zeros((system.size(), system.size()));
+        }
+
         let evaluator = system.energy_evaluator();
 
         for i in 0..system.size() {
@@ -138,7 +141,7 @@ impl EnergyCache {
         let evaluator = system.energy_evaluator();
 
         // First, go for pair interactions
-        let mut new_pairs = Array2::<f64>::with_size((system.size(), system.size()));
+        let mut new_pairs = Array2::<f64>::zeros((system.size(), system.size()));
         let mut pairs_delta = 0.0;
         // Interactions with the sub-system not being moved
         for (i, &part_i) in idxes.iter().enumerate() {
@@ -231,10 +234,10 @@ impl EnergyCache {
             cache.coulomb += coulomb_delta;
             cache.global += global_delta;
 
-            let (n, m) = new_pairs.size();
+            let shape = new_pairs.shape();
+            let (n, m) = (shape[0], shape[1]);
             debug_assert!(n == m);
-            debug_assert!(n == cache.pairs_cache.size().0);
-            debug_assert!(n == cache.pairs_cache.size().1);
+            debug_assert!(shape == cache.pairs_cache.shape());
             for i in 0..n {
                 for j in 0..n {
                     if new_pairs[(i, j)] != 0.0 {

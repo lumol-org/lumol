@@ -174,7 +174,7 @@ impl Molecule {
             bonds: HashSet::new(),
             angles: HashSet::new(),
             dihedrals: HashSet::new(),
-            connections: Array2::with_size((1, 1)),
+            connections: Array2::default((1, 1)),
             first: i,
             last: i,
             cached_hash: 0
@@ -274,7 +274,7 @@ impl Molecule {
     /// in the system.
     fn rebuild_connections(&mut self) {
         let n = self.size();
-        self.connections = Array2::with_size((n, n));
+        self.connections = Array2::default((n, n));
 
         // Getting needed variables for the `add_connect_term` closure
         let first = self.first;

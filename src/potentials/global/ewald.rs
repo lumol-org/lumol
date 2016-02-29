@@ -56,8 +56,8 @@ impl Ewald {
     /// and `kmax` points in k-space (Fourier space).
     pub fn new(rc: f64, kmax: usize) -> Ewald {
         let kmax = kmax + 1;
-        let expfactors = Array3::with_size((kmax, kmax, kmax));
-        let rho = Array3::with_size((kmax, kmax, kmax));
+        let expfactors = Array3::zeros((kmax, kmax, kmax));
+        let rho = Array3::zeros((kmax, kmax, kmax));
         Ewald {
             alpha: 3.0 * PI / (rc * 4.0),
             rc: rc,
@@ -65,7 +65,7 @@ impl Ewald {
             kmax2: Cell::new(0.0),
             restriction: PairRestriction::None,
             expfactors: RefCell::new(expfactors),
-            fourier_phases: RefCell::new(Array3::new()),
+            fourier_phases: RefCell::new(Array3::zeros((0, 0, 0))),
             rho: RefCell::new(rho),
             previous_cell: RefCell::new(UnitCell::new()),
         }
@@ -224,7 +224,9 @@ impl Ewald {
     fn density_fft(&self, system: &System) {
         let natoms = system.size();
         let mut fourier_phases = self.fourier_phases.borrow_mut();
-        fourier_phases.resize((self.kmax, natoms, 3));
+        if fourier_phases.shape() != &[self.kmax, natoms, 3] {
+            *fourier_phases = Array3::zeros((self.kmax, natoms, 3));
+        }
 
         // Do the k=0, 1 cases first
         for i in 0..natoms {
