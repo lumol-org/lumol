@@ -147,3 +147,153 @@ impl<T> IndexMut<(Ix, Ix, Ix)> for Array3<T> {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    mod array2 {
+        use super::super::Array2;
+
+        #[test]
+        fn zeros() {
+            let a: Array2<f64> = Array2::zeros((3, 4));
+            for i in 0..3 {
+                for j in 0..4 {
+                    assert_eq!(a[(i, j)], 0.0);
+                }
+            }
+        }
+
+        #[test]
+        fn default() {
+            #[derive(Clone)] struct F64(f64);
+            impl Default for F64 {fn default() -> F64 { F64(42.0) }}
+
+            let a: Array2<F64> = Array2::default((3, 4));
+            for i in 0..3 {
+                for j in 0..4 {
+                    assert_eq!(a[(i, j)].0, 42.0);
+                }
+            }
+        }
+
+        #[test]
+        fn resize() {
+            let mut a: Array2<f64> = Array2::zeros((3, 4));
+            assert_eq!(a.shape(), (3, 4));
+            a[(1, 1)] = 42.0;
+
+            a.resize_if_different((7, 90));
+            assert_eq!(a.shape(), (7, 90));
+            assert_eq!(a[(1, 1)], 0.0);
+
+            a[(1, 1)] = 42.0;
+            a.resize_if_different((7, 90));
+            assert_eq!(a[(1, 1)], 42.0);
+        }
+
+        #[test]
+        fn index() {
+            let mut a: Array2<f64> = Array2::zeros((3, 4));
+
+            assert_eq!(a[(1, 3)], 0.0);
+
+            a[(1, 3)] = 45.0;
+            assert_eq!(a[(1, 3)], 45.0);
+        }
+
+        #[test]
+        #[should_panic]
+        #[cfg(debug_assertions)]
+        fn out_of_bound_1() {
+            let a: Array2<f64> = Array2::zeros((3, 4));
+            let _ = a[(5, 1)];
+        }
+
+        #[test]
+        #[should_panic]
+        #[cfg(debug_assertions)]
+        fn out_of_bound_2() {
+            let a: Array2<f64> = Array2::zeros((3, 4));
+            let _ = a[(2, 7)];
+        }
+    }
+
+    mod array3 {
+        use super::super::Array3;
+
+        #[test]
+        fn zeros() {
+            let a: Array3<f64> = Array3::zeros((3, 4, 8));
+            for i in 0..3 {
+                for j in 0..4 {
+                    for k in 0..8 {
+                        assert_eq!(a[(i, j, k)], 0.0);
+                    }
+                }
+            }
+        }
+
+        #[test]
+        fn default() {
+            #[derive(Clone)] struct F64(f64);
+            impl Default for F64 {fn default() -> F64 { F64(42.0) }}
+
+            let a: Array3<F64> = Array3::default((3, 4, 8));
+            for i in 0..3 {
+                for j in 0..4 {
+                    for k in 0..8 {
+                        assert_eq!(a[(i, j, k)].0, 42.0);
+                    }
+                }
+            }
+        }
+
+        #[test]
+        fn resize() {
+            let mut a: Array3<f64> = Array3::zeros((3, 4, 5));
+            assert_eq!(a.shape(), (3, 4, 5));
+            a[(1, 1, 1)] = 42.0;
+
+            a.resize_if_different((7, 90, 8));
+            assert_eq!(a.shape(), (7, 90, 8));
+            assert_eq!(a[(1, 1, 1)], 0.0);
+
+            a[(1, 1, 1)] = 42.0;
+            a.resize_if_different((7, 90, 8));
+            assert_eq!(a[(1, 1, 1)], 42.0);
+        }
+
+        #[test]
+        fn index() {
+            let mut a: Array3<f64> = Array3::zeros((3, 4, 5));
+            assert_eq!(a[(1, 3, 2)], 0.0);
+
+            a[(1, 3, 2)] = 45.0;
+            assert_eq!(a[(1, 3, 2)], 45.0);
+        }
+
+        #[test]
+        #[should_panic]
+        #[cfg(debug_assertions)]
+        fn out_of_bound_1() {
+            let a: Array3<f64> = Array3::zeros((3, 4, 89));
+            let _ = a[(5, 1, 6)];
+        }
+
+        #[test]
+        #[should_panic]
+        #[cfg(debug_assertions)]
+        fn out_of_bound_2() {
+            let a: Array3<f64> = Array3::zeros((3, 4, 89));
+            let _ = a[(2, 67, 6)];
+        }
+
+        #[test]
+        #[should_panic]
+        #[cfg(debug_assertions)]
+        fn out_of_bound_3() {
+            let a: Array3<f64> = Array3::zeros((3, 4, 89));
+            let _ = a[(2, 1, 600)];
+        }
+    }
+}
