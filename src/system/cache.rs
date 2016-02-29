@@ -58,7 +58,7 @@ impl EnergyCache {
 
     /// Clear all values in the cache by setting them to 0
     fn clear(&mut self) {
-        self.pairs_cache.assign_scalar(&0.0);
+        self.pairs_cache.assign(0.0);
         self.pairs = 0.0;
         self.bonds = 0.0;
         self.angles = 0.0;
@@ -72,9 +72,7 @@ impl EnergyCache {
     /// the associated system, one must call this function again.
     pub fn init(&mut self, system: &System) {
         self.clear();
-        if self.pairs_cache.shape() != &[system.size(), system.size()] {
-            self.pairs_cache = Array2::zeros((system.size(), system.size()));
-        }
+        self.pairs_cache.resize_if_different((system.size(), system.size()));
 
         let evaluator = system.energy_evaluator();
 
@@ -234,10 +232,9 @@ impl EnergyCache {
             cache.coulomb += coulomb_delta;
             cache.global += global_delta;
 
-            let shape = new_pairs.shape();
-            let (n, m) = (shape[0], shape[1]);
+            let (n, m) = new_pairs.shape();
             debug_assert!(n == m);
-            debug_assert!(shape == cache.pairs_cache.shape());
+            debug_assert!((n, m) == cache.pairs_cache.shape());
             for i in 0..n {
                 for j in 0..n {
                     if new_pairs[(i, j)] != 0.0 {

@@ -224,9 +224,7 @@ impl Ewald {
     fn density_fft(&self, system: &System) {
         let natoms = system.size();
         let mut fourier_phases = self.fourier_phases.borrow_mut();
-        if fourier_phases.shape() != &[self.kmax, natoms, 3] {
-            *fourier_phases = Array3::zeros((self.kmax, natoms, 3));
-        }
+        fourier_phases.resize_if_different((self.kmax, natoms, 3));
 
         // Do the k=0, 1 cases first
         for i in 0..natoms {
