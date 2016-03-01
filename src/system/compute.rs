@@ -287,6 +287,7 @@ mod test {
     use system::{System, Particle, UnitCell};
     use system::{InitVelocities, BoltzmanVelocities};
     use potentials::Harmonic;
+    use constants::K_BOLTZMANN;
     use units;
 
     const EPS : f64 = 1e-8;
@@ -320,11 +321,12 @@ mod test {
         let forces_tot = res[0] + res[1];
         assert_eq!(forces_tot, Vector3D::new(0.0, 0.0, 0.0));
 
-        assert_approx_eq!(res[0].x, 3e-3, EPS);
+        let force = units::from(30.0, "kJ/mol/A").unwrap();
+        assert_approx_eq!(res[0].x, force, EPS);
         assert_approx_eq!(res[0].y, 0.0, EPS);
         assert_approx_eq!(res[0].y, 0.0, EPS);
 
-        assert_approx_eq!(res[1].x, -3e-3, EPS);
+        assert_approx_eq!(res[1].x, -force, EPS);
         assert_approx_eq!(res[1].y, 0.0, EPS);
         assert_approx_eq!(res[1].y, 0.0, EPS);
     }
@@ -441,7 +443,8 @@ mod test {
         let virial = Virial.compute(system);
 
         let mut res = Matrix3::zero();
-        res[(0, 0)] = 2.0 * 3e-3 * 1.3;
+        let force = units::from(30.0, "kJ/mol/A").unwrap();
+        res[(0, 0)] = 2.0 * force * 1.3;
 
         for i in 0..3 {
             for j in 0..3 {
@@ -462,13 +465,21 @@ mod test {
     #[test]
     fn pressure_at_temperature() {
         let system = &testing_system();
-        let P = PressureAtTemperature{temperature: 550.0}.compute(system);
-        assert_approx_eq!(P, units::from(-279.86871562230914, "bar").unwrap(), 1e-9);
-        assert_eq!(P, system.pressure_at_temperature(550.0));
+        let pressure = PressureAtTemperature{temperature: 550.0}.compute(system);
+
+        let force = units::from(30.0, "kJ/mol/A").unwrap();
+        let virial = 2.0 * force * 1.3;
+        let natoms = 2.0;
+        let temperature = 550.0;
+        let volume = 1000.0;
+        let expected = natoms * K_BOLTZMANN * temperature / volume - virial / (3.0 * volume);
+
+        assert_approx_eq!(pressure, expected, 1e-9);
+        assert_eq!(pressure, system.pressure_at_temperature(550.0));
 
         let pressure = PressureAtTemperature{temperature: system.temperature()};
-        let P = pressure.compute(system);
-        assert_eq!(P, system.pressure());
+        let exact = pressure.compute(system);
+        assert_eq!(exact, system.pressure());
     }
 
     #[test]
@@ -483,10 +494,10 @@ mod test {
     fn stress_at_temperature() {
         let system = &testing_system();
         let stress = StressAtTemperature{temperature: 550.0}.compute(system);
-        let P = PressureAtTemperature{temperature: 550.0}.compute(system);
+        let pressure = PressureAtTemperature{temperature: 550.0}.compute(system);
 
         let trace = (stress[(0, 0)] + stress[(1, 1)] + stress[(2, 2)]) / 3.0;
-        assert_approx_eq!(trace, P, 1e-9);
+        assert_approx_eq!(trace, pressure, 1e-9);
         assert_eq!(stress, system.stress_at_temperature(550.0));
     }
 
@@ -505,7 +516,15 @@ mod test {
     fn pressure() {
         let system = &testing_system();
         let pressure = Pressure.compute(system);
-        assert_approx_eq!(pressure, units::from(-348.9011556223, "bar").unwrap(), 1e-9);
+
+        let force = units::from(30.0, "kJ/mol/A").unwrap();
+        let virial = 2.0 * force * 1.3;
+        let natoms = 2.0;
+        let temperature = 300.0;
+        let volume = 1000.0;
+        let expected = natoms * K_BOLTZMANN * temperature / volume - virial / (3.0 * volume);
+
+        assert_approx_eq!(pressure, expected, 1e-9);
         assert_eq!(pressure, system.pressure());
     }
 }
