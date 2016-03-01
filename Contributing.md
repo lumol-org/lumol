@@ -28,7 +28,7 @@ Github pull request (have a look
 of pull request); or you can send me patches by email at luthaf@luthaf.fr.
 
 If you want to pick something easy to get started with code, have a look at the
-[Level:Easy](https://github.com/Luthaf/cymbalum/issues?q=is%3Aissue+is%3Aopen+label%3A%22Level%3A+easy%22) issues.
+[Level:Easy](https://github.com/Luthaf/cymbalum/labels/L%3AEasy) issues.
 
 If you want to add a new feature to Cymbalum, please create an issue so that we
 can discuss it, and you have more chances to see your changes incorporated.
