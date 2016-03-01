@@ -30,21 +30,23 @@ fn get_system() -> System {
 fn perfect_gaz() {
     START.call_once(|| {Logger::stdout();});
     let mut system = get_system();
-    let mut mc = MonteCarlo::new(units::from(300.0, "K").unwrap());
+
+    let temperature = units::from(300.0, "K").unwrap();
+    let mut mc = MonteCarlo::new(temperature);
     mc.add(Box::new(Translate::new(units::from(3.0, "A").unwrap())), 1.0);
     let mut simulation = Simulation::new(mc);
 
     // dilating the system!
     for particle in system.iter_mut() {
-        particle.position = 10.0 * particle.position;
+        particle.position = 36.0 * particle.position;
     }
-    system.set_cell(UnitCell::cubic(100.0));
+    system.set_cell(UnitCell::cubic(60.0));
 
     simulation.run(&mut system, 5000);
-    let pressure = system.pressure();
+    let pressure = system.pressure_at_temperature(temperature);
     let volume = system.volume();
-    let temperature = system.temperature();
-    let n = system.size() as f64;
 
-    assert!(f64::abs(pressure * volume - n * constants::K_BOLTZMANN * temperature) < 1e-3);
+    let pv = pressure * volume;
+    let nkt = system.size() as f64 * constants::K_BOLTZMANN * temperature;
+    assert!(f64::abs(pv - nkt) / pv < 2e-2);
 }
