@@ -19,4 +19,4 @@ pub use self::minimization::*;
 
 pub mod outputs;
 pub use self::outputs::Output;
-pub use self::outputs::{TrajectoryOutput, CellOutput, EnergyOutput};
+pub use self::outputs::{TrajectoryOutput, CellOutput, EnergyOutput, PropertiesOutput};
