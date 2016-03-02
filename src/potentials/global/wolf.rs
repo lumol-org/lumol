@@ -8,7 +8,7 @@ use self::special::erfc;
 use std::f64::consts::PI;
 
 use system::System;
-use types::{Matrix3, Vector3D};
+use types::{Matrix3, Vector3D, Zero};
 use constants::ELCC;
 use potentials::PairRestriction;
 

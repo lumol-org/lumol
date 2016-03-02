@@ -33,8 +33,6 @@ extern crate log;
 #[macro_use]
 extern crate bitflags;
 
-extern crate num;
-
 #[macro_use]
 mod tests;
 #[macro_use]

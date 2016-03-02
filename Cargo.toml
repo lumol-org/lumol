@@ -19,8 +19,15 @@ yaml-rust = "0.3.0"
 special = "0.5.1"
 bitflags = "0.4.0"
 ndarray = "0.4.0"
-num = "0.1.31"
-clippy = {git = "https://github.com/Manishearth/rust-clippy/", optional = true}
+
+[dependencies.num]
+version = "0.1.31"
+# We only need the One and Zero traits
+default-features = false
+
+[dependencies.clippy]
+git = "https://github.com/Manishearth/rust-clippy/"
+optional = true
 
 [features]
 default = []

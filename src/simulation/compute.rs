@@ -3,7 +3,7 @@
 
 //! Computing properties of a system
 use constants::K_BOLTZMANN;
-use types::{Matrix3, Vector3D};
+use types::{Matrix3, Vector3D, Zero};
 use system::System;
 
 /// The compute trait allow to compute properties of a system, whithout

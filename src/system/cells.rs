@@ -6,7 +6,7 @@
 //! a simulated system, with some type of periodic condition.
 use std::f64::consts::PI;
 
-use types::{Matrix3, Vector3D};
+use types::{Matrix3, Vector3D, Zero};
 
 /// The type of a cell determine how we will be able to compute the periodic
 /// boundaries condition.

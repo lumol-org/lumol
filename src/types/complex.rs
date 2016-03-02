@@ -2,10 +2,10 @@
 // Copyright (C) 2015-2016 G. Fraux — BSD license
 
 //! Complex type
-use num::Zero;
-
 use std::ops::{Add, Sub, Neg, Mul, Div};
 use std::f64;
+
+use types::{Zero, One};
 
 #[derive(Debug, Clone, Copy, PartialEq, Default)]
 /// Complex number, only implemented for f64 real and imag parts
@@ -151,6 +151,12 @@ impl Zero for Complex {
 
     fn is_zero(&self) -> bool {
         self.norm2() == 0.0
+    }
+}
+
+impl One for Complex {
+    fn one() -> Complex {
+        Complex::cartesian(1.0, 0.0)
     }
 }
 

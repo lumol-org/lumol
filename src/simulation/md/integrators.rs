@@ -1,7 +1,6 @@
 // Cymbalum, an extensible molecular simulation engine
 // Copyright (C) 2015-2016 G. Fraux — BSD license
-
-use types::{Vector3D, Matrix3};
+use types::{Vector3D, Matrix3, One};
 use simulation::{Compute, Forces};
 use system::System;
 

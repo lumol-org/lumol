@@ -10,7 +10,7 @@ use std::f64;
 use std::cell::{Cell, RefCell};
 
 use system::{System, UnitCell, CellType};
-use types::{Matrix3, Vector3D, Array3, Complex};
+use types::{Matrix3, Vector3D, Array3, Complex, Zero};
 use constants::ELCC;
 use potentials::PairRestriction;
 

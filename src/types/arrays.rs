@@ -5,10 +5,9 @@
 extern crate ndarray;
 use self::ndarray::{OwnedArray, Ix};
 
-use num::Zero;
-
 use std::ops::{Index, IndexMut};
 use std::cmp::PartialEq;
+use types::Zero;
 
 /// Two dimmensional array, based on ndarray.
 ///

@@ -4,7 +4,7 @@
 //! While running a simulation, we often want to have control over some
 //! simulation parameters: the temperature, the pressure, etc. This is the goal
 //! of the control algorithms, all implmenting of the `Control` trait.
-use types::{Matrix3, Vector3D};
+use types::{Matrix3, Vector3D, Zero};
 use system::System;
 
 /// Trait for controling some parameters in a system during a simulation.
