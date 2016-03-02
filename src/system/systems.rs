@@ -14,8 +14,7 @@ use std::cmp::{min, max};
 use std::iter::IntoIterator;
 use std::u8;
 
-extern crate chemfiles;
-use self::chemfiles::{Trajectory, Frame};
+use chemfiles::{Trajectory, Frame};
 
 use potentials::{PairPotential, AnglePotential, DihedralPotential};
 use potentials::{CoulombicPotential, GlobalPotential};
@@ -30,7 +29,7 @@ use super::UnitCell;
 use super::interactions::{Interactions, PairInteraction};
 use super::EnergyEvaluator;
 use super::molecules::moltype;
-use super::chemfiles::frame_to_system;
+use super::files;
 
 pub type Permutations = Vec<(usize, usize)>;
 
@@ -81,23 +80,23 @@ impl System {
 
     /// Read a trajectory file and create a System from it. For a list of
     /// supported formats, please refer to
-    /// [Chemharp](http://chemfiles.readthedocs.org/en/latest/formats.html)
+    /// [Chemfiles](http://chemfiles.readthedocs.org/en/latest/formats.html)
     /// documentation.
-    pub fn from_file(path: &str) -> Result<System, chemfiles::Error> {
+    pub fn from_file(path: &str) -> Result<System, files::Error> {
         let mut trajectory = try!(Trajectory::open(path));
         let mut frame = try!(Frame::new(0));
         try!(trajectory.read(&mut frame));
-        return frame_to_system(frame);
+        return files::frame_to_system(frame);
     }
 
     /// Do the same work that the `from_file` function, and guess bonds in the
     /// system based on the distances between the particles.
-    pub fn from_file_auto_bonds(path: &str) -> Result<System, chemfiles::Error> {
+    pub fn from_file_auto_bonds(path: &str) -> Result<System, files::Error> {
         let mut trajectory = try!(Trajectory::open(path));
         let mut frame = try!(Frame::new(0));
         try!(trajectory.read(&mut frame));
         try!(frame.guess_topology(true));
-        return frame_to_system(frame);
+        return files::frame_to_system(frame);
     }
 
     /// Create an empty system with a specific UnitCell

@@ -1,8 +1,7 @@
 // Cymbalum, an extensible molecular simulation engine
 // Copyright (C) 2015-2016 G. Fraux — BSD license
-extern crate rand;
-use self::rand::distributions::{Normal, Range, Sample};
-use self::rand::Rng;
+use rand::distributions::{Normal, Range, Sample};
+use rand::Rng;
 
 use std::usize;
 use std::f64;

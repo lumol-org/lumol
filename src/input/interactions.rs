@@ -1,7 +1,6 @@
 // Cymbalum, an extensible molecular simulation engine
 // Copyright (C) 2015-2016 G. Fraux — BSD license
-extern crate yaml_rust as yaml;
-use self::yaml::{ScanError, Yaml, YamlLoader};
+use yaml::{ScanError, Yaml, YamlLoader};
 
 use std::io::prelude::*;
 use std::io;

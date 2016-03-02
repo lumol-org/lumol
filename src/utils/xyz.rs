@@ -5,7 +5,7 @@
 //! system.
 
 use system::{System, Particle};
-use system::chemfiles::{frame_to_system, system_to_frame};
+use system::files::{frame_to_system, system_to_frame};
 use types::Vector3D;
 
 /// Read the `content` string, assuming XYZ format, and create the corresponding

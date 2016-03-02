@@ -2,8 +2,7 @@
 // Copyright (C) 2015-2016 G. Fraux — BSD license
 
 //! Multi-dimmensional arrays based on ndarray
-extern crate ndarray;
-use self::ndarray::{OwnedArray, Ix};
+use ndarray::{OwnedArray, Ix};
 
 use std::ops::{Index, IndexMut};
 use std::cmp::PartialEq;

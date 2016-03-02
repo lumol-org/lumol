@@ -2,8 +2,6 @@
 // Copyright (C) 2015-2016 G. Fraux — BSD license
 
 //! Saving properties of the simulation to some stream (file or stdout mainly)
-extern crate chemfiles;
-
 use std::io::prelude::*;
 use std::io;
 use std::fs::File;
@@ -11,7 +9,8 @@ use std::path::Path;
 
 use units;
 use system::System;
-use system::chemfiles::system_to_frame;
+use system::files;
+use chemfiles;
 
 /// The `Output` trait define the interface for all the quantities outputed by
 /// the simulation during the run. An Output can be a text or a binary data
@@ -48,7 +47,7 @@ impl TrajectoryOutput {
 
 impl Output for TrajectoryOutput {
     fn write(&mut self, system: &System) {
-        let frame = match system_to_frame(system) {
+        let frame = match files::system_to_frame(system) {
             Ok(val) => val,
             Err(err) => {
                 error!("Error in Chemharp runtime while converting data: {}", err.message());

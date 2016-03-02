@@ -2,8 +2,7 @@
 // Copyright (C) 2015-2016 G. Fraux — BSD license
 
 //! Some basic types used in all the other modules
-extern crate num;
-pub use self::num::{One, Zero};
+pub use num::{One, Zero};
 
 mod vectors;
 pub use self::vectors::Vector3D;

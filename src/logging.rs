@@ -17,11 +17,8 @@ use std::fs::OpenOptions;
 use std::path::Path;
 use std::sync::{Arc, Mutex};
 
-extern crate log;
 use log::{Log, LogRecord, LogMetadata, set_logger};
 pub use log::LogLevel;
-
-extern crate chemfiles;
 
 /// Logger with capacity to write to the standard output stream, the standard
 /// error stream or a file.
@@ -32,12 +29,12 @@ extern crate chemfiles;
 
  impl Logger{
      fn new<T>(level: LogLevel, handle: T) -> Logger where T: Write + Send + Sync + 'static {
-         chemfiles::Logger::get().log_callback(|level, message| {
+         ::chemfiles::Logger::get().log_callback(|level, message| {
              match level {
-                 chemfiles::LogLevel::Error => error!("{}", message),
-                 chemfiles::LogLevel::Warning => warn!("{}", message),
-                 chemfiles::LogLevel::Info => info!("{}", message),
-                 chemfiles::LogLevel::Debug => debug!("{}", message),
+                 ::chemfiles::LogLevel::Error => error!("{}", message),
+                 ::chemfiles::LogLevel::Warning => warn!("{}", message),
+                 ::chemfiles::LogLevel::Info => info!("{}", message),
+                 ::chemfiles::LogLevel::Debug => debug!("{}", message),
              }
          }).expect("Could not set the chemfiles logging callback");
          Logger{
@@ -106,14 +103,14 @@ extern crate chemfiles;
 
 #[cfg(not(debug_assertions))]
  mod levels {
-     use super::log::LogLevel;
+     use super::LogLevel;
      /// Default log level
      pub const DEFAULT_LEVEL: LogLevel = LogLevel::Warn;
  }
 
 #[cfg(debug_assertions)]
  mod levels {
-     use super::log::LogLevel;
+     use super::LogLevel;
      /// Default log level
      pub const DEFAULT_LEVEL: LogLevel = LogLevel::Debug;
  }

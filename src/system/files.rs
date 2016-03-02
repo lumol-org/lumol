@@ -2,11 +2,12 @@
 // Copyright (C) 2015-2016 G. Fraux — BSD license
 
 //! [Chemfiles](https://github.com/chemfiles/chemfiles/) adaptators for Cymbalum.
-extern crate chemfiles;
 use system::{System, Particle, UnitCell, CellType};
 use types::Vector3D;
+use chemfiles;
 
-pub use self::chemfiles::Error;
+
+pub use chemfiles::Error;
 
 /// Convert chemfiles types to Cymbalum types
 trait ToCymbalum {

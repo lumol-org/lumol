@@ -2,8 +2,7 @@
 // Copyright (C) 2015-2016 G. Fraux — BSD license
 
 //! Metropolis Monte-Carlo propagator implementation
-extern crate rand;
-use self::rand::SeedableRng;
+use rand::{self, SeedableRng};
 
 use constants::K_BOLTZMANN;
 use system::{System, EnergyCache};

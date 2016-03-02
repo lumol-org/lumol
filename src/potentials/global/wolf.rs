@@ -2,9 +2,7 @@
 // Copyright (C) 2015-2016 G. Fraux — BSD license
 
 //! Wolf summation of coulombic potential
-extern crate special;
-use self::special::erfc;
-
+use special::erfc;
 use std::f64::consts::PI;
 
 use system::System;

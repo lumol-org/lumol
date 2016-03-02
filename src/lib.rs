@@ -33,6 +33,13 @@ extern crate log;
 #[macro_use]
 extern crate bitflags;
 
+extern crate chemfiles;
+extern crate ndarray;
+extern crate num;
+extern crate rand;
+extern crate special;
+extern crate yaml_rust as yaml;
+
 #[macro_use]
 mod tests;
 #[macro_use]

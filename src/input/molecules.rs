@@ -1,13 +1,11 @@
 // Cymbalum, an extensible molecular simulation engine
 // Copyright (C) 2015-2016 G. Fraux — BSD license
 
-extern crate chemfiles;
-use self::chemfiles::{Trajectory, Frame};
-
+use chemfiles::{Trajectory, Frame};
 use std::path::Path;
 
-use system::chemfiles::Error;
-use system::chemfiles::frame_to_system;
+use system::files::Error;
+use system::files::frame_to_system;
 use system::{Molecule, Particle};
 
 /// Read the first molecule in the first frame of the file at `path`, and return

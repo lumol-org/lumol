@@ -37,4 +37,4 @@ pub use self::cache::EnergyCache;
 mod systems;
 pub use self::systems::System;
 
-pub mod chemfiles;
+pub mod files;

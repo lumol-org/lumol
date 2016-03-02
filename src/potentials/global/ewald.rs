@@ -2,9 +2,7 @@
 // Copyright (C) 2015-2016 G. Fraux — BSD license
 
 //! Ewald summation of coulombic potential
-extern crate special;
-use self::special::{erfc, erf};
-
+use special::{erfc, erf};
 use std::f64::consts::{PI, FRAC_2_SQRT_PI};
 use std::f64;
 use std::cell::{Cell, RefCell};

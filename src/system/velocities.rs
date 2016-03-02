@@ -2,11 +2,9 @@
 // Copyright (C) 2015-2016 G. Fraux — BSD license
 
 //! This module provides some ways to initialize the velocities in a `System`
-extern crate rand;
-use self::rand::distributions::{Range, Normal};
-use self::rand::distributions::Sample;
-use self::rand::Isaac64Rng;
-use self::rand::SeedableRng;
+use rand::distributions::{Range, Normal, Sample};
+use rand::Isaac64Rng;
+use rand::SeedableRng;
 
 use constants::K_BOLTZMANN;
 use types::Vector3D;

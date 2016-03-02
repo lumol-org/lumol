@@ -8,8 +8,7 @@
 //! `VolumeResize` move.
 //!
 //! In all this module, beta refers to the Boltzmann factor 1/(kB T)
-extern crate rand;
-use self::rand::Rng;
+use rand::Rng;
 
 use system::{System, EnergyCache};
 
