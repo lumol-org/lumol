@@ -31,32 +31,32 @@ pub trait Control {
 /// will only run if the instant temperature is below 290K or above 310K.
 pub struct RescaleThermostat {
     /// Target temperature
-    T: f64,
+    temperature: f64,
     /// Tolerance in temperature
     tol: f64,
 }
 
 impl RescaleThermostat {
-    /// Create a new `RescaleThermostat` acting at temperature `T`, with a
-    /// tolerance of `5% T`.
-    pub fn new(T: f64) -> RescaleThermostat {
-        assert!(T >= 0.0, "The temperature must be positive in thermostats.");
-        let tol = 0.05 * T;
-        RescaleThermostat::with_tolerance(T, tol)
+    /// Create a new `RescaleThermostat` acting at temperature `temperature`, with a
+    /// tolerance of `5% * temperature`.
+    pub fn new(temperature: f64) -> RescaleThermostat {
+        assert!(temperature >= 0.0, "The temperature must be positive in thermostats.");
+        let tol = 0.05 * temperature;
+        RescaleThermostat::with_tolerance(temperature, tol)
     }
 
     /// Create a new `RescaleThermostat` acting at temperature `T`, with a
     /// tolerance of `tol`. For rescaling all the steps, use `tol = 0`.
-    pub fn with_tolerance(T: f64, tol: f64) -> RescaleThermostat {
-        RescaleThermostat{T: T, tol: tol}
+    pub fn with_tolerance(temperature: f64, tol: f64) -> RescaleThermostat {
+        RescaleThermostat{temperature: temperature, tol: tol}
     }
 }
 
 impl Control for RescaleThermostat {
     fn control(&mut self, system: &mut System) {
-        let T_inst = system.temperature();
-        if f64::abs(T_inst - self.T) > self.tol {
-            let factor = f64::sqrt(self.T / T_inst);
+        let instant_temperature = system.temperature();
+        if f64::abs(instant_temperature - self.temperature) > self.tol {
+            let factor = f64::sqrt(self.temperature / instant_temperature);
             for particle in system {
                 particle.velocity = factor * particle.velocity;
             }
@@ -74,7 +74,7 @@ impl Control for RescaleThermostat {
 /// [1] H.J.C. Berendsen, et al. J. Chem Phys 81, 3684 (1984); doi: 10.1063/1.448118
 pub struct BerendsenThermostat {
     /// Target temperature
-    T: f64,
+    temperature: f64,
     /// Timestep of the thermostat, expressed as a multiplicative factor of the
     /// integrator timestep.
     tau: f64,
@@ -83,17 +83,17 @@ pub struct BerendsenThermostat {
 impl BerendsenThermostat {
     /// Create a new `BerendsenThermostat` acting at temperature `T`, with a
     /// timestep of `tau` times the integrator timestep.
-    pub fn new(T: f64, tau: f64) -> BerendsenThermostat {
-        assert!(T >= 0.0, "The temperature must be positive in thermostats.");
+    pub fn new(temperature: f64, tau: f64) -> BerendsenThermostat {
+        assert!(temperature >= 0.0, "The temperature must be positive in thermostats.");
         assert!(tau >= 0.0, "The timestep must be positive in berendsen thermostat.");
-        BerendsenThermostat{T: T, tau: tau}
+        BerendsenThermostat{temperature: temperature, tau: tau}
     }
 }
 
 impl Control for BerendsenThermostat {
     fn control(&mut self, system: &mut System) {
-        let T_inst = system.temperature();
-        let factor = f64::sqrt(1.0 + 1.0 / self.tau * (self.T / T_inst - 1.0));
+        let instant_temperature = system.temperature();
+        let factor = f64::sqrt(1.0 + 1.0 / self.tau * (self.temperature / instant_temperature - 1.0));
         for particle in system {
             particle.velocity = factor * particle.velocity;
         }
@@ -192,32 +192,32 @@ mod tests {
     #[test]
     fn rescale_thermostat() {
         let mut system = testing_system();
-        let T0 = system.temperature();
-        assert_approx_eq!(T0, 300.0, 1e-12);
+        let temperature = system.temperature();
+        assert_approx_eq!(temperature, 300.0, 1e-12);
 
         let mut thermostat = RescaleThermostat::with_tolerance(250.0, 100.0);
         thermostat.control(&mut system);
-        let T1 = system.temperature();
-        assert_approx_eq!(T1, 300.0, 1e-12);
+        let temperature = system.temperature();
+        assert_approx_eq!(temperature, 300.0, 1e-12);
 
         let mut thermostat = RescaleThermostat::with_tolerance(250.0, 10.0);
         thermostat.control(&mut system);
-        let T2 = system.temperature();
-        assert_approx_eq!(T2, 250.0, 1e-12);
+        let temperature = system.temperature();
+        assert_approx_eq!(temperature, 250.0, 1e-12);
     }
 
     #[test]
     fn berendsen_thermostat() {
         let mut system = testing_system();
-        let T0 = system.temperature();
-        assert_approx_eq!(T0, 300.0, 1e-12);
+        let temperature = system.temperature();
+        assert_approx_eq!(temperature, 300.0, 1e-12);
 
         let mut thermostat = BerendsenThermostat::new(250.0, 100.0);
         for _ in 0..1000 {
             thermostat.control(&mut system);
         }
-        let T1 = system.temperature();
-        assert_approx_eq!(T1, 250.0, 1e-2);
+        let temperature = system.temperature();
+        assert_approx_eq!(temperature, 250.0, 1e-2);
     }
 
     #[test]

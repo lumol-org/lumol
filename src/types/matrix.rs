@@ -284,12 +284,12 @@ mod tests {
 
     #[test]
     fn mul_vector() {
-        let A = Matrix3::new(1.0, 2.0, 3.0,
+        let a = Matrix3::new(1.0, 2.0, 3.0,
                              4.0, 5.0, 6.0,
                              8.0, 9.0, 10.0);
 
         let vec = Vector3D::new(1.0, 1.0, 1.0);
-        let mul = A * vec;
+        let mul = a * vec;
         let res = Vector3D::new(6.0, 15.0, 27.0);
 
         assert_eq!(mul.x, res.x);
@@ -308,19 +308,24 @@ mod tests {
 
     #[test]
     fn inverse() {
-        let I = Matrix3::one();
-        let res = I.inverse();
-
-        let A = Matrix3::new(1.0, 2.0, 3.0,
-                             2.0, 5.0, 3.0,
-                             1.0, 3.0, 8.0,);
-        let B = A.inverse();
-        let C = A*B;
+        let one = Matrix3::one();
+        let res = one.inverse();
 
         for i in 0..3 {
             for j in 0..3 {
-                assert_eq!(I[(i, j)], res[(i, j)]);
-                assert_eq!(I[(i, j)], C[(i, j)]);
+                assert_eq!(one[(i, j)], res[(i, j)]);
+            }
+        }
+
+        let a = Matrix3::new(1.0, 2.0, 3.0,
+                             2.0, 5.0, 3.0,
+                             1.0, 3.0, 8.0,);
+        let b = a.inverse();
+
+        let c = a*b;
+        for i in 0..3 {
+            for j in 0..3 {
+                assert_eq!(one[(i, j)], c[(i, j)]);
             }
         }
     }

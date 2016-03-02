@@ -27,18 +27,18 @@ pub struct MonteCarlo {
 
 impl MonteCarlo {
     /// Create a new Monte-Carlo propagator at temperature `T`.
-    pub fn new(T: f64) -> MonteCarlo {
+    pub fn new(temperature: f64) -> MonteCarlo {
         let mut rng = Box::new(rand::XorShiftRng::new_unseeded());
         rng.reseed([2015u32, 42u32, 3u32, 12u32]);
-        return MonteCarlo::from_rng(T, rng);
+        return MonteCarlo::from_rng(temperature, rng);
     }
 
     /// Create a Monte-Carlo propagator at temperature `T`, using the `rng`
     /// random number generator.
-    pub fn from_rng(T: f64, rng: Box<rand::Rng>) -> MonteCarlo {
-        assert!(T >= 0.0, "Monte-Carlo temperature must be positive");
+    pub fn from_rng(temperature: f64, rng: Box<rand::Rng>) -> MonteCarlo {
+        assert!(temperature >= 0.0, "Monte-Carlo temperature must be positive");
         MonteCarlo {
-            beta: 1.0 / (K_BOLTZMANN * T),
+            beta: 1.0 / (K_BOLTZMANN * temperature),
             moves: Vec::new(),
             frequencies: Vec::new(),
             rng: rng,
@@ -60,8 +60,8 @@ impl MonteCarlo {
     }
 
     /// Set the temperature of the simulation
-    pub fn set_temperature(&mut self, T: f64) {
-        self.beta = 1.0 / (T * K_BOLTZMANN);
+    pub fn set_temperature(&mut self, temperature: f64) {
+        self.beta = 1.0 / (temperature * K_BOLTZMANN);
     }
 
     fn normalize_frequencies(&mut self) {

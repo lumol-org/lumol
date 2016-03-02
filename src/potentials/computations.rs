@@ -84,7 +84,7 @@ pub struct TableComputation {
     // see https://internals.rust-lang.org/t/pre-rfc-genericity-over-static-values/1538/19
 
     /// Number of tabulated values
-    N: usize,
+    size: usize,
     /// Step for tabulated value. compute_energy[i]/compute_force[i] contains compute_energy/compute_force at
     /// r = i * delta
     delta: f64,
@@ -96,26 +96,26 @@ pub struct TableComputation {
 
 
 impl TableComputation {
-    /// Create a new `TableComputation` for `potential`, with `N` points and a
-    /// maximum value of `max`.
-    pub fn new(potential: Box<PairPotential>, N: usize, max:f64) -> TableComputation {
-        let delta = max/(N as f64);
-        let dE = potential.energy(max);
-        let mut compute_energy = Vec::with_capacity(N);
-        let mut compute_force = Vec::with_capacity(N);
-        for i in 0..N {
+    /// Create a new `TableComputation` for `potential`, with `size` points and
+    /// a maximum value of `max`.
+    pub fn new(potential: Box<PairPotential>, size: usize, max:f64) -> TableComputation {
+        let delta = max/(size as f64);
+        let energy_shift = potential.energy(max);
+        let mut compute_energy = Vec::with_capacity(size);
+        let mut compute_force = Vec::with_capacity(size);
+        for i in 0..size {
             let pos = i as f64 * delta;
-            compute_energy.push(potential.energy(pos) - dE);
+            compute_energy.push(potential.energy(pos) - energy_shift);
             compute_force.push(potential.force(pos));
         }
-        TableComputation{N: N, delta: delta, compute_energy: compute_energy, compute_force: compute_force}
+        TableComputation{size: size, delta: delta, compute_energy: compute_energy, compute_force: compute_force}
     }
 }
 
 impl Computation for TableComputation {
     fn compute_energy(&self, r: f64) -> f64 {
         let bin = f64::floor(r / self.delta) as usize;
-        if bin < self.N - 1 {
+        if bin < self.size - 1 {
             let dx = r - (bin as f64)*self.delta;
             let slope = (self.compute_energy[bin + 1] - self.compute_energy[bin])/self.delta;
             return self.compute_energy[bin] + dx*slope;
@@ -126,7 +126,7 @@ impl Computation for TableComputation {
 
     fn compute_force(&self, r: f64) -> f64 {
         let bin = f64::floor(r / self.delta) as usize;
-        if bin < self.N - 1 {
+        if bin < self.size - 1 {
             let dx = r - (bin as f64)*self.delta;
             let slope = (self.compute_force[bin + 1] - self.compute_force[bin])/self.delta;
             return self.compute_force[bin] + dx*slope;

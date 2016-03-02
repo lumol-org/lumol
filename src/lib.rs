@@ -14,7 +14,6 @@
 //!  Rust provides a nice way to implement these two ideas with the concept of
 //!  traits.
 
-#![allow(non_snake_case)]
 #![warn(
     missing_docs,
     trivial_casts,

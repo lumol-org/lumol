@@ -184,10 +184,10 @@ impl Output for PropertiesOutput {
     }
 
     fn write(&mut self, system: &System) {
-        let V = units::to(system.volume(), "A^3").unwrap();
-        let T = units::to(system.temperature(), "K").unwrap();
-        let P = units::to(system.pressure(), "bar").unwrap();
-        if let Err(e) = writeln!(&mut self.file, "{} {} {} {}", system.step(), V, T, P) {
+        let volume = units::to(system.volume(), "A^3").unwrap();
+        let temperature = units::to(system.temperature(), "K").unwrap();
+        let pressure = units::to(system.pressure(), "bar").unwrap();
+        if let Err(e) = writeln!(&mut self.file, "{} {} {} {}", system.step(), volume, temperature, pressure) {
             error!("Could not write to file '{}': {:?}", self.path, e);
         }
     }

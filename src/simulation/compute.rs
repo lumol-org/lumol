@@ -207,26 +207,26 @@ pub struct Stress;
 impl Compute for Stress {
     type Output = Matrix3;
     fn compute(&self, system: &System) -> Matrix3 {
-        let mut K = Matrix3::zero(); // Kinetic tensor
+        let mut kinetic = Matrix3::zero();
         for particle in system.iter() {
             let m = particle.mass;
             let vel = particle.velocity;
-            K[(0, 0)] += m * vel.x * vel.x;
-            K[(0, 1)] += m * vel.x * vel.y;
-            K[(0, 2)] += m * vel.x * vel.z;
+            kinetic[(0, 0)] += m * vel.x * vel.x;
+            kinetic[(0, 1)] += m * vel.x * vel.y;
+            kinetic[(0, 2)] += m * vel.x * vel.z;
 
-            K[(1, 0)] += m * vel.y * vel.x;
-            K[(1, 1)] += m * vel.y * vel.y;
-            K[(1, 2)] += m * vel.y * vel.z;
+            kinetic[(1, 0)] += m * vel.y * vel.x;
+            kinetic[(1, 1)] += m * vel.y * vel.y;
+            kinetic[(1, 2)] += m * vel.y * vel.z;
 
-            K[(2, 0)] += m * vel.z * vel.x;
-            K[(2, 1)] += m * vel.z * vel.y;
-            K[(2, 2)] += m * vel.z * vel.z;
+            kinetic[(2, 0)] += m * vel.z * vel.x;
+            kinetic[(2, 1)] += m * vel.z * vel.y;
+            kinetic[(2, 2)] += m * vel.z * vel.z;
         }
 
-        let W = Virial.compute(system);
-        let V = Volume.compute(system);
-        return 1.0 / V * (K - W);
+        let virial = Virial.compute(system);
+        let volume = Volume.compute(system);
+        return 1.0 / volume * (kinetic - virial);
     }
 }
 
@@ -236,12 +236,12 @@ pub struct Pressure;
 impl Compute for Pressure {
     type Output = f64;
     fn compute(&self, system: &System) -> f64 {
-        let W = Virial.compute(system);
-        let virial = W[(0, 0)] + W[(1, 1)] + W[(2, 2)];
-        let V = Volume.compute(system);
+        let virial_tensor = Virial.compute(system);
+        let virial = virial_tensor[(0, 0)] + virial_tensor[(1, 1)] + virial_tensor[(2, 2)];
+        let volume = Volume.compute(system);
         let natoms = system.size() as f64;
-        let T = Temperature.compute(system);
-        return natoms * K_BOLTZMANN * T / V - virial / (3.0 * V);
+        let temperature = Temperature.compute(system);
+        return natoms * K_BOLTZMANN * temperature / volume - virial / (3.0 * volume);
     }
 }
 
@@ -386,17 +386,17 @@ mod test {
     #[test]
     fn temperature() {
         let system = &testing_system();
-        let T = Temperature.compute(system);
-        assert_approx_eq!(T, 300.0, 1e-9);
-        assert_eq!(T, system.temperature());
+        let temperature = Temperature.compute(system);
+        assert_approx_eq!(temperature, 300.0, 1e-9);
+        assert_eq!(temperature, system.temperature());
     }
 
     #[test]
     fn volume() {
         let system = &testing_system();
-        let V = Volume.compute(system);
-        assert_eq!(V, 1000.0);
-        assert_eq!(V, system.volume());
+        let volume = Volume.compute(system);
+        assert_eq!(volume, 1000.0);
+        assert_eq!(volume, system.volume());
     }
 
     #[test]
@@ -419,18 +419,18 @@ mod test {
     fn stress() {
         let system = &testing_system();
         let stress = Stress.compute(system);
-        let P = Pressure.compute(system);
+        let pressure = Pressure.compute(system);
 
         let trace = (stress[(0, 0)] + stress[(1, 1)] + stress[(2, 2)]) / 3.0;
-        assert_approx_eq!(trace, P, 1e-9);
+        assert_approx_eq!(trace, pressure, 1e-9);
         assert_eq!(stress, system.stress());
     }
 
     #[test]
     fn pressure() {
         let system = &testing_system();
-        let P = Pressure.compute(system);
-        assert_approx_eq!(P, units::from(-348.9011556223, "bar").unwrap(), 1e-9);
-        assert_eq!(P, system.pressure());
+        let pressure = Pressure.compute(system);
+        assert_approx_eq!(pressure, units::from(-348.9011556223, "bar").unwrap(), 1e-9);
+        assert_eq!(pressure, system.pressure());
     }
 }

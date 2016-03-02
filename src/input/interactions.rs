@@ -565,8 +565,8 @@ mod tests {
     use std::fs;
 
     fn bad_files(motif: &str) -> Vec<PathBuf> {
-        let DATA = Path::new(file!()).parent().unwrap().join("data").join("bad");
-        let paths = fs::read_dir(DATA).unwrap();
+        let data_root = Path::new(file!()).parent().unwrap().join("data").join("bad");
+        let paths = fs::read_dir(data_root).unwrap();
 
         // Convert the list of DirEntry to a list of PathBuf, and return only
         // the one whose filename starts with the given motif
@@ -579,9 +579,9 @@ mod tests {
 
     #[test]
     fn pairs() {
-        let DATA = Path::new(file!()).parent().unwrap().join("data");
+        let data_root = Path::new(file!()).parent().unwrap().join("data");
         let mut system = System::new();
-        read_interactions(&mut system, DATA.join("pairs.yml")).unwrap();
+        read_interactions(&mut system, data_root.join("pairs.yml")).unwrap();
     }
 
     #[test]
@@ -594,9 +594,9 @@ mod tests {
 
     #[test]
     fn bonds() {
-        let DATA = Path::new(file!()).parent().unwrap().join("data");
+        let data_root = Path::new(file!()).parent().unwrap().join("data");
         let mut system = System::new();
-        read_interactions(&mut system, DATA.join("bonds.yml")).unwrap();
+        read_interactions(&mut system, data_root.join("bonds.yml")).unwrap();
     }
 
     #[test]
@@ -609,9 +609,9 @@ mod tests {
 
     #[test]
     fn angles() {
-        let DATA = Path::new(file!()).parent().unwrap().join("data");
+        let data_root = Path::new(file!()).parent().unwrap().join("data");
         let mut system = System::new();
-        read_interactions(&mut system, DATA.join("angles.yml")).unwrap();
+        read_interactions(&mut system, data_root.join("angles.yml")).unwrap();
     }
 
     #[test]
@@ -624,9 +624,9 @@ mod tests {
 
     #[test]
     fn dihedrals() {
-        let DATA = Path::new(file!()).parent().unwrap().join("data");
+        let data_root = Path::new(file!()).parent().unwrap().join("data");
         let mut system = System::new();
-        read_interactions(&mut system, DATA.join("dihedrals.yml")).unwrap();
+        read_interactions(&mut system, data_root.join("dihedrals.yml")).unwrap();
     }
 
     #[test]
@@ -639,11 +639,11 @@ mod tests {
 
     #[test]
     fn coulomb() {
-        let DATA = Path::new(file!()).parent().unwrap().join("data");
+        let data_root = Path::new(file!()).parent().unwrap().join("data");
         let mut system = System::new();
-        read_interactions(&mut system, DATA.join("wolf.yml")).unwrap();
+        read_interactions(&mut system, data_root.join("wolf.yml")).unwrap();
 
-        read_interactions(&mut system, DATA.join("ewald.yml")).unwrap();
+        read_interactions(&mut system, data_root.join("ewald.yml")).unwrap();
     }
 
     #[test]

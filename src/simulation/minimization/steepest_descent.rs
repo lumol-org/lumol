@@ -13,22 +13,24 @@ use simulation::{Compute, PotentialEnergy, Forces};
 pub struct SteepestDescent {
     /// Dumping factor
     gamma: f64,
-    /// Max force norm convergence criterium
-    df2: f64,
+    /// Force norm convergence criterium
+    force_crit: f64,
     /// Energy convergence criterium
-    dE: f64,
+    energy_crit: f64,
     /// Has the last minization converged?
     is_converged: bool
 }
 
 impl SteepestDescent {
     /// Create a GradientDescent with sensible default values for energy and
-    /// force convergence criteria. The force criterium is `1e-5 kJ/mol/Å^2`,
-    /// and the energy criterium is `1e-5 kJ/mol/Å^2`.
+    /// force convergence criteria.
+    ///
+    /// The default for force criterium is `1e-5 kJ/mol/Å^2`, and `1e-5
+    /// kJ/mol/Å^2` for the energy criterium.
     pub fn new() -> SteepestDescent {
         let delta_f = units::from(1e-5, "kJ/mol/A").unwrap();
-        let delta_E = units::from(1e-5, "kJ/mol").unwrap();
-        SteepestDescent::with_criteria(delta_f, delta_E)
+        let delta_e = units::from(1e-5, "kJ/mol").unwrap();
+        SteepestDescent::with_criteria(delta_f, delta_e)
     }
 
     /// Create a new `GradientDescent` with the force convergence criterium of
@@ -37,8 +39,8 @@ impl SteepestDescent {
         let gamma = units::from(0.1, "fs^2/u").unwrap();
         SteepestDescent{
             gamma: gamma,
-            dE: energy,
-            df2: force*force,
+            energy_crit: energy,
+            force_crit: force*force,
             is_converged: false
         }
     }
@@ -59,13 +61,13 @@ impl Propagator for SteepestDescent {
         // Get the maximal value in the vector.
         // How can you know that fold(cte, cte) will do it ?
         let max_force_norm2 = forces.iter().map(|&f| f.norm2()).fold(-1./0. /* -inf */, f64::max);
-        if max_force_norm2 < self.df2 {
+        if max_force_norm2 < self.force_crit {
             self.is_converged = true;
             return;
         }
 
         let energy = PotentialEnergy.compute(&system);
-        if energy < self.dE {
+        if energy < self.energy_crit {
             self.is_converged = true;
             return;
         }

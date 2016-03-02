@@ -40,12 +40,12 @@ impl UnitCell {
                                     0.0, 0.0, c),
                  celltype: CellType::Orthorombic}
     }
-    /// Create a cubic unit cell, with side lengths `L, L, L`.
-    pub fn cubic(L: f64) -> UnitCell {
-        assert!(L > 0.0, "Cell lengths must be positive");
-        UnitCell{data: Matrix3::new(L, 0.0, 0.0,
-                                    0.0, L, 0.0,
-                                    0.0, 0.0, L),
+    /// Create a cubic unit cell, with side lengths `length, length, length`.
+    pub fn cubic(length: f64) -> UnitCell {
+        assert!(length > 0.0, "Cell lengths must be positive");
+        UnitCell{data: Matrix3::new(length,  0.0  ,  0.0  ,
+                                      0.0 , length,  0.0  ,
+                                      0.0 ,  0.0  , length),
                  celltype: CellType::Orthorombic}
     }
     /// Create a triclinic unit cell, with side lengths `a, b, c` and angles
@@ -183,7 +183,7 @@ impl UnitCell {
 
     /// Get the volume angle of the cell
     pub fn volume(&self) -> f64 {
-        let V = match self.celltype {
+        let volume = match self.celltype {
             CellType::Infinite => 0.0,
             CellType::Orthorombic => self.a()*self.b()*self.c(),
             CellType::Triclinic => {
@@ -194,8 +194,8 @@ impl UnitCell {
                 a * (b ^ c)
             },
         };
-        assert!(V >= 0.0, "Volume is not positive!");
-        return V;
+        assert!(volume >= 0.0, "Volume is not positive!");
+        return volume;
     }
 
     /// Scale this unit cell in-place by multiplying the cell matrix by `s`.
@@ -317,8 +317,8 @@ impl UnitCell {
         return f64::atan2(r23.norm() * v * r12, u * v);
     }
 
-    /// Get the dihedral angle formed by the points at `u`, `v` and `w` using
-    /// periodic boundary conditions and its derivatives.
+    /// Get the dihedral angle and and its derivatives defined by the points at
+    /// `a`, `b`, `c` and `d` using periodic boundary conditions.
     pub fn dihedral_and_derivatives(&self, a: &Vector3D, b: &Vector3D, c: &Vector3D, d: &Vector3D)
     -> (f64, Vector3D, Vector3D, Vector3D , Vector3D) {
         let mut r12 = *b - *a;
@@ -461,8 +461,7 @@ mod tests {
     #[test]
     fn scale() {
         let cell = UnitCell::ortho(3.0, 4.0, 5.0);
-        let A = 2.0 * Matrix3::one();
-        let cell = cell.scale(A);
+        let cell = cell.scale(2.0 * Matrix3::one());
 
         assert_eq!(cell.a(), 6.0);
         assert_eq!(cell.b(), 8.0);
@@ -472,8 +471,7 @@ mod tests {
     #[test]
     fn scale_mut() {
         let mut cell = UnitCell::ortho(3.0, 4.0, 5.0);
-        let A = 2.0 * Matrix3::one();
-        cell.scale_mut(A);
+        cell.scale_mut(2.0 * Matrix3::one());
 
         assert_eq!(cell.a(), 6.0);
         assert_eq!(cell.b(), 8.0);

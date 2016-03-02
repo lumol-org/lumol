@@ -12,10 +12,10 @@ use simulation::{Compute, Temperature};
 use super::System;
 
 /// Scale all velocities in the `System` such that the `system` temperature
-/// is `T`.
-pub fn scale(system: &mut System, T: f64) {
+/// is `temperature`.
+pub fn scale(system: &mut System, temperature: f64) {
     let instant_temperature = Temperature.compute(system);
-    let factor = f64::sqrt(T / instant_temperature);
+    let factor = f64::sqrt(temperature / instant_temperature);
     for particle in system {
         particle.velocity = factor * particle.velocity;
     }
@@ -31,18 +31,18 @@ pub trait InitVelocities {
 
 /// Initialize the velocities from a Boltzman distribution.
 pub struct BoltzmanVelocities {
-    T: f64,
+    temperature: f64,
     dist: Normal,
     rng: Isaac64Rng,
 }
 
 impl BoltzmanVelocities {
     /// This `BoltzmanVelocities` initializer will initialize velocities at
-    /// temperature `T`.
-    pub fn new(T: f64) -> BoltzmanVelocities {
+    /// temperature `temperature`.
+    pub fn new(temperature: f64) -> BoltzmanVelocities {
         BoltzmanVelocities{
-            T: T,
-            dist: Normal::new(0.0, f64::sqrt(K_BOLTZMANN * T)),
+            temperature: temperature,
+            dist: Normal::new(0.0, f64::sqrt(K_BOLTZMANN * temperature)),
             rng: Isaac64Rng::from_seed(&[42]),
         }
     }
@@ -57,7 +57,7 @@ impl InitVelocities for BoltzmanVelocities {
             let z = f64::sqrt(m_inv) * self.dist.sample(&mut self.rng);
             particle.velocity = Vector3D::new(x, y, z);
         }
-        scale(system, self.T);
+        scale(system, self.temperature);
     }
 
     fn seed(&mut self, seed: u64) {
@@ -67,18 +67,18 @@ impl InitVelocities for BoltzmanVelocities {
 
 /// Initialize the velocities from an uniform distribution.
 pub struct UniformVelocities {
-    T: f64,
+    temperature: f64,
     dist: Range<f64>,
     rng: Isaac64Rng,
 }
 
 impl UniformVelocities {
     /// This `UniformVelocities` initializer will initialize velocities at
-    /// temperature `T`.
-    pub fn new(T: f64) -> UniformVelocities {
-        let factor = f64::sqrt(3.0*K_BOLTZMANN * T);
+    /// temperature `temperature`.
+    pub fn new(temperature: f64) -> UniformVelocities {
+        let factor = f64::sqrt(3.0*K_BOLTZMANN * temperature);
         UniformVelocities{
-            T: T,
+            temperature: temperature,
             dist: Range::new(-factor, factor),
             rng: Isaac64Rng::from_seed(&[42]),
         }
@@ -94,7 +94,7 @@ impl InitVelocities for UniformVelocities {
             let z = f64::sqrt(m_inv) * self.dist.sample(&mut self.rng);
             particle.velocity = Vector3D::new(x, y, z);
         }
-        scale(system, self.T);
+        scale(system, self.temperature);
     }
 
     fn seed(&mut self, seed: u64) {
@@ -123,8 +123,8 @@ mod test {
         let mut velocities = BoltzmanVelocities::new(300.0);
         velocities.seed(1234);
         velocities.init(&mut system);
-        let T = Temperature.compute(&system);
-        assert_approx_eq!(T, 300.0, 1e-9);
+        let temperature = Temperature.compute(&system);
+        assert_approx_eq!(temperature, 300.0, 1e-9);
     }
 
     #[test]
@@ -133,7 +133,7 @@ mod test {
         let mut velocities = UniformVelocities::new(300.0);
         velocities.seed(1234);
         velocities.init(&mut system);
-        let T = Temperature.compute(&system);
-        assert_approx_eq!(T, 300.0, 1e-9);
+        let temperature = Temperature.compute(&system);
+        assert_approx_eq!(temperature, 300.0, 1e-9);
     }
 }
