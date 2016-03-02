@@ -6,6 +6,7 @@
 //! of the control algorithms, all implmenting of the `Control` trait.
 use types::{Matrix3, Vector3D, Zero};
 use system::System;
+use system::velocities;
 
 /// Trait for controling some parameters in a system during a simulation.
 pub trait Control {
@@ -56,10 +57,7 @@ impl Control for RescaleThermostat {
     fn control(&mut self, system: &mut System) {
         let instant_temperature = system.temperature();
         if f64::abs(instant_temperature - self.temperature) > self.tol {
-            let factor = f64::sqrt(self.temperature / instant_temperature);
-            for particle in system {
-                particle.velocity = factor * particle.velocity;
-            }
+            velocities::scale(system, self.temperature);
         }
     }
 }

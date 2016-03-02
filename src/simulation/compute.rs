@@ -237,7 +237,7 @@ impl Compute for Pressure {
     type Output = f64;
     fn compute(&self, system: &System) -> f64 {
         let virial_tensor = Virial.compute(system);
-        let virial = virial_tensor[(0, 0)] + virial_tensor[(1, 1)] + virial_tensor[(2, 2)];
+        let virial = virial_tensor.trace();
         let volume = Volume.compute(system);
         let natoms = system.size() as f64;
         let temperature = Temperature.compute(system);
@@ -421,7 +421,7 @@ mod test {
         let stress = Stress.compute(system);
         let pressure = Pressure.compute(system);
 
-        let trace = (stress[(0, 0)] + stress[(1, 1)] + stress[(2, 2)]) / 3.0;
+        let trace = stress.trace() / 3.0;
         assert_approx_eq!(trace, pressure, 1e-9);
         assert_eq!(stress, system.stress());
     }
