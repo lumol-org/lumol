@@ -9,8 +9,7 @@ use std::path::Path;
 
 use units;
 use system::System;
-use system::files;
-use chemfiles;
+use io::{Trajectory, TrajectoryResult};
 
 /// The `Output` trait define the interface for all the quantities outputed by
 /// the simulation during the run. An Output can be a text or a binary data
@@ -30,35 +29,27 @@ pub trait Output {
 /******************************************************************************/
 /// The `TrajectoryOutput` allow to write the trajectory of the system to a
 /// file, using any format supported by the
-/// [Chemharp](http://chemfiles.readthedocs.org/en/latest/formats.html) library.
+/// [Chemfiles](http://chemfiles.readthedocs.org/en/latest/formats.html) library.
 pub struct TrajectoryOutput {
-    file: chemfiles::Trajectory,
+    file: Trajectory,
 }
 
 impl TrajectoryOutput {
     /// Create a new `TrajectoryOutput` writing to `filename`. The file is
     /// replaced if it already exists.
-    pub fn new<'a, S>(filename: S) -> Result<TrajectoryOutput, chemfiles::Error> where S: Into<&'a str> {
+    pub fn new<'a, S>(filename: S) -> TrajectoryResult<TrajectoryOutput> where S: Into<&'a str> {
         Ok(TrajectoryOutput{
-            file: try!(chemfiles::Trajectory::create(filename.into()))
+            file: try!(Trajectory::create(filename.into()))
         })
     }
 }
 
 impl Output for TrajectoryOutput {
     fn write(&mut self, system: &System) {
-        let frame = match files::system_to_frame(system) {
-            Ok(val) => val,
+        match self.file.write(system) {
+            Ok(()) => (),
             Err(err) => {
-                error!("Error in Chemharp runtime while converting data: {}", err.message());
-                panic!();
-            }
-        };
-
-        match self.file.write(&frame) {
-            Ok(()) => {},
-            Err(err) => {
-                error!("Error in Chemharp runtime while writing file: {}", err.message());
+                error!("Error in while writing trajectory: {}", err.message());
                 panic!();
             }
         }

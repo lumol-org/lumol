@@ -6,20 +6,19 @@ use system::{System, Particle, UnitCell, CellType};
 use types::Vector3D;
 use chemfiles;
 
-
-pub use chemfiles::Error;
+use super::TrajectoryResult;
 
 /// Convert chemfiles types to Cymbalum types
-trait ToCymbalum {
+pub trait ToCymbalum {
     /// Output type
     type Output;
     /// Conversion function
-    fn to_cymbalum(self) -> Result<Self::Output, Error>;
+    fn to_cymbalum(self) -> TrajectoryResult<Self::Output>;
 }
 
 impl ToCymbalum for chemfiles::Atom {
     type Output = Particle;
-    fn to_cymbalum(self) -> Result<Particle, Error> {
+    fn to_cymbalum(self) -> TrajectoryResult<Particle> {
         let name = try!(self.name());
         let mut part = Particle::new(name);
         let mass = try!(self.mass());
@@ -30,7 +29,7 @@ impl ToCymbalum for chemfiles::Atom {
 
 impl ToCymbalum for chemfiles::UnitCell {
     type Output = UnitCell;
-    fn to_cymbalum(self) -> Result<UnitCell, Error> {
+    fn to_cymbalum(self) -> TrajectoryResult<UnitCell> {
         let cell_type = try!(self.cell_type());
         let cell = match cell_type {
             chemfiles::CellType::Infinite => UnitCell::new(),
@@ -50,7 +49,7 @@ impl ToCymbalum for chemfiles::UnitCell {
 
 impl ToCymbalum for chemfiles::Frame {
     type Output = System;
-    fn to_cymbalum(self) -> Result<System, Error> {
+    fn to_cymbalum(self) -> TrajectoryResult<System> {
         let cell = try!(self.cell());
         let cell = try!(cell.to_cymbalum());
         let mut system = System::from_cell(cell);
@@ -99,24 +98,19 @@ fn apply_particle_permutation(bonds: &mut Vec<[usize; 2]>, perms: Vec<(usize, us
     }
 }
 
-/// Convert a chemfiles `Frame` to a `System`
-pub fn frame_to_system(frame: chemfiles::Frame) -> Result<System, Error> {
-    frame.to_cymbalum()
-}
-
 /******************************************************************************/
 
 /// Convert Cymbalum types to chemfiles types
-trait ToChemfiles {
+pub trait ToChemfiles {
     /// Output type
     type Output;
     /// Conversion function
-    fn to_chemfiles(&self) -> Result<Self::Output, Error>;
+    fn to_chemfiles(&self) -> TrajectoryResult<Self::Output>;
 }
 
 impl ToChemfiles for Particle {
     type Output = chemfiles::Atom;
-    fn to_chemfiles(&self) -> Result<chemfiles::Atom, Error> {
+    fn to_chemfiles(&self) -> TrajectoryResult<chemfiles::Atom> {
         let mut res = try!(chemfiles::Atom::new(self.name()));
         try!(res.set_mass(self.mass as f32));
         return Ok(res);
@@ -125,7 +119,7 @@ impl ToChemfiles for Particle {
 
 impl ToChemfiles for UnitCell {
     type Output = chemfiles::UnitCell;
-    fn to_chemfiles(&self) -> Result<chemfiles::UnitCell, Error> {
+    fn to_chemfiles(&self) -> TrajectoryResult<chemfiles::UnitCell> {
         let res = match self.celltype() {
             CellType::Infinite => {
                 try!(chemfiles::UnitCell::infinite())
@@ -146,7 +140,7 @@ impl ToChemfiles for UnitCell {
 
 impl ToChemfiles for System {
     type Output = chemfiles::Frame;
-    fn to_chemfiles(&self) -> Result<chemfiles::Frame, Error> {
+    fn to_chemfiles(&self) -> TrajectoryResult<chemfiles::Frame> {
 
         let natoms = self.size();
         let mut frame = try!(chemfiles::Frame::new(natoms));
@@ -195,9 +189,4 @@ impl ToChemfiles for System {
         try!(frame.set_cell(&cell));
         Ok(frame)
     }
-}
-
-/// Convert an `System` to a chemfiles `Frame`
-pub fn system_to_frame(system: &System) -> Result<chemfiles::Frame, Error> {
-    system.to_chemfiles()
 }

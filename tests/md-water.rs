@@ -40,7 +40,7 @@ fn setup(potential: &str, n: usize) -> (Simulation, System) {
 
     let data_dir = Path::new(file!()).parent().unwrap();
     let potentials = data_dir.join("data").join(potential);
-    input::read_interactions(&mut system, potentials).unwrap();
+    io::read_interactions(&mut system, potentials).unwrap();
 
     let mut velocities = BoltzmanVelocities::new(units::from(300.0, "K").unwrap());
     velocities.init(&mut system);

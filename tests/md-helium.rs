@@ -14,7 +14,9 @@ use std::path::Path;
 fn get_system() -> System {
     let data_dir = Path::new(file!()).parent().unwrap();
     let configuration = data_dir.join("data").join("helium.xyz");
-    let mut system = System::from_file(configuration.to_str().unwrap()).unwrap();
+    let mut system = io::Trajectory::open(configuration)
+                                     .and_then(|mut traj| traj.read())
+                                     .unwrap();
     system.set_cell(UnitCell::cubic(10.0));
 
     let mut velocities = BoltzmanVelocities::new(units::from(300.0, "K").unwrap());

@@ -60,4 +60,4 @@ pub use potentials::*;
 pub use system::*;
 pub use simulation::*;
 
-pub mod input;
+pub mod io;

@@ -268,7 +268,7 @@ mod tests {
     use super::*;
     use system::{System, UnitCell};
     use utils::system_from_xyz;
-    use input::read_interactions_string;
+    use io::testing::read_interactions_string;
     use types::Vector3D;
 
     fn testing_system() -> System {

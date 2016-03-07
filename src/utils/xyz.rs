@@ -4,8 +4,10 @@
 //! Read static string using the XYZ file format, and create the corresponding
 //! system.
 
+#![cfg(test)]
+
 use system::{System, Particle};
-use system::files::{frame_to_system, system_to_frame};
+use io::testing::guess_bonds;
 use types::Vector3D;
 
 /// Read the `content` string, assuming XYZ format, and create the corresponding
@@ -31,9 +33,7 @@ pub fn system_from_xyz(content: &str) -> System {
     }
 
     if lines[1].contains("bonds") {
-        let frame = system_to_frame(&system).unwrap();
-        frame.guess_topology(true).expect("Could not guess the topology");
-        system = frame_to_system(frame).unwrap();
+        return guess_bonds(system).expect("Could not guess the bonds");
     }
 
     return system;

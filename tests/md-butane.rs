@@ -12,11 +12,13 @@ static START: Once = ONCE_INIT;
 fn setup_system() -> System {
     let data_dir = Path::new(file!()).parent().unwrap().join("data");
     let configuration = data_dir.join("butane.xyz");
-    let mut system = System::from_file_auto_bonds(configuration.to_str().unwrap()).unwrap();
+    let mut system = io::Trajectory::open(configuration)
+                                         .and_then(|mut traj| traj.read_guess_bonds())
+                                         .unwrap();
     system.set_cell(UnitCell::cubic(20.0));
 
     let interactions = data_dir.join("butane.yml");
-    input::read_interactions(&mut system, interactions).unwrap();
+    io::read_interactions(&mut system, interactions).unwrap();
 
     let mut velocities = BoltzmanVelocities::new(units::from(300.0, "K").unwrap());
     velocities.init(&mut system);

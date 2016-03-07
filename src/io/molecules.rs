@@ -4,8 +4,8 @@
 use chemfiles::{Trajectory, Frame};
 use std::path::Path;
 
-use system::files::Error;
-use system::files::frame_to_system;
+use input::trajectories::Error;
+use input::trajectories::frame_to_system;
 use system::{Molecule, Particle};
 
 /// Read the first molecule in the first frame of the file at `path`, and return

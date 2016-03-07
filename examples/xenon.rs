@@ -5,7 +5,8 @@ use cymbalum::*;
 fn main() {
     Logger::stdout();
 
-    let mut system = System::from_file("data/NaCl.xyz").unwrap();
+    let mut trajectory = io::Trajectory::open("data/NaCl.xyz").unwrap();
+    let mut system = trajectory.read().unwrap();
     system.set_cell(UnitCell::cubic(units::from(21.65, "A").unwrap()));
 
     system.add_pair_interaction("Xe", "Xe",

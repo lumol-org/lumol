@@ -37,8 +37,6 @@ pub use self::cache::EnergyCache;
 mod systems;
 pub use self::systems::System;
 
-pub mod files;
-
 pub mod compute;
 pub use self::compute::Compute;
 pub use self::compute::Forces;
