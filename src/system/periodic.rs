@@ -8,8 +8,7 @@
 //! There are two way to access this information. The `PERIODIC_TABLE` array
 //! contains all the data about real elements. The `PeriodicTable` struct
 //! provides helper functions, and a way to add new elements in the list.
-use std::sync::{Once, ONCE_INIT};
-use std::mem;
+use std::sync::RwLock;
 
 /// Data about one "extended" chemical element.
 pub struct ElementData {
@@ -151,51 +150,30 @@ static PERIODIC_TABLE: [ElementData; 119] = [
 
 /// The `PeriodicTable` struct give access to elements information, and give a
 /// way to register new elements in the list.
-pub struct PeriodicTable {
-    others: Vec<ElementData>,
-}
+pub struct PeriodicTable;
+
+lazy_static!(
+    static ref OTHER_ELEMENTS: RwLock<Vec<ElementData>> = RwLock::new(Vec::new());
+);
 
 impl PeriodicTable {
-    unsafe fn get_mut() -> &'static mut PeriodicTable {
-        static mut SINGLETON: *mut PeriodicTable = 0 as *mut PeriodicTable;
-        static INIT: Once = ONCE_INIT;
-        INIT.call_once(|| {
-            let singleton = PeriodicTable {
-                others: Vec::new()
-            };
-
-            // Put it in the heap so it can outlive this call
-            SINGLETON = mem::transmute(Box::new(singleton));
-        });
-
-        return &mut (*SINGLETON);
-    }
-
-    fn get() -> &'static PeriodicTable {
-        unsafe {
-            PeriodicTable::get_mut()
-        }
-    }
-
     /// Add a new element in the elements list. The additional list is searched
     /// before the `PERIODIC_TABLE` array, so adding a new element here will
     /// make it overwrite the real one.
     ///
-    /// # Safety
-    ///
-    /// This function mutate the state of a global variable. As such, it should
-    /// only be called by one thread, and preferably before any parrallel
-    /// region.
-    pub unsafe fn add_element(element: ElementData) {
-        let table = PeriodicTable::get_mut();
-        table.others.push(element);
+    /// This function use a RwLock to protect itself against race conditions,
+    /// and will block. As such, it should only be called by one thread, and
+    /// preferably before any parallel region.
+    pub fn add_element(element: ElementData) {
+        let mut others = OTHER_ELEMENTS.write().expect("RwLock is poisonned");
+        others.push(element);
     }
 
     /// Get the name of an element from it's symbol.
     pub fn name<S: AsRef<str>>(name: S) -> Option<&'static str> {
-        let table = PeriodicTable::get();
         let symbol = name.as_ref();
-        for element in &table.others {
+        let others = OTHER_ELEMENTS.read().expect("RwLock is poisonned");
+        for element in others.iter() {
             if element.symbol == symbol {
                 return Some(element.name)
             }
@@ -210,9 +188,9 @@ impl PeriodicTable {
 
     /// Get the mass of an element from it's symbol.
     pub fn mass<S: AsRef<str>>(name: S) -> Option<f32> {
-        let table = PeriodicTable::get();
         let symbol = name.as_ref();
-        for element in &table.others {
+        let others = OTHER_ELEMENTS.read().expect("RwLock is poisonned");
+        for element in others.iter() {
             if element.symbol == symbol {
                 return Some(element.mass)
             }
@@ -227,9 +205,9 @@ impl PeriodicTable {
 
     /// Get the covalent radius of an element from it's symbol.
     pub fn covalent<S: AsRef<str>>(name: S) -> Option<f32> {
-        let table = PeriodicTable::get();
         let symbol = name.as_ref();
-        for element in &table.others {
+        let others = OTHER_ELEMENTS.read().expect("RwLock is poisonned");
+        for element in others.iter() {
             if element.symbol == symbol {
                 return Some(element.covalent)
             }
@@ -244,9 +222,9 @@ impl PeriodicTable {
 
     /// Get the Van der Waals radius of an element from it's symbol.
     pub fn vdw<S: AsRef<str>>(name: S) -> Option<f32> {
-        let table = PeriodicTable::get();
         let symbol = name.as_ref();
-        for element in &table.others {
+        let others = OTHER_ELEMENTS.read().expect("RwLock is poisonned");
+        for element in others.iter() {
             if element.symbol == symbol {
                 return Some(element.vdw)
             }
@@ -283,9 +261,7 @@ mod test {
     fn add_elements() {
         // Add a new element
         let element = ElementData{symbol: "Ooo", name: "Ooo", mass: 0.0f32, covalent: 0.0f32, vdw: 0.0f32};
-        unsafe {
-            PeriodicTable::add_element(element);
-        }
+        PeriodicTable::add_element(element);
 
         assert_eq!(PeriodicTable::mass("Ooo"), Some(0.0f32));
         assert_eq!(PeriodicTable::name("Ooo"), Some("Ooo"));
@@ -294,9 +270,7 @@ mod test {
 
         // Overwrite existing element
         let element = ElementData{symbol: "H", name: "New H", mass: 0.0f32, covalent: 0.0f32, vdw: 0.0f32};
-        unsafe {
-            PeriodicTable::add_element(element);
-        }
+        PeriodicTable::add_element(element);
 
         assert_eq!(PeriodicTable::mass("H"), Some(0.0f32));
         assert_eq!(PeriodicTable::name("H"), Some("New H"));
