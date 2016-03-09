@@ -1,7 +1,7 @@
 // Cymbalum, an extensible molecular simulation engine
 // Copyright (C) 2015-2016 G. Fraux — BSD license
 
-use units;
+use utils;
 use System;
 use simulation::Propagator;
 
@@ -27,15 +27,15 @@ impl SteepestDescent {
     /// The default for force criterium is `1e-5 kJ/mol/Å^2`, and `1e-5
     /// kJ/mol/Å^2` for the energy criterium.
     pub fn new() -> SteepestDescent {
-        let delta_f = units::from(1e-5, "kJ/mol/A").unwrap();
-        let delta_e = units::from(1e-5, "kJ/mol").unwrap();
+        let delta_f = utils::unit_from(1e-5, "kJ/mol/A");
+        let delta_e = utils::unit_from(1e-5, "kJ/mol");
         SteepestDescent::with_criteria(delta_f, delta_e)
     }
 
     /// Create a new `GradientDescent` with the force convergence criterium of
     /// `force`, and the energy convergence criterium of `energy`.
     pub fn with_criteria(force: f64, energy: f64) -> SteepestDescent {
-        let gamma = units::from(0.1, "fs^2/u").unwrap();
+        let gamma = utils::unit_from(0.1, "fs^2/u");
         SteepestDescent{
             gamma: gamma,
             energy_crit: energy,

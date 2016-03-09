@@ -192,9 +192,9 @@ impl PeriodicTable {
     }
 
     /// Get the name of an element from it's symbol.
-    pub fn name<'a, S>(name: S) -> Option<&'static str> where S: Into<&'a str> {
+    pub fn name<S: AsRef<str>>(name: S) -> Option<&'static str> {
         let table = PeriodicTable::get();
-        let symbol = name.into();
+        let symbol = name.as_ref();
         for element in &table.others {
             if element.symbol == symbol {
                 return Some(element.name)
@@ -209,9 +209,9 @@ impl PeriodicTable {
     }
 
     /// Get the mass of an element from it's symbol.
-    pub fn mass<'a, S>(name: S) -> Option<f32> where S: Into<&'a str> {
+    pub fn mass<S: AsRef<str>>(name: S) -> Option<f32> {
         let table = PeriodicTable::get();
-        let symbol = name.into();
+        let symbol = name.as_ref();
         for element in &table.others {
             if element.symbol == symbol {
                 return Some(element.mass)
@@ -226,9 +226,9 @@ impl PeriodicTable {
     }
 
     /// Get the covalent radius of an element from it's symbol.
-    pub fn covalent<'a, S>(name: S) -> Option<f32> where S: Into<&'a str> {
+    pub fn covalent<S: AsRef<str>>(name: S) -> Option<f32> {
         let table = PeriodicTable::get();
-        let symbol = name.into();
+        let symbol = name.as_ref();
         for element in &table.others {
             if element.symbol == symbol {
                 return Some(element.covalent)
@@ -243,9 +243,9 @@ impl PeriodicTable {
     }
 
     /// Get the Van der Waals radius of an element from it's symbol.
-    pub fn vdw<'a, S>(name: S) -> Option<f32> where S: Into<&'a str> {
+    pub fn vdw<S: AsRef<str>>(name: S) -> Option<f32> {
         let table = PeriodicTable::get();
-        let symbol = name.into();
+        let symbol = name.as_ref();
         for element in &table.others {
             if element.symbol == symbol {
                 return Some(element.vdw)

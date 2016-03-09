@@ -15,10 +15,7 @@
 //!  traits.
 
 #![warn(
-    missing_docs,
-    trivial_casts,
-    unused_import_braces,
-    variant_size_differences,
+    missing_docs, trivial_casts, unused_import_braces, variant_size_differences,
     unused_qualifications
 )]
 
@@ -26,12 +23,14 @@
 #![cfg_attr(feature="lint", feature(plugin))]
 #![cfg_attr(feature="lint", plugin(clippy))]
 #![cfg_attr(feature="lint", warn(clippy))]
+// Additional lints from the Allow group in clippy
+#![cfg_attr(feature="lint", warn(
+    enum_glob_use, mut_mut, option_unwrap_used, print_stdout,
+    result_unwrap_used, single_match_else, wrong_pub_self_convention
+))]
 // These are for readability
 #![cfg_attr(feature="lint", allow(
-    needless_return,
-    needless_range_loop,
-    or_fun_call,
-    new_without_default,
+    needless_return, needless_range_loop, or_fun_call, new_without_default,
     float_cmp,
 ))]
 

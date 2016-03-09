@@ -10,6 +10,16 @@ mod xyz;
 #[cfg(test)]
 pub use self::xyz::system_from_xyz;
 
+/// Internal version of `units::from`, where the unit is assumed to be correct
+pub fn unit_from(value: f64, unit: &str) -> f64 {
+    ::units::from(value, unit).expect("Internal unit error. This is a bug.")
+}
+
+/// Internal version of `units::to`, where the unit is assumed to be correct
+pub fn unit_to(value: f64, unit: &str) -> f64 {
+    ::units::to(value, unit).expect("Internal unit error. This is a bug.")
+}
+
 /// A simple macro to implement Clone for Box<Trait>, without requiring that
 /// Trait is Clone. This works by creating a new trait (`BoxCloneTrait`) and
 /// making the first Trait inherit the `BoxCloneTrait`. `BoxCloneTrait` is

@@ -28,18 +28,20 @@ pub struct Particle {
 
 impl Particle {
     /// Create a new `Particle` from a name
-    pub fn new<S: Into<String>>(n: S) -> Particle {
-        let name = n.into();
-        let mass = match PeriodicTable::mass(&*name) {
-            Some(val) => val,
-            None => panic!("Could not find the mass for the {} particle", name)
-        };
-        Particle{name: name,
-                 mass: mass as f64,
-                 charge: 0.0,
-                 kind: u16::max_value(),
-                 position: Vector3D::new(0.0, 0.0, 0.0),
-                 velocity: Vector3D::new(0.0, 0.0, 0.0)}
+    pub fn new<S: Into<String>>(name: S) -> Particle {
+        let name = name.into();
+        let mass = PeriodicTable::mass(&name).unwrap_or_default();
+        if mass == 0.0f32 {
+            warn!("Could not find the mass for the {} particle", name);
+        }
+        Particle {
+            name: name,
+            mass: mass as f64,
+            charge: 0.0,
+            kind: u16::max_value(),
+            position: Vector3D::new(0.0, 0.0, 0.0),
+            velocity: Vector3D::new(0.0, 0.0, 0.0)
+        }
     }
 
     /// Get the particle name

@@ -171,23 +171,18 @@ pub fn read_interactions_string(system: &mut System, string: &str) -> Result<()>
 /// the interaction are added to the bond interactions.
 fn read_pairs(system: &mut System, pairs: &[Yaml], pair_potentials: bool) -> Result<()> {
     for node in pairs {
-        let (a, b) = match node["atoms"].as_vec() {
-            Some(vec) => {
-                if vec.len() != 2 {
-                    return Err(Error::from(
-                        format!("Wrong size for 'atoms' section in pair potentials. Should be 2, is {}", vec.len())
-                    ));
-                }
-                if let (Some(a), Some(b)) = (vec[0].as_str(), vec[1].as_str()) {
-                    (a, b)
-                } else {
-                    return Err(Error::from("The atoms names are not strings in pair potential"));
-                }
-            },
-            None => {
-                return Err(Error::from("Missing 'atoms' section in pair potential"));
-            }
-        };
+        let atoms = try!(node["atoms"].as_vec().ok_or(
+            Error::from("Missing 'atoms' section in pair potential")
+        ));
+
+        if atoms.len() != 2 {
+            return Err(Error::from(
+                format!("Wrong size for 'atoms' section in pair potentials. Should be 2, is {}", atoms.len())
+            ));
+        }
+
+        let a = try!(atoms[0].as_str().ok_or(Error::from("The first atom name is not a string in pair potential")));
+        let b = try!(atoms[1].as_str().ok_or(Error::from("The second atom name is not a string in pair potential")));
 
         let restriction = if node["restriction"].as_hash().is_some() {
             Some(try!(read_restriction(&node["restriction"])))
@@ -216,77 +211,63 @@ fn read_pairs(system: &mut System, pairs: &[Yaml], pair_potentials: bool) -> Res
 }
 
 fn read_pair_potential(node: &Yaml) -> Result<Box<PairPotential>> {
-    match node["type"].as_str() {
-        Some(val) => {
-            let val: &str = &val.to_lowercase();
-            match val {
-                "harmonic" => Ok(Box::new(try!(Harmonic::from_yaml(node)))),
-                "lennard-jones" | "lennardjones" => Ok(Box::new(try!(LennardJones::from_yaml(node)))),
-                "null" | "nullpotential" => Ok(Box::new(try!(NullPotential::from_yaml(node)))),
-                val => Err(
-                    Error::from(format!("Unknown potential type '{}'", val))
-                ),
-            }
-        },
-        None => {
-            Err(Error::from("Missing 'type' parameter in pair potential"))
-        }
+    let typ: &str = &try!(node["type"].as_str().ok_or(
+        Error::from("Missing 'type' parameter in pair potential")
+    )).to_lowercase();
+    match typ {
+        "harmonic" => Ok(Box::new(try!(Harmonic::from_yaml(node)))),
+        "lennard-jones" | "lennardjones" => Ok(Box::new(try!(LennardJones::from_yaml(node)))),
+        "null" | "nullpotential" => Ok(Box::new(try!(NullPotential::from_yaml(node)))),
+        other => Err(
+            Error::from(format!("Unknown potential type '{}'", other))
+        ),
     }
 }
 /******************************************************************************/
 fn read_restriction(node: &Yaml) -> Result<PairRestriction> {
-    match node["type"].as_str() {
-        Some(val) => {
-            let val: &str = &val.to_lowercase();
-            match val {
-                "none" => Ok(PairRestriction::None),
-                "intramolecular" => Ok(PairRestriction::IntraMolecular),
-                "intermolecular" => Ok(PairRestriction::InterMolecular),
-                "exclude12" => Ok(PairRestriction::Exclude12),
-                "exclude13" => Ok(PairRestriction::Exclude13),
-                "exclude14" => Ok(PairRestriction::Exclude14),
-                "scale14" => {
-                    if let Some(scaling) = node["scaling"].as_f64() {
-                        if 0.0 <= scaling && scaling <= 1.0 {
-                            Ok(PairRestriction::Scale14{scaling: scaling})
-                        } else {
-                            Err(Error::from("Scaling parameter for Scale14 restriction must be between 0 and 1"))
-                        }
-                    } else {
-                        Err(Error::from("Missing 'scaling' parameter in Scale14 restriction"))
-                    }
-                },
-                val => Err(
-                    Error::from(format!("Unknown potential type '{}'", val))
-                ),
+    let typ: &str = &try!(node["type"].as_str().ok_or(
+        Error::from("Missing 'type' parameter in restriction section")
+    )).to_lowercase();
+    match typ {
+        "none" => Ok(PairRestriction::None),
+        "intramolecular" => Ok(PairRestriction::IntraMolecular),
+        "intermolecular" => Ok(PairRestriction::InterMolecular),
+        "exclude12" => Ok(PairRestriction::Exclude12),
+        "exclude13" => Ok(PairRestriction::Exclude13),
+        "exclude14" => Ok(PairRestriction::Exclude14),
+        "scale14" => {
+            if let Some(scaling) = node["scaling"].as_f64() {
+                if 0.0 <= scaling && scaling <= 1.0 {
+                    Ok(PairRestriction::Scale14{scaling: scaling})
+                } else {
+                    Err(Error::from("Scaling parameter for Scale14 restriction must be between 0 and 1"))
+                }
+            } else {
+                Err(Error::from("Missing 'scaling' parameter in Scale14 restriction"))
             }
         },
-        None => {
-            Err(Error::from("Missing 'type' parameter in restriction section"))
-        }
+        other => Err(
+            Error::from(format!("Unknown potential type '{}'", other))
+        ),
     }
 }
 
 /******************************************************************************/
 fn read_angles(system: &mut System, angles: &[Yaml]) -> Result<()> {
     for potential in angles {
-        let (a, b, c) = match potential["atoms"].as_vec() {
-            Some(vec) => {
-                if vec.len() != 3 {
-                    return Err(Error::from(
-                        format!("Wrong size for 'atoms' section in angle potential. Should be 3, is {}", vec.len())
-                    ));
-                }
-                if let (Some(a), Some(b), Some(c)) = (vec[0].as_str(), vec[1].as_str(), vec[2].as_str()) {
-                    (a, b, c)
-                } else {
-                    return Err(Error::from("The atoms names are not strings in angle potential"));
-                }
-            },
-            None => {
-                return Err(Error::from("Missing 'atoms' section in angles potential"));
-            }
-        };
+        let atoms = try!(potential["atoms"].as_vec().ok_or(
+            Error::from("Missing 'atoms' section in angle potential")
+        ));
+
+        if atoms.len() != 3 {
+            return Err(Error::from(
+                format!("Wrong size for 'atoms' section in angle potentials. Should be 3, is {}", atoms.len())
+            ));
+        }
+
+        let a = try!(atoms[0].as_str().ok_or(Error::from("The first atom name is not a string in angle potential")));
+        let b = try!(atoms[1].as_str().ok_or(Error::from("The second atom name is not a string in angle potential")));
+        let c = try!(atoms[2].as_str().ok_or(Error::from("The third atom name is not a string in angle potential")));
 
         let potential = try!(read_angle_potential(potential));
         system.add_angle_interaction(a, b, c, potential);
@@ -295,44 +276,36 @@ fn read_angles(system: &mut System, angles: &[Yaml]) -> Result<()> {
 }
 
 fn read_angle_potential(node: &Yaml) -> Result<Box<AnglePotential>> {
-    match node["type"].as_str() {
-        Some(val) => {
-            let val: &str = &val.to_lowercase();
-            match val {
-                "harmonic" => Ok(Box::new(try!(Harmonic::from_yaml(node)))),
-                "cosine-harmonic" | "cosineharmonic" => Ok(Box::new(try!(CosineHarmonic::from_yaml(node)))),
-                "null" => Ok(Box::new(try!(NullPotential::from_yaml(node)))),
-                val => Err(
-                    Error::from(format!("Unknown potential type '{}'", val))
-                ),
-            }
-        },
-        None => {
-            Err(Error::from("Missing 'type' parameter in angle potential"))
-        }
+    let typ: &str = &try!(node["type"].as_str().ok_or(
+        Error::from("Missing 'type' parameter in angle potential")
+    )).to_lowercase();
+    match typ {
+        "harmonic" => Ok(Box::new(try!(Harmonic::from_yaml(node)))),
+        "cosine-harmonic" | "cosineharmonic" => Ok(Box::new(try!(CosineHarmonic::from_yaml(node)))),
+        "null" => Ok(Box::new(try!(NullPotential::from_yaml(node)))),
+        other => Err(
+            Error::from(format!("Unknown potential type '{}'", other))
+        ),
     }
 }
 
 /******************************************************************************/
 fn read_dihedrals(system: &mut System, dihedrals: &[Yaml]) -> Result<()> {
     for potential in dihedrals {
-        let (a, b, c, d) = match potential["atoms"].as_vec() {
-            Some(vec) => {
-                if vec.len() != 4 {
-                    return Err(Error::from(
-                        format!("Wrong size for 'atoms' section in dihedral potential. Should be 4, is {}", vec.len())
-                    ));
-                }
-                if let (Some(a), Some(b), Some(c), Some(d)) = (vec[0].as_str(), vec[1].as_str(), vec[2].as_str(), vec[3].as_str()) {
-                    (a, b, c, d)
-                } else {
-                    return Err(Error::from("The atoms names are not strings in dihedral potential"));
-                }
-            },
-            None => {
-                return Err(Error::from("Missing 'atoms' section in dihedral potential"));
-            }
-        };
+        let atoms = try!(potential["atoms"].as_vec().ok_or(
+            Error::from("Missing 'atoms' section in dihedral potential")
+        ));
+
+        if atoms.len() != 4 {
+            return Err(Error::from(
+                format!("Wrong size for 'atoms' section in dihedral potentials. Should be 4, is {}", atoms.len())
+            ));
+        }
+
+        let a = try!(atoms[0].as_str().ok_or(Error::from("The first atom name is not a string in dihedral potential")));
+        let b = try!(atoms[1].as_str().ok_or(Error::from("The second atom name is not a string in dihedral potential")));
+        let c = try!(atoms[2].as_str().ok_or(Error::from("The third atom name is not a string in dihedral potential")));
+        let d = try!(atoms[3].as_str().ok_or(Error::from("The fourth atom name is not a string in dihedral potential")));
 
         let potential = try!(read_dihedral_potential(potential));
         system.add_dihedral_interaction(a, b, c, d, potential);
@@ -341,22 +314,17 @@ fn read_dihedrals(system: &mut System, dihedrals: &[Yaml]) -> Result<()> {
 }
 
 fn read_dihedral_potential(node: &Yaml) -> Result<Box<DihedralPotential>> {
-    match node["type"].as_str() {
-        Some(val) => {
-            let val: &str = &val.to_lowercase();
-            match val {
-                "harmonic" => Ok(Box::new(try!(Harmonic::from_yaml(node)))),
-                "cosine-harmonic" | "cosineharmonic" => Ok(Box::new(try!(CosineHarmonic::from_yaml(node)))),
-                "torsion" => Ok(Box::new(try!(Torsion::from_yaml(node)))),
-                "null" => Ok(Box::new(try!(NullPotential::from_yaml(node)))),
-                val => Err(
-                    Error::from(format!("Unknown potential type '{}'", val))
-                ),
-            }
-        },
-        None => {
-            Err(Error::from("Missing 'type' parameter in dihedral potential"))
-        }
+    let typ: &str = &try!(node["type"].as_str().ok_or(
+        Error::from("Missing 'type' parameter in dihedral potential")
+    )).to_lowercase();
+    match typ {
+        "harmonic" => Ok(Box::new(try!(Harmonic::from_yaml(node)))),
+        "cosine-harmonic" | "cosineharmonic" => Ok(Box::new(try!(CosineHarmonic::from_yaml(node)))),
+        "torsion" => Ok(Box::new(try!(Torsion::from_yaml(node)))),
+        "null" => Ok(Box::new(try!(NullPotential::from_yaml(node)))),
+        other => Err(
+            Error::from(format!("Unknown potential type '{}'", other))
+        ),
     }
 }
 
@@ -425,20 +393,15 @@ impl FromYaml for Torsion {
 
 /******************************************************************************/
 fn read_pair_computation(node: &Yaml, potential: Box<PairPotential>) -> Result<Box<PairPotential>> {
-    match node["type"].as_str() {
-        Some(val) => {
-            let val: &str = &val.to_lowercase();
-            match val {
-                "cutoff" => Ok(Box::new(try!(CutoffComputation::from_yaml(node, potential)))),
-                "table" => Ok(Box::new(try!(TableComputation::from_yaml(node, potential)))),
-                val => Err(
-                    Error::from(format!("Unknown computation type '{}'", val))
-                ),
-            }
-        },
-        None => {
-            Err(Error::from("Missing 'type' parameter for potential computation"))
-        }
+    let typ: &str = &try!(node["type"].as_str().ok_or(
+        Error::from("Missing 'type' parameter for potential computation")
+    )).to_lowercase();
+    match typ {
+        "cutoff" => Ok(Box::new(try!(CutoffComputation::from_yaml(node, potential)))),
+        "table" => Ok(Box::new(try!(TableComputation::from_yaml(node, potential)))),
+        other => Err(
+            Error::from(format!("Unknown computation type '{}'", other))
+        ),
     }
 }
 
@@ -490,18 +453,13 @@ fn read_coulomb(system: &mut System, config: &Yaml) -> Result<()> {
 }
 
 fn read_coulomb_potential(node: &Yaml) -> Result<Box<CoulombicPotential>> {
-    match node["type"].as_str() {
-        Some(val) => {
-            let val: &str = &val.to_lowercase();
-            match val {
-                "wolf" => Ok(Box::new(try!(Wolf::from_yaml(node)))),
-                "ewald" => Ok(Box::new(try!(Ewald::from_yaml(node)))),
-                val => Err(Error::from(format!("Unknown coulomb solver type '{}'", val))),
-            }
-        },
-        None => {
-            Err(Error::from("Missing 'type' parameter for coulomb section"))
-        }
+    let typ: &str = &try!(node["type"].as_str().ok_or(
+        Error::from("Missing 'type' parameter for coulomb section")
+    )).to_lowercase();
+    match typ {
+        "wolf" => Ok(Box::new(try!(Wolf::from_yaml(node)))),
+        "ewald" => Ok(Box::new(try!(Ewald::from_yaml(node)))),
+        other => Err(Error::from(format!("Unknown coulomb solver type '{}'", other))),
     }
 }
 
@@ -532,7 +490,7 @@ impl FromYaml for Ewald {
 }
 
 fn assign_charges(system: &mut System, config: &Yaml) -> Result<()> {
-    let charges = config.as_hash().unwrap();
+    let charges = config.as_hash().expect("`assign_charges` must be passed a YAML hash");
     for (name, charge) in charges {
         if let (Some(name), Some(charge)) = (name.as_str(), charge.as_f64()) {
             let mut n_changed = 0;

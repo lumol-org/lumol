@@ -5,9 +5,9 @@
 use std::io::prelude::*;
 use std::io;
 use std::fs::File;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
-use units;
+use utils;
 use system::System;
 use io::{Trajectory, TrajectoryResult};
 
@@ -62,40 +62,39 @@ impl Output for TrajectoryOutput {
 /// in the file contains the following values: `A B C α β γ`.
 pub struct CellOutput {
     file: File,
-    path: String
+    path: PathBuf
 }
 
 impl CellOutput {
     /// Create a new `CellOutput` writing to `filename`. The file is replaced if
     /// it already exists.
     pub fn new<P: AsRef<Path>>(filename: P) -> Result<CellOutput, io::Error> {
-        let path = String::from(filename.as_ref().to_str().unwrap());
         Ok(CellOutput{
-            file: try!(File::create(filename)),
-            path: path,
+            file: try!(File::create(filename.as_ref())),
+            path: filename.as_ref().to_owned(),
         })
     }
 }
 
 impl Output for CellOutput {
     fn setup(&mut self, _: &System) {
-        if let Err(e) = writeln!(&mut self.file, "# Unit cell of the simulation") {
+        if let Err(err) = writeln!(&mut self.file, "# Unit cell of the simulation") {
             // Do panic in early time
-            panic!("Could not write to file '{}': {:?}", self.path, e);
+            panic!("Could not write to file '{}': {:?}", self.path.display(), err);
         }
-        if let Err(e) = writeln!(&mut self.file, "# Step A/Å B/Å C/Å α/deg β/deg γ/deg") {
-            panic!("Could not write to file '{}': {:?}", self.path, e);
+        if let Err(err) = writeln!(&mut self.file, "# Step A/Å B/Å C/Å α/deg β/deg γ/deg") {
+            panic!("Could not write to file '{}': {:?}", self.path.display(), err);
         }
     }
 
     fn write(&mut self, system: &System) {
         let cell = system.cell();
-        if let Err(e) = writeln!(
+        if let Err(err) = writeln!(
             &mut self.file, "{} {} {} {} {} {} {}",
             system.step(), cell.a(), cell.b(), cell.c(), cell.alpha(), cell.beta(), cell.gamma()
         ) {
             // Do not panic during the simulation
-            error!("Could not write to file '{}': {:?}", self.path, e);
+            error!("Could not write to file '{}': {:?}", self.path.display(), err);
         }
     }
 }
@@ -105,37 +104,36 @@ impl Output for CellOutput {
 /// as: `PotentialEnergy     KineticEnergy     TotalEnergy`.
 pub struct EnergyOutput {
     file: File,
-    path: String
+    path: PathBuf
 }
 
 impl EnergyOutput {
     /// Create a new `EnergyOutput` writing to `filename`. The file is replaced
     /// if it already exists.
     pub fn new<P: AsRef<Path>>(filename: P) -> Result<EnergyOutput, io::Error> {
-        let path = String::from(filename.as_ref().to_str().unwrap());
         Ok(EnergyOutput{
-            file: try!(File::create(filename)),
-            path: path,
+            file: try!(File::create(filename.as_ref())),
+            path: filename.as_ref().to_owned(),
         })
     }
 }
 
 impl Output for EnergyOutput {
     fn setup(&mut self, _: &System) {
-        if let Err(e) = writeln!(&mut self.file, "# Energy of the simulation (kJ/mol)") {
-            panic!("Could not write to file '{}': {:?}", self.path, e);
+        if let Err(err) = writeln!(&mut self.file, "# Energy of the simulation (kJ/mol)") {
+            panic!("Could not write to file '{}': {:?}", self.path.display(), err);
         }
-        if let Err(e) = writeln!(&mut self.file, "# Step Potential Kinetic Total") {
-            panic!("Could not write to file '{}': {:?}", self.path, e);
+        if let Err(err) = writeln!(&mut self.file, "# Step Potential Kinetic Total") {
+            panic!("Could not write to file '{}': {:?}", self.path.display(), err);
         }
     }
 
     fn write(&mut self, system: &System) {
-        let potential = units::to(system.potential_energy(), "kJ/mol").unwrap();
-        let kinetic = units::to(system.kinetic_energy(), "kJ/mol").unwrap();
-        let total = units::to(system.total_energy(), "kJ/mol").unwrap();
-        if let Err(e) = writeln!(&mut self.file, "{} {} {} {}", system.step(), potential, kinetic, total) {
-            error!("Could not write to file '{}': {:?}", self.path, e);
+        let potential = utils::unit_to(system.potential_energy(), "kJ/mol");
+        let kinetic = utils::unit_to(system.kinetic_energy(), "kJ/mol");
+        let total = utils::unit_to(system.total_energy(), "kJ/mol");
+        if let Err(err) = writeln!(&mut self.file, "{} {} {} {}", system.step(), potential, kinetic, total) {
+            error!("Could not write to file '{}': {:?}", self.path.display(), err);
         }
     }
 }
@@ -149,37 +147,36 @@ impl Output for EnergyOutput {
 /// - instant pressure;
 pub struct PropertiesOutput {
     file: File,
-    path: String,
+    path: PathBuf,
 }
 
 impl PropertiesOutput {
     /// Create a new `PropertiesOutput` writing to `filename`. The file is replaced
     /// if it already exists.
     pub fn new<P: AsRef<Path>>(filename: P) -> Result<PropertiesOutput, io::Error> {
-        let path = String::from(filename.as_ref().to_str().unwrap());
         Ok(PropertiesOutput{
-            file: try!(File::create(filename)),
-            path: path,
+            file: try!(File::create(filename.as_ref())),
+            path: filename.as_ref().to_owned(),
         })
     }
 }
 
 impl Output for PropertiesOutput {
     fn setup(&mut self, _: &System) {
-        if let Err(e) = writeln!(&mut self.file, "# Physical properties of the simulation") {
-            panic!("Could not write to file '{}': {:?}", self.path, e);
+        if let Err(err) = writeln!(&mut self.file, "# Physical properties of the simulation") {
+            panic!("Could not write to file '{}': {:?}", self.path.display(), err);
         }
-        if let Err(e) = writeln!(&mut self.file, "# Step Volume/A^3 Temperature/K Pressure/bar") {
-            panic!("Could not write to file '{}': {:?}", self.path, e);
+        if let Err(err) = writeln!(&mut self.file, "# Step Volume/A^3 Temperature/K Pressure/bar") {
+            panic!("Could not write to file '{}': {:?}", self.path.display(), err);
         }
     }
 
     fn write(&mut self, system: &System) {
-        let volume = units::to(system.volume(), "A^3").unwrap();
-        let temperature = units::to(system.temperature(), "K").unwrap();
-        let pressure = units::to(system.pressure(), "bar").unwrap();
-        if let Err(e) = writeln!(&mut self.file, "{} {} {} {}", system.step(), volume, temperature, pressure) {
-            error!("Could not write to file '{}': {:?}", self.path, e);
+        let volume = utils::unit_to(system.volume(), "A^3");
+        let temperature = utils::unit_to(system.temperature(), "K");
+        let pressure = utils::unit_to(system.pressure(), "bar");
+        if let Err(err) = writeln!(&mut self.file, "{} {} {} {}", system.step(), volume, temperature, pressure) {
+            error!("Could not write to file '{}': {:?}", self.path.display(), err);
         }
     }
 }

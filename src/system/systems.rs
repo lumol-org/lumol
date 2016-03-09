@@ -405,15 +405,14 @@ impl System {
     pub fn pair_potentials(&self, i: usize, j: usize) -> &[PairInteraction] {
         let ikind = self.particles[i].kind;
         let jkind = self.particles[j].kind;
-        match self.interactions.pairs(ikind, jkind) {
-            Some(val) => &val,
-            None => {
-                let i = self.particles[i].name();
-                let j = self.particles[j].name();
-                // TODO: add and use the warn_once! macro
-                warn!("No potential defined for the pair ({}, {})", i, j);
-                NO_PAIR_INTERACTION
-            }
+        if let Some(val) = self.interactions.pairs(ikind, jkind) {
+            &val
+        } else {
+            let i = self.particles[i].name();
+            let j = self.particles[j].name();
+            // TODO: add and use the warn_once! macro
+            warn!("No potential defined for the pair ({}, {})", i, j);
+            NO_PAIR_INTERACTION
         }
     }
 
@@ -422,15 +421,14 @@ impl System {
     pub fn bond_potentials(&self, i: usize, j: usize) -> &[Box<PairPotential>] {
         let ikind = self.particles[i].kind;
         let jkind = self.particles[j].kind;
-        match self.interactions.bonds(ikind, jkind) {
-            Some(val) => &val,
-            None => {
-                let i = self.particles[i].name();
-                let j = self.particles[j].name();
-                // TODO: add and use the warn_once! macro
-                warn!("No potential defined for the bond ({}, {})", i, j);
-                NO_BOND_INTERACTION
-            }
+        if let Some(val) = self.interactions.bonds(ikind, jkind) {
+            &val
+        } else {
+            let i = self.particles[i].name();
+            let j = self.particles[j].name();
+            // TODO: add and use the warn_once! macro
+            warn!("No potential defined for the bond ({}, {})", i, j);
+            NO_BOND_INTERACTION
         }
     }
 
@@ -441,16 +439,15 @@ impl System {
         let jkind = self.particles[j].kind;
         let kkind = self.particles[k].kind;
 
-        match self.interactions.angles(ikind, jkind, kkind) {
-            Some(val) => &val,
-            None => {
-                let i = self.particles[i].name();
-                let j = self.particles[j].name();
-                let k = self.particles[k].name();
-                // TODO: add and use the warn_once! macro
-                warn!("No potential defined for the angle ({}, {}, {})", i, j, k);
-                NO_ANGLE_INTERACTION
-            }
+        if let Some(val) =  self.interactions.angles(ikind, jkind, kkind) {
+            &val
+        } else {
+            let i = self.particles[i].name();
+            let j = self.particles[j].name();
+            let k = self.particles[k].name();
+            // TODO: add and use the warn_once! macro
+            warn!("No potential defined for the angle ({}, {}, {})", i, j, k);
+            NO_ANGLE_INTERACTION
         }
     }
 
@@ -462,17 +459,16 @@ impl System {
         let kkind = self.particles[k].kind;
         let mkind = self.particles[m].kind;
 
-        match self.interactions.dihedrals(ikind, jkind, kkind, mkind) {
-            Some(val) => &val,
-            None => {
-                let i = self.particles[i].name();
-                let j = self.particles[j].name();
-                let k = self.particles[k].name();
-                let m = self.particles[m].name();
-                // TODO: add and use the warn_once! macro
-                warn!("No potential defined for the dihedral ({}, {}, {}, {})", i, j, k, m);
-                NO_DIHEDRAL_INTERACTION
-            }
+        if let Some(val) = self.interactions.dihedrals(ikind, jkind, kkind, mkind) {
+            &val
+        } else {
+            let i = self.particles[i].name();
+            let j = self.particles[j].name();
+            let k = self.particles[k].name();
+            let m = self.particles[m].name();
+            // TODO: add and use the warn_once! macro
+            warn!("No potential defined for the dihedral ({}, {}, {}, {})", i, j, k, m);
+            NO_DIHEDRAL_INTERACTION
         }
     }
 
