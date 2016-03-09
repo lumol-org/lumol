@@ -46,7 +46,7 @@ pub struct Ewald {
     /// Fourier transform of the electrostatic density
     rho: RefCell<Array3<Complex>>,
     /// Guard for cache invalidation of expfactors
-    previous_cell: RefCell<UnitCell>,
+    previous_cell: Cell<Option<UnitCell>>,
 }
 
 impl Ewald {
@@ -65,14 +65,16 @@ impl Ewald {
             expfactors: RefCell::new(expfactors),
             fourier_phases: RefCell::new(Array3::zeros((0, 0, 0))),
             rho: RefCell::new(rho),
-            previous_cell: RefCell::new(UnitCell::new()),
+            previous_cell: Cell::new(None),
         }
     }
 
     fn precompute(&self, cell: &UnitCell) {
-        if *cell == *self.previous_cell.borrow() {
-            // Do not recompute
-            return;
+        if let Some(ref prev_cell) = self.previous_cell.get() {
+            if cell == prev_cell {
+                // Do not recompute
+                return;
+            }
         }
         match cell.celltype() {
             CellType::Infinite => {
@@ -87,7 +89,7 @@ impl Ewald {
                 // All good!
             },
         }
-        *self.previous_cell.borrow_mut() = *cell;
+        self.previous_cell.set(Some(cell.clone()));
         let mut expfactors = self.expfactors.borrow_mut();
 
         // Because we do a spherical truncation in k space, we have to transform
