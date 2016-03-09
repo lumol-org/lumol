@@ -2,8 +2,6 @@
 // Copyright (C) 2015-2016 G. Fraux — BSD license
 
 //! Various internal utilities, which do not have there own module
-mod bcount;
-pub use self::bcount::Bc;
 
 #[cfg(test)]
 mod xyz;

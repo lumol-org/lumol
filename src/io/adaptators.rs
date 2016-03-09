@@ -55,9 +55,6 @@ impl ToCymbalum for chemfiles::Frame {
         let mut system = System::from_cell(cell);
         let topology = try!(self.topology());
         let natoms = try!(self.natoms());
-        let step = try!(self.step());
-
-        system.set_step(step as u64);
 
         let positions = try!(self.positions());
         for i in 0..natoms {

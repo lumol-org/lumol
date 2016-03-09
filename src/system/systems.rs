@@ -9,7 +9,6 @@
 use std::collections::HashMap;
 use std::ops::{Index, IndexMut};
 use std::slice;
-use std::hash::{SipHasher, Hash, Hasher};
 use std::cmp::{min, max};
 use std::iter::IntoIterator;
 use std::u8;
@@ -18,7 +17,6 @@ use potentials::{PairPotential, AnglePotential, DihedralPotential};
 use potentials::{CoulombicPotential, GlobalPotential};
 use potentials::PairRestriction;
 use types::{Vector3D, Matrix3};
-use utils::Bc;
 
 use super::Particle;
 use super::Molecule;
@@ -46,17 +44,15 @@ pub type Permutations = Vec<(usize, usize)>;
 #[derive(Clone)]
 pub struct System {
     /// Unit cell of the system
-    cell: Bc<UnitCell>,
+    cell: UnitCell,
     /// List of particles in the system
-    particles: Bc<Vec<Particle>>,
+    particles: Vec<Particle>,
     /// Molecules in the system
-    molecules: Bc<Vec<Molecule>>,
+    molecules: Vec<Molecule>,
     /// Particles kinds, associating particles names and indexes
     kinds: HashMap<String, u16>,
     /// Interactions is a hash map associating particles kinds and potentials
     interactions: Interactions,
-    /// Physical properties caching
-    cache: PropertiesCache,
     /// Current step of the simulation
     step: u64,
 }
@@ -65,12 +61,11 @@ impl System {
     /// Create a new empty System
     pub fn new() -> System {
         System{
-            particles: Bc::new(Vec::new()),
-            molecules: Bc::new(Vec::new()),
+            particles: Vec::new(),
+            molecules: Vec::new(),
             kinds: HashMap::new(),
             interactions: Interactions::new(),
-            cell: Bc::new(UnitCell::new()),
-            cache: PropertiesCache::new(),
+            cell: UnitCell::new(),
             step: 0,
         }
     }
@@ -85,19 +80,6 @@ impl System {
     /// Get the current step of the system
     #[inline] pub fn step(&self) -> u64 {
         self.step
-    }
-
-    /// Set the current step of the system to `step`
-    #[inline] pub fn set_step(&mut self, step: u64) {
-        self.step = step;
-    }
-
-    /// Reset the step of the system to 0
-    pub fn reset_step(&mut self) {
-        self.step = 0;
-        self.cell.reset();
-        self.particles.reset();
-        self.molecules.reset();
     }
 
     /// Increment the system step
@@ -578,7 +560,7 @@ impl System {
     /// Get a mutable reference to  the system unit cell
     #[inline] pub fn cell_mut(&mut self) -> &mut UnitCell {&mut self.cell}
     /// Set the system unit cell
-    #[inline] pub fn set_cell(&mut self, cell: UnitCell) {self.cell = Bc::new(cell);}
+    #[inline] pub fn set_cell(&mut self, cell: UnitCell) {self.cell = cell;}
 
     /// Get the distance between the particles at indexes `i` and `j`
     #[inline] pub fn distance(&self, i: usize, j:usize) -> f64 {
@@ -638,146 +620,28 @@ use system::Volume;
 use system::{Virial, Stress, Pressure};
 use system::{StressAtTemperature, PressureAtTemperature};
 
-use std::cell::Cell;
-
-/// Caching physical properties of a system as `Cell<Option<T>>`. The `Cell`
-/// is for mutating values in immuatable borrow, and the Option to invalidate
-/// the cached values.
-#[derive(Clone)]
-struct PropertiesCache {
-    pub state: Cell<u64>,
-
-    pub kinetic_energy: Cell<Option<f64>>,
-    pub potential_energy: Cell<Option<f64>>,
-    pub total_energy: Cell<Option<f64>>,
-    pub temperature: Cell<Option<f64>>,
-
-    pub volume: Cell<Option<f64>>,
-
-    pub virial: Cell<Option<Matrix3>>,
-    pub pressure: Cell<Option<f64>>,
-    pub stress: Cell<Option<Matrix3>>,
-}
-
-/// This macro generate an `inherent impl` function for `PropertiesCache`, which
-/// check the system state, and either returns the cached value or invalidate
-/// the full cache, adn update the it with the new value.
-macro_rules! make_cache_getter {
-    ($property: ident, $computer: ident, $T: ident) => {
-        fn $property(&self, system: &System) -> $T {
-            if system.state() == self.state.get() {
-                if let Some(val) = self.$property.get() {
-                    return val;
-                } else {
-                    let val = $computer.compute(system);
-                    self.$property.set(Some(val));
-                    return val;
-                }
-            } else {
-                self.invalidate();
-                self.state.set(system.state());
-                return self.$property(system);
-            }
-        }
-    };
-}
-
-impl PropertiesCache {
-    fn new() -> PropertiesCache {
-        PropertiesCache{
-            state: Cell::new(0),
-
-            kinetic_energy: Cell::new(None),
-            potential_energy: Cell::new(None),
-            total_energy: Cell::new(None),
-            temperature: Cell::new(None),
-
-            volume: Cell::new(None),
-
-            virial: Cell::new(None),
-            pressure: Cell::new(None),
-            stress: Cell::new(None),
-        }
-    }
-
-    /// Invalidate the cache
-    fn invalidate(&self) {
-        self.kinetic_energy.set(None);
-        self.potential_energy.set(None);
-        self.total_energy.set(None);
-        self.temperature.set(None);
-
-        self.volume.set(None);
-
-        self.virial.set(None);
-        self.pressure.set(None);
-        self.stress.set(None);
-    }
-
-    /// Get the kinetic energy of the system.
-    make_cache_getter!(kinetic_energy, KineticEnergy, f64);
-
-    /// Get the potential energy of the system.
-    make_cache_getter!(potential_energy, PotentialEnergy, f64);
-
-    /// Get the total energy of the system.
-    make_cache_getter!(total_energy, TotalEnergy, f64);
-
-    /// Get the temperature of the system.
-    make_cache_getter!(temperature, Temperature, f64);
-
-    /// Get the volume of the system.
-    make_cache_getter!(volume, Volume, f64);
-
-    /// Get the tensorial virial of the system.
-    make_cache_getter!(virial, Virial, Matrix3);
-
-    /// Get the pressure of the system, from the virial equation
-    make_cache_getter!(pressure, Pressure, f64);
-
-    /// Get the stress tensor of the system, from the virial equation
-    make_cache_getter!(stress, Stress, Matrix3);
-}
-
-/******************************************************************************/
-/// Functions to get pysical properties of a system. These properties are
-/// cached, because they might be costly to compute and often depends the one on
-/// the others.
+/// Functions to get pysical properties of a system.
 impl System {
-    /// Get a number representing the state of the system. It is guaranted
-    /// that this number will change if the system changes, but it is not
-    /// guaranted that if this number change, the system have changed; i.e.
-    /// this value can change without the system changing. This is not a hash
-    /// of the system, and should be cheap to compute.
-    fn state(&self) -> u64 {
-        let mut hasher = SipHasher::new();
-        self.cell.count().hash(&mut hasher);
-        self.particles.count().hash(&mut hasher);
-        self.molecules.count().hash(&mut hasher);
-        self.step.hash(&mut hasher);
-        return hasher.finish()
-    }
-
     /// Get the kinetic energy of the system.
-    pub fn kinetic_energy(&self) -> f64 {self.cache.kinetic_energy(&self)}
+    pub fn kinetic_energy(&self) -> f64 {KineticEnergy.compute(self)}
     /// Get the potential energy of the system.
-    pub fn potential_energy(&self) -> f64 {self.cache.potential_energy(&self)}
+    pub fn potential_energy(&self) -> f64 {PotentialEnergy.compute(self)}
     /// Get the total energy of the system.
-    pub fn total_energy(&self) -> f64 {self.cache.total_energy(&self)}
+    pub fn total_energy(&self) -> f64 {TotalEnergy.compute(self)}
     /// Get the temperature of the system.
-    pub fn temperature(&self) -> f64 {self.cache.temperature(&self)}
+    pub fn temperature(&self) -> f64 {Temperature.compute(self)}
 
     /// Get the volume of the system.
-    pub fn volume(&self) -> f64 {self.cache.volume(&self)}
+    pub fn volume(&self) -> f64 {Volume.compute(self)}
 
     /// Get the tensorial virial of the system.
-    pub fn virial(&self) -> Matrix3 {self.cache.virial(&self)}
+    pub fn virial(&self) -> Matrix3 {Virial.compute(self)}
     /// Get the pressure of the system from the virial equation, at the system
     /// instananeous temperature.
-    pub fn pressure(&self) -> f64 {self.cache.pressure(&self)}
+    pub fn pressure(&self) -> f64 {Pressure.compute(self)}
     /// Get the stress tensor of the system from the virial equation, at the
     /// system instananeous temperature.
-    pub fn stress(&self) -> Matrix3 {self.cache.stress(&self)}
+    pub fn stress(&self) -> Matrix3 {Stress.compute(self)}
 
     /// Get the pressure of the system from the virial equation, at the given
     /// `temperature`.
@@ -829,8 +693,6 @@ mod tests {
         system.increment_step();
 
         assert_eq!(system.step(), 3);
-        system.reset_step();
-        assert_eq!(system.step(), 0);
     }
 
     #[test]
