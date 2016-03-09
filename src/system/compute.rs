@@ -83,7 +83,7 @@ impl Compute for Forces {
             let forces = coulomb.forces(&system);
             debug_assert!(forces.len() == natoms, "Wrong `forces` size in coulomb potentials");
             for (i, force) in forces.iter().enumerate() {
-                res[i] = res[i] + (*force);
+                res[i] = res[i] + force;
             }
         }
 
@@ -91,7 +91,7 @@ impl Compute for Forces {
             let forces = global.forces(&system);
             debug_assert!(forces.len() == natoms, "Wrong `forces` size in global potentials");
             for (i, force) in forces.iter().enumerate() {
-                res[i] = res[i] + (*force);
+                res[i] = res[i] + force;
             }
         }
         return res;

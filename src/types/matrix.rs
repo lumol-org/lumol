@@ -79,50 +79,26 @@ impl IndexMut<(usize, usize)> for Matrix3 {
     }
 }
 
-/// Add two matrix
-impl Add for Matrix3 {
-    type Output = Matrix3;
-    fn add(self, other: Matrix3) -> Matrix3 {
-        Matrix3::new(self[0][0] + other[0][0], self[0][1] + other[0][1], self[0][2] + other[0][2],
-                     self[1][0] + other[1][0], self[1][1] + other[1][1], self[1][2] + other[1][2],
-                     self[2][0] + other[2][0], self[2][1] + other[2][1], self[2][2] + other[2][2])
-    }
-}
+impl_arithmetic!(
+    Matrix3, Matrix3, Add, add, Matrix3,
+    self, other,
+    Matrix3::new(self[0][0] + other[0][0], self[0][1] + other[0][1], self[0][2] + other[0][2],
+                 self[1][0] + other[1][0], self[1][1] + other[1][1], self[1][2] + other[1][2],
+                 self[2][0] + other[2][0], self[2][1] + other[2][1], self[2][2] + other[2][2])
+);
 
-/// Substract two matrix
-impl Sub for Matrix3 {
-    type Output = Matrix3;
-    fn sub(self, other: Matrix3) -> Matrix3 {
-        Matrix3::new(self[0][0] - other[0][0], self[0][1] - other[0][1], self[0][2] - other[0][2],
-                     self[1][0] - other[1][0], self[1][1] - other[1][1], self[1][2] - other[1][2],
-                     self[2][0] - other[2][0], self[2][1] - other[2][1], self[2][2] - other[2][2])
-    }
-}
+impl_arithmetic!(
+    Matrix3, Matrix3, Sub, sub, Matrix3,
+    self, other,
+    Matrix3::new(self[0][0] - other[0][0], self[0][1] - other[0][1], self[0][2] - other[0][2],
+                 self[1][0] - other[1][0], self[1][1] - other[1][1], self[1][2] - other[1][2],
+                 self[2][0] - other[2][0], self[2][1] - other[2][1], self[2][2] - other[2][2])
+);
 
-/// Multiply by a scalar on the right hand side
-impl Mul<f64> for Matrix3 {
-    type Output = Matrix3;
-    fn mul(self, other: f64) -> Matrix3 {
-        Matrix3::new(self[0][0] * other, self[0][1] * other, self[0][2] * other,
-                     self[1][0] * other, self[1][1] * other, self[1][2] * other,
-                     self[2][0] * other, self[2][1] * other, self[2][2] * other)
-    }
-}
-
-/// Multiply by a scalar on the left hand side
-impl Mul<Matrix3> for f64 {
-    type Output = Matrix3;
-    fn mul(self, other: Matrix3) -> Matrix3 {
-        Matrix3::new(self * other[0][0], self * other[0][1], self * other[0][2],
-                     self * other[1][0], self * other[1][1], self * other[1][2],
-                     self * other[2][0], self * other[2][1], self * other[2][2])
-    }
-}
-
-/// Product of the two matrix
-impl Mul<Matrix3> for Matrix3 {
-    type Output = Matrix3;
-    fn mul(self, other: Matrix3) -> Matrix3 {
+impl_arithmetic!(
+    Matrix3, Matrix3, Mul, mul, Matrix3,
+    self, other,
+    {
         let m00 = self[(0, 0)] * other[(0, 0)] + self[(0, 1)] * other[(1, 0)] + self[(0, 2)] * other[(2, 0)];
         let m01 = self[(0, 0)] * other[(0, 1)] + self[(0, 1)] * other[(1, 1)] + self[(0, 2)] * other[(2, 1)];
         let m02 = self[(0, 0)] * other[(0, 2)] + self[(0, 1)] * other[(1, 2)] + self[(0, 2)] * other[(2, 2)];
@@ -137,18 +113,36 @@ impl Mul<Matrix3> for Matrix3 {
 
         Matrix3::new(m00, m01, m02, m10, m11, m12, m20, m21, m22)
     }
-}
+);
 
-/// Multiply by a Vector3D
-impl Mul<Vector3D> for Matrix3 {
-    type Output = Vector3D;
-    fn mul(self, vec: Vector3D) -> Vector3D {
-        let x = self[0][0] * vec[0] + self[0][1] * vec[1] + self[0][2] * vec[2];
-        let y = self[1][0] * vec[0] + self[1][1] * vec[1] + self[1][2] * vec[2];
-        let z = self[2][0] * vec[0] + self[2][1] * vec[1] + self[2][2] * vec[2];
+impl_arithmetic!(
+    Matrix3, Vector3D, Mul, mul, Vector3D,
+    self, other,
+    {
+        let x = self[0][0] * other[0] + self[0][1] * other[1] + self[0][2] * other[2];
+        let y = self[1][0] * other[0] + self[1][1] * other[1] + self[1][2] * other[2];
+        let z = self[2][0] * other[0] + self[2][1] * other[1] + self[2][2] * other[2];
         Vector3D::new(x, y, z)
     }
-}
+);
+
+/******************************************************************************/
+
+lsh_scal_arithmetic!(
+    Matrix3, Mul, mul, Matrix3,
+    self, other,
+    Matrix3::new(self[0][0] * other, self[0][1] * other, self[0][2] * other,
+                 self[1][0] * other, self[1][1] * other, self[1][2] * other,
+                 self[2][0] * other, self[2][1] * other, self[2][2] * other)
+);
+
+scal_rhs_arithmetic!(
+    Matrix3, Mul, mul, Matrix3,
+    self, other,
+    Matrix3::new(self * other[0][0], self * other[0][1], self * other[0][2],
+                 self * other[1][0], self * other[1][1], self * other[1][2],
+                 self * other[2][0], self * other[2][1], self * other[2][2])
+);
 
 impl Zero for Matrix3 {
     fn zero() -> Matrix3 {

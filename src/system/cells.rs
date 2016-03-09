@@ -247,13 +247,13 @@ impl UnitCell {
     #[inline]
     pub fn fractional(&self, vect: &Vector3D) -> Vector3D {
         let inv = self.data.inverse();
-        return inv * (*vect);
+        return inv * vect;
     }
 
     /// Get the cartesian representation of the fractional `v` vector in this cell
     #[inline]
     pub fn cartesian(&self, frac: &Vector3D) -> Vector3D {
-        return self.data * (*frac);
+        return self.data * frac;
     }
 
     /// Periodic boundary conditions distance between the point `u` and the point `v`
