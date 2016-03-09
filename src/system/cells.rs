@@ -245,17 +245,15 @@ impl UnitCell {
 
     /// Get the fractional representation of the `v` vector in this cell
     #[inline]
-    pub fn fractional(&self, v: &Vector3D) -> Vector3D {
+    pub fn fractional(&self, vect: &Vector3D) -> Vector3D {
         let inv = self.data.inverse();
-        let vect = v.clone();
-        return inv * vect;
+        return inv * (*vect);
     }
 
     /// Get the cartesian representation of the fractional `v` vector in this cell
     #[inline]
-    pub fn cartesian(&self, v: &Vector3D) -> Vector3D {
-        let frac = v.clone();
-        return self.data * frac;
+    pub fn cartesian(&self, frac: &Vector3D) -> Vector3D {
+        return self.data * (*frac);
     }
 
     /// Periodic boundary conditions distance between the point `u` and the point `v`
@@ -589,19 +587,19 @@ mod tests {
 
         // Check by comparison to finite differences
         for i in 0..3 {
-            let mut p = a.clone();
+            let mut p = a;
             p[i] += EPS;
             assert_approx_eq!((cell.angle(&p, &b, &c) - angle)/EPS, d1[i], EPS);
         }
 
         for i in 0..3 {
-            let mut p = b.clone();
+            let mut p = b;
             p[i] += EPS;
             assert_approx_eq!((cell.angle(&a, &p, &c) - angle)/EPS, d2[i], EPS);
         }
 
         for i in 0..3 {
-            let mut p = c.clone();
+            let mut p = c;
             p[i] += EPS;
             assert_approx_eq!((cell.angle(&a, &b, &p) - angle)/EPS, d3[i], EPS);
         }
@@ -638,25 +636,25 @@ mod tests {
 
         // Check by comparison to finite differences
         for i in 0..3 {
-            let mut p = a.clone();
+            let mut p = a;
             p[i] += EPS;
             assert_approx_eq!((cell.dihedral(&p, &b, &c, &d) - angle)/EPS, d1[i], EPS);
         }
 
         for i in 0..3 {
-            let mut p = b.clone();
+            let mut p = b;
             p[i] += EPS;
             assert_approx_eq!((cell.dihedral(&a, &p, &c, &d) - angle)/EPS, d2[i], EPS);
         }
 
         for i in 0..3 {
-            let mut p = c.clone();
+            let mut p = c;
             p[i] += EPS;
             assert_approx_eq!((cell.dihedral(&a, &b, &p, &d) - angle)/EPS, d3[i], EPS);
         }
 
         for i in 0..3 {
-            let mut p = d.clone();
+            let mut p = d;
             p[i] += EPS;
             assert_approx_eq!((cell.dihedral(&a, &b, &c, &p) - angle)/EPS, d4[i], EPS);
         }

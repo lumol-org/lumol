@@ -109,6 +109,7 @@ impl Dihedral {
 /******************************************************************************/
 mod connect {
     #![allow(dead_code)]
+    #![cfg_attr(feature="lint", allow(if_not_else))]
     bitflags! {
         /// The `Connectivity` bitflag encode the topological distance between
         /// two particles in the molecule, i.e. the number of bonds between the
@@ -137,7 +138,7 @@ pub use self::connect::{CONNECT_12, CONNECT_13, CONNECT_14, CONNECT_FAR};
 
 /******************************************************************************/
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone)]
 /// A molecule is the basic building block for a topology. It contains data
 /// about the connectivity (bonds, angles, dihedrals) in the system.
 pub struct Molecule {
@@ -250,16 +251,15 @@ impl Molecule {
 
                     let dihedral = if angle.k == bond3.i && angle.j != bond3.j {
                         Dihedral::new(angle.i, angle.j, angle.k, bond3.j)
-                    } else if angle.k == bond3.i && angle.j != bond3.j {
-                        Dihedral::new(angle.i, angle.j, angle.k, bond3.j)
+                    } else if angle.k == bond3.j && angle.j != bond3.i {
+                        Dihedral::new(angle.i, angle.j, angle.k, bond3.i)
                     } else if angle.i == bond3.j && angle.j != bond3.i {
                         Dihedral::new(bond3.i, angle.i, angle.j, angle.k)
                     } else if angle.i == bond3.i && angle.j != bond3.j {
                         Dihedral::new(bond3.j, angle.i, angle.j, angle.k)
-                    } else if angle.k == bond3.i || angle.k == bond3.j {
-                        // TODO: this is an improper dihedral
-                        continue;
                     } else {
+                        // TODO: (angle.k == bond3.i || angle.k == bond3.j)
+                        // is an improper dihedral.
                         continue;
                     };
                     self.dihedrals.insert(dihedral);
@@ -306,17 +306,17 @@ impl Molecule {
         assert!(self.last + 1 == other.first);
         self.last = other.last;
         for bond in other.bonds() {
-            self.bonds.insert(bond.clone());
+            self.bonds.insert(*bond);
         }
 
         // Get angles and dihedrals from the other molecule, there is no need to
         // rebuild these.
         for angle in other.angles() {
-            self.angles.insert(angle.clone());
+            self.angles.insert(*angle);
         }
 
         for dihedral in other.dihedrals() {
-            self.dihedrals.insert(dihedral.clone());
+            self.dihedrals.insert(*dihedral);
         }
 
         self.rebuild_connections();
@@ -388,7 +388,7 @@ impl Molecule {
                 continue;
             }
 
-            let mut new_bond = bond.clone();
+            let mut new_bond = *bond;
             if new_bond.i > i {
                 new_bond.i -= 1;
             }

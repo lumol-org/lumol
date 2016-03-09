@@ -69,15 +69,11 @@ impl PairRestriction {
             PairRestriction::Exclude13      | PairRestriction::Exclude14      |
             PairRestriction::InterMolecular | PairRestriction::IntraMolecular => 1.0,
             PairRestriction::Scale14{scaling} => {
-                if !system.are_in_same_molecule(i, j) {
-                    1.0
-                } else {
-                    if system.shortest_path(i, j) == 4 {
+                if system.are_in_same_molecule(i, j) && system.shortest_path(i, j) == 4 {
                         scaling
-                    } else {
-                        1.0
-                    }
-                }
+                } else {
+                    1.0
+                }    
             }
         }
     }

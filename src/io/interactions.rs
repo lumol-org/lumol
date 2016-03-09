@@ -16,40 +16,40 @@ use potentials::*;
 /// Possible causes of error when reading potential files
 pub enum Error {
     /// Error in the YAML input file
-    YAMLError(ScanError),
+    YAML(ScanError),
     /// IO error
-    FileError(io::Error),
+    File(io::Error),
     /// File content error: missing sections, bad data types
-    ConfigError{
+    Config{
         /// Error message
         msg: String,
     },
     /// Unit parsing error
-    UnitError(UnitParsingError),
+    UnitParsing(UnitParsingError),
 }
 
 impl From<ScanError> for Error {
-    fn from(err: ScanError) -> Error {Error::YAMLError(err)}
+    fn from(err: ScanError) -> Error {Error::YAML(err)}
 }
 
 impl From<io::Error> for Error {
-    fn from(err: io::Error) -> Error {Error::FileError(err)}
+    fn from(err: io::Error) -> Error {Error::File(err)}
 }
 
 impl<'a> From<&'a str> for Error {
     fn from(err: &'a str) -> Error {
-        Error::ConfigError{msg: String::from(err)}
+        Error::Config{msg: String::from(err)}
     }
 }
 
 impl From<String> for Error {
     fn from(err: String) -> Error {
-        Error::ConfigError{msg: err}
+        Error::Config{msg: err}
     }
 }
 
 impl From<UnitParsingError> for Error {
-    fn from(err: UnitParsingError) -> Error {Error::UnitError(err)}
+    fn from(err: UnitParsingError) -> Error {Error::UnitParsing(err)}
 }
 
 /// Custom Result for input files
@@ -250,10 +250,10 @@ fn read_restriction(node: &Yaml) -> Result<PairRestriction> {
                         if 0.0 <= scaling && scaling <= 1.0 {
                             Ok(PairRestriction::Scale14{scaling: scaling})
                         } else {
-                            Err(Error::from(format!("Scaling parameter for Scale14 restriction must be between 0 and 1")))
+                            Err(Error::from("Scaling parameter for Scale14 restriction must be between 0 and 1"))
                         }
                     } else {
-                        Err(Error::from(format!("Missing 'scaling' parameter in Scale14 restriction")))
+                        Err(Error::from("Missing 'scaling' parameter in Scale14 restriction"))
                     }
                 },
                 val => Err(
@@ -308,7 +308,7 @@ fn read_angle_potential(node: &Yaml) -> Result<Box<AnglePotential>> {
             }
         },
         None => {
-            Err(Error::from(format!("Missing 'type' parameter in angle potential")))
+            Err(Error::from("Missing 'type' parameter in angle potential"))
         }
     }
 }
@@ -355,7 +355,7 @@ fn read_dihedral_potential(node: &Yaml) -> Result<Box<DihedralPotential>> {
             }
         },
         None => {
-            Err(Error::from(format!("Missing 'type' parameter in dihedral potential")))
+            Err(Error::from("Missing 'type' parameter in dihedral potential"))
         }
     }
 }
@@ -437,7 +437,7 @@ fn read_pair_computation(node: &Yaml, potential: Box<PairPotential>) -> Result<B
             }
         },
         None => {
-            Err(Error::from(format!("Missing 'type' parameter for potential computation")))
+            Err(Error::from("Missing 'type' parameter for potential computation"))
         }
     }
 }
@@ -500,7 +500,7 @@ fn read_coulomb_potential(node: &Yaml) -> Result<Box<CoulombicPotential>> {
             }
         },
         None => {
-            Err(Error::from(format!("Missing 'type' parameter for coulomb section")))
+            Err(Error::from("Missing 'type' parameter for coulomb section"))
         }
     }
 }

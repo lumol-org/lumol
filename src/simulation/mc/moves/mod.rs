@@ -54,7 +54,7 @@ fn select_molecule(system: &System, moltype: Option<u64>, rng: &mut Box<Rng>) ->
     if let Some(moltype) = moltype {
         // Pick a random molecule with matching moltype
         let mols = system.molecules_with_moltype(moltype);
-        return rng.choose(&mols).map(|id| *id);
+        return rng.choose(&mols).cloned();
     } else {
         let nmols = system.molecules().len();
         if nmols == 0 {

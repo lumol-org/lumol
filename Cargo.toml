@@ -29,9 +29,13 @@ default-features = false
 git = "https://github.com/Manishearth/rust-clippy/"
 optional = true
 
+[dependencies.herbie-lint]
+git = "https://github.com/mcarton/rust-herbie-lint/"
+optional = true
+
 [features]
 default = []
-lint = ["clippy"]
+lint = ["clippy", "herbie-lint"]
 
 [profile.release]
 debug = true

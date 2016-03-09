@@ -94,7 +94,7 @@ impl Integrator for Verlet {
         let forces = system.forces();
         for (i, part) in system.iter_mut().enumerate() {
             // Save positions at t
-            let tmp = part.position.clone();
+            let tmp = part.position;
             // Update positions at t + ∆t
             let position = 2.0 * tmp - self.prevpos[i] + dt2/part.mass * forces[i];
             // Update velocities at t

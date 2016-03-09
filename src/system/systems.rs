@@ -218,7 +218,9 @@ impl System {
         assert!(j <= self.particles.len());
         debug!("Adding bond between the particles {} and {}, in molecules {} and {}", i, j, self.molecule_id(i), self.molecule_id(j));
 
-        let (i, j, perms) = if !self.are_in_same_molecule(i, j) {
+        let (i, j, perms) = if self.are_in_same_molecule(i, j) {
+            (i, j, None)
+        } else { // Do all the hard work
             // Getting copy of the molecules before the merge
             let mol_i = self.molecule_id(i);
             let mol_j = self.molecule_id(j);
@@ -261,8 +263,6 @@ impl System {
                 (i - delta, j) // i moved
             };
             (i, j, Some(perms))
-        } else {
-            (i, j, None)
         };
 
         if i == j {
@@ -396,7 +396,7 @@ static NO_DIHEDRAL_INTERACTION: &'static [Box<DihedralPotential>] = &[];
 /// Potentials related functions
 impl System {
     /// Get an helper struct to evaluate the energy of this system.
-    pub fn energy_evaluator<'a>(&'a self) -> EnergyEvaluator<'a> {
+    pub fn energy_evaluator(&self) -> EnergyEvaluator {
         EnergyEvaluator::new(self)
     }
 

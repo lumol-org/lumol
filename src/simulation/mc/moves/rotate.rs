@@ -88,7 +88,7 @@ impl MCMove for Rotate {
             self.newpos.push(system[pi].position);
         }
 
-        rotate_around_axis(&mut self.newpos, &mut masses, axis, theta);
+        rotate_around_axis(&mut self.newpos, &masses, axis, theta);
         return true;
     }
 
@@ -122,7 +122,7 @@ fn rotate_around_axis(positions: &mut [Vector3D], masses: &[f64], axis: Vector3D
 
     let rotation = rotation_matrix(&axis, angle);
     for position in positions {
-        let oldpos = position.clone() - com;
+        let oldpos = (*position) - com;
         *position = com + rotation * oldpos;
     }
 }

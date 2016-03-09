@@ -22,10 +22,18 @@
     unused_qualifications
 )]
 
+#![cfg_attr(feature="lint", plugin(herbie_lint))]
 #![cfg_attr(feature="lint", feature(plugin))]
 #![cfg_attr(feature="lint", plugin(clippy))]
 #![cfg_attr(feature="lint", warn(clippy))]
-#![cfg_attr(feature="lint", allow(needless_return, needless_range_loop))]
+// These are for readability
+#![cfg_attr(feature="lint", allow(
+    needless_return,
+    needless_range_loop,
+    or_fun_call,
+    new_without_default,
+    float_cmp,
+))]
 
 #[macro_use]
 extern crate log;

@@ -73,8 +73,8 @@ impl Propagator for SteepestDescent {
 
         // Store the current coordinates
         let mut positions = Vec::with_capacity(system.size());
-        for p in system.iter() {
-            positions.push(p.position.clone());
+        for particle in system.iter() {
+            positions.push(particle.position);
         }
         let positions = positions;
 
