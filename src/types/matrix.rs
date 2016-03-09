@@ -143,9 +143,9 @@ impl Mul<Matrix3> for Matrix3 {
 impl Mul<Vector3D> for Matrix3 {
     type Output = Vector3D;
     fn mul(self, vec: Vector3D) -> Vector3D {
-        let x = self[0][0] * vec.x + self[0][1] * vec.y + self[0][2] * vec.z;
-        let y = self[1][0] * vec.x + self[1][1] * vec.y + self[1][2] * vec.z;
-        let z = self[2][0] * vec.x + self[2][1] * vec.y + self[2][2] * vec.z;
+        let x = self[0][0] * vec[0] + self[0][1] * vec[1] + self[0][2] * vec[2];
+        let y = self[1][0] * vec[0] + self[1][1] * vec[1] + self[1][2] * vec[2];
+        let z = self[2][0] * vec[0] + self[2][1] * vec[1] + self[2][2] * vec[2];
         Vector3D::new(x, y, z)
     }
 }
@@ -292,18 +292,18 @@ mod tests {
         let mul = a * vec;
         let res = Vector3D::new(6.0, 15.0, 27.0);
 
-        assert_eq!(mul.x, res.x);
-        assert_eq!(mul.y, res.y);
-        assert_eq!(mul.z, res.z);
+        assert_eq!(mul[0], res[0]);
+        assert_eq!(mul[1], res[1]);
+        assert_eq!(mul[2], res[2]);
 
         let unit = Matrix3::one();
         let vec = Vector3D::new(567.45, 356.8, 215673.12);
         let mul = unit * vec;
         let res = vec;
 
-        assert_eq!(mul.x, res.x);
-        assert_eq!(mul.y, res.y);
-        assert_eq!(mul.z, res.z);
+        assert_eq!(mul[0], res[0]);
+        assert_eq!(mul[1], res[1]);
+        assert_eq!(mul[2], res[2]);
     }
 
     #[test]

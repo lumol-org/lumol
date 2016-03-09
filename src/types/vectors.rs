@@ -8,19 +8,12 @@ use super::matrix::Matrix3;
 
 /// 3 dimensional vector type, implementing all usual operations
 #[derive(Copy, Clone, Debug)]
-pub struct Vector3D {
-    /// First component of the vector
-    pub x: f64,
-    /// Second component of the vector
-    pub y: f64,
-    /// Third component of the vector
-    pub z: f64,
-}
+pub struct Vector3D([f64; 3]);
 
 impl Vector3D {
     /// Create a new Vector3D with components `x`, `y`, `z`
     pub fn new(x: f64, y: f64, z: f64) -> Vector3D {
-        Vector3D{x: x, y: y, z: z}
+        Vector3D([x, y, z])
     }
     /// Return the squared euclidean norm of a Vector3D
     #[inline] pub fn norm2(&self) -> f64 {
@@ -36,9 +29,14 @@ impl Vector3D {
     }
     /// Tensorial product between vectors
     pub fn tensorial(&self, other: &Vector3D) -> Matrix3 {
-        Matrix3::new(self.x * other.x, self.x * other.y, self.x * other.z,
-                     self.y * other.x, self.y * other.y, self.y * other.z,
-                     self.z * other.x, self.z * other.y, self.z * other.z)
+        Matrix3::new(self[0] * other[0], self[0] * other[1], self[0] * other[2],
+                     self[1] * other[0], self[1] * other[1], self[1] * other[2],
+                     self[2] * other[0], self[2] * other[1], self[2] * other[2])
+    }
+
+    /// Convert the vector to a slice
+    #[inline] pub fn as_slice(&self) -> &[f64] {
+        &self.0
     }
 }
 
@@ -46,7 +44,7 @@ impl Vector3D {
 impl Add for Vector3D {
     type Output = Vector3D;
     #[inline] fn add(self, other: Vector3D) -> Vector3D {
-        Vector3D::new(self.x + other.x, self.y + other.y, self.z + other.z)
+        Vector3D::new(self[0] + other[0], self[1] + other[1], self[2] + other[2])
     }
 }
 
@@ -54,7 +52,7 @@ impl Add for Vector3D {
 impl Sub for Vector3D {
     type Output = Vector3D;
     #[inline] fn sub(self, other: Vector3D) -> Vector3D {
-        Vector3D::new(self.x - other.x, self.y - other.y, self.z - other.z)
+        Vector3D::new(self[0] - other[0], self[1] - other[1], self[2] - other[2])
     }
 }
 
@@ -62,7 +60,7 @@ impl Sub for Vector3D {
 impl Neg for Vector3D {
     type Output = Vector3D;
     #[inline] fn neg(self) -> Vector3D {
-        Vector3D::new(-self.x, -self.y, -self.z)
+        Vector3D::new(-self[0], -self[1], -self[2])
     }
 }
 
@@ -70,7 +68,7 @@ impl Neg for Vector3D {
 impl Mul<f64> for Vector3D {
     type Output = Vector3D;
     #[inline] fn mul(self, other: f64) -> Vector3D {
-        Vector3D::new(self.x * other, self.y * other, self.z * other)
+        Vector3D::new(self[0] * other, self[1] * other, self[2] * other)
     }
 }
 
@@ -78,7 +76,7 @@ impl Mul<f64> for Vector3D {
 impl Mul<Vector3D> for f64 {
     type Output = Vector3D;
     #[inline] fn mul(self, other: Vector3D) -> Vector3D {
-        Vector3D::new(self * other.x, self * other.y, self * other.z)
+        Vector3D::new(self * other[0], self * other[1], self * other[2])
     }
 }
 
@@ -86,7 +84,7 @@ impl Mul<Vector3D> for f64 {
 impl Mul<Vector3D> for Vector3D {
     type Output = f64;
     #[inline] fn mul(self, other: Vector3D) -> f64 {
-        self.x * other.x + self.y * other.y + self.z * other.z
+        self[0] * other[0] + self[1] * other[1] + self[2] * other[2]
     }
 }
 
@@ -94,9 +92,9 @@ impl Mul<Vector3D> for Vector3D {
 impl BitXor<Vector3D> for Vector3D {
     type Output = Vector3D;
     fn bitxor(self, other: Vector3D) -> Vector3D {
-        let x = self.y * other.z - self.z * other.y;
-        let y = self.z * other.x - self.x * other.z;
-        let z = self.x * other.y - self.y * other.x;
+        let x = self[1] * other[2] - self[2] * other[1];
+        let y = self[2] * other[0] - self[0] * other[2];
+        let z = self[0] * other[1] - self[1] * other[0];
         Vector3D::new(x, y, z)
     }
 }
@@ -105,39 +103,31 @@ impl BitXor<Vector3D> for Vector3D {
 impl Div<f64> for Vector3D {
     type Output = Vector3D;
     #[inline] fn div(self, other: f64) -> Vector3D {
-        Vector3D::new(self.x / other, self.y / other, self.z / other)
+        Vector3D::new(self[0] / other, self[1] / other, self[2] / other)
     }
 }
 
 /// Comparing two vectors
 impl PartialEq for Vector3D {
     #[inline] fn eq(&self, other: &Vector3D) -> bool {
-        self.x == other.x && self.y == other.y && self.z == other.z
+        self[0] == other[0] && self[1] == other[1] && self[2] == other[2]
     }
 }
 
 /// This is provided for convenience only, and is slower than direct field access
 impl Index<usize> for Vector3D {
     type Output = f64;
+    #[inline]
     fn index(&self, index: usize) -> &f64 {
-        match index {
-            0 => &self.x,
-            1 => &self.y,
-            2 => &self.z,
-            _ => panic!("Out of bonds indexing!")
-        }
+        &self.0[index]
     }
 }
 
 /// This is provided for convenience only, and is slower than direct field access
 impl IndexMut<usize> for Vector3D {
+    #[inline]
     fn index_mut(&mut self, index: usize) -> &mut f64 {
-        match index {
-            0 => &mut self.x,
-            1 => &mut self.y,
-            2 => &mut self.z,
-            _ => panic!("Out of bonds indexing!")
-        }
+        &mut self.0[index]
     }
 }
 
@@ -209,17 +199,17 @@ mod tests {
     fn index() {
         let mut a = Vector3D::new(2.1, 3.5, 4.8);
 
-        assert_eq!(a[0], a.x);
-        assert_eq!(a[1], a.y);
-        assert_eq!(a[2], a.z);
+        assert_eq!(a[0], a[0]);
+        assert_eq!(a[1], a[1]);
+        assert_eq!(a[2], a[2]);
 
         a[0] = 1.0;
         a[1] = 1.0;
         a[2] = 1.0;
 
-        assert_eq!(a.x, 1.0);
-        assert_eq!(a.y, 1.0);
-        assert_eq!(a.z, 1.0);
+        assert_eq!(a[0], 1.0);
+        assert_eq!(a[1], 1.0);
+        assert_eq!(a[2], 1.0);
     }
 
     #[test]

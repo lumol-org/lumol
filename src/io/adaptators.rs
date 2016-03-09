@@ -150,9 +150,9 @@ impl ToChemfiles for System {
             let positions = try!(frame.positions_mut());
             for (i, p) in self.iter().enumerate() {
                 let pos = p.position;
-                positions[i][0] = pos.x as f32;
-                positions[i][1] = pos.y as f32;
-                positions[i][2] = pos.z as f32;
+                positions[i][0] = pos[0] as f32;
+                positions[i][1] = pos[1] as f32;
+                positions[i][2] = pos[2] as f32;
             }
         }
 
@@ -161,9 +161,9 @@ impl ToChemfiles for System {
             let velocities = try!(frame.velocities_mut());
             for (i, p) in self.iter().enumerate() {
                 let vel = p.velocity;
-                velocities[i][0] = vel.x as f32;
-                velocities[i][1] = vel.y as f32;
-                velocities[i][2] = vel.z as f32;
+                velocities[i][0] = vel[0] as f32;
+                velocities[i][1] = vel[1] as f32;
+                velocities[i][2] = vel[2] as f32;
             }
         }
 

@@ -251,17 +251,17 @@ impl Compute for Stress {
         for particle in system.iter() {
             let m = particle.mass;
             let vel = particle.velocity;
-            kinetic[(0, 0)] += m * vel.x * vel.x;
-            kinetic[(0, 1)] += m * vel.x * vel.y;
-            kinetic[(0, 2)] += m * vel.x * vel.z;
+            kinetic[(0, 0)] += m * vel[0] * vel[0];
+            kinetic[(0, 1)] += m * vel[0] * vel[1];
+            kinetic[(0, 2)] += m * vel[0] * vel[2];
 
-            kinetic[(1, 0)] += m * vel.y * vel.x;
-            kinetic[(1, 1)] += m * vel.y * vel.y;
-            kinetic[(1, 2)] += m * vel.y * vel.z;
+            kinetic[(1, 0)] += m * vel[1] * vel[0];
+            kinetic[(1, 1)] += m * vel[1] * vel[1];
+            kinetic[(1, 2)] += m * vel[1] * vel[2];
 
-            kinetic[(2, 0)] += m * vel.z * vel.x;
-            kinetic[(2, 1)] += m * vel.z * vel.y;
-            kinetic[(2, 2)] += m * vel.z * vel.z;
+            kinetic[(2, 0)] += m * vel[2] * vel[0];
+            kinetic[(2, 1)] += m * vel[2] * vel[1];
+            kinetic[(2, 2)] += m * vel[2] * vel[2];
         }
 
         let virial = Virial.compute(system);
@@ -322,13 +322,13 @@ mod test {
         assert_eq!(forces_tot, Vector3D::new(0.0, 0.0, 0.0));
 
         let force = units::from(30.0, "kJ/mol/A").unwrap();
-        assert_approx_eq!(res[0].x, force, EPS);
-        assert_approx_eq!(res[0].y, 0.0, EPS);
-        assert_approx_eq!(res[0].y, 0.0, EPS);
+        assert_approx_eq!(res[0][0], force, EPS);
+        assert_approx_eq!(res[0][1], 0.0, EPS);
+        assert_approx_eq!(res[0][1], 0.0, EPS);
 
-        assert_approx_eq!(res[1].x, -force, EPS);
-        assert_approx_eq!(res[1].y, 0.0, EPS);
-        assert_approx_eq!(res[1].y, 0.0, EPS);
+        assert_approx_eq!(res[1][0], -force, EPS);
+        assert_approx_eq!(res[1][1], 0.0, EPS);
+        assert_approx_eq!(res[1][1], 0.0, EPS);
     }
 
     #[test]

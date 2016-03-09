@@ -196,10 +196,10 @@ mod tests {
         // Finite difference computation of the force
         let e = wolf.energy(&system);
         let eps = 1e-9;
-        system[0].position.x += eps;
+        system[0].position[0] += eps;
 
         let e1 = wolf.energy(&system);
-        let force = wolf.forces(&system)[0].x;
+        let force = wolf.forces(&system)[0][0];
         assert_approx_eq!((e - e1)/eps, force, 1e-6);
     }
 }

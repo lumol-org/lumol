@@ -229,15 +229,15 @@ impl UnitCell {
         match self.celltype {
             CellType::Infinite => (),
             CellType::Orthorombic => {
-                vect.x = vect.x - f64::round(vect.x/self.a())*self.a();
-                vect.y = vect.y - f64::round(vect.y/self.b())*self.b();
-                vect.z = vect.z - f64::round(vect.z/self.c())*self.c();
+                vect[0] = vect[0] - f64::round(vect[0]/self.a())*self.a();
+                vect[1] = vect[1] - f64::round(vect[1]/self.b())*self.b();
+                vect[2] = vect[2] - f64::round(vect[2]/self.c())*self.c();
             },
             CellType::Triclinic => {
                 let mut fractional = self.fractional(vect);
-                fractional.x = fractional.x - f64::round(fractional.x);
-                fractional.y = fractional.y - f64::round(fractional.y);
-                fractional.z = fractional.z - f64::round(fractional.z);
+                fractional[0] = fractional[0] - f64::round(fractional[0]);
+                fractional[1] = fractional[1] - f64::round(fractional[1]);
+                fractional[2] = fractional[2] - f64::round(fractional[2]);
                 *vect = self.cartesian(&fractional);
             },
         }
@@ -536,9 +536,9 @@ mod tests {
         let mut v = Vector3D::new(1.0, 1.5, 6.0);
         cell.wrap_vector(&mut v);
         let res = Vector3D::new(1.0, 1.5, 1.0);
-        assert_approx_eq!(v.x, res.x);
-        assert_approx_eq!(v.y, res.y);
-        assert_approx_eq!(v.z, res.z);
+        assert_approx_eq!(v[0], res[0]);
+        assert_approx_eq!(v[1], res[1]);
+        assert_approx_eq!(v[2], res[2]);
     }
 
     #[test]

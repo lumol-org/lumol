@@ -42,6 +42,7 @@ pub fn system_from_xyz(content: &str) -> System {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use types::Vector3D;
 
     #[test]
     fn bonds() {
@@ -57,17 +58,11 @@ mod tests {
         assert_eq!(system[1].name(), "C");
         assert_eq!(system[2].name(), "O");
 
-        assert_eq!(system[0].position.x, 0.0);
-        assert_eq!(system[0].position.y, 0.0);
-        assert_eq!(system[0].position.z, -1.5);
+        assert_eq!(system[0].position, Vector3D::new(0.0, 0.0, -1.5));
 
-        assert_eq!(system[1].position.x, 0.0);
-        assert_eq!(system[1].position.y, 0.0);
-        assert_eq!(system[1].position.z, 0.0);
+        assert_eq!(system[1].position, Vector3D::new(0.0, 0.0, 0.0));
 
-        assert_eq!(system[2].position.x, 0.0);
-        assert_eq!(system[2].position.y, 0.0);
-        assert_eq!(system[2].position.z, 1.5);
+        assert_eq!(system[2].position, Vector3D::new(0.0, 0.0, 1.5));
 
         assert_eq!(system.molecules().len(), 1);
         assert_eq!(system.molecule(0).bonds().len(), 2);

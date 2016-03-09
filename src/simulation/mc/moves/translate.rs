@@ -72,9 +72,11 @@ impl MCMove for Translate {
             return false;
         }
 
-        self.delta.x = self.delta_range.sample(rng);
-        self.delta.y = self.delta_range.sample(rng);
-        self.delta.z = self.delta_range.sample(rng);
+        self.delta = Vector3D::new(
+            self.delta_range.sample(rng),
+            self.delta_range.sample(rng),
+            self.delta_range.sample(rng)
+        );
 
         self.newpos.clear();
         for i in system.molecule(self.molid) {
