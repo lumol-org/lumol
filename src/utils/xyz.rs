@@ -42,7 +42,7 @@ pub fn system_from_xyz(content: &str) -> System {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use types::Vector3D;
+    use types::{Vector3D, Zero};
 
     #[test]
     fn bonds() {
@@ -60,7 +60,7 @@ mod tests {
 
         assert_eq!(system[0].position, Vector3D::new(0.0, 0.0, -1.5));
 
-        assert_eq!(system[1].position, Vector3D::new(0.0, 0.0, 0.0));
+        assert_eq!(system[1].position, Vector3D::zero());
 
         assert_eq!(system[2].position, Vector3D::new(0.0, 0.0, 1.5));
 

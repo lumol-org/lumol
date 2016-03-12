@@ -2,7 +2,7 @@
 // Copyright (C) 2015-2016 G. Fraux — BSD license
 
 //! `Particle` type and manipulation.
-use types::Vector3D;
+use types::{Vector3D, Zero};
 use super::PeriodicTable;
 
 /// The Particle type hold basic data about a particle in the system. It is self
@@ -39,8 +39,8 @@ impl Particle {
             mass: mass as f64,
             charge: 0.0,
             kind: u16::max_value(),
-            position: Vector3D::new(0.0, 0.0, 0.0),
-            velocity: Vector3D::new(0.0, 0.0, 0.0)
+            position: Vector3D::zero(),
+            velocity: Vector3D::zero()
         }
     }
 

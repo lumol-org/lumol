@@ -9,7 +9,7 @@ use std::usize;
 use super::MCMove;
 use super::select_molecule;
 
-use types::Vector3D;
+use types::{Vector3D, Zero};
 use system::{System, EnergyCache};
 
 /// Monte-Carlo move for translating a molecule
@@ -47,7 +47,7 @@ impl Translate {
             moltype: moltype,
             molid: usize::MAX,
             newpos: Vec::new(),
-            delta: Vector3D::new(0.0, 0.0, 0.0),
+            delta: Vector3D::zero(),
             delta_range: Range::new(-dr, dr),
         }
     }

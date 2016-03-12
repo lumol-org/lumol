@@ -476,7 +476,7 @@ impl GlobalPotential for Ewald {
 
     fn forces(&self, system: &System) -> Vec<Vector3D> {
         self.precompute(system.cell());
-        let mut res = vec![Vector3D::new(0.0, 0.0, 0.0); system.size()];
+        let mut res = vec![Vector3D::zero(); system.size()];
         self.real_space_forces(system, &mut res);
         /* No self force */
         self.kspace_forces(system, &mut res);
@@ -506,7 +506,7 @@ impl DefaultGlobalCache for Ewald {}
 mod tests {
     pub use super::*;
     use system::{System, UnitCell, Particle};
-    use types::Vector3D;
+    use types::{Vector3D, Zero};
     use potentials::GlobalPotential;
 
     const E_BRUTE_FORCE: f64 = -0.09262397663346732;
@@ -516,7 +516,7 @@ mod tests {
 
         system.add_particle(Particle::new("Cl"));
         system[0].charge = -1.0;
-        system[0].position = Vector3D::new(0.0, 0.0, 0.0);
+        system[0].position = Vector3D::zero();
 
         system.add_particle(Particle::new("Na"));
         system[1].charge = 1.0;

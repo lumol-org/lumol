@@ -68,7 +68,7 @@ impl Wolf {
     fn force_pair(&self, qi: f64, qj: f64, rij: Vector3D) -> Vector3D {
         let d = rij.norm();
         if d > self.cutoff {
-            return Vector3D::new(0.0, 0.0, 0.0);
+            return Vector3D::zero();
         }
         let factor = erfc(self.alpha*d)/(d*d) + 2.0*self.alpha/f64::sqrt(PI) * f64::exp(-self.alpha*self.alpha*d*d)/d;
         return qi * qj * (factor - self.force_cst) * rij.normalized() / ELCC;
@@ -100,7 +100,7 @@ impl GlobalPotential for Wolf {
 
     fn forces(&self, system: &System) -> Vec<Vector3D> {
         let natoms = system.size();
-        let mut res = vec![Vector3D::new(0.0, 0.0, 0.0); natoms];
+        let mut res = vec![Vector3D::zero(); natoms];
         for i in 0..natoms {
             let qi = system[i].charge;
             for j in i+1..natoms {
@@ -154,7 +154,7 @@ impl DefaultGlobalCache for Wolf {}
 mod tests {
     pub use super::*;
     use system::{System, UnitCell, Particle};
-    use types::Vector3D;
+    use types::{Vector3D, Zero};
     use potentials::GlobalPotential;
 
     const E_BRUTE_FORCE: f64 = -0.09262397663346732;
@@ -164,7 +164,7 @@ mod tests {
 
         system.add_particle(Particle::new("Cl"));
         system[0].charge = -1.0;
-        system[0].position = Vector3D::new(0.0, 0.0, 0.0);
+        system[0].position = Vector3D::zero();
 
         system.add_particle(Particle::new("Na"));
         system[1].charge = 1.0;

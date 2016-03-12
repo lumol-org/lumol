@@ -196,7 +196,7 @@ mod tests {
         let mut system = System::from_cell(UnitCell::cubic(10.0));;
 
         system.add_particle(Particle::new("F"));
-        system[0].position = Vector3D::new(0.0, 0.0, 0.0);
+        system[0].position = Vector3D::zero();
 
         system.add_particle(Particle::new("F"));
         system[1].position = Vector3D::new(1.3, 0.0, 0.0);

@@ -4,7 +4,7 @@
 //! 3-dimmensional vector type
 use std::ops::{Add, Sub, Neg, Mul, Div, BitXor, Index, IndexMut};
 use std::cmp::PartialEq;
-use super::matrix::Matrix3;
+use types::{Matrix3, Zero};
 
 /// A simple 3-dimensional vector type, storing three `f64`.
 ///
@@ -156,6 +156,16 @@ impl IndexMut<usize> for Vector3D {
     #[inline]
     fn index_mut(&mut self, index: usize) -> &mut f64 {
         &mut self.0[index]
+    }
+}
+
+impl Zero for Vector3D {
+    fn zero() -> Vector3D {
+        Vector3D::new(0.0, 0.0, 0.0)
+    }
+
+    fn is_zero(&self) -> bool {
+        self.norm2() == 0.0
     }
 }
 

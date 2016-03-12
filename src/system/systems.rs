@@ -806,7 +806,7 @@ mod tests {
         system.add_particle(Particle::new("H"));
 
         system[0].position = Vector3D::new(9.0, 0.0, 0.0);
-        system[1].position = Vector3D::new(0.0, 0.0, 0.0);
+        system[1].position = Vector3D::zero();
         assert_eq!(system.distance(0, 1), 1.0);
 
         system.set_cell(UnitCell::new());

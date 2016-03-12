@@ -24,7 +24,7 @@ impl Compute for Forces {
     type Output = Vec<Vector3D>;
     fn compute(&self, system: &System) -> Vec<Vector3D> {
         let natoms = system.size();
-        let mut res = vec![Vector3D::new(0.0, 0.0, 0.0); natoms];
+        let mut res = vec![Vector3D::zero(); natoms];
 
         for i in 0..system.size() {
             for j in (i+1)..system.size() {
@@ -296,7 +296,7 @@ mod test {
         let mut system = System::from_cell(UnitCell::cubic(10.0));;
 
         system.add_particle(Particle::new("F"));
-        system[0].position = Vector3D::new(0.0, 0.0, 0.0);
+        system[0].position = Vector3D::zero();
 
         system.add_particle(Particle::new("F"));
         system[1].position = Vector3D::new(1.3, 0.0, 0.0);
@@ -319,7 +319,7 @@ mod test {
         let res = Forces.compute(system);
 
         let forces_tot = res[0] + res[1];
-        assert_eq!(forces_tot, Vector3D::new(0.0, 0.0, 0.0));
+        assert_eq!(forces_tot, Vector3D::zero());
 
         let force = units::from(30.0, "kJ/mol/A").unwrap();
         assert_approx_eq!(res[0][0], force, EPS);
@@ -337,7 +337,7 @@ mod test {
         system.add_particle(Particle::new("F"));
         system.add_particle(Particle::new("F"));
 
-        system[0].position = Vector3D::new(0.0, 0.0, 0.0);
+        system[0].position = Vector3D::zero();
         system[1].position = Vector3D::new(1.2, 0.0, 0.0);
         system[2].position = Vector3D::new(1.2, 1.2, 0.0);
         system[3].position = Vector3D::new(2.4, 1.2, 0.0);
@@ -391,7 +391,7 @@ mod test {
         system.add_particle(Particle::new("F"));
         system.add_particle(Particle::new("F"));
 
-        system[0].position = Vector3D::new(0.0, 0.0, 0.0);
+        system[0].position = Vector3D::zero();
         system[1].position = Vector3D::new(1.2, 0.0, 0.0);
         system[2].position = Vector3D::new(1.2, 1.2, 0.0);
         system[3].position = Vector3D::new(2.4, 1.2, 0.0);

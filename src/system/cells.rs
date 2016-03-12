@@ -412,9 +412,9 @@ mod tests {
         let cell = UnitCell::new();
         assert_eq!(cell.celltype(), CellType::Infinite);
 
-        assert_eq!(cell.vect_a(), Vector3D::new(0.0, 0.0, 0.0));
-        assert_eq!(cell.vect_b(), Vector3D::new(0.0, 0.0, 0.0));
-        assert_eq!(cell.vect_c(), Vector3D::new(0.0, 0.0, 0.0));
+        assert_eq!(cell.vect_a(), Vector3D::zero());
+        assert_eq!(cell.vect_b(), Vector3D::zero());
+        assert_eq!(cell.vect_c(), Vector3D::zero());
 
         assert_eq!(cell.a(), 0.0);
         assert_eq!(cell.b(), 0.0);
@@ -546,7 +546,7 @@ mod tests {
     fn distances() {
         // Orthorombic unit cell
         let cell = UnitCell::ortho(3.0, 4.0, 5.0);
-        let u = &Vector3D::new(0.0, 0.0, 0.0);
+        let u = &Vector3D::zero();
         let v = &Vector3D::new(1.0, 2.0, 6.0);
         assert_eq!(cell.distance(u, v), f64::sqrt(6.0));
 
@@ -606,12 +606,12 @@ mod tests {
         let cell = UnitCell::new();
 
         let a = Vector3D::new(1.0, 0.0, 0.0);
-        let b = Vector3D::new(0.0, 0.0, 0.0);
+        let b = Vector3D::zero();
         let c = Vector3D::new(0.0, 1.0, 0.0);
         assert_eq!(cell.angle(&a, &b, &c), PI / 2.0);
 
         let a = Vector3D::new(1.0, 0.0, 0.0);
-        let b = Vector3D::new(0.0, 0.0, 0.0);
+        let b = Vector3D::zero();
         let c = Vector3D::new(f64::cos(1.877), f64::sin(1.877), 0.0);
         assert_eq!(cell.angle(&a, &b, &c), 1.877);
     }
@@ -651,7 +651,7 @@ mod tests {
     fn dihedrals() {
         let cell = UnitCell::new();
 
-        let a = Vector3D::new(0.0, 0.0, 0.0);
+        let a = Vector3D::zero();
         let b = Vector3D::new(1.0, 0.0, 0.0);
         let c = Vector3D::new(1.0, 1.0, 0.0);
         let d = Vector3D::new(2.0, 1.0, 0.0);

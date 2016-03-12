@@ -9,7 +9,7 @@ use std::f64;
 use super::MCMove;
 use super::select_molecule;
 
-use types::{Matrix3, Vector3D};
+use types::{Matrix3, Vector3D, Zero};
 use system::{System, EnergyCache};
 
 /// Monte-Carlo move for rotating a rigid molecule
@@ -116,7 +116,7 @@ fn rotate_around_axis(positions: &mut [Vector3D], masses: &[f64], axis: Vector3D
     debug_assert!(positions.len() == masses.len());
     // Get center of mass (com) of the molecule
     let total_mass = masses.iter().fold(0.0, |total, m| total + m);
-    let com = positions.iter().zip(masses).fold(Vector3D::new(0.0, 0.0, 0.0),
+    let com = positions.iter().zip(masses).fold(Vector3D::zero(),
         |com, (&position, &mass)| com + position * mass / total_mass
     );
 

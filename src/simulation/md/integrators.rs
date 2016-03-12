@@ -1,6 +1,6 @@
 // Cymbalum, an extensible molecular simulation engine
 // Copyright (C) 2015-2016 G. Fraux — BSD license
-use types::{Vector3D, Matrix3, One};
+use types::{Vector3D, Matrix3, One, Zero};
 use system::System;
 
 /// The Integrator trait define integrators interface for Molecular Dynamics.
@@ -35,7 +35,7 @@ impl VelocityVerlet {
 
 impl Integrator for VelocityVerlet {
     fn setup(&mut self, system: &System) {
-        self.accelerations = vec![Vector3D::new(0.0, 0.0, 0.0); system.size()];
+        self.accelerations = vec![Vector3D::zero(); system.size()];
     }
 
     fn integrate(&mut self, system: &mut System) {
@@ -78,7 +78,7 @@ impl Verlet {
 
 impl Integrator for Verlet {
     fn setup(&mut self, system: &System) {
-        self.prevpos = vec![Vector3D::new(0.0, 0.0, 0.0); system.size()];
+        self.prevpos = vec![Vector3D::zero(); system.size()];
 
         let dt = self.timestep;
         // Approximate the positions at t - ∆t
@@ -129,7 +129,7 @@ impl LeapFrog {
 
 impl Integrator for LeapFrog {
     fn setup(&mut self, system: &System) {
-        self.accelerations = vec![Vector3D::new(0.0, 0.0, 0.0); system.size()];
+        self.accelerations = vec![Vector3D::zero(); system.size()];
     }
 
     fn integrate(&mut self, system: &mut System) {
@@ -196,7 +196,7 @@ impl BerendsenBarostat {
 
 impl Integrator for BerendsenBarostat {
     fn setup(&mut self, system: &System) {
-        self.accelerations = vec![Vector3D::new(0.0, 0.0, 0.0); system.size()];
+        self.accelerations = vec![Vector3D::zero(); system.size()];
     }
 
     fn integrate(&mut self, system: &mut System) {
@@ -272,7 +272,7 @@ impl AnisoBerendsenBarostat {
 
 impl Integrator for AnisoBerendsenBarostat {
     fn setup(&mut self, system: &System) {
-        self.accelerations = vec![Vector3D::new(0.0, 0.0, 0.0); system.size()];
+        self.accelerations = vec![Vector3D::zero(); system.size()];
     }
 
     fn integrate(&mut self, system: &mut System) {

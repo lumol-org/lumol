@@ -107,7 +107,7 @@ impl Control for RemoveTranslation {
         let total_mass = system.iter().fold(0.0, |total_mass, particle| total_mass + particle.mass);
 
         let total_velocity = system.iter().fold(
-            Vector3D::new(0.0, 0.0, 0.0),
+            Vector3D::zero(),
             |total_velocity, particle| total_velocity + particle.velocity * particle.mass / total_mass
         );
 
@@ -125,7 +125,7 @@ impl Control for RemoveRotation {
     fn control(&mut self, system: &mut System) {
         let total_mass = system.iter().fold(0.0, |total_mass, particle| total_mass + particle.mass);
         let com = system.iter().fold(
-            Vector3D::new(0.0, 0.0, 0.0),
+            Vector3D::zero(),
             |com, particle| {
                 com + particle.position * particle.mass / total_mass
             }
@@ -133,7 +133,7 @@ impl Control for RemoveRotation {
 
         // Angular momentum
         let moment = system.iter().fold(
-            Vector3D::new(0.0, 0.0, 0.0),
+            Vector3D::zero(),
             |moment, particle| {
                 let delta = particle.position - com;
                 moment + particle.mass * (delta ^ particle.velocity)
@@ -235,7 +235,7 @@ mod tests {
         let mut system = System::from_cell(UnitCell::cubic(20.0));
         system.add_particle(Particle::new("Ag"));
         system.add_particle(Particle::new("Ag"));
-        system[0].position = Vector3D::new(0.0, 0.0, 0.0);
+        system[0].position = Vector3D::zero();
         system[1].position = Vector3D::new(1.0, 1.0, 1.0);
         system[0].velocity = Vector3D::new(1.0, 2.0, 0.0);
         system[1].velocity = Vector3D::new(1.0, 0.0, 0.0);
@@ -251,7 +251,7 @@ mod tests {
         let mut system = System::from_cell(UnitCell::cubic(20.0));
         system.add_particle(Particle::new("Ag"));
         system.add_particle(Particle::new("Ag"));
-        system[0].position = Vector3D::new(0.0, 0.0, 0.0);
+        system[0].position = Vector3D::zero();
         system[1].position = Vector3D::new(1.0, 0.0, 0.0);
         system[0].velocity = Vector3D::new(0.0, 1.0, 0.0);
         system[1].velocity = Vector3D::new(0.0, -1.0, 2.0);

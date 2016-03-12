@@ -9,7 +9,7 @@ fn main() {
     let alpha = units::from(50.0, "deg").unwrap();
 
     system.add_particle(Particle::new("O"));
-    system[0].position = Vector3D::new(0.0, 0.0, 0.0);
+    system[0].position = Vector3D::zero();
     system.add_particle(Particle::new("H"));
     system[1].position = Vector3D::new(1.2*f64::cos(alpha), 1.2*f64::sin(alpha), 0.0);
     system.add_particle(Particle::new("H"));
