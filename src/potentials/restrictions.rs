@@ -35,11 +35,18 @@ pub enum PairRestriction {
     },
 }
 
+/// Restriction information attached to a pair of Particles in a System
+pub struct RestrictionInfo {
+    /// Is this pair excluded
+    pub excluded: bool,
+    /// Scaling for this restrictions
+    pub scaling: f64
+}
+
 impl PairRestriction {
-    /// Check wether this restriction exclude the pair `(i, j)` from the
-    /// interactions.
-    pub fn is_excluded_pair(&self, system: &System, i: usize, j: usize) -> bool {
-        match *self {
+    /// Get the restrictions information for the pair `(i, j)` in the `system`
+    pub fn informations(&self, system: &System, i: usize, j: usize) -> RestrictionInfo {
+        let excluded = match *self {
             PairRestriction::None => false,
             PairRestriction::InterMolecular => {
                 system.are_in_same_molecule(i, j)
@@ -59,22 +66,21 @@ impl PairRestriction {
                 let distance = system.shortest_path(i, j);
                 distance == 2 || distance == 3 || distance == 4
             }
-        }
-    }
+        };
 
-    /// Get the scaling factor for the pair `(i, j)`
-    pub fn scaling(&self, system: &System, i: usize, j: usize) -> f64 {
-        match *self {
-            PairRestriction::None           | PairRestriction::Exclude12      |
-            PairRestriction::Exclude13      | PairRestriction::Exclude14      |
-            PairRestriction::InterMolecular | PairRestriction::IntraMolecular => 1.0,
-            PairRestriction::Scale14{scaling} => {
-                if system.are_in_same_molecule(i, j) && system.shortest_path(i, j) == 4 {
-                        scaling
-                } else {
-                    1.0
-                }    
+        let scaling = if let &PairRestriction::Scale14{scaling} = self {
+            if system.shortest_path(i, j) == 4 {
+                scaling
+            } else {
+                1.0
             }
+        } else {
+            1.0
+        };
+
+        RestrictionInfo {
+            excluded: excluded,
+            scaling: scaling
         }
     }
 }
@@ -114,8 +120,9 @@ mod tests {
         let system = testing_system();
         for i in 0..10 {
             for j in 0..10 {
-                assert_eq!(restrictions.is_excluded_pair(&system, i, j), false);
-                assert_eq!(restrictions.scaling(&system, i, j), 1.0);
+                let info = restrictions.informations(&system, i, j);
+                assert_eq!(info.excluded, false);
+                assert_eq!(info.scaling, 1.0);
             }
         }
     }
@@ -126,11 +133,9 @@ mod tests {
         let system = testing_system();
         for i in 0..10 {
             for j in 0..10 {
-                assert_eq!(restrictions.scaling(&system, i, j), 1.0);
-                assert_eq!(
-                    restrictions.is_excluded_pair(&system, i, j),
-                    !system.are_in_same_molecule(i, j)
-                );
+                let info = restrictions.informations(&system, i, j);
+                assert_eq!(info.excluded, !system.are_in_same_molecule(i, j));
+                assert_eq!(info.scaling, 1.0);
             }
         }
     }
@@ -141,11 +146,9 @@ mod tests {
         let system = testing_system();
         for i in 0..10 {
             for j in 0..10 {
-                assert_eq!(restrictions.scaling(&system, i, j), 1.0);
-                assert_eq!(
-                    restrictions.is_excluded_pair(&system, i, j),
-                    system.are_in_same_molecule(i, j)
-                );
+                let info = restrictions.informations(&system, i, j);
+                assert_eq!(info.excluded, system.are_in_same_molecule(i, j));
+                assert_eq!(info.scaling, 1.0);
             }
         }
     }
@@ -156,19 +159,19 @@ mod tests {
         let system = testing_system();
         for i in 0..10 {
             for j in 0..10 {
-                assert_eq!(restrictions.scaling(&system, i, j), 1.0);
+                assert_eq!(restrictions.informations(&system, i, j).scaling, 1.0);
             }
         }
 
         // Bonds
-        assert_eq!(restrictions.is_excluded_pair(&system, 0, 1), true);
-        assert_eq!(restrictions.is_excluded_pair(&system, 1, 2), true);
-        assert_eq!(restrictions.is_excluded_pair(&system, 7, 8), true);
+        assert_eq!(restrictions.informations(&system, 0, 1).excluded, true);
+        assert_eq!(restrictions.informations(&system, 1, 2).excluded, true);
+        assert_eq!(restrictions.informations(&system, 7, 8).excluded, true);
 
         // Not excluded
-        assert_eq!(restrictions.is_excluded_pair(&system, 0, 8), false);
-        assert_eq!(restrictions.is_excluded_pair(&system, 0, 3), false);
-        assert_eq!(restrictions.is_excluded_pair(&system, 8, 2), false);
+        assert_eq!(restrictions.informations(&system, 0, 8).excluded, false);
+        assert_eq!(restrictions.informations(&system, 0, 3).excluded, false);
+        assert_eq!(restrictions.informations(&system, 8, 2).excluded, false);
     }
 
     #[test]
@@ -177,23 +180,23 @@ mod tests {
         let system = testing_system();
         for i in 0..10 {
             for j in 0..10 {
-                assert_eq!(restrictions.scaling(&system, i, j), 1.0);
+                assert_eq!(restrictions.informations(&system, i, j).scaling, 1.0);
             }
         }
 
         // Bonds
-        assert_eq!(restrictions.is_excluded_pair(&system, 0, 1), true);
-        assert_eq!(restrictions.is_excluded_pair(&system, 7, 6), true);
+        assert_eq!(restrictions.informations(&system, 0, 1).excluded, true);
+        assert_eq!(restrictions.informations(&system, 7, 6).excluded, true);
 
         // Angles
-        assert_eq!(restrictions.is_excluded_pair(&system, 0, 2), true);
-        assert_eq!(restrictions.is_excluded_pair(&system, 1, 3), true);
-        assert_eq!(restrictions.is_excluded_pair(&system, 7, 9), true);
+        assert_eq!(restrictions.informations(&system, 0, 2).excluded, true);
+        assert_eq!(restrictions.informations(&system, 1, 3).excluded, true);
+        assert_eq!(restrictions.informations(&system, 7, 9).excluded, true);
 
         // Not excluded
-        assert_eq!(restrictions.is_excluded_pair(&system, 4, 5), false);
-        assert_eq!(restrictions.is_excluded_pair(&system, 0, 3), false);
-        assert_eq!(restrictions.is_excluded_pair(&system, 8, 2), false);
+        assert_eq!(restrictions.informations(&system, 4, 5).excluded, false);
+        assert_eq!(restrictions.informations(&system, 0, 3).excluded, false);
+        assert_eq!(restrictions.informations(&system, 8, 2).excluded, false);
     }
 
     #[test]
@@ -202,28 +205,28 @@ mod tests {
         let system = testing_system();
         for i in 0..10 {
             for j in 0..10 {
-                assert_eq!(restrictions.scaling(&system, i, j), 1.0);
+                assert_eq!(restrictions.informations(&system, i, j).scaling, 1.0);
             }
         }
 
         // Bonds
-        assert_eq!(restrictions.is_excluded_pair(&system, 0, 1), true);
-        assert_eq!(restrictions.is_excluded_pair(&system, 7, 6), true);
+        assert_eq!(restrictions.informations(&system, 0, 1).excluded, true);
+        assert_eq!(restrictions.informations(&system, 7, 6).excluded, true);
 
         // Angles
-        assert_eq!(restrictions.is_excluded_pair(&system, 0, 2), true);
-        assert_eq!(restrictions.is_excluded_pair(&system, 1, 3), true);
-        assert_eq!(restrictions.is_excluded_pair(&system, 7, 9), true);
+        assert_eq!(restrictions.informations(&system, 0, 2).excluded, true);
+        assert_eq!(restrictions.informations(&system, 1, 3).excluded, true);
+        assert_eq!(restrictions.informations(&system, 7, 9).excluded, true);
 
         // Dihedrals
-        assert_eq!(restrictions.is_excluded_pair(&system, 0, 3), true);
-        assert_eq!(restrictions.is_excluded_pair(&system, 1, 4), true);
-        assert_eq!(restrictions.is_excluded_pair(&system, 6, 9), true);
+        assert_eq!(restrictions.informations(&system, 0, 3).excluded, true);
+        assert_eq!(restrictions.informations(&system, 1, 4).excluded, true);
+        assert_eq!(restrictions.informations(&system, 6, 9).excluded, true);
 
         // Not excluded
-        assert_eq!(restrictions.is_excluded_pair(&system, 4, 5), false);
-        assert_eq!(restrictions.is_excluded_pair(&system, 0, 4), false);
-        assert_eq!(restrictions.is_excluded_pair(&system, 8, 2), false);
+        assert_eq!(restrictions.informations(&system, 4, 5).excluded, false);
+        assert_eq!(restrictions.informations(&system, 0, 4).excluded, false);
+        assert_eq!(restrictions.informations(&system, 8, 2).excluded, false);
     }
 
     #[test]
@@ -233,30 +236,30 @@ mod tests {
         for i in 0..10 {
             for j in 0..10 {
                 if system.shortest_path(i, j) == 4 {
-                    assert_eq!(restrictions.scaling(&system, i, j), 0.8);
+                    assert_eq!(restrictions.informations(&system, i, j).scaling, 0.8);
                 } else {
-                    assert_eq!(restrictions.scaling(&system, i, j), 1.0);
+                    assert_eq!(restrictions.informations(&system, i, j).scaling, 1.0);
                 }
             }
         }
 
         // Bonds
-        assert_eq!(restrictions.is_excluded_pair(&system, 0, 1), true);
-        assert_eq!(restrictions.is_excluded_pair(&system, 7, 6), true);
+        assert_eq!(restrictions.informations(&system, 0, 1).excluded, true);
+        assert_eq!(restrictions.informations(&system, 7, 6).excluded, true);
 
         // Angles
-        assert_eq!(restrictions.is_excluded_pair(&system, 0, 2), true);
-        assert_eq!(restrictions.is_excluded_pair(&system, 1, 3), true);
-        assert_eq!(restrictions.is_excluded_pair(&system, 7, 9), true);
+        assert_eq!(restrictions.informations(&system, 0, 2).excluded, true);
+        assert_eq!(restrictions.informations(&system, 1, 3).excluded, true);
+        assert_eq!(restrictions.informations(&system, 7, 9).excluded, true);
 
         // Dihedrals
-        assert_eq!(restrictions.is_excluded_pair(&system, 0, 3), true);
-        assert_eq!(restrictions.is_excluded_pair(&system, 1, 4), true);
-        assert_eq!(restrictions.is_excluded_pair(&system, 6, 9), true);
+        assert_eq!(restrictions.informations(&system, 0, 3).excluded, true);
+        assert_eq!(restrictions.informations(&system, 1, 4).excluded, true);
+        assert_eq!(restrictions.informations(&system, 6, 9).excluded, true);
 
         // Not excluded
-        assert_eq!(restrictions.is_excluded_pair(&system, 4, 5), false);
-        assert_eq!(restrictions.is_excluded_pair(&system, 0, 4), false);
-        assert_eq!(restrictions.is_excluded_pair(&system, 8, 2), false);
+        assert_eq!(restrictions.informations(&system, 4, 5).excluded, false);
+        assert_eq!(restrictions.informations(&system, 0, 4).excluded, false);
+        assert_eq!(restrictions.informations(&system, 8, 2).excluded, false);
     }
 }

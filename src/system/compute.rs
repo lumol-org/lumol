@@ -32,11 +32,11 @@ impl Compute for Forces {
                 let dn = d.normalized();
                 let r = d.norm();
                 for &(ref potential, ref restriction) in system.pair_potentials(i, j) {
-                    if !restriction.is_excluded_pair(system, i, j) {
-                        let s = restriction.scaling(system, i, j);
-                        let f = s * potential.force(r);
-                        res[i] = res[i] + f * dn;
-                        res[j] = res[j] - f * dn;
+                    let info = restriction.informations(system, i, j);
+                    if !info.excluded {
+                        let force = info.scaling * potential.force(r);
+                        res[i] = res[i] + force * dn;
+                        res[j] = res[j] - force * dn;
                     }
                 }
             }
@@ -177,10 +177,10 @@ impl Compute for Virial {
         for i in 0..system.size() {
             for j in (i+1)..system.size() {
                 for &(ref potential, ref restriction) in system.pair_potentials(i, j) {
-                    if !restriction.is_excluded_pair(system, i, j) {
-                        let s = restriction.scaling(system, i, j);
+                    let info = restriction.informations(system, i, j);
+                    if !info.excluded {
                         let d = system.wraped_vector(i, j);
-                        res = res + 2.0 * s * potential.virial(&d);
+                        res = res + 2.0 * info.scaling * potential.virial(&d);
                     }
                 }
             }

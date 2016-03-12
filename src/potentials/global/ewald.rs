@@ -137,8 +137,9 @@ impl Ewald {
         let mut energy = 0.0;
         for i in 0..natoms {
             for j in (i + 1)..natoms {
-                if self.restriction.is_excluded_pair(system, i, j) {continue}
-                let s = self.restriction.scaling(system, i, j);
+                let info = self.restriction.informations(system, i, j);
+                if info.excluded {continue}
+                let s = info.scaling;
                 assert!(s == 1.0, "Scaling restriction scheme using Ewald are not implemented");
 
                 let r = system.distance(i, j);
@@ -157,8 +158,9 @@ impl Ewald {
 
         for i in 0..natoms {
             for j in (i + 1)..natoms {
-                if self.restriction.is_excluded_pair(system, i, j) {continue}
-                let s = self.restriction.scaling(system, i, j);
+                let info = self.restriction.informations(system, i, j);
+                if info.excluded {continue}
+                let s = info.scaling;
                 assert!(s == 1.0, "Scaling restriction scheme using Ewald are not implemented");
 
                 let rij = system.wraped_vector(i, j);
@@ -188,8 +190,9 @@ impl Ewald {
         let mut res = Matrix3::zero();
         for i in 0..natoms {
             for j in (i + 1)..natoms {
-                if self.restriction.is_excluded_pair(system, i, j) {continue}
-                let s = self.restriction.scaling(system, i, j);
+                let info = self.restriction.informations(system, i, j);
+                if info.excluded {continue}
+                let s = info.scaling;
                 assert!(s == 1.0, "Scaling restriction scheme using Ewald are not implemented");
 
                 let rij = system.wraped_vector(i, j);
@@ -394,8 +397,9 @@ impl Ewald {
             for j in 0..natoms {
                 if i == j {continue}
                 // Only account for excluded pairs
-                if !self.restriction.is_excluded_pair(system, i, j) {continue}
-                let s = self.restriction.scaling(system, i, j);
+                let info = self.restriction.informations(system, i, j);
+                if !info.excluded {continue}
+                let s = info.scaling;
 
                 let qj = system[j].charge;
                 let r = system.distance(i, j);
@@ -417,8 +421,9 @@ impl Ewald {
             for j in 0..natoms {
                 if i == j {continue}
                 // Only account for excluded pairs
-                if !self.restriction.is_excluded_pair(system, i, j) {continue}
-                let s = self.restriction.scaling(system, i, j);
+                let info = self.restriction.informations(system, i, j);
+                if !info.excluded {continue}
+                let s = info.scaling;
 
                 let qj = system[j].charge;
                 let rij = system.wraped_vector(i, j);
@@ -448,8 +453,9 @@ impl Ewald {
             for j in 0..natoms {
                 if i == j {continue}
                 // Only account for excluded pairs
-                if !self.restriction.is_excluded_pair(system, i, j) {continue}
-                let s = self.restriction.scaling(system, i, j);
+                let info = self.restriction.informations(system, i, j);
+                if !info.excluded {continue}
+                let s = info.scaling;
 
                 let qj = system[j].charge;
                 let rij = system.wraped_vector(i, j);

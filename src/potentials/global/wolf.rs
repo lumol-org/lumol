@@ -8,7 +8,7 @@ use std::f64::consts::PI;
 use system::System;
 use types::{Matrix3, Vector3D, Zero};
 use constants::ELCC;
-use potentials::PairRestriction;
+use potentials::{PairRestriction, RestrictionInfo};
 
 use super::{GlobalPotential, CoulombicPotential, DefaultGlobalCache};
 
@@ -49,11 +49,11 @@ impl Wolf {
     /// Compute the energy for the pair of particles with charge `qi` and `qj`,
     /// at the distance of `rij`.
     #[inline]
-    fn energy_pair(&self, qi: f64, qj: f64, rij: f64) -> f64 {
-        if rij > self.cutoff {
+    fn energy_pair(&self, info: RestrictionInfo, qi: f64, qj: f64, rij: f64) -> f64 {
+        if rij > self.cutoff || info.excluded {
             return 0.0;
         }
-        qi * qj * (erfc(self.alpha*rij)/rij - self.energy_cst) / ELCC
+        info.scaling * qi * qj * (erfc(self.alpha*rij)/rij - self.energy_cst) / ELCC
     }
 
     /// Compute the energy for self interaction of a particle with charge `qi`
@@ -65,13 +65,13 @@ impl Wolf {
     /// Compute the force for self the pair of particles with charge `qi` and
     /// `qj`, at the distance of `rij`.
     #[inline]
-    fn force_pair(&self, qi: f64, qj: f64, rij: Vector3D) -> Vector3D {
+    fn force_pair(&self, info: RestrictionInfo, qi: f64, qj: f64, rij: Vector3D) -> Vector3D {
         let d = rij.norm();
-        if d > self.cutoff {
+        if d > self.cutoff || info.excluded {
             return Vector3D::zero();
         }
         let factor = erfc(self.alpha*d)/(d*d) + 2.0*self.alpha/f64::sqrt(PI) * f64::exp(-self.alpha*self.alpha*d*d)/d;
-        return qi * qj * (factor - self.force_cst) * rij.normalized() / ELCC;
+        return info.scaling * qi * qj * (factor - self.force_cst) * rij.normalized() / ELCC;
     }
 }
 
@@ -81,16 +81,14 @@ impl GlobalPotential for Wolf {
         let mut res = 0.0;
         for i in 0..natoms {
             let qi = system[i].charge;
+            if qi == 0.0 {continue}
             for j in i+1..natoms {
                 let qj = system[j].charge;
-                if qi*qj == 0.0 {
-                    continue;
-                }
-                if !self.restriction.is_excluded_pair(system, i, j) {
-                    let s = self.restriction.scaling(system, i, j);
-                    let rij = system.distance(i, j);
-                    res += s * self.energy_pair(qi, qj, rij);
-                }
+                if qj == 0.0 {continue}
+
+                let info = self.restriction.informations(system, i, j);
+                let rij = system.distance(i, j);
+                res += self.energy_pair(info, qi, qj, rij);
             }
             // Remove self term
             res -= self.energy_self(qi);
@@ -103,18 +101,16 @@ impl GlobalPotential for Wolf {
         let mut res = vec![Vector3D::zero(); natoms];
         for i in 0..natoms {
             let qi = system[i].charge;
+            if qi == 0.0 {continue}
             for j in i+1..natoms {
                 let qj = system[j].charge;
-                if qi*qj == 0.0 {
-                    continue;
-                }
-                if !self.restriction.is_excluded_pair(system, i, j) {
-                    let s = self.restriction.scaling(system, i, j);
-                    let rij = system.wraped_vector(i, j);
-                    let force = s * self.force_pair(qi, qj, rij);
-                    res[i] = res[i] + force;
-                    res[j] = res[j] - force;
-                }
+                if qj == 0.0 {continue}
+
+                let info = self.restriction.informations(system, i, j);
+                let rij = system.wraped_vector(i, j);
+                let force = self.force_pair(info, qi, qj, rij);
+                res[i] = res[i] + force;
+                res[j] = res[j] - force;
             }
         }
         return res;
@@ -125,17 +121,15 @@ impl GlobalPotential for Wolf {
         let mut res = Matrix3::zero();
         for i in 0..natoms {
             let qi = system[i].charge;
+            if qi == 0.0 {continue}
             for j in i+1..natoms {
                 let qj = system[j].charge;
-                if qi*qj == 0.0 {
-                    continue;
-                }
-                if !self.restriction.is_excluded_pair(system, i, j) {
-                    let s = self.restriction.scaling(system, i, j);
-                    let rij = system.wraped_vector(i, j);
-                    let force = s * self.force_pair(qi, qj, rij);
-                    res = res + force.tensorial(&rij);
-                }
+                if qj == 0.0 {continue}
+
+                let info = self.restriction.informations(system, i, j);
+                let rij = system.wraped_vector(i, j);
+                let force = self.force_pair(info, qi, qj, rij);
+                res = res + force.tensorial(&rij);
             }
         }
         return res;

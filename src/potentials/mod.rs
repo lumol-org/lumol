@@ -19,7 +19,7 @@ pub use self::computations::Computation;
 pub use self::computations::{TableComputation, CutoffComputation};
 
 pub mod restrictions;
-pub use self::restrictions::PairRestriction;
+pub use self::restrictions::{PairRestriction, RestrictionInfo};
 
 pub mod global;
 pub use self::global::{GlobalPotential, CoulombicPotential};

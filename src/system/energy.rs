@@ -28,9 +28,9 @@ impl<'a> EnergyEvaluator<'a> {
     pub fn pair(&self, r: f64, i: usize, j: usize) -> f64 {
         let mut energy = 0.0;
         for &(ref potential, ref restriction) in self.system.pair_potentials(i, j) {
-            if !restriction.is_excluded_pair(self.system, i, j) {
-                let s = restriction.scaling(self.system, i, j);
-                energy += s * potential.energy(r);
+            let info = restriction.informations(self.system, i, j);
+            if !info.excluded {
+                energy += info.scaling * potential.energy(r);
             }
         }
         return energy;
