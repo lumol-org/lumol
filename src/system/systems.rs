@@ -12,6 +12,7 @@ use std::slice;
 use std::cmp::{min, max};
 use std::iter::IntoIterator;
 use std::u8;
+use std::cell::RefCell;
 
 use potentials::{PairPotential, AnglePotential, DihedralPotential};
 use potentials::{CoulombicPotential, GlobalPotential};
@@ -455,23 +456,13 @@ impl System {
     }
 
     /// Get the current coulombic solver
-    pub fn coulomb_potential(&self) -> Option<&Box<CoulombicPotential>> {
+    pub fn coulomb_potential(&self) -> Option<&RefCell<Box<CoulombicPotential>>> {
         self.interactions.coulomb()
     }
 
-    /// Get the current coulombic solver as a mutable reference
-    pub fn coulomb_potential_mut(&mut self) -> Option<&mut Box<CoulombicPotential>> {
-        self.interactions.coulomb_mut()
-    }
-
     /// Get all the global potentials
-    pub fn global_potentials(&self) -> &[Box<GlobalPotential>] {
+    pub fn global_potentials(&self) -> &[RefCell<Box<GlobalPotential>>] {
         self.interactions.globals()
-    }
-
-    /// Get all the global potentials as mutable references
-    pub fn global_potentials_mut(&mut self) -> &mut [Box<GlobalPotential>] {
-        self.interactions.globals_mut()
     }
 
     /// Add the `potential` pair potential between the particles with names

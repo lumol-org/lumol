@@ -6,6 +6,7 @@
 
 use std::collections::BTreeMap;
 use std::cmp::max;
+use std::cell::RefCell;
 
 use potentials::{PairPotential, AnglePotential, DihedralPotential};
 use potentials::{GlobalPotential, CoulombicPotential};
@@ -27,9 +28,9 @@ pub struct Interactions {
     /// Dihedral angles potentials
     dihedrals: BTreeMap<(u16, u16, u16, u16), Vec<Box<DihedralPotential>>>,
     /// Coulombic potential solver
-    coulomb: Option<Box<CoulombicPotential>>,
+    coulomb: Option<RefCell<Box<CoulombicPotential>>>,
     /// Global potentials
-    globals: Vec<Box<GlobalPotential>>,
+    globals: Vec<RefCell<Box<GlobalPotential>>>,
 }
 
 impl Interactions {
@@ -104,32 +105,23 @@ impl Interactions {
 
     /// Set the coulombic interaction for all pairs to `potential`
     pub fn set_coulomb(&mut self, potential: Box<CoulombicPotential>) {
-        self.coulomb = Some(potential);
+        self.coulomb = Some(RefCell::new(potential));
     }
 
-    /// Get the coulombic interaction
-    pub fn coulomb(&self) -> Option<&Box<CoulombicPotential>> {
+    /// Get the coulombic interaction as a RefCell, because the
+    /// `GlobalPotential` are allowed to mutate themself when computing energy.
+    pub fn coulomb(&self) -> Option<&RefCell<Box<CoulombicPotential>>> {
         self.coulomb.as_ref()
-    }
-
-    /// Get the coulombic interaction as a mutable reference
-    pub fn coulomb_mut(&mut self) -> Option<&mut Box<CoulombicPotential>> {
-        self.coulomb.as_mut()
     }
 
     /// Add the `potential` global interaction
     pub fn add_global(&mut self, potential: Box<GlobalPotential>) {
-        self.globals.push(potential);
+        self.globals.push(RefCell::new(potential));
     }
 
     /// Get all global interactions
-    pub fn globals(&self) -> &[Box<GlobalPotential>] {
+    pub fn globals(&self) -> &[RefCell<Box<GlobalPotential>>] {
         &self.globals
-    }
-
-    /// Get all global interactions as mutable references
-    pub fn globals_mut(&mut self) -> &mut[Box<GlobalPotential>] {
-        &mut self.globals
     }
 }
 

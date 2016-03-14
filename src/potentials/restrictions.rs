@@ -36,6 +36,7 @@ pub enum PairRestriction {
 }
 
 /// Restriction information attached to a pair of Particles in a System
+#[derive(Clone, Copy, Debug)]
 pub struct RestrictionInfo {
     /// Is this pair excluded
     pub excluded: bool,

@@ -1,7 +1,6 @@
 // Cymbalum, an extensible molecular simulation engine
 // Copyright (C) 2015-2016 G. Fraux — BSD license
 
-//! Testing physical properties of f-SPC water
 extern crate cymbalum;
 use cymbalum::*;
 
@@ -25,7 +24,7 @@ fn get_system(potential: &str) -> System {
 // This test only run a Monte-Carlo simulation of water, but do not test
 // anything for now. It should test the g(r) function someday.
 #[test]
-fn run() {
+fn wolf() {
     START.call_once(|| {Logger::stdout();});
     let mut system = get_system("water-wolf.yml");
 
@@ -34,6 +33,18 @@ fn run() {
     mc.add(Box::new(Rotate::new(units::from(20.0, "deg").unwrap())), 1.0);
     let mut simulation = Simulation::new(mc);
 
-    // TODO: increase this value when the cache is implemented
-    simulation.run(&mut system, 500);
+    simulation.run(&mut system, 5000);
+}
+
+#[test]
+fn ewald() {
+    START.call_once(|| {Logger::stdout();});
+    let mut system = get_system("water-ewald.yml");
+
+    let mut mc = MonteCarlo::new(units::from(300.0, "K").unwrap());
+    mc.add(Box::new(Translate::new(units::from(3.0, "A").unwrap())), 1.0);
+    mc.add(Box::new(Rotate::new(units::from(20.0, "deg").unwrap())), 1.0);
+    let mut simulation = Simulation::new(mc);
+
+    simulation.run(&mut system, 1000);
 }

@@ -59,7 +59,7 @@ mod nacl {
     fn energy(bencher: &mut Bencher) {
         START.call_once(|| {Logger::stdout();});
         let system = get_system("NaCl.xyz");
-        let ewald = get_ewald();
+        let mut ewald = get_ewald();
 
         bencher.iter(||{
             let _ = ewald.energy(&system);
@@ -70,7 +70,7 @@ mod nacl {
     fn forces(bencher: &mut Bencher) {
         START.call_once(|| {Logger::stdout();});
         let system = get_system("NaCl.xyz");
-        let ewald = get_ewald();
+        let mut ewald = get_ewald();
 
         bencher.iter(||{
             let _ = ewald.forces(&system);
@@ -88,7 +88,7 @@ mod water {
     fn energy(bencher: &mut Bencher) {
         START.call_once(|| {Logger::stdout();});
         let system = get_system("water.xyz");
-        let ewald = get_ewald();
+        let mut ewald = get_ewald();
 
         bencher.iter(||{
             let _ = ewald.energy(&system);
@@ -99,7 +99,7 @@ mod water {
     fn forces(bencher: &mut Bencher) {
         START.call_once(|| {Logger::stdout();});
         let system = get_system("water.xyz");
-        let ewald = get_ewald();
+        let mut ewald = get_ewald();
 
         bencher.iter(||{
             let _ = ewald.forces(&system);

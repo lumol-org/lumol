@@ -10,7 +10,7 @@ use types::{Matrix3, Vector3D, Zero};
 use constants::ELCC;
 use potentials::{PairRestriction, RestrictionInfo};
 
-use super::{GlobalPotential, CoulombicPotential, DefaultGlobalCache};
+use super::{GlobalPotential, CoulombicPotential, GlobalCache};
 
 /// Wolf summation for the coulombic potential, as defined in [Wolf1999]. This
 /// is a fast direct pairwise summation for coulombic potential.
@@ -47,7 +47,8 @@ impl Wolf {
     }
 
     /// Compute the energy for the pair of particles with charge `qi` and `qj`,
-    /// at the distance of `rij`.
+    /// at the distance of `rij`. The `scaling` parameter comes from the
+    /// restriction associated with this potential.
     #[inline]
     fn energy_pair(&self, info: RestrictionInfo, qi: f64, qj: f64, rij: f64) -> f64 {
         if rij > self.cutoff || info.excluded {
@@ -63,7 +64,8 @@ impl Wolf {
     }
 
     /// Compute the force for self the pair of particles with charge `qi` and
-    /// `qj`, at the distance of `rij`.
+    /// `qj`, at the distance of `rij`. The `scaling` parameter comes from the
+    /// restriction associated with this potential.
     #[inline]
     fn force_pair(&self, info: RestrictionInfo, qi: f64, qj: f64, rij: Vector3D) -> Vector3D {
         let d = rij.norm();
@@ -75,8 +77,56 @@ impl Wolf {
     }
 }
 
+impl GlobalCache for Wolf {
+    fn move_particles_cost(&mut self, system: &System, idxes: &[usize], newpos: &[Vector3D]) -> f64 {
+        let mut e_old = 0.0;
+        let mut e_new = 0.0;
+
+        // Iterate over all interactions between a moved particle and a
+        // particle not moved
+        for (idx, &i) in idxes.iter().enumerate() {
+            let qi = system[i].charge;
+            if qi == 0.0 {continue;}
+            for j in (0..system.size()).filter(|x| !idxes.contains(x)) {
+                let qj = system[j].charge;
+                if qj == 0.0 {continue;}
+
+                let r_old = system.cell().distance(&system[i].position, &system[j].position);
+                let r_new = system.cell().distance(&newpos[idx], &system[j].position);
+                let info = self.restriction.informations(system, i, j);
+
+                e_old += self.energy_pair(info, qi, qj, r_old);
+                e_new += self.energy_pair(info, qi, qj, r_new);
+            }
+        }
+
+        // Iterate over all interactions between two moved particles
+        for (idx, &i) in idxes.iter().enumerate() {
+            let qi = system[i].charge;
+            if qi == 0.0 {continue;}
+            for (jdx, &j) in idxes.iter().enumerate().skip(idx + 1) {
+                let qj = system[j].charge;
+                if qj == 0.0 {continue;}
+
+                let r_old = system.distance(i, j);
+                let r_new = system.cell().distance(&newpos[idx], &newpos[jdx]);
+                let info = self.restriction.informations(system, i, j);
+
+                e_old += self.energy_pair(info, qi, qj, r_old);
+                e_new += self.energy_pair(info, qi, qj, r_new);
+            }
+        }
+
+        return e_new - e_old;
+    }
+
+    fn update(&mut self) {
+        // Nothing to do
+    }
+}
+
 impl GlobalPotential for Wolf {
-    fn energy(&self, system: &System) -> f64 {
+    fn energy(&mut self, system: &System) -> f64 {
         let natoms = system.size();
         let mut res = 0.0;
         for i in 0..natoms {
@@ -96,7 +146,7 @@ impl GlobalPotential for Wolf {
         return res;
     }
 
-    fn forces(&self, system: &System) -> Vec<Vector3D> {
+    fn forces(&mut self, system: &System) -> Vec<Vector3D> {
         let natoms = system.size();
         let mut res = vec![Vector3D::zero(); natoms];
         for i in 0..natoms {
@@ -116,7 +166,7 @@ impl GlobalPotential for Wolf {
         return res;
     }
 
-    fn virial(&self, system: &System) -> Matrix3 {
+    fn virial(&mut self, system: &System) -> Matrix3 {
         let natoms = system.size();
         let mut res = Matrix3::zero();
         for i in 0..natoms {
@@ -141,8 +191,6 @@ impl CoulombicPotential for Wolf {
         self.restriction = restriction;
     }
 }
-
-impl DefaultGlobalCache for Wolf {}
 
 #[cfg(test)]
 mod tests {
@@ -170,7 +218,7 @@ mod tests {
     #[test]
     fn energy() {
         let system = testing_system();
-        let wolf = Wolf::new(8.0);
+        let mut wolf = Wolf::new(8.0);
 
         let e = wolf.energy(&system);
         // Wolf is not very good for inhomogeneous systems
@@ -180,7 +228,7 @@ mod tests {
     #[test]
     fn forces() {
         let mut system = testing_system();
-        let wolf = Wolf::new(8.0);
+        let mut wolf = Wolf::new(8.0);
 
         let forces = wolf.forces(&system);
         let norm = (forces[0] + forces[1]).norm();
