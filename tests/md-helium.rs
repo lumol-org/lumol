@@ -4,7 +4,7 @@
 //! Testing physical properties of a Lennard-Jones gaz of Helium using Molecular
 //! dynamics
 extern crate cymbalum;
-use self::cymbalum::*;
+use cymbalum::*;
 
 use std::sync::{Once, ONCE_INIT};
 static START: Once = ONCE_INIT;

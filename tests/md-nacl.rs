@@ -3,7 +3,7 @@
 
 //! Testing physical properties of a NaCl crystal
 extern crate cymbalum;
-use self::cymbalum::*;
+use cymbalum::*;
 
 use std::path::Path;
 use std::sync::{Once, ONCE_INIT};
