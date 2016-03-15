@@ -26,3 +26,8 @@ coulomb:
     type: ewald
     cutoff: 8.5 A
     kmax: 8
+    charges:
+        O: -0.82
+        H: 0.41
+    restriction:
+        type: InterMolecular

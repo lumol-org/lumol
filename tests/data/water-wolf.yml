@@ -25,3 +25,8 @@ angles:
 coulomb:
     type: wolf
     cutoff: 8.5 A
+    charges:
+        O: -0.82
+        H: 0.41
+    restriction:
+        type: InterMolecular
