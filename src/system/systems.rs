@@ -199,7 +199,7 @@ impl System {
     pub fn add_bond(&mut self, i: usize, j: usize) -> Option<Permutations> {
         assert!(i <= self.particles.len());
         assert!(j <= self.particles.len());
-        debug!("Adding bond between the particles {} and {}, in molecules {} and {}", i, j, self.molecule_id(i), self.molecule_id(j));
+        trace!("Adding bond between the particles {} and {}, in molecules {} and {}", i, j, self.molecule_id(i), self.molecule_id(j));
 
         let (i, j, perms) = if self.are_in_same_molecule(i, j) {
             (i, j, None)
@@ -337,7 +337,7 @@ impl System {
         let mut new_mol = self.molecules[new_mol_idx].clone();
         let old_mol = self.molecules[old_mol_idx].clone();
         assert!(new_mol.last() < old_mol.first());
-        debug!("Merging molecules: {} <-- {}", new_mol_idx, old_mol_idx);
+        trace!("Merging molecules: {} <-- {}", new_mol_idx, old_mol_idx);
         trace!("The molecules contains:\n{:#?}\n ---\n{:#?}", new_mol, old_mol);
 
         if new_mol.last() + 1 != old_mol.first() {
