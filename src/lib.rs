@@ -52,7 +52,7 @@ extern crate yaml_rust as yaml;
 mod tests;
 #[macro_use]
 mod utils;
-
+#[macro_use]
 mod logging;
 pub use logging::{Logger, LogLevel};
 

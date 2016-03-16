@@ -20,6 +20,14 @@ use std::sync::{Arc, Mutex};
 use log::{Log, LogRecord, LogMetadata, set_logger};
 pub use log::LogLevel;
 
+/// Log an error, and then panic with the same message
+macro_rules! fatal_error {
+    ($($args:tt)*) => {
+        error!($($args)*);
+        panic!($($args)*);
+    };
+}
+
 /// Logger with capacity to write to the standard output stream, the standard
 /// error stream or a file.
  pub struct Logger {

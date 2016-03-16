@@ -81,12 +81,10 @@ impl Ewald {
         }
         match cell.celltype() {
             CellType::Infinite => {
-                error!("Can not use Ewald sum with Infinite cell.");
-                panic!();
+                fatal_error!("Can not use Ewald sum with Infinite cell.");
             },
             CellType::Triclinic => {
-                error!("Can not (yet) use Ewald sum with Triclinic cell.");
-                unimplemented!();
+                fatal_error!("Can not (yet) use Ewald sum with Triclinic cell.");
             },
             CellType::Orthorombic => {
                 // All good!

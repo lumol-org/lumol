@@ -114,9 +114,8 @@ impl EnergyCache {
         if let Some(updater) = updater {
             updater(self, system);
         } else {
-            error!("Error in `EnergyCache::update`: \
-                    This function MUST be called after a call to a `*_cost` function");
-            panic!()
+            fatal_error!("Error in `EnergyCache::update`: \
+                         This function MUST be called after a call to a `*_cost` function");
         }
     }
 

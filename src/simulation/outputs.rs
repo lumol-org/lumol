@@ -49,8 +49,7 @@ impl Output for TrajectoryOutput {
         match self.file.write(system) {
             Ok(()) => (),
             Err(err) => {
-                error!("Error in while writing trajectory: {}", err.message());
-                panic!();
+                fatal_error!("Error in while writing trajectory: {}", err.message());
             }
         }
     }
@@ -80,10 +79,10 @@ impl Output for CellOutput {
     fn setup(&mut self, _: &System) {
         if let Err(err) = writeln!(&mut self.file, "# Unit cell of the simulation") {
             // Do panic in early time
-            panic!("Could not write to file '{}': {:?}", self.path.display(), err);
+            fatal_error!("Could not write to file '{}': {:?}", self.path.display(), err);
         }
         if let Err(err) = writeln!(&mut self.file, "# Step A/Å B/Å C/Å α/deg β/deg γ/deg") {
-            panic!("Could not write to file '{}': {:?}", self.path.display(), err);
+            fatal_error!("Could not write to file '{}': {:?}", self.path.display(), err);
         }
     }
 
@@ -121,10 +120,10 @@ impl EnergyOutput {
 impl Output for EnergyOutput {
     fn setup(&mut self, _: &System) {
         if let Err(err) = writeln!(&mut self.file, "# Energy of the simulation (kJ/mol)") {
-            panic!("Could not write to file '{}': {:?}", self.path.display(), err);
+            fatal_error!("Could not write to file '{}': {:?}", self.path.display(), err);
         }
         if let Err(err) = writeln!(&mut self.file, "# Step Potential Kinetic Total") {
-            panic!("Could not write to file '{}': {:?}", self.path.display(), err);
+            fatal_error!("Could not write to file '{}': {:?}", self.path.display(), err);
         }
     }
 
@@ -164,10 +163,10 @@ impl PropertiesOutput {
 impl Output for PropertiesOutput {
     fn setup(&mut self, _: &System) {
         if let Err(err) = writeln!(&mut self.file, "# Physical properties of the simulation") {
-            panic!("Could not write to file '{}': {:?}", self.path.display(), err);
+            fatal_error!("Could not write to file '{}': {:?}", self.path.display(), err);
         }
         if let Err(err) = writeln!(&mut self.file, "# Step Volume/A^3 Temperature/K Pressure/bar") {
-            panic!("Could not write to file '{}': {:?}", self.path.display(), err);
+            fatal_error!("Could not write to file '{}': {:?}", self.path.display(), err);
         }
     }
 
