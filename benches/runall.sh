@@ -9,15 +9,17 @@ fi
 
 multirust override nightly 2> /dev/null
 
-GIT_HASH=$(git rev-parse --short HEAD)
+
+DATETIME=$(git log -n1 --format="%ad" --date="format:%F-%R")
 RUSTC_INFO=$(rustc -vV)
 TARGET=$(echo $RUSTC_INFO | perl -ne '/host: ([\w\d_-]*)/ && print $1')
-OUTPUT="benches/results/$GIT_HASH-$TARGET.bench"
+OUTPUT="benches/results/$DATETIME-$TARGET.bench"
 
 # Build the needed binaries
 cargo bench --no-run
 
 echo "#" $(rustc -V) > $OUTPUT
+echo "#" $(git log -n1 --format="%h %ai %s") >> $OUTPUT
 # Only run the benchmarcks in `benches`
 for file in benches/*.rs
 do

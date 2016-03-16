@@ -1,4 +1,5 @@
 # rustc 1.9.0-nightly (6d215fe04 2016-03-14)
+# 5186b4c 2016-03-15 21:47:22 +0100 Add an ewald benchmark
      Running target/release/ewald-bcb1ab681fa4b323
 
 running 4 tests
@@ -8,4 +9,3 @@ test water::energy ... bench:  29,278,721 ns/iter (+/- 2,951,950)
 test water::forces ... bench: 292,014,069 ns/iter (+/- 9,937,914)
 
 test result: ok. 0 passed; 0 failed; 0 ignored; 4 measured
-
