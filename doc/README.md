@@ -1,9 +1,30 @@
-# Cymbalum user manual
+# Cymbalum documentation
 
-This directory contains the user manual for the Cymbalum molecular simulation
-engine. In order to build it, you will need to have the
-[mdbook](https://github.com/azerupi/mdBook) program.
+## User manual
 
-You can build the HTML version of the book by running the `mdbook build`
-command. Then, point your favorite web browser to `book/index.html` to read the
-book.
+This directory contains the HTML user manual for the Cymbalum molecular
+simulation engine. You need `cargo` to build it, like this:
+
+```bash
+cargo install mdbook
+mdbook build doc
+# HTML pages are in `doc/book/`
+```
+
+This book is written using standard [markdown](http://commonmark.org/help/), a
+simple markup language.
+
+If you want to edit the book, you can use `mdbook watch doc` to rebuild it at
+every change.
+
+## Programming interface documentation
+
+In addition to the user manual, Cymbalum provides a complete programming
+interface documentation, which you can build by running
+
+```
+cargo doc --open
+```
+
+This interface documentation is only useful if you want to use Cymbalum as a
+library in you own code.
