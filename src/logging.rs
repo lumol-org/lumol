@@ -56,8 +56,7 @@ pub use log::LogLevel;
 
      /// Initialize the global logger to use the standard output stream.
      pub fn stdout() {
-         let logger = Logger::new(levels::DEFAULT_LEVEL, io::stdout());
-         Logger::init(logger);
+         Logger::stdout_at_level(levels::DEFAULT_LEVEL)
      }
 
      /// Initialize the global logger to use the standard output stream, with
@@ -69,8 +68,7 @@ pub use log::LogLevel;
 
      /// Initialize the global logger to use the standard error stream.
      pub fn stderr() {
-         let logger = Logger::new(levels::DEFAULT_LEVEL, io::stderr());
-         Logger::init(logger);
+         Logger::stderr_at_level(levels::DEFAULT_LEVEL)
      }
 
      /// Initialize the global logger to use the standard error stream, with
@@ -83,17 +81,14 @@ pub use log::LogLevel;
      /// Initialize the global logger to write to the file at `path`, creating
      /// the file if needed. If the file already exists, it is not removed.
      pub fn file<P: AsRef<Path>>(path: P) -> Result<(), io::Error> {
-         let file = try!(OpenOptions::new().write(true).append(true).open(path));
-         let logger = Logger::new(levels::DEFAULT_LEVEL, file);
-         Logger::init(logger);
-         Ok(())
+         Logger::file_at_level(path, levels::DEFAULT_LEVEL)
      }
 
      /// Initialize the global logger to write to the file at `path`, creating
      /// the file if needed. If the file already exists, it is not removed. The
      /// maximum log level is set to `level`.
      pub fn file_at_level<P: AsRef<Path>>(path: P, level: LogLevel) -> Result<(), io::Error> {
-         let file = try!(OpenOptions::new().write(true).append(true).open(path));
+         let file = try!(OpenOptions::new().write(true).create(true).append(true).open(path));
          let logger = Logger::new(level, file);
          Logger::init(logger);
          Ok(())
