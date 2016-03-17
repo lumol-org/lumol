@@ -1,0 +1,13 @@
+img[src*='#right'] {
+    float: right;
+}
+
+img[src*='#left'] {
+    float: left;
+}
+
+img[src*='#center'] {
+    display: block;
+    margin-left: auto;
+    margin-right: auto
+}
