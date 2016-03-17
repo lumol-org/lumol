@@ -33,13 +33,7 @@
             }
         </script>
     </head>
-    <body>
-        <!-- Set the theme before any content is loaded, prevents flash -->
-        <script type="text/javascript">
-            var theme = localStorage.getItem('theme');
-            if (theme == null) { theme = 'light'; }
-            $('body').removeClass().addClass(theme);
-        </script>
+    <body class="light">
 
         <!-- Hide / unhide sidebar before it is displayed -->
         <script type="text/javascript">
@@ -58,7 +52,6 @@
                 <div id="menu-bar" class="menu-bar">
                     <div class="left-buttons">
                         <i id="sidebar-toggle" class="fa fa-bars"></i>
-                        <i id="theme-toggle" class="fa fa-paint-brush"></i>
                     </div>
 
                     <h1 class="menu-title">{{ title }}</h1>
