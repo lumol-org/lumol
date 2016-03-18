@@ -28,52 +28,52 @@ const U_IN_KG : f64 = 1.660538782e-27;
 fn conversion_factors() -> HashMap<&'static str, f64> {
     let mut map = HashMap::new();
     // Distances units.
-    map.insert("A", 1.0);
-    map.insert("Å", 1.0);
-    map.insert("nm", 10.0);
-    map.insert("pm", 1e-2);
-    map.insert("fm", 1e-5);
-    map.insert("m", 1e10);
-    map.insert("bohr", BOHR_RADIUS);
+    assert!(map.insert("A", 1.0).is_none());
+    assert!(map.insert("Å", 1.0).is_none());
+    assert!(map.insert("nm", 10.0).is_none());
+    assert!(map.insert("pm", 1e-2).is_none());
+    assert!(map.insert("fm", 1e-5).is_none());
+    assert!(map.insert("m", 1e10).is_none());
+    assert!(map.insert("bohr", BOHR_RADIUS).is_none());
 
     // Time units.
-    map.insert("fs", 1.0);
-    map.insert("ps", 1e3);
-    map.insert("ns", 1e6);
+    assert!(map.insert("fs", 1.0).is_none());
+    assert!(map.insert("ps", 1e3).is_none());
+    assert!(map.insert("ns", 1e6).is_none());
 
     // Mass units.
-    map.insert("u", 1.0);
-    map.insert("Da", 1.0);
-    map.insert("kDa", 1.0);
-    map.insert("g", 1e-3 / U_IN_KG);
-    map.insert("kg", 1.0 / U_IN_KG);
+    assert!(map.insert("u", 1.0).is_none());
+    assert!(map.insert("Da", 1.0).is_none());
+    assert!(map.insert("kDa", 1.0).is_none());
+    assert!(map.insert("g", 1e-3 / U_IN_KG).is_none());
+    assert!(map.insert("kg", 1.0 / U_IN_KG).is_none());
 
     // Temperature units.
-    map.insert("K", 1.0);
+    assert!(map.insert("K", 1.0).is_none());
     // Quantity of matter units.
-    map.insert("mol", NA);
+    assert!(map.insert("mol", NA).is_none());
 
     // Angle units.
-    map.insert("rad", 1.0);
-    map.insert("deg", PI / 180.0);
+    assert!(map.insert("rad", 1.0).is_none());
+    assert!(map.insert("deg", PI / 180.0).is_none());
 
     // Energy units.
-    map.insert("J", 1e-10 / U_IN_KG);
-    map.insert("kJ", 1e-7 / U_IN_KG);
-    map.insert("kcal", 4.184 * 1e-7 / U_IN_KG);
-    map.insert("eV", 1.60217653e-19 * 1e-10 / U_IN_KG);
-    map.insert("H", 4.35974417e-18 * 1e-10 / U_IN_KG);
-    map.insert("Ry", 4.35974417e-18 / 2.0 * 1e-10 / U_IN_KG);
+    assert!(map.insert("J", 1e-10 / U_IN_KG).is_none());
+    assert!(map.insert("kJ", 1e-7 / U_IN_KG).is_none());
+    assert!(map.insert("kcal", 4.184 * 1e-7 / U_IN_KG).is_none());
+    assert!(map.insert("eV", 1.60217653e-19 * 1e-10 / U_IN_KG).is_none());
+    assert!(map.insert("H", 4.35974417e-18 * 1e-10 / U_IN_KG).is_none());
+    assert!(map.insert("Ry", 4.35974417e-18 / 2.0 * 1e-10 / U_IN_KG).is_none());
 
     // Force unit.
-    map.insert("N", 1e-20 / U_IN_KG);
+    assert!(map.insert("N", 1e-20 / U_IN_KG).is_none());
 
     // Pressure units.
-    map.insert("Pa", 1e-40 / U_IN_KG);
-    map.insert("kPa", 1e-37 / U_IN_KG);
-    map.insert("MPa", 1e-34 / U_IN_KG);
-    map.insert("bar", 1e-35 / U_IN_KG);
-    map.insert("atm", 101325.0 * 1e-40 / U_IN_KG);
+    assert!(map.insert("Pa", 1e-40 / U_IN_KG).is_none());
+    assert!(map.insert("kPa", 1e-37 / U_IN_KG).is_none());
+    assert!(map.insert("MPa", 1e-34 / U_IN_KG).is_none());
+    assert!(map.insert("bar", 1e-35 / U_IN_KG).is_none());
+    assert!(map.insert("atm", 101325.0 * 1e-40 / U_IN_KG).is_none());
 
     return map;
 }

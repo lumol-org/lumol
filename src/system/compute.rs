@@ -342,9 +342,9 @@ mod test {
         system[2].position = Vector3D::new(1.2, 1.2, 0.0);
         system[3].position = Vector3D::new(2.4, 1.2, 0.0);
 
-        system.add_bond(0, 1);
-        system.add_bond(1, 2);
-        system.add_bond(2, 3);
+        let _ = system.add_bond(0, 1);
+        let _ = system.add_bond(1, 2);
+        let _ = system.add_bond(2, 3);
 
         system.add_bond_interaction("F", "F",
             Box::new(Harmonic{
@@ -396,9 +396,9 @@ mod test {
         system[2].position = Vector3D::new(1.2, 1.2, 0.0);
         system[3].position = Vector3D::new(2.4, 1.2, 0.0);
 
-        system.add_bond(0, 1);
-        system.add_bond(1, 2);
-        system.add_bond(2, 3);
+        let _ = system.add_bond(0, 1);
+        let _ = system.add_bond(1, 2);
+        let _ = system.add_bond(2, 3);
 
         system.add_bond_interaction("F", "F",
             Box::new(Harmonic{
@@ -459,7 +459,7 @@ mod test {
     fn pressure_at_temperature_negative_temperature() {
         let system = &testing_system();
         let pressure = PressureAtTemperature{temperature: -4.0};
-        pressure.compute(system);
+        let _ = pressure.compute(system);
     }
 
     #[test]
@@ -487,7 +487,7 @@ mod test {
     fn stress_at_temperature_negative_temperature() {
         let system = &testing_system();
         let stress = StressAtTemperature{temperature: -4.0};
-        stress.compute(system);
+        let _ = stress.compute(system);
     }
 
     #[test]

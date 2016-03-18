@@ -102,15 +102,15 @@ mod tests {
             system.add_particle(Particle::new("C"));
         }
 
-        system.add_bond(0, 1);
-        system.add_bond(1, 2);
-        system.add_bond(2, 3);
-        system.add_bond(3, 4);
+        let _ = system.add_bond(0, 1);
+        let _ = system.add_bond(1, 2);
+        let _ = system.add_bond(2, 3);
+        let _ = system.add_bond(3, 4);
 
-        system.add_bond(5, 6);
-        system.add_bond(6, 7);
-        system.add_bond(7, 8);
-        system.add_bond(8, 9);
+        let _ = system.add_bond(5, 6);
+        let _ = system.add_bond(6, 7);
+        let _ = system.add_bond(7, 8);
+        let _ = system.add_bond(8, 9);
 
         return system;
     }

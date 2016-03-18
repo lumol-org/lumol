@@ -737,7 +737,7 @@ mod tests {
         let mut system = testing_system();
         system.set_cell(UnitCell::new());
         let mut ewald = Ewald::new(8.0, 10);
-        ewald.energy(&system);
+        let _ = ewald.energy(&system);
     }
 
     #[test]
@@ -746,7 +746,7 @@ mod tests {
         let mut system = testing_system();
         system.set_cell(UnitCell::triclinic(0.0, 0.0, 0.0, 0.0, 0.0, 0.0));
         let mut ewald = Ewald::new(8.0, 10);
-        ewald.energy(&system);
+        let _ = ewald.energy(&system);
     }
 
     #[test]

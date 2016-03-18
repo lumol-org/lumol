@@ -135,7 +135,7 @@ trait FromYaml where Self: Sized {
 pub fn read_interactions<P: AsRef<Path>>(system: &mut System, path: P) -> Result<()> {
     let mut file = try!(File::open(path));
     let mut buffer = String::new();
-    try!(file.read_to_string(&mut buffer));
+    let _ = try!(file.read_to_string(&mut buffer));
     return read_interactions_string(system, &buffer);
 }
 

@@ -392,19 +392,19 @@ mod tests {
     #[test]
     #[should_panic]
     fn negative_cubic() {
-        UnitCell::cubic(-4.0);
+        let _ = UnitCell::cubic(-4.0);
     }
 
     #[test]
     #[should_panic]
     fn negative_ortho() {
-        UnitCell::ortho(3.0, 0.0, -5.0);
+        let _ = UnitCell::ortho(3.0, 0.0, -5.0);
     }
 
     #[test]
     #[should_panic]
     fn negative_triclinic() {
-        UnitCell::triclinic(3.0, 0.0, -5.0, 90.0, 90.0, 90.0);
+        let _ = UnitCell::triclinic(3.0, 0.0, -5.0, 90.0, 90.0, 90.0);
     }
 
     #[test]

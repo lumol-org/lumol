@@ -221,13 +221,13 @@ mod tests {
     #[test]
     #[should_panic]
     fn negative_temperature_rescale() {
-        RescaleThermostat::new(-56.0);
+        let _ = RescaleThermostat::new(-56.0);
     }
 
     #[test]
     #[should_panic]
     fn negative_temperature_berendsen() {
-        BerendsenThermostat::new(-56.0, 1000.0);
+        let _ = BerendsenThermostat::new(-56.0, 1000.0);
     }
 
     #[test]

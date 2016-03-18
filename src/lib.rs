@@ -16,7 +16,7 @@
 
 #![warn(
     missing_docs, trivial_casts, unused_import_braces, variant_size_differences,
-    unused_qualifications
+    unused_qualifications, unused_results
 )]
 
 #![cfg_attr(feature="lint", plugin(herbie_lint))]

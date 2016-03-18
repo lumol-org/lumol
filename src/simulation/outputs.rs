@@ -208,7 +208,7 @@ mod tests {
     fn check_file_content(filename: &str, content: &str) {
         let mut file = fs::File::open(filename).unwrap();
         let mut buffer = String::new();
-        file.read_to_string(&mut buffer).unwrap();
+        let _ = file.read_to_string(&mut buffer).unwrap();
 
         assert_eq!(buffer, content);
     }

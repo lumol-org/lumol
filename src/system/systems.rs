@@ -175,7 +175,7 @@ impl System {
         let size = molecule.size();
 
         for _ in 0..size {
-            self.particles.remove(first);
+            let _ = self.particles.remove(first);
         }
 
         for molecule in self.molecules.iter_mut().skip(id) {
@@ -266,7 +266,7 @@ impl System {
             molecule.translate_by(-1);
         }
 
-        self.particles.remove(i);
+        let _ = self.particles.remove(i);
     }
 
 
@@ -297,13 +297,8 @@ impl System {
 
     /// Get or create the usize kind index for the name `name` of a particle
     fn get_kind(&mut self, name: &str) -> u16 {
-        if self.kinds.contains_key(name) {
-            return self.kinds[name];
-        } else {
-            let index = self.kinds.len() as u16;
-            self.kinds.insert(String::from(name), index);
-            return index;
-        }
+        let index = self.kinds.len() as u16;
+        *self.kinds.entry(name.to_owned()).or_insert(index)
     }
 
     /// Merge the molecules containing the atoms at indexes `i` and `j` in one
@@ -365,7 +360,7 @@ impl System {
 
         new_mol.merge_with(old_mol);
         self.molecules[new_mol_idx] = new_mol;
-        self.molecules.remove(old_mol_idx);
+        let _ = self.molecules.remove(old_mol_idx);
 
         return delta;
     }
@@ -743,10 +738,10 @@ mod tests {
         system.add_particle(Particle::new("C"));
         system.add_particle(Particle::new("Zn"));
 
-        system.add_bond(0, 1);
-        system.add_bond(1, 2);
-        system.add_bond(2, 3);
-        system.add_bond(3, 4);
+        let _ = system.add_bond(0, 1);
+        let _ = system.add_bond(1, 2);
+        let _ = system.add_bond(2, 3);
+        let _ = system.add_bond(3, 4);
 
         assert_eq!(system.shortest_path(0, 0), 1);
         assert_eq!(system.shortest_path(0, 1), 2);
@@ -849,21 +844,21 @@ mod tests {
         system.add_particle(Particle::new("H"));
         system.add_particle(Particle::new("O"));
         system.add_particle(Particle::new("H"));
-        system.add_bond(1, 2);
-        system.add_bond(2, 3);
+        let _ = system.add_bond(1, 2);
+        let _ = system.add_bond(2, 3);
         system.add_particle(Particle::new("H"));
         system.add_particle(Particle::new("O"));
         system.add_particle(Particle::new("H"));
-        system.add_bond(4, 5);
-        system.add_bond(5, 6);
+        let _ = system.add_bond(4, 5);
+        let _ = system.add_bond(5, 6);
         // Another helium
         system.add_particle(Particle::new("He"));
         // A water molecules, with different atoms order
         system.add_particle(Particle::new("O"));
         system.add_particle(Particle::new("H"));
         system.add_particle(Particle::new("H"));
-        system.add_bond(8, 9);
-        system.add_bond(8, 10);
+        let _ = system.add_bond(8, 9);
+        let _ = system.add_bond(8, 10);
 
         assert_eq!(system.molecules().len(), 5);
         // The heliums
