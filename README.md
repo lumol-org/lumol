@@ -49,12 +49,12 @@ As Cymbalum is a library, there are multiple ways to use it, and multiple
 corresponding documentations.
 
 To use Cymbalum as a library inside your own code, use the [API
-documentation](http://luthaf.github.io/cymbalum/cymbalum/), in which
+documentation](http://luthaf.github.io/cymbalum/latest/cymbalum/), in which
 every struct and function are documented. You can also have a look at the
 examples folder to get a taste of the usage.
 
 To use Cymbalum as a simulation engine — without writing code — you should use
-the [user documentation](http://luthaf.github.io/cymbalum/book/). It is very
+the [user documentation](http://luthaf.github.io/cymbalum/latest/book/). It is very
 incomplete at the moment, but it is improving!
 
 ### Installation
@@ -69,10 +69,17 @@ cd cymbalum
 cargo build --release
 ```
 
-This will produce the library in `target/release/libcymbalum.rlib`, and binary
-examples in `target/release/examples`.
+This will produce the library in `target/release/libcymbalum.rlib`.
 
-In order to run the unit and integration tests, you can use these commands
+Binaries for examples can be compiled with
+```bash
+cargo test --release --no-run
+```
+
+Various examples will be in `target/release/examples`, and you can run 
+them from the `examples` directory.
+
+If you want to run the unit and integration tests, you can use these commands
 
 ```bash
 # Run only the unit test
