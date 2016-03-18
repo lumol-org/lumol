@@ -23,14 +23,7 @@ script:
     - cargo build
     - cargo test --lib
     - cargo test --release
-    - |
-      if test "${TRAVIS_RUST_VERSION}" == "stable"; then
-        cargo doc
-        cargo install mdbook
-        mdbook build doc
-        cp -r doc/book target/doc
-        cp doc/index.html target/doc
-      fi
+after_success:
     # Build and cache kcov
     - |
       if [ -f $HOME/local/bin/kcov ]; then
@@ -44,18 +37,13 @@ script:
           make install
           cd $TRAVIS_BUILD_DIR
       fi
-after_success:
     - |
       if test "${TRAVIS_RUST_VERSION}" == "stable"; then
           export PATH=$HOME/local/bin:$PATH
           kcov --include-pattern=$(pwd) target/kcov target/debug/cymbalum-*
           codecov --file target/kcov/cymbalum-*/cobertura.xml
       fi
-    - |
-      if ["${TRAVIS_RUST_VERSION}" == "stable" && "${TRAVIS_PULL_REQUEST}" == "false" && "${TRAVIS_BRANCH}" == "master"]; then
-          git clone https://github.com/davisp/ghp-import
-          python ghp-import/ghp_import.py -n -p target/doc
-      fi
+    - ./doc/publish.sh
 cache:
   directories:
       - $HOME/local
