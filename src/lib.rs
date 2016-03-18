@@ -1,18 +1,20 @@
 // Cymbalum, an extensible molecular simulation engine
 // Copyright (C) 2015-2016 G. Fraux — BSD license
 
-//! **cymbalum** is a molecular simulation library, which provides basic
-//! building blocks to create your very own simulations. It is based on two main
-//! ideas:
+//! Cymbalum is a classical molecular simulation engine that provides a solid
+//! base for developing new algorithms and methods.
 //!
-//!  - any algorithm used in the simulation can be replaced by another one. This
-//!    allow for modularity and easy developement of novel algorithms.
-//!  - data and algorithms should be separated. This is accomplished through the
-//!    use of the `System` (for data) and `Simulation` (for algorithms) types,
-//!    interacting together to run the simulation on some data.
+//! Using Cymbalum, you can customize the behavior of all the algorithms in a
+//! simulation (from force fields to barostats and Monte-Carlo moves).
 //!
-//!  Rust provides a nice way to implement these two ideas with the concept of
-//!  traits.
+//! Cymbalum goals are to be:
+//!
+//! - **Easy to extend**: the code is modular, object-oriented, well documented,
+//!   well tested, open-source and readable;
+//! - **Easy to use**: the user interface is nice, with human-oriented input
+//!   files;
+//! - **Stable**: it will never crash on a good input, and provides helpful
+//!   error messages.
 
 #![warn(
     missing_docs, trivial_casts, unused_import_braces, variant_size_differences,

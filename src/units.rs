@@ -1,8 +1,9 @@
 // Cymbalum, an extensible molecular simulation engine
 // Copyright (C) 2015-2016 G. Fraux — BSD license
 
-//! This module allow to convert from and to the internal unit system, using the
-//! following units:
+//! This module allow to convert from and to the internal unit system.
+//!
+//! Internal units are:
 //!
 //!  - Angstrom (A) for distances;
 //!  - femtosecond (fs) for time;
@@ -11,7 +12,8 @@
 //!  - Number of particles for quantity of matter;
 //!  - radian (rad) for angles;
 //!
-//!  Using this system, the internal unit for energy is 1e-4 kJ/mol.
+//! Other units are derived from these primitives units. For examples, the
+//! internal unit for energy is 1e-4 kJ/mol.
 
 use std::collections::BTreeMap;
 use std::f64::consts::PI;
