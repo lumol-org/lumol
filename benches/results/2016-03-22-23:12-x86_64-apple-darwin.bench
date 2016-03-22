@@ -1,0 +1,12 @@
+# rustc 1.9.0-nightly (02310fd31 2016-03-19)
+# af3723c 2016-03-22 23:12:30 +0100 Remove most of the calls to cos/sin in Ewald
+     Running target/release/ewald-bcb1ab681fa4b323
+
+running 4 tests
+test nacl::energy  ... bench:     707,209 ns/iter (+/- 90,214)
+test nacl::forces  ... bench:  12,308,752 ns/iter (+/- 2,469,081)
+test water::energy ... bench:  23,330,306 ns/iter (+/- 1,456,710)
+test water::forces ... bench: 226,808,961 ns/iter (+/- 23,774,550)
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 4 measured
+

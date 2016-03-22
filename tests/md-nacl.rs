@@ -75,6 +75,6 @@ mod ewald {
         let e_initial = system.total_energy();
         simulation.run(&mut system, 100);
         let e_final = system.total_energy();
-        assert!(f64::abs((e_initial - e_final)/e_final) < 1e-4);
+        assert!(f64::abs((e_initial - e_final)/e_final) < 5e-3);
     }
 }

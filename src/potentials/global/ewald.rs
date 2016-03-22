@@ -41,7 +41,7 @@ pub struct Ewald {
     /// Caching exponential factors exp(-k^2 / (4 alpha^2)) / k^2
     expfactors: Array3<f64>,
     /// Phases for the Fourier transform, cached allocation
-    fourier_phases: Array3<f64>,
+    fourier_phases: Array3<Complex>,
     /// Fourier transform of the electrostatic density
     rho: Array3<Complex>,
     /// Fourier transform of the electrostatic density modifications, cached
@@ -286,8 +286,8 @@ impl Ewald {
         for i in 0..natoms {
             let ri = system.cell().fractional(&system[i].position);
             for j in 0..3 {
-                self.fourier_phases[(0, i, j)] = 0.0;
-                self.fourier_phases[(1, i, j)] = -2.0 * PI * ri[j];
+                self.fourier_phases[(0, i, j)] = Complex::polar(1.0, 0.0);
+                self.fourier_phases[(1, i, j)] = Complex::polar(1.0, -2.0 * PI * ri[j]);
             }
         }
 
@@ -296,7 +296,7 @@ impl Ewald {
             for i in 0..natoms {
                 for j in 0..3 {
                     self.fourier_phases[(k, i, j)] = self.fourier_phases[(k - 1, i, j)]
-                                                   + self.fourier_phases[(1, i, j)];
+                                                   * self.fourier_phases[(1, i, j)];
                 }
             }
         }
@@ -306,8 +306,8 @@ impl Ewald {
                 for ikz in 0..self.kmax {
                     self.rho[(ikx, iky, ikz)] = Complex::polar(0.0, 0.0);
                     for j in 0..natoms {
-                        let phi = self.fourier_phases[(ikx, j, 0)] + self.fourier_phases[(iky, j, 1)] + self.fourier_phases[(ikz, j, 2)];
-                        self.rho[(ikx, iky, ikz)] = self.rho[(ikx, iky, ikz)] + Complex::polar(system[j].charge, phi);
+                        let phi = self.fourier_phases[(ikx, j, 0)] * self.fourier_phases[(iky, j, 1)] * self.fourier_phases[(ikz, j, 2)];
+                        self.rho[(ikx, iky, ikz)] = self.rho[(ikx, iky, ikz)] + system[j].charge * phi;
                     }
                 }
             }
@@ -369,12 +369,12 @@ impl Ewald {
     #[inline(always)]
     fn kspace_force_factor(&self, i: usize, j: usize, ikx: usize, iky: usize, ikz: usize, qi: f64, qj: f64) -> f64 {
         let fourier_i = self.fourier_phases[(ikx, i, 0)]
-                      + self.fourier_phases[(iky, i, 1)]
-                      + self.fourier_phases[(ikz, i, 2)];
+                      * self.fourier_phases[(iky, i, 1)]
+                      * self.fourier_phases[(ikz, i, 2)];
         let fourier_j = self.fourier_phases[(ikx, j, 0)]
-                      + self.fourier_phases[(iky, j, 1)]
-                      + self.fourier_phases[(ikz, j, 2)];
-        let sin_kr = fast_sin(fourier_i - fourier_j);
+                      * self.fourier_phases[(iky, j, 1)]
+                      * self.fourier_phases[(ikz, j, 2)];
+        let sin_kr = (fourier_i - fourier_j).imag();
 
         return qi * qj * self.expfactors[(ikx, iky, ikz)] * sin_kr;
     }
@@ -420,11 +420,11 @@ impl Ewald {
             let old_ri = system.cell().fractional(&system[i].position);
             let new_ri = system.cell().fractional(&newpos[idx]);
             for j in 0..3 {
-                old_fourier_phases[(0, i, j)] = 0.0;
-                old_fourier_phases[(1, i, j)] = -2.0 * PI * old_ri[j];
+                old_fourier_phases[(0, i, j)] = Complex::polar(1.0, 0.0);
+                old_fourier_phases[(1, i, j)] = Complex::polar(1.0, -2.0 * PI * old_ri[j]);
 
-                new_fourier_phases[(0, i, j)] = 0.0;
-                new_fourier_phases[(1, i, j)] = -2.0 * PI * new_ri[j];
+                new_fourier_phases[(0, i, j)] = Complex::polar(1.0, 0.0);
+                new_fourier_phases[(1, i, j)] = Complex::polar(1.0, -2.0 * PI * new_ri[j]);
             }
         }
 
@@ -433,10 +433,10 @@ impl Ewald {
             for i in 0..natoms {
                 for j in 0..3 {
                     old_fourier_phases[(k, i, j)] = old_fourier_phases[(k - 1, i, j)]
-                                                   + old_fourier_phases[(1, i, j)];
+                                                   * old_fourier_phases[(1, i, j)];
 
                     new_fourier_phases[(k, i, j)] = new_fourier_phases[(k - 1, i, j)]
-                                                   + new_fourier_phases[(1, i, j)];
+                                                   * new_fourier_phases[(1, i, j)];
                 }
             }
         }
@@ -446,11 +446,11 @@ impl Ewald {
                 for ikz in 0..self.kmax {
                     self.delta_rho[(ikx, iky, ikz)] = Complex::polar(0.0, 0.0);
                     for j in 0..natoms {
-                        let old_phi = old_fourier_phases[(ikx, j, 0)] + old_fourier_phases[(iky, j, 1)] + old_fourier_phases[(ikz, j, 2)];
-                        let new_phi = new_fourier_phases[(ikx, j, 0)] + new_fourier_phases[(iky, j, 1)] + new_fourier_phases[(ikz, j, 2)];
+                        let old_phi = old_fourier_phases[(ikx, j, 0)] * old_fourier_phases[(iky, j, 1)] * old_fourier_phases[(ikz, j, 2)];
+                        let new_phi = new_fourier_phases[(ikx, j, 0)] * new_fourier_phases[(iky, j, 1)] * new_fourier_phases[(ikz, j, 2)];
 
-                        self.delta_rho[(ikx, iky, ikz)] = self.delta_rho[(ikx, iky, ikz)] - Complex::polar(system[j].charge, old_phi);
-                        self.delta_rho[(ikx, iky, ikz)] = self.delta_rho[(ikx, iky, ikz)] + Complex::polar(system[j].charge, new_phi);
+                        self.delta_rho[(ikx, iky, ikz)] = self.delta_rho[(ikx, iky, ikz)] - system[j].charge * old_phi;
+                        self.delta_rho[(ikx, iky, ikz)] = self.delta_rho[(ikx, iky, ikz)] + system[j].charge * new_phi;
                     }
                 }
             }
@@ -478,27 +478,6 @@ impl Ewald {
 
         return e_new - e_old;
     }
-}
-
-/// This an implementation of the sin function which is faster than the libm
-/// sin function on my i7 processor. I'll have to benchmarck this on other
-/// architectures and OS.
-///
-/// Using this function in `kspace_force_factor` gives me a 40% speedup of the
-/// overall simulation time.
-///
-/// This code comes from http://forum.devmaster.net/t/fast-and-accurate-sine-cosine/9648/85
-fn fast_sin(mut x: f64) -> f64 {
-    const FRAC_1_TWO_PI: f64 = 1.0 / (2.0 * PI);
-    const A: f64 = 7.58946638440411;
-    const B: f64 = 1.6338434577536627;
-
-    x = x * FRAC_1_TWO_PI;
-    x = x - f64::floor(x + 0.5);
-    x = A * x * (0.5 - f64::abs(x));
-    x = x * (B + f64::abs(x));
-
-    return x;
 }
 
 /// Molecular correction for Ewald summation
