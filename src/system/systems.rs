@@ -27,6 +27,7 @@ use super::interactions::{Interactions, PairInteraction};
 use super::EnergyEvaluator;
 use super::molecules::moltype;
 
+/// Particles permutations:. Indexes are given in the `(old, new)` form.
 pub type Permutations = Vec<(usize, usize)>;
 
 /// The System type hold all the data about a simulated system.

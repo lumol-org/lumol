@@ -36,6 +36,7 @@ pub use self::cache::EnergyCache;
 
 mod systems;
 pub use self::systems::System;
+pub use self::systems::Permutations;
 
 pub mod compute;
 pub use self::compute::Compute;
