@@ -420,23 +420,23 @@ impl Ewald {
             let old_ri = system.cell().fractional(&system[i].position);
             let new_ri = system.cell().fractional(&newpos[idx]);
             for j in 0..3 {
-                old_fourier_phases[(0, i, j)] = Complex::polar(1.0, 0.0);
-                old_fourier_phases[(1, i, j)] = Complex::polar(1.0, -2.0 * PI * old_ri[j]);
+                old_fourier_phases[(0, idx, j)] = Complex::polar(1.0, 0.0);
+                old_fourier_phases[(1, idx, j)] = Complex::polar(1.0, -2.0 * PI * old_ri[j]);
 
-                new_fourier_phases[(0, i, j)] = Complex::polar(1.0, 0.0);
-                new_fourier_phases[(1, i, j)] = Complex::polar(1.0, -2.0 * PI * new_ri[j]);
+                new_fourier_phases[(0, idx, j)] = Complex::polar(1.0, 0.0);
+                new_fourier_phases[(1, idx, j)] = Complex::polar(1.0, -2.0 * PI * new_ri[j]);
             }
         }
 
         // Use recursive definition for computing the factor for all the other values of k.
         for k in 2..self.kmax {
-            for i in 0..natoms {
+            for idx in 0..natoms {
                 for j in 0..3 {
-                    old_fourier_phases[(k, i, j)] = old_fourier_phases[(k - 1, i, j)]
-                                                   * old_fourier_phases[(1, i, j)];
+                    old_fourier_phases[(k, idx, j)] = old_fourier_phases[(k - 1, idx, j)]
+                                                    * old_fourier_phases[(1, idx, j)];
 
-                    new_fourier_phases[(k, i, j)] = new_fourier_phases[(k - 1, i, j)]
-                                                   * new_fourier_phases[(1, i, j)];
+                    new_fourier_phases[(k, idx, j)] = new_fourier_phases[(k - 1, idx, j)]
+                                                    * new_fourier_phases[(1, idx, j)];
                 }
             }
         }
@@ -445,12 +445,12 @@ impl Ewald {
             for iky in 0..self.kmax {
                 for ikz in 0..self.kmax {
                     self.delta_rho[(ikx, iky, ikz)] = Complex::polar(0.0, 0.0);
-                    for j in 0..natoms {
-                        let old_phi = old_fourier_phases[(ikx, j, 0)] * old_fourier_phases[(iky, j, 1)] * old_fourier_phases[(ikz, j, 2)];
-                        let new_phi = new_fourier_phases[(ikx, j, 0)] * new_fourier_phases[(iky, j, 1)] * new_fourier_phases[(ikz, j, 2)];
+                    for (idx, &i) in idxes.iter().enumerate() {
+                        let old_phi = old_fourier_phases[(ikx, idx, 0)] * old_fourier_phases[(iky, idx, 1)] * old_fourier_phases[(ikz, idx, 2)];
+                        let new_phi = new_fourier_phases[(ikx, idx, 0)] * new_fourier_phases[(iky, idx, 1)] * new_fourier_phases[(ikz, idx, 2)];
 
-                        self.delta_rho[(ikx, iky, ikz)] = self.delta_rho[(ikx, iky, ikz)] - system[j].charge * old_phi;
-                        self.delta_rho[(ikx, iky, ikz)] = self.delta_rho[(ikx, iky, ikz)] + system[j].charge * new_phi;
+                        self.delta_rho[(ikx, iky, ikz)] = self.delta_rho[(ikx, iky, ikz)] - system[i].charge * old_phi;
+                        self.delta_rho[(ikx, iky, ikz)] = self.delta_rho[(ikx, iky, ikz)] + system[i].charge * new_phi;
                     }
                 }
             }
