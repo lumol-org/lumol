@@ -51,6 +51,8 @@ pub struct System {
     particles: Vec<Particle>,
     /// Molecules in the system
     molecules: Vec<Molecule>,
+    /// Molecules indexes for all the particles
+    molids: Vec<usize>,
     /// Particles kinds, associating particles names and indexes
     kinds: HashMap<String, u16>,
     /// Interactions is a hash map associating particles kinds and potentials
@@ -65,6 +67,7 @@ impl System {
         System{
             particles: Vec::new(),
             molecules: Vec::new(),
+            molids: Vec::new(),
             kinds: HashMap::new(),
             interactions: Interactions::new(),
             cell: UnitCell::new(),
@@ -92,17 +95,6 @@ impl System {
 
 /// Topology and particles related functions
 impl System {
-    /// Get the index of the molecule containing the particle `i`
-    fn molecule_id(&self, i: usize) -> usize {
-        for (idx, mol) in self.molecules.iter().enumerate() {
-            if mol.first() <= i && i <= mol.last() {
-                return idx;
-            }
-        }
-        error!("Could not find the molecule id for particle {}", i);
-        unreachable!()
-    }
-
     /// Get the type of the molecule at index `molid`. This type is a hash of
     /// the atoms names, and the set of bonds in the molecule. This means that
     /// two molecules will have the same type if and only if they contains the
@@ -125,13 +117,13 @@ impl System {
 
     /// Get the molecule containing the particle `i`
     pub fn molecule_containing(&self, i:usize) -> &Molecule {
-        let id = self.molecule_id(i);
-        return &self.molecules[id];
+        return &self.molecules[self.molids[i]];
     }
 
     /// Check if the particles at indexes `i` and `j` are in the same molecule
     #[inline] pub fn are_in_same_molecule(&self, i: usize, j:usize) -> bool {
-        self.molecule_id(i) == self.molecule_id(j)
+        debug_assert!(self.molids.len() == self.particles.len());
+        self.molids[i] == self.molids[j]
     }
 
     /// Get the list of molecules in the system.
@@ -170,17 +162,22 @@ impl System {
 
     /// Remove the molecule containing the particle at index `i`
     pub fn remove_molecule_containing(&mut self, i: usize) {
-        let id = self.molecule_id(i);
+        let id = self.molids[i];
         let molecule = self.molecules.remove(id);
         let first = molecule.first();
         let size = molecule.size();
 
         for _ in 0..size {
             let _ = self.particles.remove(first);
+            let _ = self.molids.remove(first);
         }
 
         for molecule in self.molecules.iter_mut().skip(id) {
             molecule.translate_by(-(size as isize));
+        }
+
+        for molid in self.molids.iter_mut().skip(first) {
+            *molid -= 1;
         }
     }
 
@@ -200,14 +197,14 @@ impl System {
     pub fn add_bond(&mut self, i: usize, j: usize) -> Option<Permutations> {
         assert!(i <= self.particles.len());
         assert!(j <= self.particles.len());
-        trace!("Adding bond between the particles {} and {}, in molecules {} and {}", i, j, self.molecule_id(i), self.molecule_id(j));
+        trace!("Adding bond between the particles {} and {}, in molecules {} and {}", i, j, self.molids[i], self.molids[j]);
 
         let (i, j, perms) = if self.are_in_same_molecule(i, j) {
             (i, j, None)
         } else { // Do all the hard work
             // Getting copy of the molecules before the merge
-            let mol_i = self.molecule_id(i);
-            let mol_j = self.molecule_id(j);
+            let mol_i = self.molids[i];
+            let mol_j = self.molids[j];
             let new_mol_idx = min(mol_i, mol_j);
             let old_mol_idx = max(mol_i, mol_j);
             let new_mol = self.molecules[new_mol_idx].clone();
@@ -217,7 +214,8 @@ impl System {
             let new_mol_last = new_mol.last();
             let old_mol_first = old_mol.first();
 
-            // If new_mol_last + 1 == old_mol_first, no one move
+            // If new_mol_last + 1 == old_mol_first, no one move. Else, we have
+            // to move everything
             if new_mol_last + 1 != old_mol_first {
                 let size = old_mol.size();
                 let mut i = old_mol.first();
@@ -253,14 +251,13 @@ impl System {
             error!("Can not add a bond between a particle and itself.");
         }
 
-        let id = self.molecule_id(i);
-        self.molecules[id].add_bond(i, j);
+        self.molecules[self.molids[i]].add_bond(i, j);
         return perms;
     }
 
     /// Removes particle at index `i` and any associated bonds, angle or dihedral
     pub fn remove_particle(&mut self, i: usize) {
-        let id = self.molecule_id(i);
+        let id = self.molids[i];
         self.molecules[id].remove_particle(i);
 
         for molecule in self.molecules.iter_mut().skip(id + 1) {
@@ -268,6 +265,7 @@ impl System {
         }
 
         let _ = self.particles.remove(i);
+        let _ = self.molids.remove(i);
     }
 
 
@@ -281,6 +279,7 @@ impl System {
         }
         self.particles.push(part);
         self.molecules.push(Molecule::new(self.particles.len() - 1));
+        self.molids.push(self.molecules.len() - 1);
     }
 
     /// Get the number of particles in this system
@@ -322,8 +321,8 @@ impl System {
     /// This functions return the deplacement of the move molecule, i.e. in this
     /// example `4`.
     fn merge_molecules_containing(&mut self, i: usize, j: usize) -> usize {
-        let mol_i = self.molecule_id(i);
-        let mol_j = self.molecule_id(j);
+        let mol_i = self.molids[i];
+        let mol_j = self.molids[j];
 
         // Move the particles so that we still have molecules contiguous in
         // memory. The molecules are merged in the one with the smaller index.
@@ -344,16 +343,30 @@ impl System {
                 // we insert a new particle for each particle removed.
                 let particle = self.particles.remove(i);
                 self.particles.insert(new_index, particle);
+
+                // Update molids
+                let _ = self.molids.remove(i);
+                self.molids.insert(new_index, new_mol_idx);
+
                 new_index += 1;
+            }
+        } else {
+            for i in old_mol {
+                self.molids[i] = new_mol_idx;
             }
         }
 
-        let mut old_mol = self.molecules[max(mol_i, mol_j)].clone();
+        let mut old_mol = self.molecules[old_mol_idx].clone();
         let size = old_mol.size() as isize;
 
-        // translate all indexed in the molecules between new_mol and old_mol
+        // translate all indexes in the molecules between new_mol and old_mol
         for molecule in self.molecules.iter_mut().skip(new_mol_idx + 1).take(old_mol_idx - new_mol_idx - 1) {
             molecule.translate_by(size);
+        }
+
+        // Update molid for all particles after the old molecule
+        for molid in self.molids.iter_mut().skip(old_mol.last() + 1) {
+            *molid -= 1;
         }
 
         let delta = old_mol.first() - new_mol.last() - 1;
@@ -362,6 +375,15 @@ impl System {
         new_mol.merge_with(old_mol);
         self.molecules[new_mol_idx] = new_mol;
         let _ = self.molecules.remove(old_mol_idx);
+
+        // Check that self.molids is sorted and only contains successives values
+        debug_assert!(self.molids.iter().fold((true, 0), |(is_valid, previous), &i| {
+            if i == previous || i == previous + 1 {
+                (is_valid, i)
+            } else {
+                (false, i)
+            }
+        }).0, "Unsorted molecule ids {:?}", self.molids);
 
         return delta;
     }
@@ -755,11 +777,12 @@ mod tests {
     #[test]
     fn molecules_permutations() {
         let mut system = System::new();
-        system.add_particle(Particle::new("N"));
+        system.add_particle(Particle::new("C"));
         system.add_particle(Particle::new("H"));
         system.add_particle(Particle::new("H"));
         system.add_particle(Particle::new("H"));
-        system.add_particle(Particle::new("N"));
+
+        system.add_particle(Particle::new("C"));
         system.add_particle(Particle::new("H"));
         system.add_particle(Particle::new("H"));
         system.add_particle(Particle::new("H"));
