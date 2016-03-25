@@ -2,11 +2,11 @@
 // Copyright (C) 2015-2016 G. Fraux — BSD license
 
 //! [Chemfiles](https://github.com/chemfiles/chemfiles/) adaptators for Cymbalum.
-use system::{System, Particle, UnitCell, CellType};
+use system::{System, Particle, Molecule, UnitCell, CellType};
 use types::Vector3D;
 use chemfiles;
 
-use super::TrajectoryResult;
+use std::path::Path;
 
 /// Convert chemfiles types to Cymbalum types
 pub trait ToCymbalum {
@@ -185,4 +185,83 @@ impl ToChemfiles for System {
         try!(frame.set_cell(&cell));
         Ok(frame)
     }
+}
+
+/******************************************************************************/
+
+/// A Trajectory is a file containing one or more successives simulation steps
+pub struct Trajectory(chemfiles::Trajectory);
+
+/// Possible error causes when reading and wrinting to trajectories
+pub use chemfiles::Error as TrajectoryError;
+
+/// Result type for all Trajectory operations
+pub type TrajectoryResult<T> = Result<T, TrajectoryError>;
+
+impl Trajectory {
+    /// Open an existing file at `path` for reading.
+    pub fn open<P: AsRef<Path>>(path: P) -> TrajectoryResult<Trajectory> {
+        let traj = try!(chemfiles::Trajectory::open(path));
+        return Ok(Trajectory(traj));
+    }
+
+    /// Create a new file at `path` for writing, and overwrite any existing file.
+    pub fn create<P: AsRef<Path>>(path: P) -> TrajectoryResult<Trajectory> {
+        let traj = try!(chemfiles::Trajectory::create(path));
+        return Ok(Trajectory(traj));
+    }
+
+    /// Read the next step of the trajectory
+    pub fn read(&mut self) -> TrajectoryResult<System> {
+        let mut frame = try!(chemfiles::Frame::new(0));
+        try!(self.0.read(&mut frame));
+        return frame.to_cymbalum();
+    }
+
+    /// Read the next step of the trajectory, and guess the bonds of the
+    /// resulting System.
+    pub fn read_guess_bonds(&mut self) -> TrajectoryResult<System> {
+        let mut frame = try!(chemfiles::Frame::new(0));
+        try!(self.0.read(&mut frame));
+        try!(frame.guess_topology(true));
+        return frame.to_cymbalum();
+    }
+
+    /// Write the system to the trajectory.
+    pub fn write(&mut self, system: &System) -> TrajectoryResult<()> {
+        let frame = try!(system.to_chemfiles());
+        return self.0.write(&frame);
+    }
+}
+
+/// Read a the first molecule from the file at `path`. If no bond information
+/// exists in the file, bonds are guessed.
+pub fn read_molecule<P: AsRef<Path>>(path: P) -> TrajectoryResult<(Molecule, Vec<Particle>)> {
+    let path = path.as_ref();
+
+    let mut trajectory = try!(chemfiles::Trajectory::open(path));
+    let mut frame = try!(chemfiles::Frame::new(0));
+    try!(trajectory.read(&mut frame));
+
+    // Only guess the topology when we have no bond information
+    let topology = try!(frame.topology());
+    if try!(topology.bonds_count()) == 0 {
+        try!(frame.guess_topology(true));
+    }
+    let system = try!(frame.to_cymbalum());
+
+    assert!(system.size() != 0, "No molecule in the file at {:?}", path);
+    let molecule = system.molecule(0).clone();
+    let mut particles = Vec::new();
+    for i in &molecule {
+        particles.push(system[i].clone());
+    }
+    return Ok((molecule, particles));
+}
+
+/// Guess the bonds in a system
+pub fn guess_bonds(system: System) -> TrajectoryResult<System> {
+    let mut frame = try!(system.to_chemfiles());
+    try!(frame.guess_topology(true));
+    return frame.to_cymbalum();
 }

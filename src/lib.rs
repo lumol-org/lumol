@@ -71,4 +71,4 @@ pub use potentials::*;
 pub use system::*;
 pub use simulation::*;
 
-pub mod io;
+pub mod input;

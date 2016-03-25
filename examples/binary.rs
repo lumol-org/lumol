@@ -5,9 +5,9 @@ use cymbalum::*;
 fn main() {
     Logger::stdout();
 
-    let mut system = io::Trajectory::open("data/binary.xyz")
-                                         .and_then(|mut traj| traj.read())
-                                         .unwrap();
+    let mut system = input::Trajectory::open("data/binary.xyz")
+                                        .and_then(|mut traj| traj.read())
+                                        .unwrap();
     // Add bonds in the system
     for i in 0..system.molecules().len() / 3 {
         system.add_bond(3 * i,     3 * i + 1);
@@ -15,11 +15,11 @@ fn main() {
     }
 
     system.set_cell(UnitCell::cubic(25.0));
-    io::read_interactions(&mut system, "data/binary.yml").unwrap();
+    input::read_interactions(&mut system, "data/binary.yml").unwrap();
 
     let co2 = {
         // We can read files to get moltype
-        let (molecule, atoms) = io::read_molecule("data/CO2.xyz").unwrap();
+        let (molecule, atoms) = input::read_molecule("data/CO2.xyz").unwrap();
         moltype(&molecule, &atoms)
     };
     let h2o = {

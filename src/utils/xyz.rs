@@ -4,11 +4,9 @@
 //! Read static string using the XYZ file format, and create the corresponding
 //! system.
 
-#![cfg(test)]
-
 use system::{System, Particle};
-use io::testing::guess_bonds;
 use types::Vector3D;
+use input::guess_bonds;
 
 /// Read the `content` string, assuming XYZ format, and create the corresponding
 /// system. This function is intended for testing purposes only, and will

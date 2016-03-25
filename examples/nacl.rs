@@ -7,12 +7,12 @@ fn main() {
     Logger::stdout();
 
     // Read the system fromt the `data/nacl.xyz` file
-    let mut trajectory = io::Trajectory::open("data/NaCl.xyz").unwrap();
+    let mut trajectory = input::Trajectory::open("data/NaCl.xyz").unwrap();
     let mut system = trajectory.read().unwrap();
     // Set the unit cell, as there is no unit cell data in XYZ files
     system.set_cell(UnitCell::cubic(units::from(22.5608, "A").unwrap()));
     // Read the interactions from the `data/NaCl.yml` YAML file
-    io::read_interactions(&mut system, "data/NaCl.yml").unwrap();
+    input::read_interactions(&mut system, "data/NaCl.yml").unwrap();
 
     let mut velocities = BoltzmanVelocities::new(units::from(300.0, "K").unwrap());
     velocities.init(&mut system);

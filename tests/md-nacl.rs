@@ -12,13 +12,13 @@ pub static START: Once = ONCE_INIT;
 pub fn setup_system(potential: &str) -> System {
     let data_dir = Path::new(file!()).parent().unwrap();
     let configuration = data_dir.join("data").join("NaCl.xyz");
-    let mut system = io::Trajectory::open(configuration)
-                                     .and_then(|mut traj| traj.read())
-                                      .unwrap();
+    let mut system = input::Trajectory::open(configuration)
+                                        .and_then(|mut traj| traj.read())
+                                        .unwrap();
     system.set_cell(UnitCell::cubic(11.2804));
 
     let potentials = data_dir.join("data").join(potential);
-    io::read_interactions(&mut system, potentials).unwrap();
+    input::read_interactions(&mut system, potentials).unwrap();
 
     let mut velocities = BoltzmanVelocities::new(units::from(300.0, "K").unwrap());
     velocities.init(&mut system);
