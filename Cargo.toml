@@ -34,6 +34,9 @@ optional = true
 git = "https://github.com/mcarton/rust-herbie-lint/"
 optional = true
 
+[dev-dependencies]
+tempfile = "2.1.1"
+
 [features]
 default = []
 lint = ["clippy", "herbie-lint"]

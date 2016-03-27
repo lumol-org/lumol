@@ -265,3 +265,41 @@ pub fn guess_bonds(system: System) -> TrajectoryResult<System> {
     try!(frame.guess_topology(true));
     return frame.to_cymbalum();
 }
+
+
+#[cfg(test)]
+mod tests {
+    extern crate tempfile;
+    use self::tempfile::NamedTempFileOptions;
+
+    use super::*;
+    use std::io::prelude::*;
+    use system::moltype;
+
+    static MOLECULE: &'static str = "3
+
+O 0.0 0.0 0.0
+H 1.0 0.0 0.0
+H 0.0 1.0 0.0
+";
+
+    #[test]
+    fn read() {
+        let mut file = NamedTempFileOptions::new().suffix(".xyz").create().unwrap();
+        write!(file, "{}", MOLECULE).unwrap();
+
+        let (molecule, atoms) = read_molecule(file.path()).unwrap();
+
+        assert_eq!(molecule.size(), 3);
+        assert_eq!(molecule.size(), atoms.len());
+        assert_eq!(molecule.bonds().len(), 2);
+
+        assert_eq!(atoms[0].name(), "O");
+        assert_eq!(atoms[1].name(), "H");
+        assert_eq!(atoms[2].name(), "H");
+
+        // This is only a simple regression test on the moltype function. Feel
+        // free to change the value if the molecule type algorithm change.
+        assert_eq!(moltype(&molecule, &atoms), 4144180246440175497);
+    }
+}
