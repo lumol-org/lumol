@@ -1,13 +1,15 @@
 # Units
 
-Cymbalum uses a set of internal units, and offer facilities to convert from and
-to this set of internal units. The internal unit system is the following:
+Cymbalum features a set of internal units and offers facilities to convert
+from and to this set of internal units.
+
+The internal unit system is the following:
 - Angstrom ($A$) for distances;
 - Femto-second ($fs$) for time;
 - Unified atomic mass unit ($u$ or $Da$) for mass;
 - Kelvin ($K$) for temperature;
 - Number of particles for quantity of matter;
-- radian ($rad$) for angles;
+- Radian ($rad$) for angles;
 
 Any other internal unit is derived from this set:
 - The internal unit of energy is $u A^2 fs^{-2}$;
@@ -29,8 +31,8 @@ The accepted units are:
 | Force       | N                                 |
 | Pressure    | Pa, kPa, MPa, bar, atm            |
 
-In the input files, the unit are specified as strings, and must be spelled
-exactly as in the above table, and can be combined with other units using either
-a space, `.` or `*` for multiplication, the `/` character for division, and the
-`^` character for power raising. Some valid units string are `kcal/mol`,
-`J * mol * A^-2`, `m.fs^{-1}`.
+In the input files, the units are specified as strings, and must be spelled
+exactly as in the above table. They can be combined with other units using
+either a whitespace, `.` or `*` for multiplication, the `/` character for
+division, and the `^` character for expontents.
+For example, some valid strings are `kcal/mol`, `J * mol * A^-2`, `m.fs^{-1}`.
