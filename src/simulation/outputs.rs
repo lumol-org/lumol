@@ -290,7 +290,7 @@ F 1.3 0 0
         let content = "\
 # Physical properties of the simulation
 # Step Volume/A^3 Temperature/K Pressure/bar
-0 1000 0 -431.7400836223091
+0 1000 0 -215.87004181115455
 ";
         check_file_content(filename, content);
         fs::remove_file(filename).unwrap();

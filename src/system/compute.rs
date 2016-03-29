@@ -168,7 +168,8 @@ impl Compute for Volume {
 }
 
 /******************************************************************************/
-/// Compute the virial tensor of the system
+/// Compute the virial tensor of the system, defined by
+/// $$ W = \sum_i \sum_{j > i} \vec r_{ij} \otimes \vec f_{ij} $$
 pub struct Virial;
 impl Compute for Virial {
     type Output = Matrix3;
@@ -180,7 +181,7 @@ impl Compute for Virial {
                     let info = restriction.informations(system, i, j);
                     if !info.excluded {
                         let d = system.wraped_vector(i, j);
-                        res = res + 2.0 * info.scaling * potential.virial(&d);
+                        res = res + info.scaling * potential.virial(&d);
                     }
                 }
             }
@@ -203,7 +204,8 @@ impl Compute for Virial {
 
 /******************************************************************************/
 /// Compute the pressure of the system from the virial equation, at the given
-/// temperature.
+/// temperature. This pressure is given by the following formula:
+/// $$ p = \frac{N k_B T}{V} + \frac{1}{3V} \sum_i \vec f_i \cdot \vec r_i $$
 pub struct PressureAtTemperature {
     /// Temperature for the pressure computation
     pub temperature: f64
@@ -217,13 +219,16 @@ impl Compute for PressureAtTemperature {
         let virial = virial_tensor.trace();
         let volume = system.volume();
         let natoms = system.size() as f64;
-        return natoms * K_BOLTZMANN * self.temperature / volume - virial / (3.0 * volume);
+        return natoms * K_BOLTZMANN * self.temperature / volume + virial / (3.0 * volume);
     }
 }
 
 /******************************************************************************/
 /// Compute the stress tensor of the system from the virial equation, at the
-/// given temperature.
+/// given temperature. The stress tensor is defined by
+/// $$ \sigma = \sigma = \frac{1}{V} (\sum_i m_i v_i \otimes v_i + \sum_i \sum_{j > i} \vec r_{ij} \otimes \vec f_{ij}) $$
+/// but here the kinetic energy term is replaced by it average at the given
+/// temperature.
 pub struct StressAtTemperature {
     /// Temperature for the stress tensor computation
     pub temperature: f64
@@ -237,41 +242,33 @@ impl Compute for StressAtTemperature {
         let volume = system.volume();
         let natoms = system.size() as f64;
         let kinetic = natoms * K_BOLTZMANN * self.temperature * Matrix3::one();
-        return 1.0 / volume * (kinetic - virial);
+        return (kinetic + virial) / volume;
     }
 }
 
 /******************************************************************************/
-/// Compute the stress tensor of the system
+/// Compute the stress tensor of the system, defined by:
+/// $$ \sigma = \frac{1}{V} (\sum_i m_i v_i \otimes v_i + \sum_i \sum_{j > i} \vec r_{ij} \otimes \vec f_{ij}) $$
 pub struct Stress;
 impl Compute for Stress {
     type Output = Matrix3;
     fn compute(&self, system: &System) -> Matrix3 {
         let mut kinetic = Matrix3::zero();
         for particle in system.iter() {
-            let m = particle.mass;
-            let vel = particle.velocity;
-            kinetic[(0, 0)] += m * vel[0] * vel[0];
-            kinetic[(0, 1)] += m * vel[0] * vel[1];
-            kinetic[(0, 2)] += m * vel[0] * vel[2];
-
-            kinetic[(1, 0)] += m * vel[1] * vel[0];
-            kinetic[(1, 1)] += m * vel[1] * vel[1];
-            kinetic[(1, 2)] += m * vel[1] * vel[2];
-
-            kinetic[(2, 0)] += m * vel[2] * vel[0];
-            kinetic[(2, 1)] += m * vel[2] * vel[1];
-            kinetic[(2, 2)] += m * vel[2] * vel[2];
+            let velocity = &particle.velocity;
+            kinetic = kinetic + particle.mass * velocity.tensorial(velocity);
         }
 
         let virial = Virial.compute(system);
         let volume = Volume.compute(system);
-        return 1.0 / volume * (kinetic - virial);
+        return (kinetic + virial) / volume;
     }
 }
 
 /******************************************************************************/
-/// Compute the virial pressure of the system
+/// Compute the virial pressure of the system. This pressure is given by the
+/// following formula:
+/// $$ p = \frac{N k_B T}{V} + \frac{1}{3V} \sum_i \vec f_i \cdot \vec r_i $$
 pub struct Pressure;
 impl Compute for Pressure {
     type Output = f64;
@@ -444,7 +441,7 @@ mod test {
 
         let mut res = Matrix3::zero();
         let force = units::from(30.0, "kJ/mol/A").unwrap();
-        res[(0, 0)] = 2.0 * force * 1.3;
+        res[(0, 0)] = - force * 1.3;
 
         for i in 0..3 {
             for j in 0..3 {
@@ -468,11 +465,11 @@ mod test {
         let pressure = PressureAtTemperature{temperature: 550.0}.compute(system);
 
         let force = units::from(30.0, "kJ/mol/A").unwrap();
-        let virial = 2.0 * force * 1.3;
+        let virial = -force * 1.3;
         let natoms = 2.0;
         let temperature = 550.0;
         let volume = 1000.0;
-        let expected = natoms * K_BOLTZMANN * temperature / volume - virial / (3.0 * volume);
+        let expected = natoms * K_BOLTZMANN * temperature / volume + virial / (3.0 * volume);
 
         assert_approx_eq!(pressure, expected, 1e-9);
         assert_eq!(pressure, system.pressure_at_temperature(550.0));
@@ -518,11 +515,11 @@ mod test {
         let pressure = Pressure.compute(system);
 
         let force = units::from(30.0, "kJ/mol/A").unwrap();
-        let virial = 2.0 * force * 1.3;
+        let virial = - force * 1.3;
         let natoms = 2.0;
         let temperature = 300.0;
         let volume = 1000.0;
-        let expected = natoms * K_BOLTZMANN * temperature / volume - virial / (3.0 * volume);
+        let expected = natoms * K_BOLTZMANN * temperature / volume + virial / (3.0 * volume);
 
         assert_approx_eq!(pressure, expected, 1e-9);
         assert_eq!(pressure, system.pressure());

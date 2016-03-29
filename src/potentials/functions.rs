@@ -25,7 +25,7 @@ pub trait PairPotential : PotentialFunction + BoxClonePair {
     fn virial(&self, r: &Vector3D) -> Matrix3 {
         let fact = self.force(r.norm());
         let rn = r.normalized();
-        let force = - fact * rn;
+        let force = fact * rn;
         force.tensorial(r)
     }
 }
