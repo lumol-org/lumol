@@ -98,7 +98,7 @@ lsh_scal_arithmetic!(
     Vector3D::new(self[0] * other, self[1] * other, self[2] * other)
 );
 
-scal_rhs_arithmetic!(
+rhs_scal_arithmetic!(
     Vector3D, Mul, mul, Vector3D,
     self, other,
     Vector3D::new(self * other[0], self * other[1], self * other[2])

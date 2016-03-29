@@ -134,7 +134,7 @@ macro_rules! lsh_scal_arithmetic {
 
 /// Implement scalar -- $Rhs arithmetic operations for all variation of by
 /// value, by reference and by mutable reference of $Rhs.
-macro_rules! scal_rhs_arithmetic {
+macro_rules! rhs_scal_arithmetic {
     ($Rhs:ty, $Op:ident, $op:ident, $Output:ty, $sel:ident, $other:ident, $res:expr) => (
         impl $Op<$Rhs> for f64 {
             type Output = $Output;

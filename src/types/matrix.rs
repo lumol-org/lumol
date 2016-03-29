@@ -2,7 +2,7 @@
 // Copyright (C) 2015-2016 G. Fraux — BSD license
 
 //! 3x3 matrix type.
-use std::ops::{Add, Sub, Mul, Index, IndexMut};
+use std::ops::{Add, Sub, Mul, Div, Index, IndexMut};
 use types::{Vector3D, Zero, One};
 
 /// 3x3 dimensional matrix type, implementing all usual operations
@@ -136,12 +136,20 @@ lsh_scal_arithmetic!(
                  self[2][0] * other, self[2][1] * other, self[2][2] * other)
 );
 
-scal_rhs_arithmetic!(
+rhs_scal_arithmetic!(
     Matrix3, Mul, mul, Matrix3,
     self, other,
     Matrix3::new(self * other[0][0], self * other[0][1], self * other[0][2],
                  self * other[1][0], self * other[1][1], self * other[1][2],
                  self * other[2][0], self * other[2][1], self * other[2][2])
+);
+
+lsh_scal_arithmetic!(
+    Matrix3, Div, div, Matrix3,
+    self, other,
+    Matrix3::new(self[0][0] / other, self[0][1] / other, self[0][2] / other,
+                 self[1][0] / other, self[1][1] / other, self[1][2] / other,
+                 self[2][0] / other, self[2][1] / other, self[2][2] / other)
 );
 
 impl Zero for Matrix3 {
@@ -250,6 +258,25 @@ mod tests {
             for j in 0..3 {
                 assert_eq!(mul_r[(i, j)], res[(i, j)]);
                 assert_eq!(mul_l[(i, j)], res[(i, j)]);
+            }
+        }
+    }
+
+    #[test]
+    fn div_scalar() {
+        let a = Matrix3::new(1.0, 2.0, 3.0,
+                             4.0, 5.0, 6.0,
+                             8.0, 9.0, 10.0);
+        let b = 2.0;
+        let div = a / b;
+
+        let res = Matrix3::new(0.5, 1.0, 1.5,
+                               2.0, 2.5, 3.0,
+                               4.0, 4.5, 5.0);
+
+        for i in 0..3 {
+            for j in 0..3 {
+                assert_eq!(div[(i, j)], res[(i, j)]);
             }
         }
     }
