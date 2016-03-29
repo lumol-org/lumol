@@ -41,7 +41,7 @@ impl<'a> EnergyEvaluator<'a> {
         let mut energy = 0.0;
         for i in 0..self.system.size() {
             for j in (i+1)..self.system.size() {
-                let r = self.system.wraped_vector(i, j).norm();
+                let r = self.system.nearest_image(i, j).norm();
                 energy += self.pair(r, i, j);
             }
         }
@@ -65,7 +65,7 @@ impl<'a> EnergyEvaluator<'a> {
         for molecule in self.system.molecules() {
             for bond in molecule.bonds() {
                 let (i, j) = (bond.i(), bond.j());
-                let r = self.system.wraped_vector(i, j).norm();
+                let r = self.system.nearest_image(i, j).norm();
                 energy += self.bond(r, i, j);
             }
         }

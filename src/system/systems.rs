@@ -576,10 +576,11 @@ impl System {
         self.cell.distance(&self.particles[i].position, &self.particles[j].position)
     }
 
-    /// Get the vector ri - rj wrapped in the cell.
-    pub fn wraped_vector(&self, i: usize, j:usize) -> Vector3D {
+    /// Get the vector between the nearest image of particle `j` with respect to
+    /// particle `i`.
+    pub fn nearest_image(&self, i: usize, j:usize) -> Vector3D {
         let mut res = self.particles[i].position - self.particles[j].position;
-        self.cell.wrap_vector(&mut res);
+        self.cell.vector_image(&mut res);
         return res;
     }
 

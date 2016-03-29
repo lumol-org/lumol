@@ -244,14 +244,37 @@ impl UnitCell {
 
 /// Geometric operations using periodic boundary conditions
 impl UnitCell {
-    /// Wrap a vector in the unit cell, obeying the periodic boundary conditions
+    /// Wrap a vector in the unit cell, obeying the periodic boundary conditions.
+    /// For a cubic cell of side lenght `L`, this produce a vector with all
+    /// components in `[0, L)`.
     pub fn wrap_vector(&self, vect: &mut Vector3D) {
         match self.celltype {
             CellType::Infinite => (),
             CellType::Orthorombic => {
-                vect[0] = vect[0] - f64::round(vect[0]/self.a())*self.a();
-                vect[1] = vect[1] - f64::round(vect[1]/self.b())*self.b();
-                vect[2] = vect[2] - f64::round(vect[2]/self.c())*self.c();
+                vect[0] = vect[0] - f64::floor(vect[0] / self.a()) * self.a();
+                vect[1] = vect[1] - f64::floor(vect[1] / self.b()) * self.b();
+                vect[2] = vect[2] - f64::floor(vect[2] / self.c()) * self.c();
+            },
+            CellType::Triclinic => {
+                let mut fractional = self.fractional(vect);
+                fractional[0] = fractional[0] - f64::floor(fractional[0]);
+                fractional[1] = fractional[1] - f64::floor(fractional[1]);
+                fractional[2] = fractional[2] - f64::floor(fractional[2]);
+                *vect = self.cartesian(&fractional);
+            },
+        }
+    }
+
+    /// Find the image of a vector in the unit cell, obeying the periodic
+    /// boundary conditions. For a cubic cell of side lenght `L`, this produce a
+    /// vector with all components in `[-L/2, L/2)`.
+    pub fn vector_image(&self, vect: &mut Vector3D) {
+        match self.celltype {
+            CellType::Infinite => (),
+            CellType::Orthorombic => {
+                vect[0] = vect[0] - f64::round(vect[0] / self.a()) * self.a();
+                vect[1] = vect[1] - f64::round(vect[1] / self.b()) * self.b();
+                vect[2] = vect[2] - f64::round(vect[2] / self.c()) * self.c();
             },
             CellType::Triclinic => {
                 let mut fractional = self.fractional(vect);
@@ -278,7 +301,7 @@ impl UnitCell {
     /// Periodic boundary conditions distance between the point `u` and the point `v`
     pub fn distance(&self, u: &Vector3D, v: &Vector3D) -> f64 {
         let mut d = *v - *u;
-        self.wrap_vector(&mut d);
+        self.vector_image(&mut d);
         return d.norm();
     }
 
@@ -286,9 +309,9 @@ impl UnitCell {
     /// boundary conditions.
     pub fn angle(&self, a: &Vector3D, b: &Vector3D, c: &Vector3D) -> f64 {
         let mut x = *a - *b;
-        self.wrap_vector(&mut x);
+        self.vector_image(&mut x);
         let mut y = *c - *b;
-        self.wrap_vector(&mut y);
+        self.vector_image(&mut y);
 
         let xn = x.normalized();
         let yn = y.normalized();
@@ -299,9 +322,9 @@ impl UnitCell {
     /// boundary conditions and its derivatives.
     pub fn angle_and_derivatives(&self, a: &Vector3D, b: &Vector3D, c: &Vector3D) -> (f64, Vector3D, Vector3D, Vector3D) {
         let mut x = *a - *b;
-        self.wrap_vector(&mut x);
+        self.vector_image(&mut x);
         let mut y = *c - *b;
-        self.wrap_vector(&mut y);
+        self.vector_image(&mut y);
 
         let x_norm = x.norm();
         let y_norm = y.norm();
@@ -323,11 +346,11 @@ impl UnitCell {
     /// periodic boundary conditions.
     pub fn dihedral(&self, a: &Vector3D, b: &Vector3D, c: &Vector3D, d: &Vector3D) -> f64 {
         let mut r12 = *b - *a;
-        self.wrap_vector(&mut r12);
+        self.vector_image(&mut r12);
         let mut r23 = *c - *b;
-        self.wrap_vector(&mut r23);
+        self.vector_image(&mut r23);
         let mut r34 = *d - *c;
-        self.wrap_vector(&mut r34);
+        self.vector_image(&mut r34);
 
         let u = r12 ^ r23;
         let v = r23 ^ r34;
@@ -339,11 +362,11 @@ impl UnitCell {
     pub fn dihedral_and_derivatives(&self, a: &Vector3D, b: &Vector3D, c: &Vector3D, d: &Vector3D)
     -> (f64, Vector3D, Vector3D, Vector3D , Vector3D) {
         let mut r12 = *b - *a;
-        self.wrap_vector(&mut r12);
+        self.vector_image(&mut r12);
         let mut r23 = *c - *b;
-        self.wrap_vector(&mut r23);
+        self.vector_image(&mut r23);
         let mut r34 = *d - *c;
-        self.wrap_vector(&mut r34);
+        self.vector_image(&mut r34);
 
         let x = r12 ^ r23;
         let y = r23 ^ r34;
@@ -561,6 +584,12 @@ mod tests {
 
     #[test]
     fn wrap_vector() {
+        // Cubic unit cell
+        let cell = UnitCell::cubic(10.0);
+        let mut v = Vector3D::new(9.0, 18.0, -6.0);
+        cell.wrap_vector(&mut v);
+        assert_eq!(v, Vector3D::new(9.0, 8.0, 4.0));
+
         // Orthorombic unit cell
         let cell = UnitCell::ortho(3.0, 4.0, 5.0);
         let mut v = Vector3D::new(1.0, 1.5, 6.0);
@@ -577,6 +606,36 @@ mod tests {
         let cell = UnitCell::triclinic(3.0, 4.0, 5.0, 90.0, 90.0, 90.0);
         let mut v = Vector3D::new(1.0, 1.5, 6.0);
         cell.wrap_vector(&mut v);
+        let res = Vector3D::new(1.0, 1.5, 1.0);
+        assert_approx_eq!(v[0], res[0]);
+        assert_approx_eq!(v[1], res[1]);
+        assert_approx_eq!(v[2], res[2]);
+    }
+
+    #[test]
+    fn vector_image() {
+        // Cubic unit cell
+        let cell = UnitCell::cubic(10.0);
+        let mut v = Vector3D::new(9.0, 18.0, -6.0);
+        cell.vector_image(&mut v);
+        assert_eq!(v, Vector3D::new(-1.0, -2.0, 4.0));
+
+        // Orthorombic unit cell
+        let cell = UnitCell::ortho(3.0, 4.0, 5.0);
+        let mut v = Vector3D::new(1.0, 1.5, 6.0);
+        cell.vector_image(&mut v);
+        assert_eq!(v, Vector3D::new(1.0, 1.5, 1.0));
+
+        // Infinite unit cell
+        let cell = UnitCell::new();
+        let mut v = Vector3D::new(1.0, 1.5, 6.0);
+        cell.vector_image(&mut v);
+        assert_eq!(v, Vector3D::new(1.0, 1.5, 6.0));
+
+        // Triclinic unit cell
+        let cell = UnitCell::triclinic(3.0, 4.0, 5.0, 90.0, 90.0, 90.0);
+        let mut v = Vector3D::new(1.0, 1.5, 6.0);
+        cell.vector_image(&mut v);
         let res = Vector3D::new(1.0, 1.5, 1.0);
         assert_approx_eq!(v[0], res[0]);
         assert_approx_eq!(v[1], res[1]);

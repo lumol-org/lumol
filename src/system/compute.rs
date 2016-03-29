@@ -28,7 +28,7 @@ impl Compute for Forces {
 
         for i in 0..system.size() {
             for j in (i+1)..system.size() {
-                let d = system.wraped_vector(i, j);
+                let d = system.nearest_image(i, j);
                 let dn = d.normalized();
                 let r = d.norm();
                 for &(ref potential, ref restriction) in system.pair_potentials(i, j) {
@@ -45,7 +45,7 @@ impl Compute for Forces {
         for molecule in system.molecules() {
             for bond in molecule.bonds() {
                 let (i, j) = (bond.i(), bond.j());
-                let d = system.wraped_vector(i, j);
+                let d = system.nearest_image(i, j);
                 let dn = d.normalized();
                 let r = d.norm();
                 for potential in system.bond_potentials(i, j) {
@@ -180,7 +180,7 @@ impl Compute for Virial {
                 for &(ref potential, ref restriction) in system.pair_potentials(i, j) {
                     let info = restriction.informations(system, i, j);
                     if !info.excluded {
-                        let d = system.wraped_vector(i, j);
+                        let d = system.nearest_image(i, j);
                         res = res + info.scaling * potential.virial(&d);
                     }
                 }

@@ -78,7 +78,7 @@ impl EnergyCache {
 
         for i in 0..system.size() {
             for j in (i + 1)..system.size() {
-                let r = system.wraped_vector(i, j).norm();
+                let r = system.nearest_image(i, j).norm();
                 let energy = evaluator.pair(r, i, j);
                 self.pairs_cache[(i, j)] = energy;
                 self.pairs_cache[(j, i)] = energy;

@@ -188,7 +188,7 @@ impl Ewald {
                 let qj = system[j].charge;
                 if qj == 0.0 {continue}
 
-                let rij = system.wraped_vector(i, j);
+                let rij = system.nearest_image(i, j);
                 let info = self.restriction.informations(system, i, j);
 
                 let force = self.real_space_force_pair(info, qi, qj, &rij);
@@ -209,7 +209,7 @@ impl Ewald {
                 let qj = system[j].charge;
                 if qj == 0.0 {continue}
 
-                let rij = system.wraped_vector(i, j);
+                let rij = system.nearest_image(i, j);
                 let info = self.restriction.informations(system, i, j);
 
                 let force = self.real_space_force_pair(info, qi, qj, &rij);
@@ -399,7 +399,7 @@ impl Ewald {
                         for j in (i + 1)..system.size() {
                             let qj = system[j].charge;
                             let force = factor * self.kspace_force_factor(i, j, ikx, iky, ikz, qi, qj) * k;
-                            let rij = system.wraped_vector(i, j);
+                            let rij = system.nearest_image(i, j);
 
                             res = res + force.tensorial(&rij);
                         }
@@ -551,7 +551,7 @@ impl Ewald {
                 let qj = system[j].charge;
                 if qi == 0.0 {continue}
 
-                let rij = system.wraped_vector(i, j);
+                let rij = system.nearest_image(i, j);
                 let force = self.molcorrect_force_pair(info, qi, qj, &rij);
                 res[i] = res[i] - force;
             }
@@ -575,7 +575,7 @@ impl Ewald {
                 let qj = system[j].charge;
                 if qi == 0.0 {continue}
 
-                let rij = system.wraped_vector(i, j);
+                let rij = system.nearest_image(i, j);
                 let force = self.molcorrect_force_pair(info, qi, qj, &rij);
                 res = res + force.tensorial(&rij);
             }
