@@ -224,7 +224,13 @@ mod tests {
             out.finish(&system);
         }
 
-        check_file_content(filename, "2\nWritten by the chemfiles library\nF 0 0 0\nF 1.3 0 0\n");
+        let content = "2
+Written by the chemfiles library
+F 0 0 0
+F 1.3 0 0
+";
+
+        check_file_content(filename, content);
         fs::remove_file(filename).unwrap();
     }
 
@@ -239,7 +245,13 @@ mod tests {
             out.finish(&system);
         }
 
-        check_file_content(filename, "# Energy of the simulation (kJ/mol)\n# Step Potential Kinetic Total\n0 1.5000000000000027 0 1.5000000000000027\n");
+        let content = "\
+# Energy of the simulation (kJ/mol)
+# Step Potential Kinetic Total
+0 1.5000000000000027 0 1.5000000000000027
+";
+
+        check_file_content(filename, content);
         fs::remove_file(filename).unwrap();
     }
 
@@ -254,7 +266,13 @@ mod tests {
             out.finish(&system);
         }
 
-        check_file_content(filename, "# Unit cell of the simulation\n# Step A/Å B/Å C/Å α/deg β/deg γ/deg\n0 10 10 10 90 90 90\n");
+        let content = "\
+# Unit cell of the simulation
+# Step A/Å B/Å C/Å α/deg β/deg γ/deg
+0 10 10 10 90 90 90
+";
+
+        check_file_content(filename, content);
         fs::remove_file(filename).unwrap();
     }
 
@@ -269,7 +287,12 @@ mod tests {
             out.finish(&system);
         }
 
-        check_file_content(filename, "# Physical properties of the simulation\n# Step Volume/A^3 Temperature/K Pressure/bar\n0 1000 0 -431.7400836223091\n");
+        let content = "\
+# Physical properties of the simulation
+# Step Volume/A^3 Temperature/K Pressure/bar
+0 1000 0 -431.7400836223091
+";
+        check_file_content(filename, content);
         fs::remove_file(filename).unwrap();
     }
 }
