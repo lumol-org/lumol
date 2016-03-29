@@ -37,9 +37,9 @@ pub struct TrajectoryOutput {
 impl TrajectoryOutput {
     /// Create a new `TrajectoryOutput` writing to `filename`. The file is
     /// replaced if it already exists.
-    pub fn new<'a, S>(filename: S) -> TrajectoryResult<TrajectoryOutput> where S: Into<&'a str> {
+    pub fn new<'a, P>(path: P) -> TrajectoryResult<TrajectoryOutput> where P: AsRef<Path> {
         Ok(TrajectoryOutput{
-            file: try!(Trajectory::create(filename.into()))
+            file: try!(Trajectory::create(path))
         })
     }
 }
@@ -182,8 +182,11 @@ impl Output for PropertiesOutput {
 
 #[cfg(test)]
 mod tests {
+    extern crate tempfile;
+    use self::tempfile::{NamedTempFile, NamedTempFileOptions};
+
     use std::io::prelude::*;
-    use std::fs;
+    use std::fs::File;
 
     use super::*;
     use system::*;
@@ -205,8 +208,7 @@ mod tests {
         return system;
     }
 
-    fn check_file_content(filename: &str, content: &str) {
-        let mut file = fs::File::open(filename).unwrap();
+    fn check_file_content(mut file: File, content: &str) {
         let mut buffer = String::new();
         let _ = file.read_to_string(&mut buffer).unwrap();
 
@@ -215,10 +217,10 @@ mod tests {
 
     #[test]
     fn trajectory() {
-        let filename = "testing-trajectory-output.xyz";
+        let tempfile = NamedTempFileOptions::new().suffix(".xyz").create().unwrap();
         let system = testing_system();
         {
-            let mut out = TrajectoryOutput::new(filename).unwrap();
+            let mut out = TrajectoryOutput::new(tempfile.path()).unwrap();
             out.setup(&system);
             out.write(&system);
             out.finish(&system);
@@ -229,17 +231,16 @@ Written by the chemfiles library
 F 0 0 0
 F 1.3 0 0
 ";
-
-        check_file_content(filename, content);
-        fs::remove_file(filename).unwrap();
+        let file = tempfile.reopen().unwrap();
+        check_file_content(file, content);
     }
 
     #[test]
     fn energy() {
-        let filename = "testing-energy-output.dat";
+        let tempfile = NamedTempFile::new().unwrap();
         let system = testing_system();
         {
-            let mut out = EnergyOutput::new(filename).unwrap();
+            let mut out = EnergyOutput::new(tempfile.path()).unwrap();
             out.setup(&system);
             out.write(&system);
             out.finish(&system);
@@ -251,16 +252,16 @@ F 1.3 0 0
 0 1.5000000000000027 0 1.5000000000000027
 ";
 
-        check_file_content(filename, content);
-        fs::remove_file(filename).unwrap();
+        let file = tempfile.reopen().unwrap();
+        check_file_content(file, content);
     }
 
     #[test]
     fn cell() {
-        let filename = "testing-cell-output.dat";
+        let tempfile = NamedTempFile::new().unwrap();
         let system = testing_system();
         {
-            let mut out = CellOutput::new(filename).unwrap();
+            let mut out = CellOutput::new(tempfile.path()).unwrap();
             out.setup(&system);
             out.write(&system);
             out.finish(&system);
@@ -272,16 +273,16 @@ F 1.3 0 0
 0 10 10 10 90 90 90
 ";
 
-        check_file_content(filename, content);
-        fs::remove_file(filename).unwrap();
+        let file = tempfile.reopen().unwrap();
+        check_file_content(file, content);
     }
 
     #[test]
     fn properties() {
-        let filename = "testing-properties-output.dat";
+        let tempfile = NamedTempFile::new().unwrap();
         let system = testing_system();
         {
-            let mut out = PropertiesOutput::new(filename).unwrap();
+            let mut out = PropertiesOutput::new(tempfile.path()).unwrap();
             out.setup(&system);
             out.write(&system);
             out.finish(&system);
@@ -292,7 +293,8 @@ F 1.3 0 0
 # Step Volume/A^3 Temperature/K Pressure/bar
 0 1000 0 -215.87004181115455
 ";
-        check_file_content(filename, content);
-        fs::remove_file(filename).unwrap();
+
+        let file = tempfile.reopen().unwrap();
+        check_file_content(file, content);
     }
 }
