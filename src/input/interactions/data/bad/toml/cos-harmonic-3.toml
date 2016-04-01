@@ -1,0 +1,7 @@
+[input.potentials]
+version = 1
+
+[[angles]]
+atoms = ["A", "A", "A"]
+# Missing x0
+cosine-harmonic = {k = "22 kJ/mol"}

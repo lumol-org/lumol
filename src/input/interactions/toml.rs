@@ -6,7 +6,7 @@ use toml::Table;
 
 use super::{Error, Result, FromToml, FromTomlWithPairs};
 
-use potentials::{Harmonic, LennardJones, NullPotential};
+use potentials::{Harmonic, LennardJones, NullPotential, CosineHarmonic};
 use potentials::{PairPotential, TableComputation, CutoffComputation};
 
 macro_rules! try_extract_parameter {
@@ -60,6 +60,23 @@ impl FromToml for LennardJones {
     }
 }
 
+impl FromToml for CosineHarmonic {
+    fn from_toml(table: &Table) -> Result<CosineHarmonic> {
+        let k = try_extract_parameter!(table, "k", "cosine harmonic potential");
+        let x0 = try_extract_parameter!(table, "x0", "cosine harmonic potential");
+
+        if let (Some(k), Some(x0)) = (k.as_str(), x0.as_str()) {
+            let k = try!(::units::from_str(k));
+            let x0 = try!(::units::from_str(x0));
+            Ok(CosineHarmonic::new(k, x0))
+        } else {
+            Err(
+                Error::from("'k' and 'x0' must be strings in cosine harmonic potential")
+            )
+        }
+    }
+}
+
 impl FromTomlWithPairs for CutoffComputation {
     fn from_toml(table: &Table, potential: Box<PairPotential>) -> Result<CutoffComputation> {
         let cutoff = try_extract_parameter!(table, "cutoff", "cutoff computation");
@@ -99,6 +116,7 @@ mod tests {
     #[test]
     fn bad_potentials() {
         for path in bad_interactions("toml") {
+            println!("{:?}", path.display());
             let mut system = System::new();
             assert!(read_interactions(&mut system, path).is_err());
         }

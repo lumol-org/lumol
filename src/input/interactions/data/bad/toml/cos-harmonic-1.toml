@@ -1,0 +1,7 @@
+[input.potentials]
+version = 1
+
+[[angles]]
+atoms = ["A", "A", "A"]
+# cosine-harmonic is not a table
+cosine-harmonic = 4.0

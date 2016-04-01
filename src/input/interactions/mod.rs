@@ -14,9 +14,12 @@ use potentials::PairPotential;
 
 mod toml;
 mod pairs;
-use self::pairs::{TwoBody, read_2body};
+mod angles;
 #[cfg(test)]
 pub mod testing;
+
+use self::pairs::{TwoBody, read_2body};
+use self::angles::read_angles;
 
 #[derive(Debug)]
 /// Possible causes of error when reading potential files
@@ -112,6 +115,13 @@ pub fn read_interactions_string(system: &mut System, string: &str) -> Result<()>
             Error::from("The 'bonds' section must be an array")
         ));
         try!(read_2body(system, bonds, TwoBody::Bonds));
+    }
+
+    if let Some(angles) = config.get("angles") {
+        let angles = try!(angles.as_slice().ok_or(
+            Error::from("The 'angles' section must be an array")
+        ));
+        try!(read_angles(system, angles));
     }
 
     Ok(())

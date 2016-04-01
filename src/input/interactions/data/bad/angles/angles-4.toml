@@ -1,0 +1,6 @@
+[input.potentials]
+version = 1
+
+[[angles]]
+atoms = ["A", "A", "A"]
+# No potential
