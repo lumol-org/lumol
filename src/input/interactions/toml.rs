@@ -6,7 +6,7 @@ use toml::Table;
 
 use super::{Error, Result, FromToml, FromTomlWithPairs};
 
-use potentials::{Harmonic, LennardJones, NullPotential, CosineHarmonic};
+use potentials::{Harmonic, LennardJones, NullPotential, CosineHarmonic, Torsion};
 use potentials::{PairPotential, TableComputation, CutoffComputation};
 
 macro_rules! try_extract_parameter {
@@ -72,6 +72,25 @@ impl FromToml for CosineHarmonic {
         } else {
             Err(
                 Error::from("'k' and 'x0' must be strings in cosine harmonic potential")
+            )
+        }
+    }
+}
+
+impl FromToml for Torsion {
+    fn from_toml(table: &Table) -> Result<Torsion> {
+        let k = try_extract_parameter!(table, "k", "torsion potential");
+        let n = try_extract_parameter!(table, "n", "torsion potential");
+        let delta = try_extract_parameter!(table, "delta", "torsion potential");
+
+        if let (Some(n), Some(k), Some(delta)) = (n.as_integer(), k.as_str(), delta.as_str()) {
+            let k = try!(::units::from_str(k));
+            let delta = try!(::units::from_str(delta));
+            Ok(Torsion{n: n as usize, k: k, delta: delta})
+        } else {
+            Err(
+                Error::from("'k' and 'delta' must be strings in torsion potential, \
+                and 'n' must be an integer")
             )
         }
     }

@@ -19,7 +19,7 @@ mod angles;
 pub mod testing;
 
 use self::pairs::{TwoBody, read_2body};
-use self::angles::read_angles;
+use self::angles::{read_angles, read_dihedrals};
 
 #[derive(Debug)]
 /// Possible causes of error when reading potential files
@@ -122,6 +122,13 @@ pub fn read_interactions_string(system: &mut System, string: &str) -> Result<()>
             Error::from("The 'angles' section must be an array")
         ));
         try!(read_angles(system, angles));
+    }
+
+    if let Some(dihedrals) = config.get("dihedrals") {
+        let dihedrals = try!(dihedrals.as_slice().ok_or(
+            Error::from("The 'dihedrals' section must be an array")
+        ));
+        try!(read_dihedrals(system, dihedrals));
     }
 
     Ok(())
