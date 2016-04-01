@@ -12,6 +12,9 @@ use system::System;
 use units::UnitParsingError;
 use potentials::PairPotential;
 
+mod toml;
+mod pairs;
+use self::pairs::{TwoBody, read_2body};
 #[cfg(test)]
 pub mod testing;
 
@@ -60,6 +63,20 @@ impl From<UnitParsingError> for Error {
 /// Custom `Result` for input files
 pub type Result<T> = result::Result<T, Error>;
 
+/// Convert a TOML table to a Rust type. This is the trait to implement in order
+/// to use the input files.
+pub trait FromToml: Sized {
+    /// Do the conversion from `table` to Self.
+    fn from_toml(table: &Table) -> Result<Self>;
+}
+
+/// Convert a TOML table and a PairPotential to a Rust type. This is intended
+/// to be used by potential computation mainly.
+pub trait FromTomlWithPairs where Self: Sized {
+    /// Do the conversion from `table` and `potential` to Self.
+    fn from_toml(table: &Table, potential: Box<PairPotential>) -> Result<Self>;
+}
+
 /// Read interactions from the TOML file at `path`, and add them to the
 /// `system`. For a full documentation of the input files syntax, see the user
 /// manual.
@@ -81,7 +98,21 @@ pub fn read_interactions_string(system: &mut System, string: &str) -> Result<()>
             return Err(Error::TOML(parser.errors))
         }
     };
+
     try!(validate(&config));
+    if let Some(pairs) = config.get("pairs") {
+        let pairs = try!(pairs.as_slice().ok_or(
+            Error::from("The 'pairs' section must be an array")
+        ));
+        try!(read_2body(system, pairs, TwoBody::Pairs));
+    }
+
+    if let Some(bonds) = config.get("bonds") {
+        let bonds = try!(bonds.as_slice().ok_or(
+            Error::from("The 'bonds' section must be an array")
+        ));
+        try!(read_2body(system, bonds, TwoBody::Bonds));
+    }
 
     Ok(())
 }

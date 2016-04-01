@@ -1,0 +1,58 @@
+[input.potentials]
+version = 1
+
+[[pairs]]
+atoms = ["A", "B"]
+lj = {sigma = "3 A", epsilon = "5.9 kJ/mol"}
+
+[[pairs]]
+atoms = ["A", "B"]
+harmonic = {x0 = "3 A", k = "5.9 kJ/mol/A^2"}
+
+[[pairs]]
+# Cutoff computations
+atoms = ["A", "B"]
+null = {}
+computation = {cutoff = "8 A"}
+
+[[pairs]]
+# Table computations
+atoms = ["A", "B"]
+null = {}
+computation = {table = {max = "8 A", n = 5000}}
+
+[[pairs]]
+# Restrictions
+atoms = ["A", "B"]
+null = {}
+restriction = "intermolecular"
+
+[[pairs]]
+# Restrictions
+atoms = ["A", "B"]
+null = {}
+restriction = "intramolecular"
+
+[[pairs]]
+# Restrictions
+atoms = ["A", "B"]
+null = {}
+restriction = "exclude12"
+
+[[pairs]]
+# Restrictions
+atoms = ["A", "B"]
+null = {}
+restriction = "exclude13"
+
+[[pairs]]
+# Restrictions
+atoms = ["A", "B"]
+null = {}
+restriction = "exclude14"
+
+[[pairs]]
+# Restrictions
+atoms = ["A", "B"]
+null = {}
+restriction = {scale14 = 0.8}

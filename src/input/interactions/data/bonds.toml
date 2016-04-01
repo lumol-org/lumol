@@ -1,0 +1,10 @@
+[input.potentials]
+version = 1
+
+[[bonds]]
+atoms = ["A", "B"]
+harmonic = {x0 = "3 A", k = "5.9 kJ/mol/A^2"}
+
+[[bonds]]
+atoms = ["A", "B"]
+null = {}

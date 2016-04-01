@@ -1,0 +1,8 @@
+[input.potentials]
+version = 1
+
+[[bonds]]
+atoms = ["A", "A"]
+# More than one potential
+lj = {sigma = "3 A", epsilon = "5.9 kJ/mol"}
+harmonic = {k = "3 A", x0 = "5.9 kJ/mol"}
