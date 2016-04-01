@@ -1,6 +1,0 @@
-coulomb:
-    type: Ewald
-    cutoff: 189 A
-    kmax: 112
-    restriction:
-        type: exclude13

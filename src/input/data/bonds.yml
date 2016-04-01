@@ -1,7 +1,0 @@
-bonds:
-    - atoms: [A, B]
-      type: Harmonic
-      x0: 3 A
-      k: 5.9 kJ/mol/A^2
-    - atoms: [A, D]
-      type: Null

@@ -1,9 +1,0 @@
-pairs:
-    - atoms: [A, B]
-      type: LennardJones
-      epsilon: 45 kJ/mol
-      sigma: 3 A
-      restriction:
-          # scaling parameter is no between 0 and 1
-          type: scale14
-          scaling: 20.0

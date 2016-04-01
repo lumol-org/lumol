@@ -1,6 +1,0 @@
-dihedrals:
-    - atoms: [B, C, D, E]
-      type: torsion
-      n: 54
-      delta: 56 rad
-      # missing k value in torsion
