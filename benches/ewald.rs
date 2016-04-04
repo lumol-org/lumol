@@ -12,9 +12,9 @@ pub static START: Once = ONCE_INIT;
 pub fn get_system(name: &str) -> System {
     let data_dir = Path::new(file!()).parent().unwrap();
     let configuration = data_dir.join("data").join(name);
-    let mut system = io::Trajectory::open(configuration)
-                                     .and_then(|mut traj| traj.read())
-                                     .unwrap();
+    let mut system = input::Trajectory::open(configuration)
+                                        .and_then(|mut traj| traj.read())
+                                        .unwrap();
     let cell = if name == "NaCl.xyz" {
         UnitCell::cubic(11.2804)
     } else if name == "water.xyz" {
