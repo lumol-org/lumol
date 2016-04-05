@@ -9,16 +9,26 @@ use std::path::Path;
 use std::sync::{Once, ONCE_INIT};
 pub static START: Once = ONCE_INIT;
 
-pub fn setup_system(potential: &str) -> System {
+pub fn setup_system(potential: &str, file: &str) -> System {
     let data_dir = Path::new(file!()).parent().unwrap();
-    let configuration = data_dir.join("data").join("NaCl.xyz");
+
+    let configuration = String::from("NaCl-") + file + ".xyz";
+    let configuration = data_dir.join("data").join(configuration);
     let mut system = input::Trajectory::open(configuration)
                                         .and_then(|mut traj| traj.read())
                                         .unwrap();
-    system.set_cell(UnitCell::cubic(11.2804));
 
-    let potentials = data_dir.join("data").join(potential);
-    input::read_interactions(&mut system, potentials).unwrap();
+    if file == "small" {
+        system.set_cell(UnitCell::cubic(11.2804));
+    } else if file == "big" {
+        system.set_cell(UnitCell::cubic(22.5608));
+    } else {
+        unreachable!();
+    }
+
+    let potential = String::from("NaCl-") + potential + ".yml";
+    let potential = data_dir.join("data").join(potential);
+    input::read_interactions(&mut system, potential).unwrap();
 
     let mut velocities = BoltzmanVelocities::new(units::from(300.0, "K").unwrap());
     velocities.init(&mut system);
@@ -28,10 +38,11 @@ pub fn setup_system(potential: &str) -> System {
 mod wolf {
     use super::*;
     use cymbalum::*;
+
     #[test]
     fn constant_energy() {
         START.call_once(|| {Logger::stdout();});
-        let mut system = setup_system("NaCl-wolf.yml");
+        let mut system = setup_system("wolf", "small");
         let mut simulation = Simulation::new(
             MolecularDynamics::new(units::from(1.0, "fs").unwrap())
         );
@@ -45,7 +56,7 @@ mod wolf {
     #[test]
     fn anisotropic_berendsen() {
         START.call_once(|| {Logger::stdout();});
-        let mut system = setup_system("NaCl-wolf.yml");
+        let mut system = setup_system("wolf", "small");
         let mut simulation = Simulation::new(
             MolecularDynamics::from_integrator(
                 AnisoBerendsenBarostat::hydrostatic(
@@ -64,10 +75,11 @@ mod wolf {
 mod ewald {
     use super::*;
     use cymbalum::*;
+
     #[test]
     fn constant_energy() {
         START.call_once(|| {Logger::stdout();});
-        let mut system = setup_system("NaCl-ewald.yml");
+        let mut system = setup_system("ewald", "small");
         let mut simulation = Simulation::new(
             MolecularDynamics::new(units::from(1.0, "fs").unwrap())
         );
@@ -76,5 +88,16 @@ mod ewald {
         simulation.run(&mut system, 100);
         let e_final = system.total_energy();
         assert!(f64::abs((e_initial - e_final)/e_final) < 5e-3);
+    }
+
+    #[test]
+    fn energy() {
+        START.call_once(|| {Logger::stdout();});
+        let system = setup_system("ewald", "big");
+        let energy = units::to(system.total_energy(), "kcal/mol").unwrap();
+
+        // Energy of this system given by LAMMPS in kcal/mol
+        const LAMMPS_ENERGY: f64 = -48610.136;
+        assert!(f64::abs((energy - LAMMPS_ENERGY)/LAMMPS_ENERGY) < 1e-3);
     }
 }
