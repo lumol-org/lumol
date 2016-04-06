@@ -15,7 +15,7 @@ fn main() {
     }
 
     system.set_cell(UnitCell::cubic(25.0));
-    input::read_interactions(&mut system, "data/binary.yml").unwrap();
+    input::read_interactions(&mut system, "data/binary.toml").unwrap();
 
     let co2 = {
         // We can read files to get moltype

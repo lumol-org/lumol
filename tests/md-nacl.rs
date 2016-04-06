@@ -26,7 +26,7 @@ pub fn setup_system(potential: &str, file: &str) -> System {
         unreachable!();
     }
 
-    let potential = String::from("NaCl-") + potential + ".yml";
+    let potential = String::from("NaCl-") + potential + ".toml";
     let potential = data_dir.join("data").join(potential);
     input::read_interactions(&mut system, potential).unwrap();
 

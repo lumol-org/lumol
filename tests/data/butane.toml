@@ -1,0 +1,19 @@
+[input.potentials]
+version = 1
+
+[[pairs]]
+atoms = ["C", "C"]
+lj = {sigma = "3.4 A", epsilon = "0.7 kcal/mol"}
+restriction = "InterMolecular"
+
+[[bonds]]
+atoms = ["C", "C"]
+harmonic = {x0 = "1.53 A", k = "225 kcal/mol/A^2"}
+
+[[angles]]
+atoms = ["C", "C", "C"]
+harmonic = {x0 = "115 deg", k = "58 kcal/mol/rad^2"}
+
+[[dihedrals]]
+atoms = ["C", "C", "C", "C"]
+torsion = {n = 3, delta = "180 deg", k = "1.50 kcal/mol"}

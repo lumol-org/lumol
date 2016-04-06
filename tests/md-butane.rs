@@ -17,7 +17,7 @@ fn setup_system() -> System {
                                         .unwrap();
     system.set_cell(UnitCell::cubic(20.0));
 
-    let interactions = data_dir.join("butane.yml");
+    let interactions = data_dir.join("butane.toml");
     input::read_interactions(&mut system, interactions).unwrap();
 
     let mut velocities = BoltzmanVelocities::new(units::from(300.0, "K").unwrap());

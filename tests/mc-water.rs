@@ -26,7 +26,7 @@ fn get_system(potential: &str) -> System {
 #[test]
 fn wolf() {
     START.call_once(|| {Logger::stdout();});
-    let mut system = get_system("water-wolf.yml");
+    let mut system = get_system("water-wolf.toml");
 
     let mut mc = MonteCarlo::new(units::from(300.0, "K").unwrap());
     mc.add(Box::new(Translate::new(units::from(3.0, "A").unwrap())), 1.0);
@@ -39,7 +39,7 @@ fn wolf() {
 #[test]
 fn ewald() {
     START.call_once(|| {Logger::stdout();});
-    let mut system = get_system("water-ewald.yml");
+    let mut system = get_system("water-ewald.toml");
 
     let mut mc = MonteCarlo::new(units::from(300.0, "K").unwrap());
     mc.add(Box::new(Translate::new(units::from(3.0, "A").unwrap())), 1.0);
