@@ -1,6 +1,6 @@
 // Cymbalum, an extensible molecular simulation engine
 // Copyright (C) 2015-2016 G. Fraux — BSD license
-use toml::{Parser, ParserError, Table};
+use toml::{Parser, ParserError, Table, Value};
 
 use std::io::prelude::*;
 use std::io;
@@ -10,16 +10,19 @@ use std::path::Path;
 
 use system::System;
 use units::UnitParsingError;
-use potentials::PairPotential;
+use potentials::{PairPotential, PairRestriction};
 
 mod toml;
 mod pairs;
 mod angles;
+mod coulomb;
+
 #[cfg(test)]
 pub mod testing;
 
 use self::pairs::{TwoBody, read_2body};
 use self::angles::{read_angles, read_dihedrals};
+use self::coulomb::{read_coulomb, set_charges};
 
 #[derive(Debug)]
 /// Possible causes of error when reading potential files
@@ -131,6 +134,20 @@ pub fn read_interactions_string(system: &mut System, string: &str) -> Result<()>
         try!(read_dihedrals(system, dihedrals));
     }
 
+    if let Some(coulomb) = config.get("coulomb") {
+        let coulomb = try!(coulomb.as_table().ok_or(
+            Error::from("The 'coulomb' section must be a table")
+        ));
+        try!(read_coulomb(system, coulomb));
+    }
+
+    if let Some(charges) = config.get("charges") {
+        let charges = try!(charges.as_table().ok_or(
+            Error::from("The 'charges' section must be a table")
+        ));
+        try!(set_charges(system, charges));
+    }
+
     Ok(())
 }
 
@@ -154,6 +171,42 @@ fn validate(config: &Table) -> Result<()> {
     }
 
     Ok(())
+}
+
+fn read_restriction(config: &Table) -> Result<Option<PairRestriction>> {
+    let restriction = match config.get("restriction") {
+        Some(restriction) => restriction,
+        None => {return Ok(None)}
+    };
+
+    match restriction.clone() {
+        Value::String(name) => {
+            match &*name {
+                "none" => Ok(Some(PairRestriction::None)),
+                "intramolecular" => Ok(Some(PairRestriction::IntraMolecular)),
+                "intermolecular" => Ok(Some(PairRestriction::InterMolecular)),
+                "exclude12" => Ok(Some(PairRestriction::Exclude12)),
+                "exclude13" => Ok(Some(PairRestriction::Exclude13)),
+                "exclude14" => Ok(Some(PairRestriction::Exclude14)),
+                "scale14" => Err(
+                    Error::from("'scale14' restriction must be a table")
+                ),
+                other => Err(
+                    Error::from(format!("Unknown restriction '{}'", other))
+                ),
+            }
+        },
+        Value::Table(ref restriction) => {
+            if restriction.keys().len() != 1 || restriction.get("scale14").is_none() {
+                return Err(Error::from("Restriction table must be 'scale14'"));
+            }
+            let scale = try!(restriction["scale14"].as_float().ok_or(
+                Error::from("'scale14' parameter must be a float")
+            ));
+            Ok(Some(PairRestriction::Scale14{scaling: scale}))
+        }
+        _ => Err(Error::from("Restriction must be a table or a string"))
+    }
 }
 
 #[cfg(test)]

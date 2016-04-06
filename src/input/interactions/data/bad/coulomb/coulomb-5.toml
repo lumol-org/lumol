@@ -1,0 +1,6 @@
+[input.potentials]
+version = 1
+
+[coulomb]
+# kmax is negative
+ewald = {cutoff = "6 A", kmax = -7}

@@ -1,0 +1,6 @@
+[input.potentials]
+version = 1
+
+[coulomb]
+# kmax is not an integer
+ewald = {cutoff = "6 A", kmax = "67"}

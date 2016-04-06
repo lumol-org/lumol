@@ -7,6 +7,7 @@ use toml::Table;
 use super::{Error, Result, FromToml, FromTomlWithPairs};
 
 use potentials::{Harmonic, LennardJones, NullPotential, CosineHarmonic, Torsion};
+use potentials::{Wolf, Ewald};
 use potentials::{PairPotential, TableComputation, CutoffComputation};
 
 macro_rules! try_extract_parameter {
@@ -96,6 +97,8 @@ impl FromToml for Torsion {
     }
 }
 
+/******************************************************************************/
+
 impl FromTomlWithPairs for CutoffComputation {
     fn from_toml(table: &Table, potential: Box<PairPotential>) -> Result<CutoffComputation> {
         let cutoff = try_extract_parameter!(table, "cutoff", "cutoff computation");
@@ -122,6 +125,38 @@ impl FromTomlWithPairs for TableComputation {
             Err(Error::from(
                 "'max' must be a string and 'n' and integere in table computation"
             ))
+        }
+    }
+}
+
+/******************************************************************************/
+
+impl FromToml for Wolf {
+    fn from_toml(table: &Table) -> Result<Wolf> {
+        let cutoff = try_extract_parameter!(table, "cutoff", "wolf potential");
+        if let Some(cutoff) = cutoff.as_str() {
+            let cutoff = try!(::units::from_str(cutoff));
+            Ok(Wolf::new(cutoff))
+        } else {
+            Err(Error::from("'cutoff' parameter must be a string in Wolf potential"))
+        }
+    }
+}
+
+impl FromToml for Ewald {
+    fn from_toml(table: &Table) -> Result<Ewald> {
+        let cutoff = try_extract_parameter!(table, "cutoff", "ewald potential");
+        let kmax = try_extract_parameter!(table, "kmax", "ewald potential");
+
+        if let (Some(cutoff), Some(kmax)) = (cutoff.as_str(), kmax.as_integer()) {
+            let cutoff = try!(::units::from_str(cutoff));
+            if kmax < 0 {
+                Err(Error::from("'kmax' can not be negative in Ewald potential"))
+            } else {
+                Ok(Ewald::new(cutoff, kmax as usize))
+            }
+        } else {
+            Err(Error::from("'cutoff' must be a string and 'kmax' an integer in Ewald potential"))
         }
     }
 }

@@ -1,0 +1,7 @@
+[input.potentials]
+version = 1
+
+[coulomb]
+# More than one potential
+wolf = {cutoff = "6 A"}
+ewald = {cutoff = "6 A", kmax = 8}

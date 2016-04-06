@@ -4,8 +4,9 @@ use toml::{Value, Table};
 
 use system::System;
 use super::{Error, Result, FromToml, FromTomlWithPairs};
+use super::read_restriction;
 
-use potentials::{PairPotential, PairRestriction};
+use potentials::PairPotential;
 use potentials::{Harmonic, LennardJones, NullPotential};
 use potentials::{TableComputation, CutoffComputation};
 
@@ -92,43 +93,6 @@ fn read_pair_potential(pair: &Table) -> Result<Box<PairPotential>> {
         Err(
             Error::from(format!("potential '{}' must be a table", key))
         )
-    }
-}
-
-/******************************************************************************/
-fn read_restriction(config: &Table) -> Result<Option<PairRestriction>> {
-    let restriction = match config.get("restriction") {
-        Some(restriction) => restriction,
-        None => {return Ok(None)}
-    };
-
-    match restriction {
-        &Value::String(ref name) => {
-            match &**name {
-                "none" => Ok(Some(PairRestriction::None)),
-                "intramolecular" => Ok(Some(PairRestriction::IntraMolecular)),
-                "intermolecular" => Ok(Some(PairRestriction::InterMolecular)),
-                "exclude12" => Ok(Some(PairRestriction::Exclude12)),
-                "exclude13" => Ok(Some(PairRestriction::Exclude13)),
-                "exclude14" => Ok(Some(PairRestriction::Exclude14)),
-                "scale14" => Err(
-                    Error::from("'scale14' restriction must be a table")
-                ),
-                other => Err(
-                    Error::from(format!("Unknown restriction '{}'", other))
-                ),
-            }
-        },
-        &Value::Table(ref restriction) => {
-            if restriction.keys().len() != 1 || restriction.get("scale14").is_none() {
-                return Err(Error::from("Restriction table must be 'scale14'"));
-            }
-            let scale = try!(restriction["scale14"].as_float().ok_or(
-                Error::from("'scale14' parameter must be a float")
-            ));
-            Ok(Some(PairRestriction::Scale14{scaling: scale}))
-        }
-        _ => Err(Error::from("Restriction must be a table or a string"))
     }
 }
 
