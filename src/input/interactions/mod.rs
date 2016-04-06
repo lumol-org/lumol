@@ -183,8 +183,10 @@ fn read_restriction(config: &Table) -> Result<Option<PairRestriction>> {
         Value::String(name) => {
             match &*name {
                 "none" => Ok(Some(PairRestriction::None)),
-                "intramolecular" => Ok(Some(PairRestriction::IntraMolecular)),
-                "intermolecular" => Ok(Some(PairRestriction::InterMolecular)),
+                "intramolecular" | "IntraMolecular" | "intra-molecular"
+                    => Ok(Some(PairRestriction::IntraMolecular)),
+                "intermolecular" | "InterMolecular" | "inter-molecular"
+                    => Ok(Some(PairRestriction::InterMolecular)),
                 "exclude12" => Ok(Some(PairRestriction::Exclude12)),
                 "exclude13" => Ok(Some(PairRestriction::Exclude13)),
                 "exclude14" => Ok(Some(PairRestriction::Exclude14)),
