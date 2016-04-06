@@ -1,6 +1,6 @@
 // Cymbalum, an extensible molecular simulation engine
 // Copyright (C) 2015-2016 G. Fraux — BSD license
-use toml::{Parser, ParserError, Table, Value};
+use toml::{Parser, Table, Value};
 
 use std::io::prelude::*;
 use std::io;
@@ -28,7 +28,7 @@ use self::coulomb::{read_coulomb, set_charges};
 /// Possible causes of error when reading potential files
 pub enum Error {
     /// Error in the TOML input file
-    TOML(Vec<ParserError>),
+    TOML(String),
     /// IO error
     File(io::Error),
     /// File content error: missing sections, bad data types
@@ -42,12 +42,6 @@ pub enum Error {
 
 impl From<io::Error> for Error {
     fn from(err: io::Error) -> Error {Error::File(err)}
-}
-
-impl From<Vec<ParserError>> for Error {
-    fn from(errs: Vec<ParserError>) -> Error {
-        Error::TOML(errs)
-    }
 }
 
 impl<'a> From<&'a str> for Error {
@@ -101,7 +95,8 @@ pub fn read_interactions_string(system: &mut System, string: &str) -> Result<()>
     let config = match parser.parse() {
         Some(config) => config,
         None => {
-            return Err(Error::TOML(parser.errors))
+            let errors = toml_error_to_string(&parser);
+            return Err(Error::TOML(errors));
         }
     };
 
@@ -209,6 +204,19 @@ fn read_restriction(config: &Table) -> Result<Option<PairRestriction>> {
         }
         _ => Err(Error::from("Restriction must be a table or a string"))
     }
+}
+
+fn toml_error_to_string(parser: &Parser) -> String {
+    let nerrors = parser.errors.len();
+    assert!(nerrors > 0);
+
+    let errors = parser.errors.iter().map(|error|{
+        let (line, _) = parser.to_linecol(error.lo);
+        format!("{} at line {}", error.desc, line + 1)
+    }).collect::<Vec<_>>().join("\n    ");
+
+    let plural = if nerrors != 1 {"s"} else {""};
+    return format!("TOML parsing error{}: {}", plural, errors);
 }
 
 #[cfg(test)]
