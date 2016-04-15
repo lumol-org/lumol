@@ -159,8 +159,8 @@ impl GlobalPotential for Wolf {
                 let info = self.restriction.informations(system, i, j);
                 let rij = system.nearest_image(i, j);
                 let force = self.force_pair(info, qi, qj, rij);
-                res[i] = res[i] + force;
-                res[j] = res[j] - force;
+                res[i] += force;
+                res[j] -= force;
             }
         }
         return res;
@@ -179,7 +179,7 @@ impl GlobalPotential for Wolf {
                 let info = self.restriction.informations(system, i, j);
                 let rij = system.nearest_image(i, j);
                 let force = self.force_pair(info, qi, qj, rij);
-                res = res + force.tensorial(&rij);
+                res += force.tensorial(&rij);
             }
         }
         return res;

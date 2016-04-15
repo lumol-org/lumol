@@ -112,7 +112,7 @@ impl Control for RemoveTranslation {
         );
 
         for particle in system {
-            particle.velocity = particle.velocity - total_velocity;
+            particle.velocity -= total_velocity;
         }
     }
 }
@@ -158,7 +158,7 @@ impl Control for RemoveRotation {
         let angular = inertia.inverse() * moment;
         for particle in system {
             let delta = particle.position - com;
-            particle.velocity = particle.velocity - (delta ^ angular);
+            particle.velocity -= delta ^ angular;
         }
     }
 }

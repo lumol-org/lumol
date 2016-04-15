@@ -251,15 +251,15 @@ impl UnitCell {
         match self.celltype {
             CellType::Infinite => (),
             CellType::Orthorombic => {
-                vect[0] = vect[0] - f64::floor(vect[0] / self.a()) * self.a();
-                vect[1] = vect[1] - f64::floor(vect[1] / self.b()) * self.b();
-                vect[2] = vect[2] - f64::floor(vect[2] / self.c()) * self.c();
+                vect[0] -= f64::floor(vect[0] / self.a()) * self.a();
+                vect[1] -= f64::floor(vect[1] / self.b()) * self.b();
+                vect[2] -= f64::floor(vect[2] / self.c()) * self.c();
             },
             CellType::Triclinic => {
                 let mut fractional = self.fractional(vect);
-                fractional[0] = fractional[0] - f64::floor(fractional[0]);
-                fractional[1] = fractional[1] - f64::floor(fractional[1]);
-                fractional[2] = fractional[2] - f64::floor(fractional[2]);
+                fractional[0] -= f64::floor(fractional[0]);
+                fractional[1] -= f64::floor(fractional[1]);
+                fractional[2] -= f64::floor(fractional[2]);
                 *vect = self.cartesian(&fractional);
             },
         }
@@ -272,15 +272,15 @@ impl UnitCell {
         match self.celltype {
             CellType::Infinite => (),
             CellType::Orthorombic => {
-                vect[0] = vect[0] - f64::round(vect[0] / self.a()) * self.a();
-                vect[1] = vect[1] - f64::round(vect[1] / self.b()) * self.b();
-                vect[2] = vect[2] - f64::round(vect[2] / self.c()) * self.c();
+                vect[0] -= f64::round(vect[0] / self.a()) * self.a();
+                vect[1] -= f64::round(vect[1] / self.b()) * self.b();
+                vect[2] -= f64::round(vect[2] / self.c()) * self.c();
             },
             CellType::Triclinic => {
                 let mut fractional = self.fractional(vect);
-                fractional[0] = fractional[0] - f64::round(fractional[0]);
-                fractional[1] = fractional[1] - f64::round(fractional[1]);
-                fractional[2] = fractional[2] - f64::round(fractional[2]);
+                fractional[0] -= f64::round(fractional[0]);
+                fractional[1] -= f64::round(fractional[1]);
+                fractional[2] -= f64::round(fractional[2]);
                 *vect = self.cartesian(&fractional);
             },
         }

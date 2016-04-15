@@ -34,9 +34,9 @@ impl Compute for Forces {
                 for &(ref potential, ref restriction) in system.pair_potentials(i, j) {
                     let info = restriction.informations(system, i, j);
                     if !info.excluded {
-                        let force = info.scaling * potential.force(r);
-                        res[i] = res[i] + force * dn;
-                        res[j] = res[j] - force * dn;
+                        let force = info.scaling * potential.force(r) * dn;
+                        res[i] += force;
+                        res[j] -= force;
                     }
                 }
             }
@@ -49,9 +49,9 @@ impl Compute for Forces {
                 let dn = d.normalized();
                 let r = d.norm();
                 for potential in system.bond_potentials(i, j) {
-                    let f = potential.force(r);
-                    res[i] = res[i] + f * dn;
-                    res[j] = res[j] - f * dn;
+                    let force = potential.force(r) * dn;
+                    res[i] += force;
+                    res[j] -= force;
                 }
             }
 
@@ -59,10 +59,10 @@ impl Compute for Forces {
                 let (i, j, k) = (angle.i(), angle.j(), angle.k());
                 let (theta, d1, d2, d3) = system.angle_and_derivatives(i, j, k);
                 for potential in system.angle_potentials(i, j, k) {
-                    let f = potential.force(theta);
-                    res[i] = res[i] + f * d1;
-                    res[j] = res[j] + f * d2;
-                    res[k] = res[k] + f * d3;
+                    let force = potential.force(theta);
+                    res[i] += force * d1;
+                    res[j] += force * d2;
+                    res[k] += force * d3;
                 }
             }
 
@@ -70,11 +70,11 @@ impl Compute for Forces {
                 let (i, j, k, m) = (dihedral.i(), dihedral.j(), dihedral.k(), dihedral.m());
                 let (phi, d1, d2, d3, d4) = system.dihedral_and_derivatives(i, j, k, m);
                 for potential in system.dihedral_potentials(i, j, k, m) {
-                    let f = potential.force(phi);
-                    res[i] = res[i] + f * d1;
-                    res[j] = res[j] + f * d2;
-                    res[k] = res[k] + f * d3;
-                    res[m] = res[m] + f * d4;
+                    let force = potential.force(phi);
+                    res[i] += force * d1;
+                    res[j] += force * d2;
+                    res[k] += force * d3;
+                    res[m] += force * d4;
                 }
             }
         }
@@ -83,7 +83,7 @@ impl Compute for Forces {
             let forces = coulomb.borrow_mut().forces(&system);
             debug_assert!(forces.len() == natoms, "Wrong `forces` size in coulomb potentials");
             for (i, force) in forces.iter().enumerate() {
-                res[i] = res[i] + force;
+                res[i] += force;
             }
         }
 
@@ -91,7 +91,7 @@ impl Compute for Forces {
             let forces = global.borrow_mut().forces(&system);
             debug_assert!(forces.len() == natoms, "Wrong `forces` size in global potentials");
             for (i, force) in forces.iter().enumerate() {
-                res[i] = res[i] + force;
+                res[i] += force;
             }
         }
         return res;
@@ -181,7 +181,7 @@ impl Compute for Virial {
                     let info = restriction.informations(system, i, j);
                     if !info.excluded {
                         let d = system.nearest_image(i, j);
-                        res = res + info.scaling * potential.virial(&d);
+                        res += info.scaling * potential.virial(&d);
                     }
                 }
             }
@@ -191,11 +191,11 @@ impl Compute for Virial {
         // (angles & dihedrals)
 
         if let Some(coulomb) = system.coulomb_potential() {
-            res = res + coulomb.borrow_mut().virial(&system);
+            res += coulomb.borrow_mut().virial(&system);
         }
 
         for global in system.global_potentials() {
-            res = res + global.borrow_mut().virial(&system);
+            res += global.borrow_mut().virial(&system);
         }
 
         return res;
@@ -256,7 +256,7 @@ impl Compute for Stress {
         let mut kinetic = Matrix3::zero();
         for particle in system.iter() {
             let velocity = &particle.velocity;
-            kinetic = kinetic + particle.mass * velocity.tensorial(velocity);
+            kinetic += particle.mass * velocity.tensorial(velocity);
         }
 
         let virial = Virial.compute(system);
