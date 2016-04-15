@@ -3,6 +3,7 @@
 
 //! 3x3 matrix type.
 use std::ops::{Add, Sub, Mul, Div, Index, IndexMut};
+use std::ops::{AddAssign, SubAssign, MulAssign, DivAssign};
 use types::{Vector3D, Zero, One};
 
 /// 3x3 dimensional matrix type, implementing all usual operations
@@ -88,12 +89,33 @@ impl_arithmetic!(
                  self[2][0] + other[2][0], self[2][1] + other[2][1], self[2][2] + other[2][2])
 );
 
+impl_inplace_arithmetic!(
+    Matrix3, Matrix3, AddAssign, add_assign,
+    self, other,
+    {
+        self[0][0] += other[0][0]; self[0][1] += other[0][1]; self[0][2] += other[0][2];
+        self[1][0] += other[1][0]; self[1][1] += other[1][1]; self[1][2] += other[1][2];
+        self[2][0] += other[2][0]; self[2][1] += other[2][1]; self[2][2] += other[2][2];
+    }
+);
+
+
 impl_arithmetic!(
     Matrix3, Matrix3, Sub, sub, Matrix3,
     self, other,
     Matrix3::new(self[0][0] - other[0][0], self[0][1] - other[0][1], self[0][2] - other[0][2],
                  self[1][0] - other[1][0], self[1][1] - other[1][1], self[1][2] - other[1][2],
                  self[2][0] - other[2][0], self[2][1] - other[2][1], self[2][2] - other[2][2])
+);
+
+impl_inplace_arithmetic!(
+    Matrix3, Matrix3, SubAssign, sub_assign,
+    self, other,
+    {
+        self[0][0] -= other[0][0]; self[0][1] -= other[0][1]; self[0][2] -= other[0][2];
+        self[1][0] -= other[1][0]; self[1][1] -= other[1][1]; self[1][2] -= other[1][2];
+        self[2][0] -= other[2][0]; self[2][1] -= other[2][1]; self[2][2] -= other[2][2];
+    }
 );
 
 impl_arithmetic!(
@@ -113,6 +135,26 @@ impl_arithmetic!(
         let m22 = self[(2, 0)] * other[(0, 2)] + self[(2, 1)] * other[(1, 2)] + self[(2, 2)] * other[(2, 2)];
 
         Matrix3::new(m00, m01, m02, m10, m11, m12, m20, m21, m22)
+    }
+);
+
+impl_inplace_arithmetic!(
+    Matrix3, Matrix3, MulAssign, mul_assign,
+    self, other,
+    {
+        let m00 = self[(0, 0)] * other[(0, 0)] + self[(0, 1)] * other[(1, 0)] + self[(0, 2)] * other[(2, 0)];
+        let m01 = self[(0, 0)] * other[(0, 1)] + self[(0, 1)] * other[(1, 1)] + self[(0, 2)] * other[(2, 1)];
+        let m02 = self[(0, 0)] * other[(0, 2)] + self[(0, 1)] * other[(1, 2)] + self[(0, 2)] * other[(2, 2)];
+
+        let m10 = self[(1, 0)] * other[(0, 0)] + self[(1, 1)] * other[(1, 0)] + self[(1, 2)] * other[(2, 0)];
+        let m11 = self[(1, 0)] * other[(0, 1)] + self[(1, 1)] * other[(1, 1)] + self[(1, 2)] * other[(2, 1)];
+        let m12 = self[(1, 0)] * other[(0, 2)] + self[(1, 1)] * other[(1, 2)] + self[(1, 2)] * other[(2, 2)];
+
+        let m20 = self[(2, 0)] * other[(0, 0)] + self[(2, 1)] * other[(1, 0)] + self[(2, 2)] * other[(2, 0)];
+        let m21 = self[(2, 0)] * other[(0, 1)] + self[(2, 1)] * other[(1, 1)] + self[(2, 2)] * other[(2, 1)];
+        let m22 = self[(2, 0)] * other[(0, 2)] + self[(2, 1)] * other[(1, 2)] + self[(2, 2)] * other[(2, 2)];
+
+        *self = Matrix3::new(m00, m01, m02, m10, m11, m12, m20, m21, m22)
     }
 );
 
@@ -145,12 +187,34 @@ rhs_scal_arithmetic!(
                  self * other[2][0], self * other[2][1], self * other[2][2])
 );
 
+impl_inplace_arithmetic!(
+    Matrix3, f64, MulAssign, mul_assign,
+    self, other,
+    {
+        let other = other.clone();
+        self[0][0] *= other; self[0][1] *= other; self[0][2] *= other;
+        self[1][0] *= other; self[1][1] *= other; self[1][2] *= other;
+        self[2][0] *= other; self[2][1] *= other; self[2][2] *= other;
+    }
+);
+
 lsh_scal_arithmetic!(
     Matrix3, Div, div, Matrix3,
     self, other,
     Matrix3::new(self[0][0] / other, self[0][1] / other, self[0][2] / other,
                  self[1][0] / other, self[1][1] / other, self[1][2] / other,
                  self[2][0] / other, self[2][1] / other, self[2][2] / other)
+);
+
+impl_inplace_arithmetic!(
+    Matrix3, f64, DivAssign, div_assign,
+    self, other,
+    {
+        let other = other.clone();
+        self[0][0] /= other; self[0][1] /= other; self[0][2] /= other;
+        self[1][0] /= other; self[1][1] /= other; self[1][2] /= other;
+        self[2][0] /= other; self[2][1] /= other; self[2][2] /= other;
+    }
 );
 
 impl Zero for Matrix3 {
@@ -206,9 +270,9 @@ mod tests {
 
     #[test]
     fn add() {
-        let a = Matrix3::new(1.0, 2.0, 3.0,
-                             4.0, 5.0, 6.0,
-                             8.0, 9.0, 10.0);
+        let mut a = Matrix3::new(1.0, 2.0, 3.0,
+                                 4.0, 5.0, 6.0,
+                                 8.0, 9.0, 10.0);
         let b = Matrix3::one();
         let add = a + b;
 
@@ -221,13 +285,20 @@ mod tests {
                 assert_eq!(add[(i, j)], res[(i, j)]);
             }
         }
+
+        a += b;
+        for i in 0..3 {
+            for j in 0..3 {
+                assert_eq!(a[(i, j)], res[(i, j)]);
+            }
+        }
     }
 
     #[test]
     fn sub() {
-        let a = Matrix3::new(1.0, 2.0, 3.0,
-                             4.0, 5.0, 6.0,
-                             8.0, 9.0, 10.0);
+        let mut a = Matrix3::new(1.0, 2.0, 3.0,
+                                 4.0, 5.0, 6.0,
+                                 8.0, 9.0, 10.0);
         let b = Matrix3::one();
         let sub = a - b;
 
@@ -240,13 +311,20 @@ mod tests {
                 assert_eq!(sub[(i, j)], res[(i, j)]);
             }
         }
+
+        a -= b;
+        for i in 0..3 {
+            for j in 0..3 {
+                assert_eq!(a[(i, j)], res[(i, j)]);
+            }
+        }
     }
 
     #[test]
     fn mul_scalar() {
-        let a = Matrix3::new(1.0, 2.0, 3.0,
-                             4.0, 5.0, 6.0,
-                             8.0, 9.0, 10.0);
+        let mut a = Matrix3::new(1.0, 2.0, 3.0,
+                                 4.0, 5.0, 6.0,
+                                 8.0, 9.0, 10.0);
         let b = 2.0;
         let mul_r = a * b;
         let mul_l = b * a;
@@ -261,13 +339,20 @@ mod tests {
                 assert_eq!(mul_l[(i, j)], res[(i, j)]);
             }
         }
+
+        a *= b;
+        for i in 0..3 {
+            for j in 0..3 {
+                assert_eq!(a[(i, j)], res[(i, j)]);
+            }
+        }
     }
 
     #[test]
     fn div_scalar() {
-        let a = Matrix3::new(1.0, 2.0, 3.0,
-                             4.0, 5.0, 6.0,
-                             8.0, 9.0, 10.0);
+        let mut a = Matrix3::new(1.0, 2.0, 3.0,
+                                 4.0, 5.0, 6.0,
+                                 8.0, 9.0, 10.0);
         let b = 2.0;
         let div = a / b;
 
@@ -280,6 +365,13 @@ mod tests {
                 assert_eq!(div[(i, j)], res[(i, j)]);
             }
         }
+
+        a /= b;
+        for i in 0..3 {
+            for j in 0..3 {
+                assert_eq!(a[(i, j)], res[(i, j)]);
+            }
+        }
     }
 
     #[test]
@@ -287,9 +379,9 @@ mod tests {
         let unit = Matrix3::one();
         let unit_sq = unit * unit;
 
-        let a = Matrix3::new(2.0, 4.0, 6.0,
-                             8.0, 10.0, 12.0,
-                             16.0, 18.0, 20.0);
+        let mut a = Matrix3::new(2.0, 4.0, 6.0,
+                                 8.0, 10.0, 12.0,
+                                 16.0, 18.0, 20.0);
         let mul_r = unit * a;
         let mul_l = a * unit;
 
@@ -300,6 +392,14 @@ mod tests {
                 // (One)*A is the same as A and A*(One)
                 assert_eq!(mul_l[(i, j)], a[(i, j)]);
                 assert_eq!(mul_r[(i, j)], a[(i, j)]);
+            }
+        }
+
+        let res = a.clone();
+        a *= unit;
+        for i in 0..3 {
+            for j in 0..3 {
+                assert_eq!(a[(i, j)], res[(i, j)]);
             }
         }
     }
