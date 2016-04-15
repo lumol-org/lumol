@@ -37,7 +37,7 @@ pub struct TrajectoryOutput {
 impl TrajectoryOutput {
     /// Create a new `TrajectoryOutput` writing to `filename`. The file is
     /// replaced if it already exists.
-    pub fn new<'a, P>(path: P) -> TrajectoryResult<TrajectoryOutput> where P: AsRef<Path> {
+    pub fn new<P>(path: P) -> TrajectoryResult<TrajectoryOutput> where P: AsRef<Path> {
         Ok(TrajectoryOutput{
             file: try!(Trajectory::create(path))
         })
@@ -192,7 +192,7 @@ mod tests {
     use system::*;
     use types::*;
     use potentials::*;
-    use units;
+    use utils::unit_from;
 
     fn testing_system() -> System {
         let mut system = System::from_cell(UnitCell::cubic(10.0));;
@@ -204,7 +204,7 @@ mod tests {
         system[1].position = Vector3D::new(1.3, 0.0, 0.0);
 
         system.add_pair_interaction("F", "F",
-            Box::new(Harmonic{k: units::from(300.0, "kJ/mol/A^2").unwrap(), x0: units::from(1.2, "A").unwrap()}));
+            Box::new(Harmonic{k: unit_from(300.0, "kJ/mol/A^2"), x0: unit_from(1.2, "A")}));
         return system;
     }
 

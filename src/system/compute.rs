@@ -285,7 +285,8 @@ mod test {
     use system::{InitVelocities, BoltzmanVelocities};
     use potentials::Harmonic;
     use constants::K_BOLTZMANN;
-    use units;
+    use utils::unit_from;
+
 
     const EPS : f64 = 1e-8;
 
@@ -298,13 +299,13 @@ mod test {
         system.add_particle(Particle::new("F"));
         system[1].position = Vector3D::new(1.3, 0.0, 0.0);
 
-        let mut velocities = BoltzmanVelocities::new(units::from(300.0, "K").unwrap());
+        let mut velocities = BoltzmanVelocities::new(unit_from(300.0, "K"));
         velocities.init(&mut system);
 
         system.add_pair_interaction("F", "F",
             Box::new(Harmonic{
-                k: units::from(300.0, "kJ/mol/A^2").unwrap(),
-                x0: units::from(1.2, "A").unwrap()
+                k: unit_from(300.0, "kJ/mol/A^2"),
+                x0: unit_from(1.2, "A")
             })
         );
         return system;
@@ -318,7 +319,7 @@ mod test {
         let forces_tot = res[0] + res[1];
         assert_eq!(forces_tot, Vector3D::zero());
 
-        let force = units::from(30.0, "kJ/mol/A").unwrap();
+        let force = unit_from(30.0, "kJ/mol/A");
         assert_approx_eq!(res[0][0], force, EPS);
         assert_approx_eq!(res[0][1], 0.0, EPS);
         assert_approx_eq!(res[0][1], 0.0, EPS);
@@ -345,20 +346,20 @@ mod test {
 
         system.add_bond_interaction("F", "F",
             Box::new(Harmonic{
-                k: units::from(100.0, "kJ/mol/A^2").unwrap(),
-                x0: units::from(1.22, "A").unwrap()
+                k: unit_from(100.0, "kJ/mol/A^2"),
+                x0: unit_from(1.22, "A")
         }));
 
         system.add_angle_interaction("F", "F", "F",
             Box::new(Harmonic{
-                k: units::from(100.0, "kJ/mol/deg^2").unwrap(),
-                x0: units::from(80.0, "deg").unwrap()
+                k: unit_from(100.0, "kJ/mol/deg^2"),
+                x0: unit_from(80.0, "deg")
         }));
 
         system.add_dihedral_interaction("F", "F", "F", "F",
             Box::new(Harmonic{
-                k: units::from(100.0, "kJ/mol/deg^2").unwrap(),
-                x0: units::from(185.0, "deg").unwrap()
+                k: unit_from(100.0, "kJ/mol/deg^2"),
+                x0: unit_from(185.0, "deg")
         }));
 
         let res = Forces.compute(&system);
@@ -399,20 +400,20 @@ mod test {
 
         system.add_bond_interaction("F", "F",
             Box::new(Harmonic{
-                k: units::from(100.0, "kJ/mol/A^2").unwrap(),
-                x0: units::from(1.22, "A").unwrap()
+                k: unit_from(100.0, "kJ/mol/A^2"),
+                x0: unit_from(1.22, "A")
         }));
 
         system.add_angle_interaction("F", "F", "F",
             Box::new(Harmonic{
-                k: units::from(100.0, "kJ/mol/deg^2").unwrap(),
-                x0: units::from(80.0, "deg").unwrap()
+                k: unit_from(100.0, "kJ/mol/deg^2"),
+                x0: unit_from(80.0, "deg")
         }));
 
         system.add_dihedral_interaction("F", "F", "F", "F",
             Box::new(Harmonic{
-                k: units::from(100.0, "kJ/mol/deg^2").unwrap(),
-                x0: units::from(185.0, "deg").unwrap()
+                k: unit_from(100.0, "kJ/mol/deg^2"),
+                x0: unit_from(185.0, "deg")
         }));
 
         assert_approx_eq!(PotentialEnergy.compute(&system), 0.040419916002, 1e-12);
@@ -440,7 +441,7 @@ mod test {
         let virial = Virial.compute(system);
 
         let mut res = Matrix3::zero();
-        let force = units::from(30.0, "kJ/mol/A").unwrap();
+        let force = unit_from(30.0, "kJ/mol/A");
         res[(0, 0)] = - force * 1.3;
 
         for i in 0..3 {
@@ -464,7 +465,7 @@ mod test {
         let system = &testing_system();
         let pressure = PressureAtTemperature{temperature: 550.0}.compute(system);
 
-        let force = units::from(30.0, "kJ/mol/A").unwrap();
+        let force = unit_from(30.0, "kJ/mol/A");
         let virial = -force * 1.3;
         let natoms = 2.0;
         let temperature = 550.0;
@@ -514,7 +515,7 @@ mod test {
         let system = &testing_system();
         let pressure = Pressure.compute(system);
 
-        let force = units::from(30.0, "kJ/mol/A").unwrap();
+        let force = unit_from(30.0, "kJ/mol/A");
         let virial = - force * 1.3;
         let natoms = 2.0;
         let temperature = 300.0;

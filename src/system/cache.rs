@@ -316,7 +316,7 @@ mod tests {
             charges:
                 O: -0.5
                 H: 0.5
-        ").unwrap();
+        ").expect("Internal test error.");
 
         return system;
     }

@@ -69,7 +69,7 @@ impl PairRestriction {
             }
         };
 
-        let scaling = if let &PairRestriction::Scale14{scaling} = self {
+        let scaling = if let PairRestriction::Scale14{scaling} = *self {
             if system.shortest_path(i, j) == 4 {
                 scaling
             } else {

@@ -33,7 +33,8 @@
 // These are for readability
 #![cfg_attr(feature="lint", allow(
     needless_return, needless_range_loop, or_fun_call, new_without_default,
-    float_cmp,
+    float_cmp, similar_names, many_single_char_names, doc_markdown,
+    block_in_if_condition_stmt
 ))]
 
 #[macro_use]

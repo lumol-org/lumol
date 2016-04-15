@@ -37,7 +37,7 @@ use types::{Matrix3, Zero};
 pub struct Vector3D([f64; 3]);
 
 impl Vector3D {
-    /// Create a new Vector3D with components `x`, `y`, `z`
+    /// Create a new `Vector3D` with components `x`, `y`, `z`
     pub fn new(x: f64, y: f64, z: f64) -> Vector3D {
         Vector3D([x, y, z])
     }

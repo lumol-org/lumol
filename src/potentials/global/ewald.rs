@@ -90,7 +90,7 @@ impl Ewald {
                 // All good!
             },
         }
-        self.previous_cell = Some(cell.clone());
+        self.previous_cell = Some(*cell);
 
         // Because we do a spherical truncation in k space, we have to transform
         // kmax into a spherical cutoff 'radius'
@@ -133,7 +133,7 @@ impl Ewald {
 impl Ewald {
     /// Get the real-space energy for one pair at distance `r` with charges `qi`
     /// and `qj` ; and with restriction informations for this pair in `info`.
-    #[inline(always)]
+    #[inline]
     fn real_space_energy_pair(&self, info: RestrictionInfo, qi: f64, qj: f64, r: f64) -> f64 {
         if r > self.rc || info.excluded {
             return 0.0
@@ -145,7 +145,7 @@ impl Ewald {
     /// Get the real-space force for one pair at distance `rij` with charges
     /// `qi` and `qj` ; and with restriction informations for this pair in
     /// `info`.
-    #[inline(always)]
+    #[inline]
     fn real_space_force_pair(&self, info: RestrictionInfo, qi: f64, qj: f64, rij: &Vector3D) -> Vector3D {
         let r = rij.norm();
         if r > self.rc || info.excluded {
@@ -366,7 +366,8 @@ impl Ewald {
 
     /// Get the force factor for particles `i` and `j` with charges `qi` and
     /// `qj`, at k point  `(ikx, iky, ikz)`
-    #[inline(always)]
+    #[inline]
+    #[cfg_attr(feature="lint", allow(too_many_arguments))]
     fn kspace_force_factor(&self, i: usize, j: usize, ikx: usize, iky: usize, ikz: usize, qi: f64, qj: f64) -> f64 {
         let fourier_i = self.fourier_phases[(ikx, i, 0)]
                       * self.fourier_phases[(iky, i, 1)]
@@ -484,7 +485,7 @@ impl Ewald {
 impl Ewald {
     /// Get the molecular correction energy for the pair with charges `qi` and
     /// `qj`, at distance `rij` and with restriction informations in `info`.
-    #[inline(always)]
+    #[inline]
     fn molcorrect_energy_pair(&self, info: RestrictionInfo, qi: f64, qj: f64, r: f64) -> f64 {
         assert!(info.excluded, "Can not compute molecular correction for non-excluded pair");
         assert!(info.scaling  == 1.0, "Scaling restriction scheme using Ewald are not implemented");
@@ -495,7 +496,7 @@ impl Ewald {
 
     /// Get the molecular correction force for the pair with charges `qi` and
     /// `qj`, at distance `rij` and with restriction informations in `info`.
-    #[inline(always)]
+    #[inline]
     fn molcorrect_force_pair(&self, info: RestrictionInfo, qi: f64, qj: f64, rij: &Vector3D) -> Vector3D {
         assert!(info.excluded, "Can not compute molecular correction for non-excluded pair");
         assert!(info.scaling  == 1.0, "Scaling restriction scheme using Ewald are not implemented");

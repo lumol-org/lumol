@@ -335,7 +335,13 @@ impl System {
         trace!("Merging molecules: {} <-- {}", new_mol_idx, old_mol_idx);
         trace!("The molecules contains:\n{:#?}\n ---\n{:#?}", new_mol, old_mol);
 
-        if new_mol.last() + 1 != old_mol.first() {
+        if new_mol.last() + 1 == old_mol.first() {
+            // Just update the molecules ids
+            for i in old_mol {
+                self.molids[i] = new_mol_idx;
+            }
+        } else {
+            // Move the particles close together
             let mut new_index = new_mol.last() + 1;
             for i in old_mol {
                 // Remove particles from the old position, and insert it to the
@@ -349,10 +355,6 @@ impl System {
                 self.molids.insert(new_index, new_mol_idx);
 
                 new_index += 1;
-            }
-        } else {
-            for i in old_mol {
-                self.molids[i] = new_mol_idx;
             }
         }
 
