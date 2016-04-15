@@ -3,6 +3,7 @@
 
 //! 3-dimmensional vector type
 use std::ops::{Add, Sub, Neg, Mul, Div, BitXor, Index, IndexMut};
+use std::ops::{AddAssign, SubAssign, MulAssign, DivAssign};
 use std::cmp::PartialEq;
 use types::{Matrix3, Zero};
 
@@ -67,10 +68,22 @@ impl_arithmetic!(
     Vector3D::new(self[0] + other[0], self[1] + other[1], self[2] + other[2])
 );
 
+impl_inplace_arithmetic!(
+    Vector3D, Vector3D, AddAssign, add_assign,
+    self, other,
+    {self[0] += other[0]; self[1] += other[1]; self[2] += other[2]}
+);
+
 impl_arithmetic!(
     Vector3D, Vector3D, Sub, sub, Vector3D,
     self, other,
     Vector3D::new(self[0] - other[0], self[1] - other[1], self[2] - other[2])
+);
+
+impl_inplace_arithmetic!(
+    Vector3D, Vector3D, SubAssign, sub_assign,
+    self, other,
+    {self[0] -= other[0]; self[1] -= other[1]; self[2] -= other[2]}
 );
 
 // Dot product
@@ -104,10 +117,22 @@ rhs_scal_arithmetic!(
     Vector3D::new(self * other[0], self * other[1], self * other[2])
 );
 
+impl_inplace_arithmetic!(
+    Vector3D, f64, MulAssign, mul_assign,
+    self, other,
+    {let other = other.clone(); self[0] *= other; self[1] *= other; self[2] *= other}
+);
+
 lsh_scal_arithmetic!(
     Vector3D, Div, div, Vector3D,
     self, other,
     Vector3D::new(self[0] / other, self[1] / other, self[2] / other)
+);
+
+impl_inplace_arithmetic!(
+    Vector3D, f64, DivAssign, div_assign,
+    self, other,
+    {let other = other.clone(); self[0] /= other; self[1] /= other; self[2] /= other}
 );
 
 /******************************************************************************/
@@ -183,6 +208,9 @@ mod tests {
         let c = a + b;
         assert_eq!(c, Vector3D::new(8.1, -5.0, 12.1));
 
+        a += b;
+        assert_eq!(a, Vector3D::new(8.1, -5.0, 12.1));
+
         // Just checking that everything compile
         let _ = &a + b;
         let _ = a + &b;
@@ -192,6 +220,9 @@ mod tests {
         let _ = &mut a + &mut b;
         let _ = &mut a + &b;
         let _ = &a + &mut b;
+        a += &b;
+        a += &mut b;
+        let _ = a;
     }
 
     #[test]
@@ -202,6 +233,9 @@ mod tests {
         let c = a - b;
         assert_eq!(c, Vector3D::new(-4.1, 12.0, -2.5));
 
+        a -= b;
+        assert_eq!(a, Vector3D::new(-4.1, 12.0, -2.5));
+
         // Just checking that everything compile
         let _ = &a - b;
         let _ = a - &b;
@@ -211,6 +245,9 @@ mod tests {
         let _ = &mut a - &mut b;
         let _ = &mut a - &b;
         let _ = &a - &mut b;
+        a -= &b;
+        a -= &mut b;
+        let _ = a;
     }
 
     #[test]
@@ -235,12 +272,37 @@ mod tests {
         let _ = b * &a;
         let _ = b * &mut a;
 
-        let b = 1.5;
+        let mut b = 1.5;
         let c = a * b;
         assert_eq!(c, Vector3D::new(3.0, 5.25, 7.199999999999999));
 
+        a *= b;
+        assert_eq!(a, Vector3D::new(3.0, 5.25, 7.199999999999999));
+
+        // Just checking that everything compile
         let _ = &a * b;
         let _ = &mut a * b;
+        a *= &b;
+        a *= &mut b;
+        let _ = a;
+    }
+
+    #[test]
+    fn div() {
+        let mut a = Vector3D::new(2.0, 3.5, 4.8);
+        let mut b = 2.0;
+        let c = a / b;
+        assert_eq!(c, Vector3D::new(1.0, 1.75, 2.4));
+
+        a /= b;
+        assert_eq!(a, Vector3D::new(1.0, 1.75, 2.4));
+
+        // Just checking that everything compile
+        let _ = &a / b;
+        let _ = &mut a / b;
+        a /= &b;
+        a /= &mut b;
+        let _ = a;
     }
 
     #[test]

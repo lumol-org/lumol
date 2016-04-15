@@ -105,6 +105,30 @@ macro_rules! impl_arithmetic {
     );
 }
 
+/// Implement operators `@=` for all variations of references for the right-hand
+/// side.
+macro_rules! impl_inplace_arithmetic {
+    ($Lhs:ty, $Rhs:ty, $Op:ident, $op:ident, $sel:ident, $other:ident, $res:expr) => (
+        impl<'a> $Op<$Rhs> for $Lhs {
+            #[inline] fn $op(&mut $sel, $other: $Rhs) {
+                $res
+            }
+        }
+
+        impl<'a> $Op<&'a $Rhs> for $Lhs {
+            #[inline] fn $op(&mut $sel, $other: &'a $Rhs) {
+                $res
+            }
+        }
+
+        impl<'a> $Op<&'a mut $Rhs> for $Lhs {
+            #[inline] fn $op(&mut $sel, $other: &'a mut $Rhs) {
+                $res
+            }
+        }
+    )
+}
+
 /// Implement $Lhs -- scalar arithmetic operations for all variation of by
 /// value, by reference and by mutable reference $Lhs.
 macro_rules! lsh_scal_arithmetic {
