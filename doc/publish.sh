@@ -1,17 +1,17 @@
 #!/bin/bash
-
 # Build the docs and the user manual, and push them to github pages.
 
 set -e
-if test "${TRAVIS_RUST_VERSION}" != "stable" &&
-        "${TRAVIS_PULL_REQUEST}" != "false"  &&
-        "${TRAVIS_BRANCH}" != "master"
+if test "${TRAVIS_RUST_VERSION}" == "stable" && \
+        "${TRAVIS_PULL_REQUEST}" == "false"  && \
+        "${TRAVIS_BRANCH}" == "master"
 then
-    exit
+    echo "Building docs"
+else
+    exit_now_as_this_command_does_not_exist
 fi
 
 cargo doc
-cargo install mdbook
 mdbook build doc
 cp -r doc/book target/doc
 cp doc/index.html target/doc
