@@ -1,0 +1,8 @@
+[input.potentials]
+version = 1
+
+[[angles]]
+atoms = ["A", "A", "A"]
+# More than one potential
+null = true
+harmonic = {k = "3 A", x0 = "5.9 kJ/mol"}

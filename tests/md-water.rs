@@ -54,7 +54,7 @@ fn setup(potential: &str, n: usize) -> (Simulation, System) {
 #[test]
 fn constant_energy_ewald() {
     START.call_once(|| {Logger::stdout();});
-    let (mut simulation, mut system) = setup("water-ewald.yml", 2);
+    let (mut simulation, mut system) = setup("water-ewald.toml", 2);
 
     let e_initial = system.total_energy();
     simulation.run(&mut system, 1000);
@@ -68,7 +68,7 @@ fn constant_energy_ewald() {
 #[test]
 fn constant_energy_wolf() {
     START.call_once(|| {Logger::stdout();});
-    let (mut simulation, mut system) = setup("water-wolf.yml", 5);
+    let (mut simulation, mut system) = setup("water-wolf.toml", 5);
 
     let e_initial = system.total_energy();
     simulation.run(&mut system, 1000);

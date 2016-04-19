@@ -1,0 +1,18 @@
+[input.potentials]
+version = 1
+
+[[dihedrals]]
+atoms = ["A", "B", "C", "D"]
+harmonic = {x0 = "3 A", k = "5.9 kJ/mol/A^2"}
+
+[[dihedrals]]
+atoms = ["A", "B", "C", "D"]
+cosine-harmonic = {k = "67 kJ/mol/deg^2", x0 = "120 deg"}
+
+[[dihedrals]]
+atoms = ["A", "B", "C", "D"]
+null = {}
+
+[[dihedrals]]
+atoms = ["A", "B", "C", "D"]
+torsion = {n = 4, k = "67 kJ/mol", delta = "80 deg"}

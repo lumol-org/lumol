@@ -1,0 +1,7 @@
+[input.potentials]
+version = 1
+
+[[pairs]]
+atoms = ["A", "A"]
+# Missing k
+harmonic = {x0 = "3 A"}

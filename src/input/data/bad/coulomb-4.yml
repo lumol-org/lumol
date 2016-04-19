@@ -1,5 +1,0 @@
-coulomb:
-    type: Wolf
-    cutoff: 45 A
-    charges:  # No atom with name O in the system
-      O: -1

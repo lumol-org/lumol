@@ -282,41 +282,42 @@ mod tests {
         system.set_cell(UnitCell::cubic(10.0));
         assert!(system.molecules().len() == 1);
 
-        read_interactions_string(&mut system, "
+        read_interactions_string(&mut system, r#"
+        [input.potentials]
+        version = 1
+
         # Values are completely random, just having a bit of all the types
-        pairs:
-            - atoms: [H, H]
-              type: LennardJones
-              sigma: 3.0 A
-              epsilon: 0.2 kJ/mol
-            - atoms: [O, O]
-              type: Null
-            - atoms: [O, H]
-              type: LennardJones
-              sigma: 1.0 A
-              epsilon: 0.33 kJ/mol
-        bonds:
-            - atoms: [O, H]
-              type: Harmonic
-              x0: 3.4 A
-              k: 522 kJ/mol/A^2
-        angles:
-            - atoms: [O, O, H]
-              type: Harmonic
-              x0: 120 deg
-              k: 150 kJ/mol/deg^2
-        dihedrals:
-            - atoms: [H, O, O, H]
-              type: Harmonic
-              x0: 180 deg
-              k: 800 kJ/mol/deg^2
-        coulomb:
-            type: Wolf
-            cutoff: 8 A
-            charges:
-                O: -0.5
-                H: 0.5
-        ").expect("Internal test error.");
+        [[pairs]]
+        atoms = ["H", "H"]
+        lj = {sigma = "3.0 A", epsilon = "0.2 kJ/mol"}
+
+        [[pairs]]
+        atoms = ["O", "O"]
+        null = {}
+
+        [[pairs]]
+        atoms = ["O", "H"]
+        lj = {sigma = "1.0 A", epsilon = "0.33 kJ/mol"}
+
+        [[bonds]]
+        atoms = ["O", "H"]
+        harmonic = {x0 = "3.4 A", k = "522 kJ/mol/A^2"}
+
+        [[angles]]
+        atoms = ["O", "O", "H"]
+        harmonic = {x0 = "120 deg", k = "150 kJ/mol/deg^2"}
+
+        [[dihedrals]]
+        atoms = ["H", "O", "O", "H"]
+        harmonic = {x0 = "180 deg", k = "800 kJ/mol/deg^2"}
+
+        [coulomb]
+        wolf = {cutoff = "8 A"}
+
+        [charges]
+        O = -0.5
+        H = 0.5
+        "#).unwrap();
 
         return system;
     }

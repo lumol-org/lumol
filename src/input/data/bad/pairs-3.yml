@@ -1,5 +1,0 @@
-pairs:
-    - atoms: [A, B, C]  # Three atoms
-      type: LennardJones
-      epsilon: 45 kJ/mol
-      sigma: 3 A

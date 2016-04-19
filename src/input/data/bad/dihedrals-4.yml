@@ -1,3 +1,0 @@
-dihedrals:
-    - atoms: [B, C, D, E]
-      # missing type

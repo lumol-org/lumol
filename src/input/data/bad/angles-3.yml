@@ -1,5 +1,0 @@
-angles:
-    - atoms: [A, B, D]
-      type: CosineHarmonic
-      # Missing k for CosineHarmonic
-      x0: 3 A

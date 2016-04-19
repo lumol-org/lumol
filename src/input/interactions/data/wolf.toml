@@ -1,0 +1,9 @@
+[input.potentials]
+version = 1
+
+[coulomb]
+wolf = {cutoff = "3 A"}
+
+[charges]
+A = -2
+B = 2

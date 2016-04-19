@@ -1,0 +1,7 @@
+[input.potentials]
+version = 1
+
+[[dihedrals]]
+atoms = ["A", "B", "C", "D"]
+# delta is not a string
+torsion = {n = 4, k = "67 kJ/mol", delta = 80.0}

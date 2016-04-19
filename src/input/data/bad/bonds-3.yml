@@ -1,3 +1,0 @@
-bonds:
-    - atoms: [A, B]
-      # Missing type

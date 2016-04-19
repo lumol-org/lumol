@@ -1,0 +1,14 @@
+[input.potentials]
+version = 1
+
+[[angles]]
+atoms = ["A", "B", "C"]
+harmonic = {x0 = "80 deg", k = "5.9 kJ/mol/deg^2"}
+
+[[angles]]
+atoms = ["A", "B", "C"]
+cosine-harmonic = {k = "67 kJ/mol/deg^2", x0 = "120 deg"}
+
+[[angles]]
+atoms = ["A", "B", "C"]
+null = {}

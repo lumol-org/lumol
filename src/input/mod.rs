@@ -24,6 +24,7 @@
 mod interactions;
 pub use self::interactions::read_interactions;
 pub use self::interactions::Error as InteractionError;
+pub use self::interactions::{FromToml, FromTomlWithPairs};
 
 mod chemfiles;
 pub use self::chemfiles::{Trajectory, TrajectoryResult};

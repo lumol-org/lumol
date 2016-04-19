@@ -1,0 +1,43 @@
+[input.potentials]
+version = 1
+
+[[pairs]]
+atoms = [O, O]
+lj = {sigma = "3.16 A", epsilon = "0.155 kcal/mol"}
+restriction = "intermolecular"
+
+[[pairs]]
+atoms = [C, O]
+lj = {sigma = "3.045 A", epsilon = "0.168 kcal/mol"}
+
+[[pairs]]
+atoms = ["C", "C"]
+lj = {sigma = "2.93 A", epsilon = "0.183 kcal/mol"}
+
+[[pairs]]
+atoms = ["H", "H"]
+null = {}
+
+[[pairs]]
+atoms = ["H", "O"]
+null = {}
+
+[[pairs]]
+atoms = ["H", "C"]
+null = {}
+
+[[bonds]]
+atoms = ["H", "O"]
+null = {}
+
+[[bonds]]
+atoms = ["C", "O"]
+null = {}
+
+[[angles]]
+atoms = ["H", "O", "H"]
+null = {}
+
+[[angles]]
+atoms = ["O", "C", "O"]
+null = {}
