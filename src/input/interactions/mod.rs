@@ -7,6 +7,8 @@ use std::io;
 use std::result;
 use std::fs::File;
 use std::path::Path;
+use std::error;
+use std::fmt;
 
 use system::System;
 use units::UnitParsingError;
@@ -58,6 +60,34 @@ impl From<String> for Error {
 
 impl From<UnitParsingError> for Error {
     fn from(err: UnitParsingError) -> Error {Error::UnitParsing(err)}
+}
+
+impl fmt::Display for Error {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> result::Result<(), fmt::Error> {
+        use std::error::Error as StdError;
+        try!(write!(fmt, "{}", self.description()));
+        Ok(())
+    }
+}
+
+impl error::Error for Error {
+    fn description(&self) -> &str {
+        match *self {
+            Error::TOML(ref err) => err,
+            Error::Config{ref msg} => msg,
+            Error::File(ref err) => err.description(),
+            Error::UnitParsing(ref err) => err.description(),
+        }
+    }
+
+    fn cause(&self) -> Option<&error::Error> {
+        match *self {
+            Error::TOML(..) => None,
+            Error::Config{..} => None,
+            Error::File(ref err) => Some(err),
+            Error::UnitParsing(ref err) => Some(err),
+        }
+    }
 }
 
 /// Custom `Result` for input files
