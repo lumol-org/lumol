@@ -46,7 +46,7 @@ extern crate lazy_static;
 
 extern crate chemfiles;
 extern crate ndarray;
-extern crate num;
+extern crate num_traits as num;
 extern crate rand;
 extern crate special;
 extern crate toml;

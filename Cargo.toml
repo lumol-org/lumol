@@ -20,11 +20,7 @@ special = "0.5.1"
 bitflags = "0.4.0"
 ndarray = "0.4.0"
 lazy_static = "0.1.15"
-
-[dependencies.num]
-version = "0.1.31"
-# We only need the One and Zero traits
-default-features = false
+num-traits = "0.1.32"
 
 [dependencies.clippy]
 git = "https://github.com/Manishearth/rust-clippy/"
