@@ -15,7 +15,7 @@ use std::io;
 use std::io::prelude::*;
 use std::fs::OpenOptions;
 use std::path::Path;
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Mutex, RwLock};
 
 use log::{Log, LogRecord, LogMetadata, set_logger};
 pub use log::LogLevel;
@@ -28,79 +28,122 @@ macro_rules! fatal_error {
     };
 }
 
+/// Target for the logging output
+#[derive(Clone, Debug)]
+pub enum Target {
+    /// Log are written to the standard output stream
+    StdOut,
+    /// Log are written to the standard error stream
+    StdErr,
+    /// Log are written to a file, the path to the file is in the `String`
+    File(String),
+    /// Logging is not initialized yet
+    None
+}
+
 /// Logger with capacity to write to the standard output stream, the standard
 /// error stream or a file.
- pub struct Logger {
-     level: LogLevel,
-     writer: Arc<Mutex<Box<Write + Send + Sync>>>,
- }
+pub struct Logger {
+    level: LogLevel,
+    target: Target,
+    writer: Arc<Mutex<Box<Write + Send + Sync>>>,
+}
 
- impl Logger{
-     fn new<T>(level: LogLevel, handle: T) -> Logger where T: Write + Send + Sync + 'static {
-         ::chemfiles::Logger::get().log_callback(|level, message| {
-             match level {
-                 ::chemfiles::LogLevel::Error => error!("{}", message),
-                 ::chemfiles::LogLevel::Warning => warn!("{}", message),
-                 ::chemfiles::LogLevel::Info => info!("{}", message),
-                 ::chemfiles::LogLevel::Debug => debug!("{}", message),
-             }
-         }).expect("Could not set the chemfiles logging callback");
-         Logger{
-             level: level,
-             writer: Arc::new(Mutex::new(Box::new(handle))),
-         }
-     }
+lazy_static!(
+    static ref TARGET: RwLock<Target> = RwLock::new(Target::None);
+);
 
-     fn init(logger: Logger) {
-         let res = set_logger(|max_log_level| {
-             max_log_level.set(logger.level.to_log_level_filter());
-             Box::new(logger)
-         });
+impl Logger{
+    fn new<T>(level: LogLevel, target: Target, handle: T) -> Logger where T: Write + Send + Sync + 'static {
+        ::chemfiles::Logger::get().log_callback(|level, message| {
+            match level {
+                ::chemfiles::LogLevel::Error => error!("{}", message),
+                ::chemfiles::LogLevel::Warning => warn!("{}", message),
+                ::chemfiles::LogLevel::Info => info!("{}", message),
+                ::chemfiles::LogLevel::Debug => debug!("{}", message),
+            }
+        }).expect("Could not set the chemfiles logging callback");
+        Logger {
+            level: level,
+            target: target,
+            writer: Arc::new(Mutex::new(Box::new(handle))),
+        }
+    }
 
-         if let Err(_) = res {
-             warn!("Logger was initialized more than once! This call is ignored.");
-         }
-     }
+    fn init(logger: Logger) {
+        let res = set_logger(|max_log_level| {
+            max_log_level.set(logger.level.to_log_level_filter());
+            let mut target = TARGET.write().expect("Logging TARGET lock is poisonned");
+            *target = logger.target.clone();
+            Box::new(logger)
+        });
 
-     /// Initialize the global logger to use the standard output stream.
-     pub fn stdout() {
-         Logger::stdout_at_level(levels::DEFAULT_LEVEL)
-     }
+        if let Err(_) = res {
+            warn!("Logger was initialized more than once! This call is ignored.");
+        }
+    }
 
-     /// Initialize the global logger to use the standard output stream, with
-     /// the maximum log level of `level`
-     pub fn stdout_at_level(level: LogLevel) {
-         let logger = Logger::new(level, io::stdout());
-         Logger::init(logger);
-     }
+    /// Initialize the global logger to use the standard output stream.
+    pub fn stdout() {
+        Logger::stdout_at_level(levels::DEFAULT_LEVEL)
+    }
 
-     /// Initialize the global logger to use the standard error stream.
-     pub fn stderr() {
-         Logger::stderr_at_level(levels::DEFAULT_LEVEL)
-     }
+    /// Initialize the global logger to use the standard output stream, with
+    /// the maximum log level of `level`
+    pub fn stdout_at_level(level: LogLevel) {
+        let logger = Logger::new(level, Target::StdOut, io::stdout());
+        Logger::init(logger);
+    }
 
-     /// Initialize the global logger to use the standard error stream, with
-     /// the maximum log level of `level`
-     pub fn stderr_at_level(level: LogLevel) {
-         let logger = Logger::new(level, io::stderr());
-         Logger::init(logger);
-     }
+    /// Initialize the global logger to use the standard error stream.
+    pub fn stderr() {
+        Logger::stderr_at_level(levels::DEFAULT_LEVEL)
+    }
 
-     /// Initialize the global logger to write to the file at `path`, creating
-     /// the file if needed. If the file already exists, it is not removed.
-     pub fn file<P: AsRef<Path>>(path: P) -> Result<(), io::Error> {
-         Logger::file_at_level(path, levels::DEFAULT_LEVEL)
-     }
+    /// Initialize the global logger to use the standard error stream, with
+    /// the maximum log level of `level`
+    pub fn stderr_at_level(level: LogLevel) {
+        let logger = Logger::new(level, Target::StdErr, io::stderr());
+        Logger::init(logger);
+    }
 
-     /// Initialize the global logger to write to the file at `path`, creating
-     /// the file if needed. If the file already exists, it is not removed. The
-     /// maximum log level is set to `level`.
-     pub fn file_at_level<P: AsRef<Path>>(path: P, level: LogLevel) -> Result<(), io::Error> {
-         let file = try!(OpenOptions::new().write(true).create(true).append(true).open(path));
-         let logger = Logger::new(level, file);
-         Logger::init(logger);
-         Ok(())
-     }
+    /// Initialize the global logger to write to the file at `path`, creating
+    /// the file if needed. If the file already exists, it is not removed.
+    pub fn file<P: AsRef<Path>>(path: P) -> Result<(), io::Error> {
+        Logger::file_at_level(path, levels::DEFAULT_LEVEL)
+    }
+
+    /// Initialize the global logger to write to the file at `path`, creating
+    /// the file if needed. If the file already exists, it is not removed. The
+    /// maximum log level is set to `level`.
+    pub fn file_at_level<P: AsRef<Path>>(path: P, level: LogLevel) -> Result<(), io::Error> {
+        let filename = format!("{}", path.as_ref().display());
+        let file = try!(OpenOptions::new().write(true).create(true).append(true).open(path));
+        let logger = Logger::new(level, Target::File(filename), file);
+        Logger::init(logger);
+        Ok(())
+    }
+
+    /// Get the target for log events
+    pub fn target() -> Target {
+        TARGET.read().expect("Logging TARGET lock is poisonned").clone()
+    }
+
+    /// Is the log events target the screen?
+    pub fn is_screen() -> bool {
+        match *TARGET.read().expect("Logging TARGET lock is poisonned") {
+            Target::StdErr | Target::StdOut => true,
+            Target::File(_) | Target::None  => false
+        }
+    }
+
+    /// Is the log events target a file?
+    pub fn is_file() -> bool {
+        match *TARGET.read().expect("Logging TARGET lock is poisonned") {
+            Target::File(_) => true,
+            Target::StdErr | Target::StdOut | Target::None => false
+        }
+    }
  }
 
 
