@@ -21,13 +21,15 @@
 //! One can also read a single molecule from a file using the `read_molecule`
 //! function.
 
+mod error;
+pub use self::error::{Error, TrajectoryError};
+
 mod interactions;
 pub use self::interactions::read_interactions;
-pub use self::interactions::Error as InteractionError;
 pub use self::interactions::{FromToml, FromTomlWithPairs};
 
 mod chemfiles;
-pub use self::chemfiles::{Trajectory, TrajectoryResult};
+pub use self::chemfiles::Trajectory;
 pub use self::chemfiles::{guess_bonds, read_molecule};
 
 #[cfg(test)]

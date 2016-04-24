@@ -3,7 +3,8 @@
 use toml::{Value, Table};
 
 use system::System;
-use super::{Error, Result, FromToml};
+use input::error::{Error, Result};
+use super::FromToml;
 
 use potentials::{Harmonic, CosineHarmonic, Torsion, NullPotential};
 use potentials::{AnglePotential, DihedralPotential};

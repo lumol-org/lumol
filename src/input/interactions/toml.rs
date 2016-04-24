@@ -4,7 +4,8 @@
 //! Convert TOML values to Cymbalum types.
 use toml::Table;
 
-use super::{Error, Result, FromToml, FromTomlWithPairs};
+use input::error::{Error, Result};
+use super::{FromToml, FromTomlWithPairs};
 
 use potentials::{Harmonic, LennardJones, NullPotential, CosineHarmonic, Torsion};
 use potentials::{Wolf, Ewald};

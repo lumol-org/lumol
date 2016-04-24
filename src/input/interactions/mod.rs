@@ -3,16 +3,14 @@
 use toml::{Parser, Table, Value};
 
 use std::io::prelude::*;
-use std::io;
-use std::result;
 use std::fs::File;
 use std::path::Path;
-use std::error;
-use std::fmt;
 
 use system::System;
-use units::UnitParsingError;
 use potentials::{PairPotential, PairRestriction};
+
+use input::error::{Error, Result};
+use input::error::toml_error_to_string;
 
 mod toml;
 mod pairs;
@@ -25,73 +23,6 @@ pub mod testing;
 use self::pairs::{TwoBody, read_2body};
 use self::angles::{read_angles, read_dihedrals};
 use self::coulomb::{read_coulomb, set_charges};
-
-#[derive(Debug)]
-/// Possible causes of error when reading potential files
-pub enum Error {
-    /// Error in the TOML input file
-    TOML(String),
-    /// IO error
-    File(io::Error),
-    /// File content error: missing sections, bad data types
-    Config{
-        /// Error message
-        msg: String,
-    },
-    /// Unit parsing error
-    UnitParsing(UnitParsingError),
-}
-
-impl From<io::Error> for Error {
-    fn from(err: io::Error) -> Error {Error::File(err)}
-}
-
-impl<'a> From<&'a str> for Error {
-    fn from(err: &'a str) -> Error {
-        Error::Config{msg: String::from(err)}
-    }
-}
-
-impl From<String> for Error {
-    fn from(err: String) -> Error {
-        Error::Config{msg: err}
-    }
-}
-
-impl From<UnitParsingError> for Error {
-    fn from(err: UnitParsingError) -> Error {Error::UnitParsing(err)}
-}
-
-impl fmt::Display for Error {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> result::Result<(), fmt::Error> {
-        use std::error::Error as StdError;
-        try!(write!(fmt, "{}", self.description()));
-        Ok(())
-    }
-}
-
-impl error::Error for Error {
-    fn description(&self) -> &str {
-        match *self {
-            Error::TOML(ref err) => err,
-            Error::Config{ref msg} => msg,
-            Error::File(ref err) => err.description(),
-            Error::UnitParsing(ref err) => err.description(),
-        }
-    }
-
-    fn cause(&self) -> Option<&error::Error> {
-        match *self {
-            Error::TOML(..) => None,
-            Error::Config{..} => None,
-            Error::File(ref err) => Some(err),
-            Error::UnitParsing(ref err) => Some(err),
-        }
-    }
-}
-
-/// Custom `Result` for input files
-pub type Result<T> = result::Result<T, Error>;
 
 /// Convert a TOML table to a Rust type. This is the trait to implement in order
 /// to use the input files.
@@ -234,19 +165,6 @@ fn read_restriction(config: &Table) -> Result<Option<PairRestriction>> {
         }
         _ => Err(Error::from("Restriction must be a table or a string"))
     }
-}
-
-fn toml_error_to_string(parser: &Parser) -> String {
-    let nerrors = parser.errors.len();
-    assert!(nerrors > 0);
-
-    let errors = parser.errors.iter().map(|error|{
-        let (line, _) = parser.to_linecol(error.lo);
-        format!("{} at line {}", error.desc, line + 1)
-    }).collect::<Vec<_>>().join("\n    ");
-
-    let plural = if nerrors != 1 {"s"} else {""};
-    return format!("TOML parsing error{}: {}", plural, errors);
 }
 
 #[cfg(test)]

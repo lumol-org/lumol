@@ -3,7 +3,8 @@
 use toml::{Value, Table};
 
 use system::System;
-use super::{Error, Result, FromToml, FromTomlWithPairs};
+use input::error::{Error, Result};
+use super::{FromToml, FromTomlWithPairs};
 use super::read_restriction;
 
 use potentials::PairPotential;

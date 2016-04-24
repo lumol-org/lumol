@@ -2,7 +2,8 @@
 // Copyright (C) 2015-2016 G. Fraux — BSD license
 use toml::{Table, Value};
 
-use super::{Error, Result, FromToml};
+use input::error::{Error, Result};
+use super::FromToml;
 use super::read_restriction;
 
 use system::System;
