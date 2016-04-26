@@ -17,19 +17,9 @@ mod pairs;
 mod angles;
 mod coulomb;
 
-#[cfg(test)]
-pub mod testing;
-
 use self::pairs::{TwoBody, read_2body};
 use self::angles::{read_angles, read_dihedrals};
 use self::coulomb::{read_coulomb, set_charges};
-
-/// Convert a TOML table to a Rust type. This is the trait to implement in order
-/// to use the input files.
-pub trait FromToml: Sized {
-    /// Do the conversion from `table` to Self.
-    fn from_toml(table: &Table) -> Result<Self>;
-}
 
 /// Convert a TOML table and a PairPotential to a Rust type. This is intended
 /// to be used by potential computation mainly.
@@ -171,11 +161,11 @@ fn read_restriction(config: &Table) -> Result<Option<PairRestriction>> {
 mod tests {
     use system::System;
     use input::read_interactions;
-    use input::interactions::testing::bad_interactions;
+    use input::testing::bad_inputs;
 
     #[test]
     fn bad_input() {
-        for path in bad_interactions("generic") {
+        for path in bad_inputs("interactions", "generic") {
             let mut system = System::new();
             assert!(read_interactions(&mut system, path).is_err());
         }

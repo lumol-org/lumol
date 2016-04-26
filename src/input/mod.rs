@@ -1,19 +1,22 @@
 // Cymbalum, an extensible molecular simulation engine
 // Copyright (C) 2015-2016 G. Fraux — BSD license
 
-//! Input and output capacities.
+//! Input capacities for cymbalum
 //!
-//! # Input files
+//! This module provide input files reader for two types of files:
 //!
-//! This module provide readers for two types of file:
-//! * Configuration files uses the YAML format to define the `System` or the
-//!   `Simulation` in an human-readable way, and without writing any code;
-//! * Structures files defines the positions and the names of particles in the
+//! * Configuration files uses the TOML format to define a `System` or a
+//!   `Simulation` in an human-readable way, without writing any code. This
+//!   type of input is further divided in potentials input files and whole
+//!   simulation input files;
+//! * Structures files defines the positions and the names of particles in a
 //!   `System` or in a specific `Molecule`.
 //!
-//! # Reading YAML files
+//! # Reading configuration files
 //!
-//! The `read_interactions` function read interactions into a `System`.
+//! The `read_interactions` function read interactions into a `System`, and the
+//! `read_config` function reads a whole simulation (`Simulation` and `System`
+//! objects).
 //!
 //! # Reading and writing trajectories
 //!
@@ -26,11 +29,26 @@ pub use self::error::{Error, TrajectoryError};
 
 mod interactions;
 pub use self::interactions::read_interactions;
-pub use self::interactions::{FromToml, FromTomlWithPairs};
+pub use self::interactions::FromTomlWithPairs;
+
+mod simulations;
+pub use self::simulations::read_config;
 
 mod chemfiles;
 pub use self::chemfiles::Trajectory;
 pub use self::chemfiles::{guess_bonds, read_molecule};
 
 #[cfg(test)]
+pub mod testing;
+
+#[cfg(test)]
 pub use self::interactions::read_interactions_string;
+
+use toml::Table;
+
+/// Convert a TOML table to a Rust type. This is the trait to implement in order
+/// to use the input files.
+pub trait FromToml: Sized {
+    /// Do the conversion from `table` to Self.
+    fn from_toml(table: &Table) -> Result<Self, Error>;
+}

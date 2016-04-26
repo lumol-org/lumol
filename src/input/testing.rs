@@ -6,8 +6,9 @@
 use std::path::{Path, PathBuf};
 use std::fs;
 
-pub fn bad_interactions(motif: &str) -> Vec<PathBuf> {
+pub fn bad_inputs(input: &str, motif: &str) -> Vec<PathBuf> {
     let data_root = Path::new(file!()).parent().unwrap()
+                                      .join(input)
                                       .join("data")
                                       .join("bad")
                                       .join(motif);

@@ -4,8 +4,8 @@ use toml::{Value, Table};
 
 use system::System;
 use input::error::{Error, Result};
-use super::{FromToml, FromTomlWithPairs};
-use super::read_restriction;
+use input::FromToml;
+use super::{FromTomlWithPairs, read_restriction};
 
 use potentials::PairPotential;
 use potentials::{Harmonic, LennardJones, NullPotential};
@@ -121,7 +121,7 @@ fn read_pair_computation(computation: &Table, potential: Box<PairPotential>) -> 
 #[cfg(test)]
 mod tests {
     use input::read_interactions;
-    use input::interactions::testing::bad_interactions;
+    use input::testing::bad_inputs;
     use system::{Particle, System};
     use std::path::Path;
 
@@ -152,7 +152,7 @@ mod tests {
 
     #[test]
     fn bad_pairs() {
-        for path in bad_interactions("pairs") {
+        for path in bad_inputs("interactions", "pairs") {
             let mut system = System::new();
             assert!(read_interactions(&mut system, path).is_err());
         }
@@ -160,7 +160,7 @@ mod tests {
 
     #[test]
     fn bad_bonds() {
-        for path in bad_interactions("bonds") {
+        for path in bad_inputs("interactions", "bonds") {
             let mut system = System::new();
             assert!(read_interactions(&mut system, path).is_err());
         }

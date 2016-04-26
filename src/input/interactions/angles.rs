@@ -4,7 +4,7 @@ use toml::{Value, Table};
 
 use system::System;
 use input::error::{Error, Result};
-use super::FromToml;
+use input::FromToml;
 
 use potentials::{Harmonic, CosineHarmonic, Torsion, NullPotential};
 use potentials::{AnglePotential, DihedralPotential};
@@ -132,7 +132,7 @@ fn read_dihedral_potential(dihedral: &Table) -> Result<Box<DihedralPotential>> {
 #[cfg(test)]
 mod tests {
     use input::read_interactions;
-    use input::interactions::testing::bad_interactions;
+    use input::testing::bad_inputs;
     use system::{Particle, System};
     use std::path::Path;
 
@@ -152,7 +152,7 @@ mod tests {
 
     #[test]
     fn bad_angles() {
-        for path in bad_interactions("angles") {
+        for path in bad_inputs("interactions", "angles") {
             let mut system = System::new();
             assert!(read_interactions(&mut system, path).is_err());
         }
@@ -176,7 +176,7 @@ mod tests {
 
     #[test]
     fn bad_dihedrals() {
-        for path in bad_interactions("dihedrals") {
+        for path in bad_inputs("interactions", "dihedrals") {
             let mut system = System::new();
             assert!(read_interactions(&mut system, path).is_err());
         }

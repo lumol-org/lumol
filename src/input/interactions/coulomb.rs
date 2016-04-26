@@ -3,7 +3,7 @@
 use toml::{Table, Value};
 
 use input::error::{Error, Result};
-use super::FromToml;
+use input::FromToml;
 use super::read_restriction;
 
 use system::System;
@@ -76,7 +76,7 @@ pub fn set_charges(system: &mut System, charges: &Table) -> Result<()> {
 #[cfg(test)]
 mod tests {
     use input::read_interactions;
-    use input::interactions::testing::bad_interactions;
+    use input::testing::bad_inputs;
     use system::{Particle, System};
     use std::path::Path;
 
@@ -110,7 +110,7 @@ mod tests {
 
     #[test]
     fn bad_coulomb() {
-        for path in bad_interactions("coulomb") {
+        for path in bad_inputs("interactions", "coulomb") {
             let mut system = System::new();
             assert!(read_interactions(&mut system, path).is_err());
         }
