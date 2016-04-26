@@ -31,7 +31,7 @@ fn wolf() {
     let mut mc = MonteCarlo::new(units::from(300.0, "K").unwrap());
     mc.add(Box::new(Translate::new(units::from(3.0, "A").unwrap())), 1.0);
     mc.add(Box::new(Rotate::new(units::from(20.0, "deg").unwrap())), 1.0);
-    let mut simulation = Simulation::new(mc);
+    let mut simulation = Simulation::new(Box::new(mc));
 
     simulation.run(&mut system, 5000);
 }
@@ -44,7 +44,7 @@ fn ewald() {
     let mut mc = MonteCarlo::new(units::from(300.0, "K").unwrap());
     mc.add(Box::new(Translate::new(units::from(3.0, "A").unwrap())), 1.0);
     mc.add(Box::new(Rotate::new(units::from(20.0, "deg").unwrap())), 1.0);
-    let mut simulation = Simulation::new(mc);
+    let mut simulation = Simulation::new(Box::new(mc));
 
     simulation.run(&mut system, 1000);
 }

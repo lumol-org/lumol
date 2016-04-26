@@ -40,11 +40,11 @@ fn get_system_with_interaction() -> System {
 fn constant_energy_velocity_verlet() {
     START.call_once(|| {Logger::stdout();});
     let mut system = get_system_with_interaction();
-    let mut simulation = Simulation::new(
-        MolecularDynamics::from_integrator(
+    let mut simulation = Simulation::new(Box::new(
+        MolecularDynamics::from_integrator(Box::new(
             VelocityVerlet::new(units::from(1.0, "fs").unwrap())
-        )
-    );
+        ))
+    ));
     let e_initial = system.total_energy();
     simulation.run(&mut system, 1000);
     let e_final = system.total_energy();
@@ -56,11 +56,11 @@ fn constant_energy_velocity_verlet() {
 fn constant_energy_verlet() {
     START.call_once(|| {Logger::stdout();});
     let mut system = get_system_with_interaction();
-    let mut simulation = Simulation::new(
-        MolecularDynamics::from_integrator(
+    let mut simulation = Simulation::new(Box::new(
+        MolecularDynamics::from_integrator(Box::new(
             Verlet::new(units::from(1.0, "fs").unwrap())
-        )
-    );
+        ))
+    ));
     let e_initial = system.total_energy();
     simulation.run(&mut system, 1000);
     let e_final = system.total_energy();
@@ -72,11 +72,11 @@ fn constant_energy_verlet() {
 fn constant_energy_leap_frog() {
     START.call_once(|| {Logger::stdout();});
     let mut system = get_system_with_interaction();
-    let mut simulation = Simulation::new(
-        MolecularDynamics::from_integrator(
+    let mut simulation = Simulation::new(Box::new(
+        MolecularDynamics::from_integrator(Box::new(
             LeapFrog::new(units::from(1.0, "fs").unwrap())
-        )
-    );
+        ))
+    ));
     let e_initial = system.total_energy();
     simulation.run(&mut system, 1000);
     let e_final = system.total_energy();
@@ -87,11 +87,11 @@ fn constant_energy_leap_frog() {
 fn perfect_gaz() {
     START.call_once(|| {Logger::stdout();});
     let mut system = get_system_with_interaction();
-    let mut simulation = Simulation::new(
-        MolecularDynamics::from_integrator(
+    let mut simulation = Simulation::new(Box::new(
+        MolecularDynamics::from_integrator(Box::new(
             VelocityVerlet::new(units::from(1.0, "fs").unwrap())
-        )
-    );
+        ))
+    ));
 
     // dilating the system!
     for particle in system.iter_mut() {
@@ -112,15 +112,15 @@ fn perfect_gaz() {
 fn berendsen_barostat() {
     START.call_once(|| {Logger::stdout();});
     let mut system = get_system_with_interaction();
-    let mut simulation = Simulation::new(
-        MolecularDynamics::from_integrator(
+    let mut simulation = Simulation::new(Box::new(
+        MolecularDynamics::from_integrator(Box::new(
             BerendsenBarostat::new(
                 units::from(1.0, "fs").unwrap(),
                 units::from(5000.0, "bar").unwrap(),
                 1000.0
             )
-        )
-    );
+        ))
+    ));
 
     simulation.run(&mut system, 1000);
     let pressure = units::from(5000.0, "bar").unwrap();
@@ -142,11 +142,11 @@ fn cutoff_computation() {
         ))
     );
 
-    let mut simulation = Simulation::new(
-        MolecularDynamics::from_integrator(
+    let mut simulation = Simulation::new(Box::new(
+        MolecularDynamics::from_integrator(Box::new(
             VelocityVerlet::new(units::from(1.0, "fs").unwrap())
-        )
-    );
+        ))
+    ));
     simulation.run(&mut system, 100);
 
     let e_initial = system.total_energy();
@@ -172,11 +172,11 @@ fn table_computation() {
         ))
     );
 
-    let mut simulation = Simulation::new(
-        MolecularDynamics::from_integrator(
+    let mut simulation = Simulation::new(Box::new(
+        MolecularDynamics::from_integrator(Box::new(
             VelocityVerlet::new(units::from(1.0, "fs").unwrap())
-        )
-    );
+        ))
+    ));
     simulation.run(&mut system, 100);
 
     let e_initial = system.total_energy();

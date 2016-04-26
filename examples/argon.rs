@@ -31,11 +31,17 @@ fn main() {
     velocities.seed(129);
     velocities.init(&mut system);
 
-    let mut simulation = Simulation::new(MolecularDynamics::new(units::from(1.0, "fs").unwrap()));
+    let mut simulation = Simulation::new(Box::new(
+        MolecularDynamics::new(units::from(1.0, "fs").unwrap())
+    ));
+
+    let trajectory_out = Box::new(TrajectoryOutput::new("trajectory.xyz").unwrap());
     // Write the trajectory to `trajectory.xyz` every 10 steps
-    simulation.add_output_with_frequency(TrajectoryOutput::new("trajectory.xyz").unwrap(), 10);
+    simulation.add_output_with_frequency(trajectory_out, 10);
+
+    let energy_out = Box::new(EnergyOutput::new("energy.dat").unwrap());
     // Write the energy to `energy.dat` every step
-    simulation.add_output(EnergyOutput::new("energy.dat").unwrap());
+    simulation.add_output(energy_out);
 
     simulation.run(&mut system, 5000);
 

@@ -43,9 +43,9 @@ mod wolf {
     fn constant_energy() {
         START.call_once(|| {Logger::stdout();});
         let mut system = setup_system("wolf", "small");
-        let mut simulation = Simulation::new(
+        let mut simulation = Simulation::new(Box::new(
             MolecularDynamics::new(units::from(1.0, "fs").unwrap())
-        );
+        ));
 
         let e_initial = system.total_energy();
         simulation.run(&mut system, 1000);
@@ -57,15 +57,15 @@ mod wolf {
     fn anisotropic_berendsen() {
         START.call_once(|| {Logger::stdout();});
         let mut system = setup_system("wolf", "small");
-        let mut simulation = Simulation::new(
-            MolecularDynamics::from_integrator(
+        let mut simulation = Simulation::new(Box::new(
+            MolecularDynamics::from_integrator(Box::new(
                 AnisoBerendsenBarostat::hydrostatic(
                     units::from(1.0, "fs").unwrap(),
                     units::from(5e4, "bar").unwrap(),
                     1000.0
                 )
-            )
-        );
+            ))
+        ));
 
         simulation.run(&mut system, 10000);
         let pressure = units::from(5e4, "bar").unwrap();
@@ -81,9 +81,9 @@ mod ewald {
     fn constant_energy() {
         START.call_once(|| {Logger::stdout();});
         let mut system = setup_system("ewald", "small");
-        let mut simulation = Simulation::new(
+        let mut simulation = Simulation::new(Box::new(
             MolecularDynamics::new(units::from(1.0, "fs").unwrap())
-        );
+        ));
 
         let e_initial = system.total_energy();
         simulation.run(&mut system, 100);

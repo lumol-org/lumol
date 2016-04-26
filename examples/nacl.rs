@@ -23,6 +23,6 @@ fn main() {
         RescaleThermostat::new(units::from(300.0, "K").unwrap())
     ));
 
-    let mut simulation = Simulation::new(md);
+    let mut simulation = Simulation::new(Box::new(md));
     simulation.run(&mut system, 1000);
 }

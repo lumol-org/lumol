@@ -44,9 +44,9 @@ fn constant_energy() {
     START.call_once(|| {Logger::stdout();});
     let mut system = setup_system();
 
-    let mut simulation = Simulation::new(
+    let mut simulation = Simulation::new(Box::new(
         MolecularDynamics::new(units::from(1.0, "fs").unwrap())
-    );
+    ));
 
     let e_initial = system.total_energy();
     simulation.run(&mut system, 500);

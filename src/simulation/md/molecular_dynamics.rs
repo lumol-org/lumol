@@ -21,22 +21,22 @@ impl MolecularDynamics {
     /// Create a new `MolecularDynamics` propagator using a `VelocityVerlet`
     /// integrator.
     pub fn new(dt: f64) -> MolecularDynamics {
-        MolecularDynamics::from_integrator(VelocityVerlet::new(dt))
+        MolecularDynamics::from_integrator(Box::new(VelocityVerlet::new(dt)))
     }
 
     /// Create a new `MolecularDynamics` propagator using the specified
     /// `integrator`.
-    pub fn from_integrator<I>(integrator: I) -> MolecularDynamics where I: Integrator + 'static {
+    pub fn from_integrator(integrator: Box<Integrator>) -> MolecularDynamics {
         MolecularDynamics{
-            integrator: Box::new(integrator),
+            integrator: integrator,
             thermostat: None,
             controls: Vec::new(),
         }
     }
 
     /// Add a control algorithm to the internal list of controls.
-    pub fn add_control<C>(&mut self, control: C) where C: Control + 'static {
-        self.controls.push(Box::new(control));
+    pub fn add_control(&mut self, control: Box<Control>){
+        self.controls.push(control);
     }
 
     /// Set the thermostat to use with this simulation

@@ -45,9 +45,9 @@ fn setup(potential: &str, n: usize) -> (Simulation, System) {
     let mut velocities = BoltzmanVelocities::new(units::from(300.0, "K").unwrap());
     velocities.init(&mut system);
 
-    let simulation = Simulation::new(
+    let simulation = Simulation::new(Box::new(
         MolecularDynamics::new(units::from(1.0, "fs").unwrap())
-    );
+    ));
     return (simulation, system);
 }
 

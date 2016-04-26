@@ -43,6 +43,6 @@ fn main() {
     mc.add(Box::new(Translate::with_moltype(units::from(10.0, "A").unwrap(), h2o)), 2.0);
     mc.add(Box::new(Rotate::with_moltype(units::from(20.0, "deg").unwrap(), h2o)), 2.0);
 
-    let mut simulation = Simulation::new(mc);
+    let mut simulation = Simulation::new(Box::new(mc));
     simulation.run(&mut system, 200_000_000);
 }
