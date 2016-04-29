@@ -8,8 +8,26 @@ use toml::{Table, Parser};
 
 use input::error::{Error, Result, toml_error_to_string};
 
+use simulation::Simulation;
+use system::System;
+
+mod simulations;
+use self::simulations::{read_simulation, read_nsteps};
+
+/// A configuration about how to run a single simulation. This contains the
+/// system to simulate, the simulation itself and the number of steps to run
+/// the simulation.
+pub struct SimulationConfig {
+    /// The simulated system
+    pub system: System,
+    /// The simulation object
+    pub simulation: Simulation,
+    /// The simulation duration
+    pub nsteps: usize,
+}
+
 /// Read a whole simulation input file.
-pub fn read_config<P: AsRef<Path>>(path: P) -> Result<()> {
+pub fn read_config<P: AsRef<Path>>(path: P) -> Result<SimulationConfig> {
     let mut file = try!(File::open(path));
     let mut buffer = String::new();
     let _ = try!(file.read_to_string(&mut buffer));
@@ -24,7 +42,15 @@ pub fn read_config<P: AsRef<Path>>(path: P) -> Result<()> {
     };
 
     try!(validate(&config));
-    Ok(())
+
+    let simulation = try!(read_simulation(&config));
+    let nsteps = try!(read_nsteps(&config));
+
+    Ok(SimulationConfig {
+        system: System::new(),
+        simulation: simulation,
+        nsteps: nsteps,
+    })
 }
 
 fn validate(config: &Table) -> Result<()> {

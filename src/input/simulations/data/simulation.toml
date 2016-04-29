@@ -1,0 +1,15 @@
+[input]
+version = 1
+
+[[simulations]]
+nsteps = 1000000
+outputs = [
+    {type = "Trajectory", file = "filename.pdb", frequency = 100},
+    {type = "Energy", file = "energy.dat", frequency = 200}
+]
+
+[[simulations.propagator]]
+type = "MolecularDynamics"
+timestep = "1 fs"
+integrator = {type = "BerendsenBarostat", pressure = "100 bar", timestep = "10000 fs"}
+thermostat = {type = "Berendsen", temperature = "400 K", timestep = "1000 fs"}
