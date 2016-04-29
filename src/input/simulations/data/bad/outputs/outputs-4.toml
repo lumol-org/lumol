@@ -1,0 +1,10 @@
+[input]
+version = 1
+
+[[simulations]]
+nsteps = 0
+# outputs is not an array of tables
+outputs = [
+    # 'type' is not a string
+    {type = 4}
+]

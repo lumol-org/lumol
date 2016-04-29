@@ -11,6 +11,7 @@ use input::error::{Error, Result, toml_error_to_string};
 use simulation::Simulation;
 use system::System;
 
+mod outputs;
 mod simulations;
 use self::simulations::{read_simulation, read_nsteps};
 

@@ -1,0 +1,7 @@
+[input]
+version = 1
+
+[[simulations]]
+nsteps = 0
+# outputs is not a table
+outputs = ""

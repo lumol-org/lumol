@@ -21,6 +21,8 @@ pub enum Error {
     TOML(String),
     /// IO error
     File(io::Error),
+    /// Trajectory creation error
+    Trajectory(TrajectoryError),
     /// File content error: missing sections, bad data types
     Config(String),
     /// Unit parsing error
@@ -29,6 +31,10 @@ pub enum Error {
 
 impl From<io::Error> for Error {
     fn from(err: io::Error) -> Error {Error::File(err)}
+}
+
+impl From<TrajectoryError> for Error {
+    fn from(err: TrajectoryError) -> Error {Error::Trajectory(err)}
 }
 
 impl<'a> From<&'a str> for Error {
@@ -61,6 +67,7 @@ impl error::Error for Error {
             Error::TOML(ref err) => err,
             Error::Config(ref err) => err,
             Error::File(ref err) => err.description(),
+            Error::Trajectory(ref err) => err.description(),
             Error::UnitParsing(ref err) => err.description(),
         }
     }
@@ -70,6 +77,7 @@ impl error::Error for Error {
             Error::TOML(..) => None,
             Error::Config(..) => None,
             Error::File(ref err) => Some(err),
+            Error::Trajectory(ref err) => Some(err),
             Error::UnitParsing(ref err) => Some(err),
         }
     }

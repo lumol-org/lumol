@@ -6,8 +6,27 @@ use simulation::Simulation;
 
 use simulation::MolecularDynamics;
 
+use super::outputs::read_outputs;
+
 pub fn read_simulation(config: &Table) -> Result<Simulation> {
-    Ok(Simulation::new(Box::new(MolecularDynamics::new(1.0))))
+    let mut simulation = Simulation::new(
+        // TODO: read propagator
+        Box::new(MolecularDynamics::new(1.0))
+    );
+
+    let config = try!(simulation_table(config));
+    if let Some(outputs) = config.get("outputs") {
+        let outputs = try!(outputs.as_slice().ok_or(
+            Error::from("'outputs' must be an array")
+        ));
+
+        let outputs = try!(read_outputs(outputs));
+        for (output, frequency) in outputs {
+            simulation.add_output_with_frequency(output, frequency);
+        }
+    }
+
+    Ok(simulation)
 }
 
 pub fn read_nsteps(config: &Table) -> Result<usize> {
@@ -48,14 +67,17 @@ fn simulation_table(config: &Table) -> Result<&Table> {
 #[cfg(test)]
 mod tests {
     use input::read_config;
-    use input::testing::bad_inputs;
+    use input::testing::{bad_inputs, cleanup};
     use std::path::Path;
 
     #[test]
     fn nsteps() {
-        let data_root = Path::new(file!()).parent().unwrap().join("data");
-        let config = read_config(data_root.join("simulation.toml")).unwrap();
+        let path = Path::new(file!()).parent().unwrap()
+                                     .join("data")
+                                     .join("simulation.toml");
+        let config = read_config(&path).unwrap();
         assert_eq!(config.nsteps, 1000000);
+        cleanup(&path);
     }
 
     #[test]

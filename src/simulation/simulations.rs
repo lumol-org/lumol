@@ -102,4 +102,9 @@ impl Simulation {
             output.finish(system);
         }
     }
+
+    #[cfg(test)]
+    pub fn outputs_len(&self) -> usize {
+        self.outputs.len()
+    }
 }

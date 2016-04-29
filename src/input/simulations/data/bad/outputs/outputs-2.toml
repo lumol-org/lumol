@@ -1,0 +1,7 @@
+[input]
+version = 1
+
+[[simulations]]
+nsteps = 0
+# outputs is not an array of tables
+outputs = [1, 2, 3]

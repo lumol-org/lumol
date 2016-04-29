@@ -1,0 +1,9 @@
+[input]
+version = 1
+
+[[simulations]]
+nsteps = 0
+outputs = [
+    # Missing 'file' key
+    {type = "Trajectory", fli = "testing"}
+]

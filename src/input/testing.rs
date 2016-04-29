@@ -4,6 +4,7 @@
 //! Utilities for testing the input module
 
 use std::path::{Path, PathBuf};
+use std::io::ErrorKind;
 use std::fs;
 
 pub fn bad_inputs(input: &str, motif: &str) -> Vec<PathBuf> {
@@ -16,4 +17,20 @@ pub fn bad_inputs(input: &str, motif: &str) -> Vec<PathBuf> {
                                   .filter_map(|entry| entry.ok())
                                   .map(|entry| entry.path())
                                   .collect();
+}
+
+pub fn cleanup(path: &Path) {
+    match path.to_str().unwrap() {
+        "src/input/simulations/data/simulation.toml" => {
+            for file in &["energy.dat", "filename.xyz"] {
+                if let Err(err) = fs::remove_file(file) {
+                    match err.kind() {
+                        ErrorKind::NotFound => {},
+                        _ => panic!("IO error: {}", err)
+                    }
+                }
+            }
+        }
+        _ => unreachable!()
+    }
 }

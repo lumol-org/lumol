@@ -1,0 +1,9 @@
+[input]
+version = 1
+
+[[simulations]]
+nsteps = 0
+outputs = [
+    # 'file' key is not a string
+    {type = "Trajectory", file = 56}
+]
