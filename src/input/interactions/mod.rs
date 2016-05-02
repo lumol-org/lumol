@@ -45,13 +45,10 @@ pub fn read_interactions<P: AsRef<Path>>(system: &mut System, path: P) -> Result
 // TODO: use restricted privacy for this function
 pub fn read_interactions_string(system: &mut System, string: &str) -> Result<()> {
     let mut parser = Parser::new(string);
-    let config = match parser.parse() {
-        Some(config) => config,
-        None => {
-            let errors = toml_error_to_string(&parser);
-            return Err(Error::TOML(errors));
-        }
-    };
+    let config = try!(parser.parse().ok_or(
+        Error::TOML(toml_error_to_string(&parser))
+    ));
+
     try!(validate(&config));
     return read_interactions_toml(system, &config);
 }
@@ -107,12 +104,13 @@ pub fn read_interactions_toml(system: &mut System, config: &Table) -> Result<()>
 }
 
 fn read_restriction(config: &Table) -> Result<Option<PairRestriction>> {
-    let restriction = match config.get("restriction") {
-        Some(restriction) => restriction,
-        None => {return Ok(None)}
+    let restriction = config.get("restriction");
+    if restriction.is_none() {
+        // No restriction found
+        return Ok(None);
     };
 
-    match restriction.clone() {
+    match restriction.expect("Unreachable").clone() {
         Value::String(name) => {
             match &*name {
                 "none" => Ok(Some(PairRestriction::None)),

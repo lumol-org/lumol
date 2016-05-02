@@ -30,11 +30,8 @@ pub fn read_coulomb(system: &mut System, coulomb: &Table) -> Result<()> {
             },
         };
 
-        match try!(read_restriction(coulomb)) {
-            Some(restriction) => {
-                potential.set_restriction(restriction);
-            }
-            None => {}
+        if let Some(restriction) = try!(read_restriction(coulomb)) {
+            potential.set_restriction(restriction);
         }
 
         system.set_coulomb_interaction(potential);

@@ -90,15 +90,12 @@ impl error::Error for Error {
 }
 
 pub fn toml_error_to_string(parser: &Parser) -> String {
-    let nerrors = parser.errors.len();
-    assert!(nerrors > 0);
-
     let errors = parser.errors.iter().map(|error|{
         let (line, _) = parser.to_linecol(error.lo);
         format!("{} at line {}", error.desc, line + 1)
     }).collect::<Vec<_>>().join("\n    ");
 
-    let plural = if nerrors != 1 {"s"} else {""};
+    let plural = if errors.len() != 1 {"s"} else {""};
     return format!("TOML parsing error{}: {}", plural, errors);
 }
 
