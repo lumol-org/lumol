@@ -117,7 +117,9 @@ impl FromTomlWithPairs for CutoffComputation {
 
 impl FromTomlWithPairs for TableComputation {
     fn from_toml(table: &Table, potential: Box<PairPotential>) -> Result<TableComputation> {
-        let table = table["table"].as_table().unwrap();
+        let table = try!(table["table"].as_table().ok_or(
+            Error::from("'table' key in computation must be a TOML table")
+        ));
         let n = try_extract_parameter!(table, "n", "table computation");
         let max = try_extract_parameter!(table, "max", "table computation");
         if let (Some(n), Some(max)) = (n.as_integer(), max.as_str()) {

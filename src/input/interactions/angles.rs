@@ -47,7 +47,7 @@ fn read_angle_potential(angle: &Table) -> Result<Box<AnglePotential>> {
     let key = &*potentials[0];
     if let Value::Table(ref table) = angle[key] {
         match key {
-            "null" => Ok(Box::new(NullPotential::from_toml(table).unwrap())),
+            "null" => Ok(Box::new(try!(NullPotential::from_toml(table)))),
             "harmonic" => Ok(Box::new(try!(Harmonic::from_toml(table)))),
             "cosine-harmonic" => Ok(Box::new(try!(CosineHarmonic::from_toml(table)))),
             other => Err(
@@ -100,7 +100,7 @@ fn read_dihedral_potential(dihedral: &Table) -> Result<Box<DihedralPotential>> {
     let key = &*potentials[0];
     if let Value::Table(ref table) = dihedral[key] {
         match key {
-            "null" => Ok(Box::new(NullPotential::from_toml(table).unwrap())),
+            "null" => Ok(Box::new(try!(NullPotential::from_toml(table)))),
             "harmonic" => Ok(Box::new(try!(Harmonic::from_toml(table)))),
             "cosine-harmonic" => Ok(Box::new(try!(CosineHarmonic::from_toml(table)))),
             "torsion" => Ok(Box::new(try!(Torsion::from_toml(table)))),

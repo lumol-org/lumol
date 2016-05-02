@@ -76,7 +76,7 @@ fn read_pair_potential(pair: &Table) -> Result<Box<PairPotential>> {
     let key = &*potentials[0];
     if let Value::Table(ref table) = pair[key] {
         match key {
-            "null" => Ok(Box::new(NullPotential::from_toml(table).unwrap())),
+            "null" => Ok(Box::new(try!(NullPotential::from_toml(table)))),
             "harmonic" => Ok(Box::new(try!(Harmonic::from_toml(table)))),
             "lj" | "lennardjones" => Ok(Box::new(try!(LennardJones::from_toml(table)))),
             other => Err(
