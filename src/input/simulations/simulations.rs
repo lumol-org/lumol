@@ -41,14 +41,7 @@ pub fn read_nsteps(config: &Table) -> Result<usize> {
 }
 
 fn simulation_table(config: &Table) -> Result<&Table> {
-    let simulations = try!(config.get("simulations").ok_or(
-        Error::from("Missing 'simulations' section")
-    ));
-
-    let simulations = try!(simulations.as_slice().ok_or(
-        Error::from("Missing 'simulations' section is not a table.")
-    ));
-
+    let simulations = extract_slice!("simulations", config as "input file");
     if simulations.len() != 1 {
         return Err(Error::from(
             "Only one simulation is supported in the input"

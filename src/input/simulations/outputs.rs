@@ -23,22 +23,14 @@ pub fn read_outputs(outputs: &[Value]) -> Result<Vec<(Box<Output>, u64)>> {
             None => 1u64
         };
 
-        let typ = try!(output.get("type").ok_or(
-            Error::from("Missing 'type' in output")
-        ));
-
-        let typ = try!(typ.as_str().ok_or(
-            Error::from("'type' must be a string")
-        ));
-
-        let output: Box<Output> = match typ {
+        let output: Box<Output> = match extract_type!(output) {
             "Trajectory" | "trajectory" => Box::new(try!(TrajectoryOutput::from_toml(output))),
             "Energy" | "energy" => Box::new(try!(EnergyOutput::from_toml(output))),
             "Cell" | "cell" => Box::new(try!(CellOutput::from_toml(output))),
             "Properties" | "properties" => Box::new(try!(PropertiesOutput::from_toml(output))),
-            _ => {
+            other => {
                 return Err(Error::from(
-                    format!("Unknown output type '{}'", typ)
+                    format!("Unknown output type '{}'", other)
                 ))
             }
         };

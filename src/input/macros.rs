@@ -43,9 +43,24 @@ macro_rules! extract_number {
             ::toml::Value::Integer(v) => v as f64,
             ::toml::Value::Float(v) => v,
             _ => return Err(Error::from(
-                format!("'{}' must be a string in {}", $key, $context)
+                format!("'{}' must be a number in {}", $key, $context)
             ))
         }
+    });
+}
+
+/// Extract an array at the given `key`, from a TOML table interpreted as a
+/// `context`
+macro_rules! extract_slice {
+    ($key: expr, $config: ident as $context: expr) => ({
+        let array = try!($config.get($key).ok_or(Error::from(
+            format!("Missing '{}' key in {}", $key, $context)
+        )));
+        try!(array.as_slice().ok_or(
+            Error::from(
+                format!("'{}' must be an array in {}", $key, $context)
+            )
+        ))
     });
 }
 

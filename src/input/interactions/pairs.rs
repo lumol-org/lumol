@@ -24,14 +24,7 @@ pub fn read_2body(system: &mut System, pairs: &[Value], form: TwoBody) -> Result
             Error::from("Pair potential entry must be a table")
         ));
 
-        let atoms = try!(pair.get("atoms").ok_or(
-            Error::from("Missing 'atoms' section in pair potential")
-        ));
-
-        let atoms = try!(atoms.as_slice().ok_or(
-            Error::from("'atoms' section must be an array")
-        ));
-
+        let atoms = extract_slice!("atoms", pair as "pair potential");
         if atoms.len() != 2 {
             return Err(Error::from(
                 format!("Wrong size for 'atoms' section in pair potentials. Should be 2, is {}", atoms.len())
