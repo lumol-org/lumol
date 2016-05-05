@@ -1,0 +1,11 @@
+[input]
+version = 1
+
+[[simulations]]
+nsteps = 1
+
+[simulations.propagator]
+type = "MolecularDynamics"
+timestep = "1.0 fs"
+# Missing pressure key
+integrator = {type = "BerendsenBarostat", press = "10 bar", timestep = 100}

@@ -8,8 +8,11 @@ outputs = [
     {type = "Energy", file = "energy.dat", frequency = 200}
 ]
 
-[[simulations.propagator]]
+[simulations.propagator]
 type = "MolecularDynamics"
 timestep = "1 fs"
-integrator = {type = "BerendsenBarostat", pressure = "100 bar", timestep = "10000 fs"}
-thermostat = {type = "Berendsen", temperature = "400 K", timestep = "1000 fs"}
+integrator = {type = "BerendsenBarostat", pressure = "100 bar", timestep = 1000}
+thermostat = {type = "Berendsen", temperature = "400 K", timestep = 100}
+controls = [
+    {type = "RemoveRotation"}
+]

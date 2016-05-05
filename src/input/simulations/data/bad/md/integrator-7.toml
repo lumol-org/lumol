@@ -1,0 +1,11 @@
+[input]
+version = 1
+
+[[simulations]]
+nsteps = 1
+
+[simulations.propagator]
+type = "MolecularDynamics"
+timestep = "1.0 fs"
+# Missing timestep key
+integrator = {type = "AnisoBerendsenBarostat", pressure = "10 bar", tau = 100}

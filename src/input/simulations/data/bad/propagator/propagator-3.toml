@@ -1,0 +1,9 @@
+[input]
+version = 1
+
+[[simulations]]
+nsteps = 1
+
+[simulations.propagator]
+# Missing 'type' key
+bla = 4

@@ -1,0 +1,13 @@
+[input]
+version = 1
+
+[[simulations]]
+nsteps = 1
+
+[simulations.propagator]
+type = "MolecularDynamics"
+timestep = "1.0 fs"
+controls = [
+    # type key is not a string
+    {type = 67}
+]

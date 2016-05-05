@@ -27,6 +27,9 @@
 mod error;
 pub use self::error::{Error, TrajectoryError};
 
+#[macro_use]
+mod macros;
+
 mod interactions;
 pub use self::interactions::read_interactions;
 pub use self::interactions::FromTomlWithPairs;
@@ -46,9 +49,16 @@ pub use self::interactions::read_interactions_string;
 
 use toml::Table;
 
-/// Convert a TOML table to a Rust type. This is the trait to implement in order
-/// to use the input files.
+/// Convert a TOML table to a Rust type.
 pub trait FromToml: Sized {
     /// Do the conversion from `table` to Self.
     fn from_toml(table: &Table) -> Result<Self, Error>;
+}
+
+/// Convert a TOML table and some additional data to a Rust type.
+pub trait FromTomlWithData: Sized {
+    /// The type of the additional data needed.
+    type Data;
+    /// Do the conversion from `table` and `data` to Self.
+    fn from_toml(table: &Table, data: Self::Data) -> Result<Self, Error>;
 }

@@ -4,17 +4,15 @@ use toml::Table;
 use input::error::{Error, Result};
 use simulation::Simulation;
 
-use simulation::MolecularDynamics;
-
 use super::outputs::read_outputs;
+use super::propagator::read_propagator;
 
 pub fn read_simulation(config: &Table) -> Result<Simulation> {
-    let mut simulation = Simulation::new(
-        // TODO: read propagator
-        Box::new(MolecularDynamics::new(1.0))
-    );
-
     let config = try!(simulation_table(config));
+    let propagator = try!(read_propagator(config));
+
+    let mut simulation = Simulation::new(propagator);
+
     if let Some(outputs) = config.get("outputs") {
         let outputs = try!(outputs.as_slice().ok_or(
             Error::from("'outputs' must be an array")
@@ -74,7 +72,7 @@ mod tests {
     fn nsteps() {
         let path = Path::new(file!()).parent().unwrap()
                                      .join("data")
-                                     .join("simulation.toml");
+                                     .join("md.toml");
         let config = read_config(&path).unwrap();
         assert_eq!(config.nsteps, 1000000);
         cleanup(&path);

@@ -1,0 +1,7 @@
+[input]
+version = 1
+
+[[simulations]]
+nsteps = 1
+
+# Missing [simulations.propagator] table

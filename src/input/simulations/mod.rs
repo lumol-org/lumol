@@ -12,7 +12,9 @@ use simulation::Simulation;
 use system::System;
 
 mod outputs;
+mod propagator;
 mod simulations;
+mod md;
 use self::simulations::{read_simulation, read_nsteps};
 
 /// A configuration about how to run a single simulation. This contains the

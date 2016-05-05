@@ -21,7 +21,7 @@ pub fn bad_inputs(input: &str, motif: &str) -> Vec<PathBuf> {
 
 pub fn cleanup(path: &Path) {
     match path.to_str().unwrap() {
-        "src/input/simulations/data/simulation.toml" => {
+        "src/input/simulations/data/md.toml" => {
             for file in &["energy.dat", "filename.xyz"] {
                 if let Err(err) = fs::remove_file(file) {
                     match err.kind() {

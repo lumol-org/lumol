@@ -1,0 +1,10 @@
+[input]
+version = 1
+
+[[simulations]]
+nsteps = 1
+
+[simulations.propagator]
+type = "MolecularDynamics"
+# Missing timestep key
+step = "1 fs"

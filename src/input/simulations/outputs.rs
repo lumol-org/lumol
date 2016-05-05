@@ -100,7 +100,7 @@ mod tests {
     fn outputs() {
         let path = Path::new(file!()).parent().unwrap()
                                      .join("data")
-                                     .join("simulation.toml");
+                                     .join("md.toml");
         let config = read_config(&path).unwrap();
         assert_eq!(config.simulation.outputs_len(), 2);
         cleanup(&path);
