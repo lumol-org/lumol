@@ -17,6 +17,12 @@ fn main() {
     let mut velocities = BoltzmanVelocities::new(units::from(300.0, "K").unwrap());
     velocities.init(&mut system);
 
-    let mut simulation = Simulation::new(MolecularDynamics::new(units::from(1.0, "fs").unwrap()));
+    let mut md = MolecularDynamics::new(units::from(1.0, "fs").unwrap());
+    // Use a velocity rescaling thermostat
+    md.set_thermostat(Box::new(
+        RescaleThermostat::new(units::from(300.0, "K").unwrap())
+    ));
+
+    let mut simulation = Simulation::new(md);
     simulation.run(&mut system, 1000);
 }

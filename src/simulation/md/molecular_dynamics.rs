@@ -4,14 +4,15 @@
 use system::System;
 use simulation::Propagator;
 
-use super::Integrator;
-use super::Control;
+use super::{Integrator, Control, Thermostat};
 use super::VelocityVerlet;
 
 /// Molecular Dynamics propagator for the simulation.
 pub struct MolecularDynamics {
     /// The integrator we should use to propagate the equations of motion.
     integrator: Box<Integrator>,
+    /// Optional thermostating algorithm
+    thermostat: Option<Box<Thermostat>>,
     /// Control algorithms in the simulation.
     controls: Vec<Box<Control>>,
 }
@@ -28,6 +29,7 @@ impl MolecularDynamics {
     pub fn from_integrator<I>(integrator: I) -> MolecularDynamics where I: Integrator + 'static {
         MolecularDynamics{
             integrator: Box::new(integrator),
+            thermostat: None,
             controls: Vec::new(),
         }
     }
@@ -35,6 +37,11 @@ impl MolecularDynamics {
     /// Add a control algorithm to the internal list of controls.
     pub fn add_control<C>(&mut self, control: C) where C: Control + 'static {
         self.controls.push(Box::new(control));
+    }
+
+    /// Set the thermostat to use with this simulation
+    pub fn set_thermostat(&mut self, thermostat: Box<Thermostat>) {
+        self.thermostat = Some(thermostat);
     }
 }
 
@@ -48,6 +55,11 @@ impl Propagator for MolecularDynamics {
 
     fn propagate(&mut self, system: &mut System) {
         self.integrator.integrate(system);
+
+        if let Some(ref mut thermostat) = self.thermostat {
+            thermostat.control(system);
+        }
+
         for control in &mut self.controls {
             control.control(system);
         }

@@ -21,6 +21,8 @@ pub trait Control {
     fn finish(&mut self, _: &System) {}
 }
 
+/// Trait for controls usables as thermostats
+pub trait Thermostat: Control {}
 
 /******************************************************************************/
 /// Velocity rescaling thermostat.
@@ -62,6 +64,8 @@ impl Control for RescaleThermostat {
     }
 }
 
+impl Thermostat for RescaleThermostat {}
+
 /******************************************************************************/
 /// Berendsen thermostat.
 ///
@@ -97,6 +101,7 @@ impl Control for BerendsenThermostat {
         }
     }
 }
+impl Thermostat for BerendsenThermostat {}
 
 /******************************************************************************/
 /// Remove global translation from the system

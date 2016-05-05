@@ -11,7 +11,7 @@ pub use self::integrators::BerendsenBarostat;
 pub use self::integrators::AnisoBerendsenBarostat;
 
 mod controls;
-pub use self::controls::Control;
+pub use self::controls::{Control, Thermostat};
 pub use self::controls::{RescaleThermostat, BerendsenThermostat};
 pub use self::controls::{RemoveTranslation, RemoveRotation};
 
