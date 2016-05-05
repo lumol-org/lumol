@@ -61,7 +61,8 @@ mod wolf {
             MolecularDynamics::from_integrator(
                 AnisoBerendsenBarostat::hydrostatic(
                     units::from(1.0, "fs").unwrap(),
-                    units::from(5e4, "bar").unwrap()
+                    units::from(5e4, "bar").unwrap(),
+                    1000.0
                 )
             )
         );

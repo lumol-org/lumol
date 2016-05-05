@@ -116,7 +116,8 @@ fn berendsen_barostat() {
         MolecularDynamics::from_integrator(
             BerendsenBarostat::new(
                 units::from(1.0, "fs").unwrap(),
-                units::from(5000.0, "bar").unwrap()
+                units::from(5000.0, "bar").unwrap(),
+                1000.0
             )
         )
     );

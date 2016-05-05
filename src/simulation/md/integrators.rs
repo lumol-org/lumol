@@ -161,8 +161,8 @@ pub struct BerendsenBarostat {
     timestep: f64,
     /// Target pressure for the barostat
     pressure: f64,
-    /// Barostat timestep, expressed in units of the main timestep.
-    baro_timestep: f64,
+    /// Barostat time scale, expressed in units of the timestep.
+    tau: f64,
     /// Storing the accelerations
     accelerations: Vec<Vector3D>,
     /// Storing the scaling factor
@@ -171,25 +171,16 @@ pub struct BerendsenBarostat {
 
 impl BerendsenBarostat {
     /// Create a new Berendsen barostat with an integration timestep of
-    /// `timestep`, and a target pressure of `pressure`. The barostat timestep
-    /// is 1000.
-    pub fn new(timestep: f64, pressure: f64) -> BerendsenBarostat {
+    /// `timestep`, and a target pressure of `pressure` and the barostat time
+    /// scale `tau`.
+    pub fn new(timestep: f64, pressure: f64, tau: f64) -> BerendsenBarostat {
         BerendsenBarostat{
             timestep: timestep,
             pressure: pressure,
-            baro_timestep: 1000.0,
+            tau: tau,
             accelerations: Vec::new(),
             eta: 1.0,
         }
-    }
-
-    /// Set the barostat timestep. It should be expressed in terms of the
-    /// integration timestep. With a barostat timestep of 1000 and an
-    /// integration timestep of `0.8 fs`, the effective barostat timestep will
-    /// be `800 fs`.
-    pub fn timestep(mut self, timestep: f64) -> BerendsenBarostat {
-        self.baro_timestep =  timestep;
-        return self;
     }
 }
 
@@ -211,7 +202,7 @@ impl Integrator for BerendsenBarostat {
 
         system.cell_mut().scale_mut(self.eta*self.eta*self.eta * Matrix3::one());
 
-        self.eta = f64::cbrt(1.0 - WATER_COMPRESSIBILITY / self.baro_timestep * (self.pressure - system.pressure()));
+        self.eta = f64::cbrt(1.0 - WATER_COMPRESSIBILITY / self.tau * (self.pressure - system.pressure()));
 
         let forces = system.forces();
         // Update accelerations at t + ∆t and velocities at t + ∆t
@@ -230,8 +221,8 @@ pub struct AnisoBerendsenBarostat {
     timestep: f64,
     /// Target stress matrix for the barostat
     stress: Matrix3,
-    /// Barostat timestep, expressed in units of the main timestep.
-    baro_timestep: f64,
+    /// Barostat time sscale, expressed in units of the timestep
+    tau: f64,
     /// Storing the accelerations
     accelerations: Vec<Vector3D>,
     /// Storing the scaling factor
@@ -240,13 +231,13 @@ pub struct AnisoBerendsenBarostat {
 
 impl AnisoBerendsenBarostat {
     /// Create a new anisotropic Berendsen barostat with an integration timestep
-    /// of `timestep`, and a target stress matrix of `stress`. The barostat
-    /// timestep is 1000.
-    pub fn new(timestep: f64, stress: Matrix3) -> AnisoBerendsenBarostat {
+    /// of `timestep`, and a target stress matrix of `stress` and the barostat
+    /// time scale `tau`.
+    pub fn new(timestep: f64, stress: Matrix3, tau: f64) -> AnisoBerendsenBarostat {
         AnisoBerendsenBarostat{
             timestep: timestep,
             stress: stress,
-            baro_timestep: 1000.0,
+            tau: tau,
             accelerations: Vec::new(),
             eta: Matrix3::one(),
         }
@@ -254,18 +245,9 @@ impl AnisoBerendsenBarostat {
 
     /// Create a new anisotropic Berendsen barostat with an integration timestep
     /// of `timestep`, using an hydrostatic stress matrix corresponding to the
-    /// pressure `pressure`. The barostat timestep is 1000.
-    pub fn hydrostatic(timestep: f64, pressure: f64) -> AnisoBerendsenBarostat {
-        AnisoBerendsenBarostat::new(timestep, pressure * Matrix3::one())
-    }
-
-    /// Set the barostat timestep. It should be expressed in terms of the
-    /// integration timestep. With a barostat timestep of 1000 and an
-    /// integration timestep of `0.8 fs`, the effective barostat timestep will
-    /// be `800 fs`.
-    pub fn timestep(mut self, timestep: f64) -> AnisoBerendsenBarostat {
-        self.baro_timestep =  timestep;
-        return self;
+    /// pressure `pressure` and the barostat time scale `tau`.
+    pub fn hydrostatic(timestep: f64, pressure: f64, tau: f64) -> AnisoBerendsenBarostat {
+        AnisoBerendsenBarostat::new(timestep, pressure * Matrix3::one(), tau)
     }
 }
 
@@ -287,7 +269,7 @@ impl Integrator for AnisoBerendsenBarostat {
 
         system.cell_mut().scale_mut(self.eta);
 
-        let factor = self.timestep * WATER_COMPRESSIBILITY / self.baro_timestep;
+        let factor = self.timestep * WATER_COMPRESSIBILITY / self.tau;
         self.eta = Matrix3::one() - factor * (self.stress - system.stress());
 
         // Make the eta matrix symetric here
