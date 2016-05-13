@@ -115,11 +115,6 @@ impl System {
         return res;
     }
 
-    /// Get the molecule containing the particle `i`
-    pub fn molecule_containing(&self, i:usize) -> &Molecule {
-        return &self.molecules[self.molids[i]];
-    }
-
     /// Check if the particles at indexes `i` and `j` are in the same molecule
     #[inline] pub fn are_in_same_molecule(&self, i: usize, j:usize) -> bool {
         debug_assert!(self.molids.len() == self.particles.len());
@@ -136,6 +131,11 @@ impl System {
         &self.molecules[id]
     }
 
+    /// Get the index of the molecule containing the particle `i`
+    #[inline] pub fn molid(&self, i: usize) -> usize {
+        self.molids[i]
+    }
+
     /// Get the length of the shortest bond path to go from the particle `i` to
     /// the particle `j`. This length is 0 if there is no path from `i` to `j`,
     /// 1 if `i == j`, 2 if there is a bond between `i` and `j`, etc.
@@ -145,7 +145,7 @@ impl System {
         } else if i == j {
             1
         } else {
-            let connect = self.molecule_containing(i).connectivity(i, j);
+            let connect = self.molecule(self.molid(i)).connectivity(i, j);
             if connect.contains(CONNECT_12) {
                 2
             } else if connect.contains(CONNECT_13) {
@@ -160,10 +160,9 @@ impl System {
         }
     }
 
-    /// Remove the molecule containing the particle at index `i`
-    pub fn remove_molecule_containing(&mut self, i: usize) {
-        let id = self.molids[i];
-        let molecule = self.molecules.remove(id);
+    /// Remove the molecule at index `i`
+    pub fn remove_molecule(&mut self, molid: usize) {
+        let molecule = self.molecules.remove(molid);
         let first = molecule.first();
         let size = molecule.size();
 
@@ -172,7 +171,7 @@ impl System {
             let _ = self.molids.remove(first);
         }
 
-        for molecule in self.molecules.iter_mut().skip(id) {
+        for molecule in self.molecules.iter_mut().skip(molid) {
             molecule.translate_by(-(size as isize));
         }
 
@@ -210,7 +209,7 @@ impl System {
         let old_mol = self.molecules[old_molid].clone();
 
         // Effective merge
-        let delta = self.merge_molecules_containing(particle_i, particle_j);
+        let delta = self.merge_molecules(molid_i, molid_j);
 
         let mut permutations = Permutations::new();
         if !self.are_in_same_molecule(particle_i, particle_j) {
@@ -294,39 +293,28 @@ impl System {
         *self.kinds.entry(name.to_owned()).or_insert(index)
     }
 
-    /// Merge the molecules containing the atoms at indexes `i` and `j` in one
-    /// molecule. The molecule are merged into the one with the lower index in
-    /// `molecules`.
+    /// Merge the molecules at indexes `new_molid` and `old_molid` into one
+    /// molecule. The molecule are merged into `new_molid`, which should be the
+    /// lower molecule index.
     ///
     /// For example, if we have
     /// ```
     /// H-H  H-H  H-H  H-H
     /// 0 1  2 3  4 5  6 7
     /// ```
-    /// and call `merge_molecules_containing(1, 6)`, the molecules 0 and 2 will
-    /// be merged into the molecule 0, and the result will be
+    /// and call `merge_molecules(0, 2)` the result will be
     /// ```
     /// 0 1 6 7  2 3  4 5  # Old indexes
     /// H-H-H-H  H-H  H-H
     /// 0 1 2 3  4 5  6 7  # New indexes
     /// ```
     ///
-    /// This functions return the deplacement of the move molecule, i.e. in this
-    /// example `4`.
-    fn merge_molecules_containing(&mut self, i: usize, j: usize) -> usize {
-        let mol_i = self.molids[i];
-        let mol_j = self.molids[j];
-
-        // Move the particles so that we still have molecules contiguous in
-        // memory. The molecules are merged in the one with the smaller index.
-        let new_molid = min(mol_i, mol_j);
-        let old_molid = max(mol_i, mol_j);
-
+    /// This functions return the deplacement of the moved molecule, i.e. in
+    /// this example `4`.
+    fn merge_molecules(&mut self, new_molid: usize, old_molid: usize) -> usize {
+        assert!(new_molid < old_molid);
         let mut new_mol = self.molecules[new_molid].clone();
         let old_mol = self.molecules[old_molid].clone();
-        assert!(new_mol.last() < old_mol.first());
-        trace!("Merging molecules: {} <-- {}", new_molid, old_molid);
-        trace!("The molecules contains:\n{:#?}\n ---\n{:#?}", new_mol, old_mol);
 
         if new_mol.last() + 1 == old_mol.first() {
             // Just update the molecules ids
@@ -742,7 +730,8 @@ mod tests {
         system.remove_particle(2);
         assert_eq!(system.molecules().len(), 1);
 
-        system.remove_molecule_containing(1);
+        let molid = system.molid(1);
+        system.remove_molecule(molid);
         assert_eq!(system.molecules().len(), 0);
         assert_eq!(system.size(), 0);
     }
