@@ -191,68 +191,61 @@ impl System {
     /// particles list, and thus invalidate any previously stored index. In
     /// particular, any bond, angle, dihedral or molecule is invalidated.
     ///
-    /// If molecules where merged, this function will return `Some(perms)`,
-    /// where `perms` contains a list of `(old_index, new_index)` associations.
-    /// If no molecules where merged, this function will return `None`.
-    pub fn add_bond(&mut self, i: usize, j: usize) -> Option<Permutations> {
-        assert!(i <= self.particles.len());
-        assert!(j <= self.particles.len());
-        trace!("Adding bond between the particles {} and {}, in molecules {} and {}", i, j, self.molids[i], self.molids[j]);
+    /// This function will return the list of atomic permutations that where
+    /// applied in order to ensure that molecules are contiguous in memory.
+    pub fn add_bond(&mut self, mut particle_i: usize, mut particle_j: usize) -> Permutations {
+        assert!(particle_i <= self.particles.len());
+        assert!(particle_j <= self.particles.len());
+        trace!(
+            "Adding bond {} --- {}, in molecules {} and {}",
+            particle_i, particle_j, self.molids[particle_i], self.molids[particle_j]
+        );
 
-        let (i, j, perms) = if self.are_in_same_molecule(i, j) {
-            (i, j, None)
-        } else { // Do all the hard work
-            // Getting copy of the molecules before the merge
-            let mol_i = self.molids[i];
-            let mol_j = self.molids[j];
-            let new_mol_idx = min(mol_i, mol_j);
-            let old_mol_idx = max(mol_i, mol_j);
-            let new_mol = self.molecules[new_mol_idx].clone();
-            let old_mol = self.molecules[old_mol_idx].clone();
+        // Getting copy of the molecules before the merge
+        let molid_i = self.molids[particle_i];
+        let molid_j = self.molids[particle_j];
+        let new_molid = min(molid_i, molid_j);
+        let old_molid = max(molid_i, molid_j);
+        let new_mol = self.molecules[new_molid].clone();
+        let old_mol = self.molecules[old_molid].clone();
 
-            let mut perms = Permutations::new();
-            let new_mol_last = new_mol.last();
-            let old_mol_first = old_mol.first();
+        // Effective merge
+        let delta = self.merge_molecules_containing(particle_i, particle_j);
 
-            // If new_mol_last + 1 == old_mol_first, no one move. Else, we have
-            // to move everything
-            if new_mol_last + 1 != old_mol_first {
+        let mut permutations = Permutations::new();
+        if !self.are_in_same_molecule(particle_i, particle_j) {
+            // If new_mol.last() + 1 == old_mol.first(), no one moved. Else,
+            // we generate the permutations
+            if new_mol.last() + 1 != old_mol.first() {
                 let size = old_mol.size();
-                let mut i = old_mol.first();
+                let first = old_mol.first();
+                let second = new_mol.last() + 1;
                 // Add permutation for the molecule we just moved around
-                for j in (new_mol_last + 1)..(new_mol_last + size + 1) {
-                    perms.push((i, j));
-                    i += 1;
+                for i in 0..size {
+                    permutations.push((first + i, second + i));
                 }
 
-                // Add permutations for molecules that where shifted to make space
-                // for the just moved molecule.
-                for molecule in self.molecules.iter().skip(new_mol_idx + 2).take(old_mol_idx - new_mol_idx - 1) {
+                // Add permutations for molecules that where shifted to make
+                // space for the just moved molecule.
+                for molecule in &self.molecules[new_molid + 1 .. old_molid] {
                     for i in molecule {
-                        perms.push((i - size, i));
+                        permutations.push((i - size, i));
                     }
                 }
             }
-
-            // Effective merge
-            let delta = self.merge_molecules_containing(i, j);
-
-            // One of the `i` or `j` index is no longer valid, as one molecule
-            // has been displaced.
-            let (i, j) = if mol_i == new_mol_idx {
-                (i, j - delta) // j moved
-            } else {
-                (i - delta, j) // i moved
-            };
-            (i, j, Some(perms))
-        };
-
-        if i == j {
-            error!("Can not add a bond between a particle and itself.");
         }
 
-        self.molecules[self.molids[i]].add_bond(i, j);
-        return perms;
+        // One of the `particle_i` or `particle_j` index is no longer valid, as one
+        // molecule has been displaced.
+        if molid_i == new_molid {
+            particle_j -= delta; // j moved
+        } else {
+            particle_i -= delta; // i moved
+        };
+
+        assert!(self.molids[particle_i] == self.molids[particle_j]);
+        self.molecules[self.molids[particle_i]].add_bond(particle_i, particle_j);
+        return permutations;
     }
 
     /// Removes particle at index `i` and any associated bonds, angle or dihedral
@@ -326,19 +319,19 @@ impl System {
 
         // Move the particles so that we still have molecules contiguous in
         // memory. The molecules are merged in the one with the smaller index.
-        let new_mol_idx = min(mol_i, mol_j);
-        let old_mol_idx = max(mol_i, mol_j);
+        let new_molid = min(mol_i, mol_j);
+        let old_molid = max(mol_i, mol_j);
 
-        let mut new_mol = self.molecules[new_mol_idx].clone();
-        let old_mol = self.molecules[old_mol_idx].clone();
+        let mut new_mol = self.molecules[new_molid].clone();
+        let old_mol = self.molecules[old_molid].clone();
         assert!(new_mol.last() < old_mol.first());
-        trace!("Merging molecules: {} <-- {}", new_mol_idx, old_mol_idx);
+        trace!("Merging molecules: {} <-- {}", new_molid, old_molid);
         trace!("The molecules contains:\n{:#?}\n ---\n{:#?}", new_mol, old_mol);
 
         if new_mol.last() + 1 == old_mol.first() {
             // Just update the molecules ids
             for i in old_mol {
-                self.molids[i] = new_mol_idx;
+                self.molids[i] = new_molid;
             }
         } else {
             // Move the particles close together
@@ -352,17 +345,17 @@ impl System {
 
                 // Update molids
                 let _ = self.molids.remove(i);
-                self.molids.insert(new_index, new_mol_idx);
+                self.molids.insert(new_index, new_molid);
 
                 new_index += 1;
             }
         }
 
-        let mut old_mol = self.molecules[old_mol_idx].clone();
+        let mut old_mol = self.molecules[old_molid].clone();
         let size = old_mol.size() as isize;
 
         // translate all indexes in the molecules between new_mol and old_mol
-        for molecule in self.molecules.iter_mut().skip(new_mol_idx + 1).take(old_mol_idx - new_mol_idx - 1) {
+        for molecule in self.molecules.iter_mut().skip(new_molid + 1).take(old_molid - new_molid - 1) {
             molecule.translate_by(size);
         }
 
@@ -375,8 +368,8 @@ impl System {
         old_mol.translate_by(- (delta as isize));
 
         new_mol.merge_with(old_mol);
-        self.molecules[new_mol_idx] = new_mol;
-        let _ = self.molecules.remove(old_mol_idx);
+        self.molecules[new_molid] = new_mol;
+        let _ = self.molecules.remove(old_molid);
 
         // Check that self.molids is sorted and only contains successives values
         debug_assert!(self.molids.iter().fold((true, 0), |(is_valid, previous), &i| {
@@ -728,8 +721,8 @@ mod tests {
         system.add_particle(Particle::new("O"));
         system.add_particle(Particle::new("H"));
 
-        assert_eq!(system.add_bond(0, 1), Some(vec![]));
-        assert_eq!(system.add_bond(2, 3), Some(vec![]));
+        assert_eq!(system.add_bond(0, 1), vec![]);
+        assert_eq!(system.add_bond(2, 3), vec![]);
 
         assert_eq!(system.molecules().len(), 2);
 
@@ -738,7 +731,7 @@ mod tests {
         let molecule = system.molecule(1).clone();
         assert!(molecule.bonds().contains(&Bond::new(2, 3)));
 
-        assert_eq!(system.add_bond(1, 2), Some(vec![]));
+        assert_eq!(system.add_bond(1, 2), vec![]);
         assert_eq!(system.molecules().len(), 1);
 
         let molecule = system.molecule(0).clone();
@@ -790,13 +783,13 @@ mod tests {
         system.add_particle(Particle::new("H"));
         system.add_particle(Particle::new("H"));
 
-        assert_eq!(system.add_bond(0, 3), Some(vec![(3, 1), (1, 2), (2, 3)]));
-        assert_eq!(system.add_bond(0, 3), Some(vec![(3, 2), (2, 3)]));
-        assert_eq!(system.add_bond(0, 3), Some(vec![]));
+        assert_eq!(system.add_bond(0, 3), vec![(3, 1), (1, 2), (2, 3)]);
+        assert_eq!(system.add_bond(0, 3), vec![(3, 2), (2, 3)]);
+        assert_eq!(system.add_bond(0, 3), vec![]);
 
-        assert_eq!(system.add_bond(4, 5), Some(vec![]));
-        assert_eq!(system.add_bond(4, 7), Some(vec![(7, 6), (6, 7)]));
-        assert_eq!(system.add_bond(4, 7), Some(vec![]));
+        assert_eq!(system.add_bond(4, 5), vec![]);
+        assert_eq!(system.add_bond(4, 7), vec![(7, 6), (6, 7)]);
+        assert_eq!(system.add_bond(4, 7), vec![]);
     }
 
     #[test]

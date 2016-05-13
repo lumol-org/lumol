@@ -197,6 +197,11 @@ impl Molecule {
         self.last
     }
 
+    /// Does this molecule contains the particle `i`
+    pub fn contains(&self, i: usize) -> bool {
+        self.first <= i && i <= self.last
+    }
+
     /// Cache the hash of the bonds
     fn rehash(&mut self) {
         let mut hasher = SipHasher::new();
@@ -370,8 +375,9 @@ impl Molecule {
     /// Add a bond between the particles at indexes `i` and `j`. These particles
     /// are assumed to be in the molecule
     pub fn add_bond(&mut self, i: usize, j: usize)  {
-        assert!(self.first <= i && i <= self.last);
-        assert!(self.first <= j && j <= self.last);
+        assert!(self.contains(i));
+        assert!(self.contains(j));
+        assert!(i != j);
         self.bonds.insert(Bond::new(i, j));
         self.rebuild();
     }

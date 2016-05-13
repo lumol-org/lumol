@@ -72,23 +72,32 @@ impl ToCymbalum for chemfiles::Frame {
 
         let mut bonds = try!(topology.bonds());
         while let Some(bond) = bonds.pop() {
-            if let Some(perms) = system.add_bond(bond[0] as usize, bond[1] as usize) {
-                apply_particle_permutation(&mut bonds, perms);
-            }
+            let permutations = system.add_bond(bond[0] as usize, bond[1] as usize);
+            apply_particle_permutation(&mut bonds, permutations);
         }
         Ok(system)
     }
 }
 
 fn apply_particle_permutation(bonds: &mut Vec<[usize; 2]>, perms: Vec<(usize, usize)>) {
-    'bonds: for bond in bonds {
+    for bond in bonds {
+        // Search for a permutation applying to the first atom of the bond. We
+        // need to stop just after the first permutations is found, because we
+        // can have a permutation looking like this: [1 -> 2, 2 -> 3, 3 -> 4].
+        // If we do not stop after the first match, then all indexes in 1-3
+        // range will become 4.
         for perm in &perms {
             if bond[0] == perm.0 {
                 bond[0] = perm.1;
-                continue 'bonds;
-            } else if bond[1] == perm.0 {
+                break;
+            }
+        }
+
+        // Now we look for permutations applying to the second atom of the bond
+        for perm in &perms {
+            if bond[1] == perm.0 {
                 bond[1] = perm.1;
-                continue 'bonds;
+                break;
             }
         }
     }
