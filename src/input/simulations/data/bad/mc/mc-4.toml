@@ -1,0 +1,11 @@
+[input]
+version = 1
+
+[[simulations]]
+nsteps = 1
+
+[simulations.propagator]
+type = "MonteCarlo"
+temperature = "300 K"
+# moves is not an array
+moves = false

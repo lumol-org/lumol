@@ -48,10 +48,9 @@ impl MonteCarlo {
 
     /// Add a the `mcmove` Monte-Carlo move to this propagator, with frequency
     /// `frequency`.
-    pub fn add(&mut self, mcmove: Box<MCMove>, frequency: f64) -> &MonteCarlo {
+    pub fn add(&mut self, mcmove: Box<MCMove>, frequency: f64) {
         self.moves.push(mcmove);
         self.frequencies.push(frequency);
-        return self;
     }
 
     /// Get the temperature of the simulation

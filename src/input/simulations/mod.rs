@@ -15,6 +15,7 @@ mod outputs;
 mod propagator;
 mod simulations;
 mod md;
+mod mc;
 use self::simulations::{read_simulation, read_nsteps};
 
 /// A configuration about how to run a single simulation. This contains the

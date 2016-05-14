@@ -4,7 +4,7 @@ use toml::Table;
 use input::error::{Error, Result};
 use input::{FromToml, FromTomlWithData};
 
-use simulation::*;
+use simulation::md::*;
 use units;
 
 impl FromToml for MolecularDynamics {
