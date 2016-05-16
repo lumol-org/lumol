@@ -1,12 +1,14 @@
 // Cymbalum, an extensible molecular simulation engine
 // Copyright (C) 2015-2016 G. Fraux — BSD license
+use toml::Parser;
+
 use std::io::prelude::*;
 use std::path::Path;
 use std::fs::File;
 
-use toml::{Table, Parser};
-
-use input::error::{Error, Result, toml_error_to_string};
+use input::{Error, Result};
+use input::validate;
+use input::error::toml_error_to_string;
 
 use simulation::Simulation;
 use system::System;
@@ -56,28 +58,6 @@ pub fn read_config<P: AsRef<Path>>(path: P) -> Result<SimulationConfig> {
         nsteps: nsteps,
     })
 }
-
-fn validate(config: &Table) -> Result<()> {
-    let input = try!(config.get("input").ok_or(
-        Error::from("Missing 'input' table")
-    ));
-
-    let version = try!(input.lookup("version").ok_or(
-        Error::from("Missing 'version' key in 'input' table")
-    ));
-
-    let version = try!(version.as_integer().ok_or(
-        Error::from("'input.version' must be an integer")
-    ));
-
-    if version != 1 {
-        return Err(Error::from(
-            format!("Only version 1 of input can be read, got {}", version)
-        ))
-    }
-    Ok(())
-}
-
 
 #[cfg(test)]
 mod tests {

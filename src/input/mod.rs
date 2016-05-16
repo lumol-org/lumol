@@ -25,7 +25,7 @@
 //! function.
 
 mod error;
-pub use self::error::{Error, TrajectoryError};
+pub use self::error::{Error, Result, TrajectoryError};
 
 #[macro_use]
 mod macros;
@@ -49,10 +49,32 @@ pub use self::interactions::read_interactions_string;
 
 use toml::Table;
 
+fn validate(config: &Table) -> Result<()> {
+    let input = try!(config.get("input").ok_or(
+        Error::from("Missing 'input' table")
+    ));
+
+    let version = try!(input.lookup("version").ok_or(
+        Error::from("Missing 'version' key in 'input' table")
+    ));
+
+    let version = try!(version.as_integer().ok_or(
+        Error::from("'input.version' must be an integer")
+    ));
+
+    if version != 1 {
+        return Err(Error::from(
+            format!("Only version 1 of input can be read, got {}", version)
+        ))
+    }
+    Ok(())
+}
+
+
 /// Convert a TOML table to a Rust type.
 pub trait FromToml: Sized {
     /// Do the conversion from `table` to Self.
-    fn from_toml(table: &Table) -> Result<Self, Error>;
+    fn from_toml(table: &Table) -> Result<Self>;
 }
 
 /// Convert a TOML table and some additional data to a Rust type.
@@ -60,5 +82,5 @@ pub trait FromTomlWithData: Sized {
     /// The type of the additional data needed.
     type Data;
     /// Do the conversion from `table` and `data` to Self.
-    fn from_toml(table: &Table, data: Self::Data) -> Result<Self, Error>;
+    fn from_toml(table: &Table, data: Self::Data) -> Result<Self>;
 }

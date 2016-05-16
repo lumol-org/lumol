@@ -283,7 +283,7 @@ mod tests {
         assert!(system.molecules().len() == 1);
 
         read_interactions_string(&mut system, r#"
-        [input.potentials]
+        [input]
         version = 1
 
         # Values are completely random, just having a bit of all the types

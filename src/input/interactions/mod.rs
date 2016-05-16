@@ -9,7 +9,8 @@ use std::path::Path;
 use system::System;
 use potentials::{PairPotential, PairRestriction};
 
-use input::error::{Error, Result};
+use input::{Error, Result};
+use input::validate;
 use input::error::toml_error_to_string;
 
 mod toml;
@@ -92,28 +93,6 @@ pub fn read_interactions_string(system: &mut System, string: &str) -> Result<()>
             Error::from("The 'charges' section must be a table")
         ));
         try!(set_charges(system, charges));
-    }
-
-    Ok(())
-}
-
-fn validate(config: &Table) -> Result<()> {
-    let input = try!(config.get("input").ok_or(
-        Error::from("Missing 'input' table")
-    ));
-
-    let version = try!(input.lookup("potentials.version").ok_or(
-        Error::from("Missing 'potentials.version' key in 'input' table")
-    ));
-
-    let version = try!(version.as_integer().ok_or(
-        Error::from("'input.potentials.version' must be an integer")
-    ));
-
-    if version != 1 {
-        return Err(Error::from(
-            format!("Only version 1 of input can be read, got {}", version)
-        ))
     }
 
     Ok(())
