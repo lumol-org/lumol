@@ -1,6 +1,9 @@
 [input]
 version = 1
 
+[[systems]]
+file = "src/input/simulations/data/CO2.xyz"
+
 [[simulations]]
 nsteps = 1000000
 

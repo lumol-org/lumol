@@ -1,0 +1,12 @@
+[input]
+version = 1
+[input.potentials]
+version = 1
+
+# Missing systems entry
+
+[[simulations]]
+nsteps = 1
+[simulations.propagator]
+type = "MolecularDynamics"
+timestep = "1 fs"

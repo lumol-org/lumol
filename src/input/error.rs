@@ -37,6 +37,12 @@ impl From<TrajectoryError> for Error {
     fn from(err: TrajectoryError) -> Error {Error::Trajectory(err)}
 }
 
+impl From<chemfiles::Error> for Error {
+    fn from(err: chemfiles::Error) -> Error {
+        Error::Trajectory(TrajectoryError::from(err))
+    }
+}
+
 impl<'a> From<&'a str> for Error {
     fn from(err: &'a str) -> Error {
         Error::Config(String::from(err))

@@ -240,6 +240,12 @@ impl Trajectory {
         try!(self.0.write(&frame));
         Ok(())
     }
+
+    /// Get access to the chemfiles trajectory, and the associated features
+    // TODO: use partial privacy for this function
+    pub fn as_chemfiles(&mut self) -> &mut chemfiles::Trajectory {
+        &mut self.0
+    }
 }
 
 /// Read a the first molecule from the file at `path`. If no bond information

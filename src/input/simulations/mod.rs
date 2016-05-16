@@ -13,11 +13,14 @@ use input::error::toml_error_to_string;
 use simulation::Simulation;
 use system::System;
 
+mod system;
 mod outputs;
 mod propagator;
 mod simulations;
 mod md;
 mod mc;
+
+use self::system::read_system;
 use self::simulations::{read_simulation, read_nsteps};
 
 /// A configuration about how to run a single simulation. This contains the
@@ -49,11 +52,12 @@ pub fn read_config<P: AsRef<Path>>(path: P) -> Result<SimulationConfig> {
 
     try!(validate(&config));
 
+    let system = try!(read_system(&config));
     let simulation = try!(read_simulation(&config));
     let nsteps = try!(read_nsteps(&config));
 
     Ok(SimulationConfig {
-        system: System::new(),
+        system: system,
         simulation: simulation,
         nsteps: nsteps,
     })

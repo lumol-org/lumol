@@ -42,6 +42,7 @@ pub fn read_interactions<P: AsRef<Path>>(system: &mut System, path: P) -> Result
 
 /// This is the same as `read_interactions`, but directly read a TOML formated
 /// string.
+// TODO: use restricted privacy for this function
 pub fn read_interactions_string(system: &mut System, string: &str) -> Result<()> {
     let mut parser = Parser::new(string);
     let config = match parser.parse() {
@@ -51,8 +52,15 @@ pub fn read_interactions_string(system: &mut System, string: &str) -> Result<()>
             return Err(Error::TOML(errors));
         }
     };
-
     try!(validate(&config));
+    return read_interactions_toml(system, &config);
+}
+
+
+/// This is the same as `read_interactions`, but directly read a TOML table.
+/// The `config` is assumed to be validated by a call to `validate`.
+// TODO: use restricted privacy for this function
+pub fn read_interactions_toml(system: &mut System, config: &Table) -> Result<()> {
     if let Some(pairs) = config.get("pairs") {
         let pairs = try!(pairs.as_slice().ok_or(
             Error::from("The 'pairs' section must be an array")
