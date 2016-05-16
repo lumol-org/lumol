@@ -1,0 +1,20 @@
+[input]
+version = 1
+
+[[systems]]
+guess_bonds = true
+cell = 25
+potentials = "data/binary.toml"
+file = "data/binary.xyz"
+
+[[simulations]]
+nsteps = 100000
+[simulations.propagator]
+type = "MonteCarlo"
+temperature = "500 K"
+moves = [
+    {type = "Rotate", delta = "10.0 deg", molecule = "data/CO2.xyz"},
+    {type = "Translate", delta = "0.5 A", molecule = "data/CO2.xyz"},
+    {type = "Rotate", delta = "20 deg", molecule = "data/H2O.xyz", frequency = 2},
+    {type = "Translate", delta = "10 A", molecule = "data/H2O.xyz", frequency = 2},
+]
