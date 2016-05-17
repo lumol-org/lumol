@@ -1,0 +1,6 @@
+[input]
+version = 1
+
+[[simulations]]
+# nsteps is not an integer
+nsteps = "56"

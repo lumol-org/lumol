@@ -42,12 +42,14 @@ fn main() {
 
     // We can now use our new potential in the system
     system.add_pair_interaction("F", "F",
-        Box::new(LJ{
+        Box::new(LJ {
             a: units::from(675.5, "kJ/mol/A^12").unwrap(),
             b: units::from(40.26, "kJ/mol/A^6").unwrap()
         }
     ));
 
-    let mut simulation = Simulation::new(MolecularDynamics::new(units::from(1.0, "fs").unwrap()));
+    let mut simulation = Simulation::new(Box::new(
+        MolecularDynamics::new(units::from(1.0, "fs").unwrap())
+    ));
     simulation.run(&mut system, 1000);
 }

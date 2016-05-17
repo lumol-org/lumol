@@ -5,6 +5,7 @@
 use system::{System, Particle, Molecule, UnitCell, CellType};
 use types::Vector3D;
 use chemfiles;
+use input::error::TrajectoryError;
 
 use std::path::Path;
 
@@ -201,9 +202,6 @@ impl ToChemfiles for System {
 /// A Trajectory is a file containing one or more successives simulation steps
 pub struct Trajectory(chemfiles::Trajectory);
 
-/// Possible error causes when reading and wrinting to trajectories
-pub use chemfiles::Error as TrajectoryError;
-
 /// Result type for all Trajectory operations
 pub type TrajectoryResult<T> = Result<T, TrajectoryError>;
 
@@ -239,7 +237,14 @@ impl Trajectory {
     /// Write the system to the trajectory.
     pub fn write(&mut self, system: &System) -> TrajectoryResult<()> {
         let frame = try!(system.to_chemfiles());
-        return self.0.write(&frame);
+        try!(self.0.write(&frame));
+        Ok(())
+    }
+
+    /// Get access to the chemfiles trajectory, and the associated features
+    // TODO: use partial privacy for this function
+    pub fn as_chemfiles(&mut self) -> &mut chemfiles::Trajectory {
+        &mut self.0
     }
 }
 

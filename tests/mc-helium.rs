@@ -36,7 +36,7 @@ fn perfect_gaz() {
     let temperature = units::from(300.0, "K").unwrap();
     let mut mc = MonteCarlo::new(temperature);
     mc.add(Box::new(Translate::new(units::from(3.0, "A").unwrap())), 1.0);
-    let mut simulation = Simulation::new(mc);
+    let mut simulation = Simulation::new(Box::new(mc));
 
     // dilating the system!
     for particle in system.iter_mut() {

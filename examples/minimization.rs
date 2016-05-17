@@ -32,7 +32,7 @@ fn main() {
     }));
 
 
-    let mut simulation = Simulation::new(SteepestDescent::new());
-    simulation.add_output(EnergyOutput::new("energy.dat").unwrap());
+    let mut simulation = Simulation::new(Box::new(SteepestDescent::new()));
+    simulation.add_output(Box::new(EnergyOutput::new("energy.dat").unwrap()));
     simulation.run(&mut system, 500);
 }

@@ -3,8 +3,9 @@
 use toml::{Value, Table};
 
 use system::System;
-use super::{Error, Result, FromToml, FromTomlWithPairs};
-use super::read_restriction;
+use input::error::{Error, Result};
+use input::FromToml;
+use super::{FromTomlWithPairs, read_restriction};
 
 use potentials::PairPotential;
 use potentials::{Harmonic, LennardJones, NullPotential};
@@ -23,14 +24,7 @@ pub fn read_2body(system: &mut System, pairs: &[Value], form: TwoBody) -> Result
             Error::from("Pair potential entry must be a table")
         ));
 
-        let atoms = try!(pair.get("atoms").ok_or(
-            Error::from("Missing 'atoms' section in pair potential")
-        ));
-
-        let atoms = try!(atoms.as_slice().ok_or(
-            Error::from("'atoms' section must be an array")
-        ));
-
+        let atoms = extract_slice!("atoms", pair as "pair potential");
         if atoms.len() != 2 {
             return Err(Error::from(
                 format!("Wrong size for 'atoms' section in pair potentials. Should be 2, is {}", atoms.len())
@@ -120,7 +114,7 @@ fn read_pair_computation(computation: &Table, potential: Box<PairPotential>) -> 
 #[cfg(test)]
 mod tests {
     use input::read_interactions;
-    use input::interactions::testing::bad_interactions;
+    use input::testing::bad_inputs;
     use system::{Particle, System};
     use std::path::Path;
 
@@ -151,7 +145,7 @@ mod tests {
 
     #[test]
     fn bad_pairs() {
-        for path in bad_interactions("pairs") {
+        for path in bad_inputs("interactions", "pairs") {
             let mut system = System::new();
             assert!(read_interactions(&mut system, path).is_err());
         }
@@ -159,7 +153,7 @@ mod tests {
 
     #[test]
     fn bad_bonds() {
-        for path in bad_interactions("bonds") {
+        for path in bad_inputs("interactions", "bonds") {
             let mut system = System::new();
             assert!(read_interactions(&mut system, path).is_err());
         }

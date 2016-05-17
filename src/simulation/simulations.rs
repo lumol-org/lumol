@@ -16,17 +16,17 @@ struct OutputFrequency {
 }
 
 impl OutputFrequency {
-    pub fn new<O: Output + 'static>(output: O) -> OutputFrequency {
+    pub fn new(output: Box<Output>) -> OutputFrequency {
         OutputFrequency{
             frequency: 1,
-            output: Box::new(output),
+            output: output,
         }
     }
 
-    pub fn with_frequency<O: Output + 'static>(output: O, frequency: u64) -> OutputFrequency {
+    pub fn with_frequency(output: Box<Output>, frequency: u64) -> OutputFrequency {
         OutputFrequency{
             frequency: frequency,
-            output: Box::new(output),
+            output: output,
         }
     }
 }
@@ -57,9 +57,9 @@ pub struct Simulation {
 
 impl Simulation {
     /// Create a new Simulation from a Propagator.
-    pub fn new<P>(propagator: P) -> Simulation where P: Propagator + 'static {
+    pub fn new(propagator: Box<Propagator>) -> Simulation {
         Simulation {
-            propagator: Box::new(propagator),
+            propagator: propagator,
             outputs: Vec::new(),
         }
     }
@@ -78,14 +78,14 @@ impl Simulation {
     }
 
     /// Add a new `Output` algorithm in the outputs list
-    pub fn add_output<O>(&mut self, output: O) where O: Output + 'static {
+    pub fn add_output(&mut self, output: Box<Output>) {
         self.outputs.push(OutputFrequency::new(output));
     }
 
     /// Add a new `Output` algorithm in the outputs list, which will be used
     /// at the given frequency. The output will be used everytime the system
     ///  step matches this frequency.
-    pub fn add_output_with_frequency<O>(&mut self, output: O, frequency: u64) where O: Output + 'static {
+    pub fn add_output_with_frequency(&mut self, output: Box<Output>, frequency: u64) {
         self.outputs.push(OutputFrequency::with_frequency(output, frequency));
     }
 
@@ -101,5 +101,10 @@ impl Simulation {
         for output in &mut self.outputs {
             output.finish(system);
         }
+    }
+
+    #[cfg(test)]
+    pub fn outputs_len(&self) -> usize {
+        self.outputs.len()
     }
 }

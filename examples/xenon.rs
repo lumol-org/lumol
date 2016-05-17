@@ -23,8 +23,10 @@ fn main() {
         Box::new(Translate::new(units::from(0.5, "A").unwrap())),
         1.0
     );
-    let mut simulation = Simulation::new(mc);
-    simulation.add_output_with_frequency(TrajectoryOutput::new("trajectory.xyz").unwrap(), 50);
+    let mut simulation = Simulation::new(Box::new(mc));
+
+    let trajectory_out = Box::new(TrajectoryOutput::new("trajectory.xyz").unwrap());
+    simulation.add_output_with_frequency(trajectory_out, 50);
 
     simulation.run(&mut system, 20000);
 }

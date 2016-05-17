@@ -3,7 +3,8 @@
 use toml::{Value, Table};
 
 use system::System;
-use super::{Error, Result, FromToml};
+use input::error::{Error, Result};
+use input::FromToml;
 
 use potentials::{Harmonic, CosineHarmonic, Torsion, NullPotential};
 use potentials::{AnglePotential, DihedralPotential};
@@ -14,14 +15,7 @@ pub fn read_angles(system: &mut System, angles: &[Value]) -> Result<()> {
             Error::from("Angle potential entry must be a table")
         ));
 
-        let atoms = try!(angle.get("atoms").ok_or(
-            Error::from("Missing 'atoms' section in angle potential")
-        ));
-
-        let atoms = try!(atoms.as_slice().ok_or(
-            Error::from("'atoms' section must be an array")
-        ));
-
+        let atoms = extract_slice!("atoms", angle as "angle potential");
         if atoms.len() != 3 {
             return Err(Error::from(
                 format!("Wrong size for 'atoms' section in angle potentials. Should be 3, is {}", atoms.len())
@@ -73,14 +67,7 @@ pub fn read_dihedrals(system: &mut System, dihedrals: &[Value]) -> Result<()> {
             Error::from("Dihedral angle potential entry must be a table")
         ));
 
-        let atoms = try!(dihedral.get("atoms").ok_or(
-            Error::from("Missing 'atoms' section in dihedral angle potential")
-        ));
-
-        let atoms = try!(atoms.as_slice().ok_or(
-            Error::from("'atoms' section must be an array")
-        ));
-
+        let atoms = extract_slice!("atoms", dihedral as "dihedral angle potential");
         if atoms.len() != 4 {
             return Err(Error::from(
                 format!("Wrong size for 'atoms' section in dihedral angle potentials. Should be 4, is {}", atoms.len())
@@ -131,7 +118,7 @@ fn read_dihedral_potential(dihedral: &Table) -> Result<Box<DihedralPotential>> {
 #[cfg(test)]
 mod tests {
     use input::read_interactions;
-    use input::interactions::testing::bad_interactions;
+    use input::testing::bad_inputs;
     use system::{Particle, System};
     use std::path::Path;
 
@@ -151,7 +138,7 @@ mod tests {
 
     #[test]
     fn bad_angles() {
-        for path in bad_interactions("angles") {
+        for path in bad_inputs("interactions", "angles") {
             let mut system = System::new();
             assert!(read_interactions(&mut system, path).is_err());
         }
@@ -175,7 +162,7 @@ mod tests {
 
     #[test]
     fn bad_dihedrals() {
-        for path in bad_interactions("dihedrals") {
+        for path in bad_inputs("interactions", "dihedrals") {
             let mut system = System::new();
             assert!(read_interactions(&mut system, path).is_err());
         }

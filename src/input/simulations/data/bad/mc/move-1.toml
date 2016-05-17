@@ -1,0 +1,13 @@
+[input]
+version = 1
+
+[[simulations]]
+nsteps = 1
+
+[simulations.propagator]
+type = "MonteCarlo"
+temperature = "300 K"
+moves = [
+    # Missing type
+    {bla = "ble"}
+]

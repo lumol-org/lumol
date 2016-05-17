@@ -9,7 +9,7 @@ use std::path::{Path, PathBuf};
 
 use utils;
 use system::System;
-use input::{Trajectory, TrajectoryResult};
+use input::{Trajectory, TrajectoryError};
 
 /// The `Output` trait define the interface for all the quantities outputed by
 /// the simulation during the run. An Output can be a text or a binary data
@@ -37,7 +37,7 @@ pub struct TrajectoryOutput {
 impl TrajectoryOutput {
     /// Create a new `TrajectoryOutput` writing to `filename`. The file is
     /// replaced if it already exists.
-    pub fn new<P>(path: P) -> TrajectoryResult<TrajectoryOutput> where P: AsRef<Path> {
+    pub fn new<P>(path: P) -> Result<TrajectoryOutput, TrajectoryError> where P: AsRef<Path> {
         Ok(TrajectoryOutput{
             file: try!(Trajectory::create(path))
         })
@@ -49,7 +49,7 @@ impl Output for TrajectoryOutput {
         match self.file.write(system) {
             Ok(()) => (),
             Err(err) => {
-                fatal_error!("Error in while writing trajectory: {}", err.message());
+                fatal_error!("Error in while writing trajectory: {}", err);
             }
         }
     }

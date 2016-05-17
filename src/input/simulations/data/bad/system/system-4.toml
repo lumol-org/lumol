@@ -1,0 +1,12 @@
+[input]
+version = 1
+
+[[systems]]
+# Missing 'file' entry
+fil = false
+
+[[simulations]]
+nsteps = 1
+[simulations.propagator]
+type = "MolecularDynamics"
+timestep = "1 fs"

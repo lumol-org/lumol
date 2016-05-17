@@ -1,4 +1,4 @@
-[input.potentials]
+[input]
 version = 1
 
 # f-SPC model of water, using ewald summation for electrostatics

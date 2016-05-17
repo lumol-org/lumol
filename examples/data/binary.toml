@@ -1,13 +1,13 @@
-[input.potentials]
+[input]
 version = 1
 
 [[pairs]]
-atoms = [O, O]
+atoms = ["O", "O"]
 lj = {sigma = "3.16 A", epsilon = "0.155 kcal/mol"}
 restriction = "intermolecular"
 
 [[pairs]]
-atoms = [C, O]
+atoms = ["C", "O"]
 lj = {sigma = "3.045 A", epsilon = "0.168 kcal/mol"}
 
 [[pairs]]

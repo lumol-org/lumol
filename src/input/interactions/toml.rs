@@ -4,7 +4,9 @@
 //! Convert TOML values to Cymbalum types.
 use toml::Table;
 
-use super::{Error, Result, FromToml, FromTomlWithPairs};
+use input::error::{Error, Result};
+use input::FromToml;
+use super::FromTomlWithPairs;
 
 use potentials::{Harmonic, LennardJones, NullPotential, CosineHarmonic, Torsion};
 use potentials::{Wolf, Ewald};
@@ -165,12 +167,11 @@ impl FromToml for Ewald {
 mod tests {
     use system::System;
     use input::read_interactions;
-    use input::interactions::testing::bad_interactions;
+    use input::testing::bad_inputs;
 
     #[test]
     fn bad_potentials() {
-        for path in bad_interactions("toml") {
-            println!("{:?}", path.display());
+        for path in bad_inputs("interactions", "toml") {
             let mut system = System::new();
             assert!(read_interactions(&mut system, path).is_err());
         }
