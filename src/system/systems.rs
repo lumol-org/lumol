@@ -11,7 +11,7 @@ use std::ops::{Index, IndexMut};
 use std::slice;
 use std::cmp::{min, max};
 use std::iter::IntoIterator;
-use std::u8;
+use std::i8;
 use std::cell::RefCell;
 
 use potentials::{PairPotential, AnglePotential, DihedralPotential};
@@ -137,23 +137,25 @@ impl System {
     }
 
     /// Get the length of the shortest bond path to go from the particle `i` to
-    /// the particle `j`. This length is 0 if there is no path from `i` to `j`,
-    /// 1 if `i == j`, 2 if there is a bond between `i` and `j`, etc.
-    pub fn shortest_path(&self, i: usize, j: usize) -> u8 {
+    /// the particle `j`. If the particles are not in the same molecule, the
+    /// length is -1. Else, this length is 0 if `i == j`, 1 if there is a bond
+    /// between `i` and `j`, etc.
+    pub fn bond_distance(&self, i: usize, j: usize) -> i8 {
+        assert!(i < self.size() && j < self.size());
         if !(self.are_in_same_molecule(i, j)) {
-            0
+            -1
         } else if i == j {
-            1
+            0
         } else {
             let connect = self.molecule(self.molid(i)).connectivity(i, j);
             if connect.contains(CONNECT_12) {
-                2
+                1
             } else if connect.contains(CONNECT_13) {
-                3
+                2
             } else if connect.contains(CONNECT_14) {
-                4
+                3
             } else if connect.contains(CONNECT_FAR) {
-                u8::MAX
+                i8::MAX
             } else {
                 unreachable!();
             }
@@ -751,12 +753,12 @@ mod tests {
         let _ = system.add_bond(2, 3);
         let _ = system.add_bond(3, 4);
 
-        assert_eq!(system.shortest_path(0, 0), 1);
-        assert_eq!(system.shortest_path(0, 1), 2);
-        assert_eq!(system.shortest_path(0, 2), 3);
-        assert_eq!(system.shortest_path(0, 3), 4);
-        assert!(system.shortest_path(0, 4) > 4);
-        assert_eq!(system.shortest_path(0, 5), 0);
+        assert_eq!(system.bond_distance(0, 0), 0);
+        assert_eq!(system.bond_distance(0, 1), 1);
+        assert_eq!(system.bond_distance(0, 2), 2);
+        assert_eq!(system.bond_distance(0, 3), 3);
+        assert!(system.bond_distance(0, 4) > 3);
+        assert_eq!(system.bond_distance(0, 5), -1);
     }
 
     #[test]

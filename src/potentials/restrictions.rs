@@ -47,34 +47,21 @@ pub struct RestrictionInfo {
 impl PairRestriction {
     /// Get the restrictions information for the pair `(i, j)` in the `system`
     pub fn informations(&self, system: &System, i: usize, j: usize) -> RestrictionInfo {
+        let distance = system.bond_distance(i, j);
+        let are_in_same_molecule = distance >= 0;
         let excluded = match *self {
             PairRestriction::None => false,
-            PairRestriction::InterMolecular => {
-                system.are_in_same_molecule(i, j)
-            },
-            PairRestriction::IntraMolecular => {
-                !system.are_in_same_molecule(i, j)
-            },
-            PairRestriction::Exclude12 => {
-                let distance = system.shortest_path(i, j);
-                distance == 2
-            },
-            PairRestriction::Exclude13 => {
-                let distance = system.shortest_path(i, j);
-                distance == 2 || distance == 3
-            },
+            PairRestriction::InterMolecular => are_in_same_molecule,
+            PairRestriction::IntraMolecular => !are_in_same_molecule,
+            PairRestriction::Exclude12 => distance == 1,
+            PairRestriction::Exclude13 => distance == 1 || distance == 2,
             PairRestriction::Exclude14 | PairRestriction::Scale14{..} => {
-                let distance = system.shortest_path(i, j);
-                distance == 2 || distance == 3 || distance == 4
+                distance == 1 || distance == 2 || distance == 3
             }
         };
 
         let scaling = if let PairRestriction::Scale14{scaling} = *self {
-            if system.shortest_path(i, j) == 4 {
-                scaling
-            } else {
-                1.0
-            }
+            if distance == 3 {scaling} else {1.0}
         } else {
             1.0
         };
@@ -236,7 +223,7 @@ mod tests {
         let system = testing_system();
         for i in 0..10 {
             for j in 0..10 {
-                if system.shortest_path(i, j) == 4 {
+                if system.bond_distance(i, j) == 3 {
                     assert_eq!(restrictions.informations(&system, i, j).scaling, 0.8);
                 } else {
                     assert_eq!(restrictions.informations(&system, i, j).scaling, 1.0);
