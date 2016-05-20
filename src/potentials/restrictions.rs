@@ -54,8 +54,10 @@ impl PairRestriction {
             PairRestriction::InterMolecular => are_in_same_molecule,
             PairRestriction::IntraMolecular => !are_in_same_molecule,
             PairRestriction::Exclude12 => distance == 1,
-            PairRestriction::Exclude13 => distance == 1 || distance == 2,
-            PairRestriction::Exclude14 | PairRestriction::Scale14{..} => {
+            PairRestriction::Exclude13 | PairRestriction::Scale14{..} => {
+                distance == 1 || distance == 2
+            },
+            PairRestriction::Exclude14 => {
                 distance == 1 || distance == 2 || distance == 3
             }
         };
@@ -240,10 +242,10 @@ mod tests {
         assert_eq!(restrictions.informations(&system, 1, 3).excluded, true);
         assert_eq!(restrictions.informations(&system, 7, 9).excluded, true);
 
-        // Dihedrals
-        assert_eq!(restrictions.informations(&system, 0, 3).excluded, true);
-        assert_eq!(restrictions.informations(&system, 1, 4).excluded, true);
-        assert_eq!(restrictions.informations(&system, 6, 9).excluded, true);
+        // Dihedrals are not excluded, just scaled
+        assert_eq!(restrictions.informations(&system, 0, 3).excluded, false);
+        assert_eq!(restrictions.informations(&system, 1, 4).excluded, false);
+        assert_eq!(restrictions.informations(&system, 6, 9).excluded, false);
 
         // Not excluded
         assert_eq!(restrictions.informations(&system, 4, 5).excluded, false);
