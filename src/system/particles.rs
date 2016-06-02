@@ -5,6 +5,8 @@
 use types::{Vector3D, Zero};
 use super::PeriodicTable;
 
+use std::fmt;
+
 /// A particle kind. Particles with the same name will have the same kind. This
 /// is used for faster potential lookup.
 #[derive(Clone, Copy, Hash, PartialOrd, Ord, PartialEq, Eq, Debug)]
@@ -15,6 +17,12 @@ pub struct ParticleKind(pub u32);
 impl Default for ParticleKind {
     fn default() -> ParticleKind {
         ParticleKind(u32::max_value())
+    }
+}
+
+impl fmt::Display for ParticleKind {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.0)
     }
 }
 

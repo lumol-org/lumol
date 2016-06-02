@@ -45,10 +45,25 @@ impl ParticleKinds {
 
     /// Get the name corresponding to a given kind, or `None` if this kind is
     /// unknown
-    fn name(&self, kind: Kind) -> Option<&str> {
+    fn name(&self, kind: Kind) -> Option<String> {
         assert!(self.names.len() == self.kinds.len());
-        self.names.get(&kind).map(|s| &**s)
+        self.names.get(&kind).cloned()
     }
+}
+
+/// Sort pair indexes to get a cannonical representation
+#[inline] fn sort_pair(i: Kind, j:Kind) -> (Kind, Kind) {
+    if i < j { (i, j) } else { (j, i) }
+}
+
+/// Sort angle indexes to get a cannonical representation
+#[inline] fn sort_angle(i: Kind, j:Kind, k:Kind) -> (Kind, Kind, Kind) {
+    if i < k { (i, j, k) } else { (k, j, i) }
+}
+
+/// Sort dihedral indexes to get a cannonical representation
+#[inline] fn sort_dihedral(i: Kind, j:Kind, k:Kind, m:Kind) -> (Kind, Kind, Kind, Kind) {
+    if max(i, j) < max(k, m) { (i, j, k, m) } else { (m, k, j, i) }
 }
 
 /// Type associating a potential and a pair restriction
@@ -105,24 +120,12 @@ impl Interactions {
         pairs.push((potential, restrict));
     }
 
-    /// Get all pair interactions corresponding to the pair `(i, j)`
-    pub fn pairs(&self, i: Kind, j: Kind) -> Option<&Vec<PairInteraction>> {
-        let (i, j) = sort_pair(i, j);
-        self.pairs.get(&(i, j))
-    }
-
     /// Add the `potential` bonded interaction to the pair `(i, j)`
     pub fn add_bond(&mut self, i: &str, j: &str, potential: Box<PairPotential>) {
         let (i, j) = (self.get_kind(i), self.get_kind(j));
         let (i, j) = sort_pair(i, j);
         let bonds = self.bonds.entry((i, j)).or_insert(Vec::new());
         bonds.push(potential);
-    }
-
-    /// Get all bonded interactions corresponding to the pair `(i, j)`
-    pub fn bonds(&self, i: Kind, j: Kind) -> Option<&Vec<Box<PairPotential>>> {
-        let (i, j) = sort_pair(i, j);
-        self.bonds.get(&(i, j))
     }
 
     /// Add the `potential` angle interaction to the angle `(i, j, k)`
@@ -133,12 +136,6 @@ impl Interactions {
         angles.push(potential);
     }
 
-    /// Get all angle interactions corresponding to the angle `(i, j, k)`
-    pub fn angles(&self, i: Kind, j:Kind, k:Kind) -> Option<&Vec<Box<AnglePotential>>> {
-        let (i, j, k) = sort_angle(i, j, k);
-        self.angles.get(&(i, j, k))
-    }
-
     /// Add the `potential` dihedral interaction to the dihedral `(i, j, k, m)`
     pub fn add_dihedral(&mut self, i: &str, j: &str, k: &str, m: &str, potential: Box<DihedralPotential>) {
         let (i, j, k, m) = (self.get_kind(i), self.get_kind(j), self.get_kind(k), self.get_kind(m));
@@ -147,15 +144,80 @@ impl Interactions {
         dihedrals.push(potential);
     }
 
-    /// Get all dihedral interactions corresponding to the dihedral `(i, j, k, m)`
-    pub fn dihedrals(&self, i: Kind, j: Kind, k: Kind, m: Kind) -> Option<&Vec<Box<DihedralPotential>>> {
-        let (i, j, k, m) = sort_dihedral(i, j, k, m);
-        self.dihedrals.get(&(i, j, k, m))
-    }
-
     /// Set the coulombic interaction for all pairs to `potential`
     pub fn set_coulomb(&mut self, potential: Box<CoulombicPotential>) {
         self.coulomb = Some(RefCell::new(potential));
+    }
+
+    /// Add the `potential` global interaction
+    pub fn add_global(&mut self, potential: Box<GlobalPotential>) {
+        self.globals.push(RefCell::new(potential));
+    }
+}
+
+static NO_PAIR_INTERACTION: &'static [PairInteraction] = &[];
+static NO_BOND_INTERACTION: &'static [Box<PairPotential>] = &[];
+static NO_ANGLE_INTERACTION: &'static [Box<AnglePotential>] = &[];
+static NO_DIHEDRAL_INTERACTION: &'static [Box<DihedralPotential>] = &[];
+
+impl Interactions {
+    /// Get all pair interactions corresponding to the pair `(i, j)`
+    pub fn pairs(&self, i: Kind, j: Kind) -> &[PairInteraction] {
+        let (i, j) = sort_pair(i, j);
+        if let Some(val) = self.pairs.get(&(i, j)) {
+            &val
+        } else {
+            let name_i = self.kinds.name(i).unwrap_or(format!("kind {}", i));
+            let name_j = self.kinds.name(j).unwrap_or(format!("kind {}", j));
+            // TODO: add and use the warn_once! macro
+            warn!("No potential defined for the pair ({}, {})", name_i, name_j);
+            NO_PAIR_INTERACTION
+        }
+    }
+
+    /// Get all bonded interactions corresponding to the pair `(i, j)`
+    pub fn bonds(&self, i: Kind, j: Kind) -> &[Box<PairPotential>] {
+        let (i, j) = sort_pair(i, j);
+        if let Some(val) = self.bonds.get(&(i, j)) {
+            &val
+        } else {
+            let name_i = self.kinds.name(i).unwrap_or(format!("kind {}", i));
+            let name_j = self.kinds.name(j).unwrap_or(format!("kind {}", j));
+            // TODO: add and use the warn_once! macro
+            warn!("No potential defined for the bond ({}, {})", name_i, name_j);
+            NO_BOND_INTERACTION
+        }
+    }
+
+    /// Get all angle interactions corresponding to the angle `(i, j, k)`
+    pub fn angles(&self, i: Kind, j:Kind, k:Kind) -> &[Box<AnglePotential>] {
+        let (i, j, k) = sort_angle(i, j, k);
+        if let Some(val) = self.angles.get(&(i, j, k)) {
+            &val
+        } else {
+            let name_i = self.kinds.name(i).unwrap_or(format!("kind {}", i));
+            let name_j = self.kinds.name(j).unwrap_or(format!("kind {}", j));
+            let name_k = self.kinds.name(k).unwrap_or(format!("kind {}", k));
+            // TODO: add and use the warn_once! macro
+            warn!("No potential defined for the angle ({}, {}, {})", name_i, name_j, name_k);
+            NO_ANGLE_INTERACTION
+        }
+    }
+
+    /// Get all dihedral interactions corresponding to the dihedral `(i, j, k, m)`
+    pub fn dihedrals(&self, i: Kind, j: Kind, k: Kind, m: Kind) -> &[Box<DihedralPotential>] {
+        let (i, j, k, m) = sort_dihedral(i, j, k, m);
+        if let Some(val) = self.dihedrals.get(&(i, j, k, m)) {
+            &val
+        } else {
+            let name_i = self.kinds.name(i).unwrap_or(format!("kind {}", i));
+            let name_j = self.kinds.name(j).unwrap_or(format!("kind {}", j));
+            let name_k = self.kinds.name(k).unwrap_or(format!("kind {}", k));
+            let name_m = self.kinds.name(m).unwrap_or(format!("kind {}", m));
+            // TODO: add and use the warn_once! macro
+            warn!("No potential defined for the dihedral ({}, {}, {}, {})", name_i, name_j, name_k, name_m);
+            NO_DIHEDRAL_INTERACTION
+        }
     }
 
     /// Get the coulombic interaction as a RefCell, because the
@@ -164,41 +226,9 @@ impl Interactions {
         self.coulomb.as_ref()
     }
 
-    /// Add the `potential` global interaction
-    pub fn add_global(&mut self, potential: Box<GlobalPotential>) {
-        self.globals.push(RefCell::new(potential));
-    }
-
     /// Get all global interactions
     pub fn globals(&self) -> &[RefCell<Box<GlobalPotential>>] {
         &self.globals
-    }
-}
-
-/// Sort pair indexes to get a cannonical representation
-#[inline] fn sort_pair(i: Kind, j:Kind) -> (Kind, Kind) {
-    if i < j {
-        (i, j)
-    } else {
-        (j, i)
-    }
-}
-
-/// Sort angle indexes to get a cannonical representation
-#[inline] fn sort_angle(i: Kind, j:Kind, k:Kind) -> (Kind, Kind, Kind) {
-    if i < k {
-        (i, j, k)
-    } else {
-        (k, j, i)
-    }
-}
-
-/// Sort dihedral indexes to get a cannonical representation
-#[inline] fn sort_dihedral(i: Kind, j:Kind, k:Kind, m:Kind) -> (Kind, Kind, Kind, Kind) {
-    if max(i, j) < max(k, m) {
-        (i, j, k, m)
-    } else {
-        (m, k, j, i)
     }
 }
 
@@ -217,8 +247,8 @@ mod test {
         assert_eq!(kinds.kind("JK"), Kind(0));
         assert_eq!(kinds.kind("H"), Kind(1));
 
-        assert_eq!(kinds.name(Kind(0)), Some("JK"));
-        assert_eq!(kinds.name(Kind(1)), Some("H"));
+        assert_eq!(kinds.name(Kind(0)), Some(String::from("JK")));
+        assert_eq!(kinds.name(Kind(1)), Some(String::from("H")));
     }
 
     #[test]
@@ -226,12 +256,12 @@ mod test {
         let mut interactions = Interactions::new();
 
         interactions.add_pair("H", "O", Box::new(Harmonic{x0: 0.0, k: 0.0}));
-        assert_eq!(interactions.pairs(Kind(0), Kind(1)).unwrap().len(), 1);
-        assert_eq!(interactions.pairs(Kind(1), Kind(0)).unwrap().len(), 1);
+        assert_eq!(interactions.pairs(Kind(0), Kind(1)).len(), 1);
+        assert_eq!(interactions.pairs(Kind(1), Kind(0)).len(), 1);
 
-        assert!(interactions.pairs(Kind(0), Kind(0)).is_none());
+        assert_eq!(interactions.pairs(Kind(0), Kind(0)).len(), 0);
         interactions.add_pair("H", "H", Box::new(Harmonic{x0: 0.0, k: 0.0}));
-        assert_eq!(interactions.pairs(Kind(0), Kind(0)).unwrap().len(), 1);
+        assert_eq!(interactions.pairs(Kind(0), Kind(0)).len(), 1);
     }
 
     #[test]
@@ -239,12 +269,12 @@ mod test {
         let mut interactions = Interactions::new();
 
         interactions.add_bond("H", "O", Box::new(Harmonic{x0: 0.0, k: 0.0}));
-        assert_eq!(interactions.bonds(Kind(0), Kind(1)).unwrap().len(), 1);
-        assert_eq!(interactions.bonds(Kind(1), Kind(0)).unwrap().len(), 1);
+        assert_eq!(interactions.bonds(Kind(0), Kind(1)).len(), 1);
+        assert_eq!(interactions.bonds(Kind(1), Kind(0)).len(), 1);
 
-        assert!(interactions.bonds(Kind(0), Kind(0)).is_none());
+        assert_eq!(interactions.bonds(Kind(0), Kind(0)).len(), 0);
         interactions.add_bond("H", "H", Box::new(Harmonic{x0: 0.0, k: 0.0}));
-        assert_eq!(interactions.bonds(Kind(0), Kind(0)).unwrap().len(), 1);
+        assert_eq!(interactions.bonds(Kind(0), Kind(0)).len(), 1);
     }
 
     #[test]
@@ -252,15 +282,15 @@ mod test {
         let mut interactions = Interactions::new();
 
         interactions.add_angle("H", "O", "C", Box::new(Harmonic{x0: 0.0, k: 0.0}));
-        assert_eq!(interactions.angles(Kind(0), Kind(1), Kind(2)).unwrap().len(), 1);
-        assert_eq!(interactions.angles(Kind(2), Kind(1), Kind(0)).unwrap().len(), 1);
+        assert_eq!(interactions.angles(Kind(0), Kind(1), Kind(2)).len(), 1);
+        assert_eq!(interactions.angles(Kind(2), Kind(1), Kind(0)).len(), 1);
 
         interactions.add_angle("C", "C", "O", Box::new(Harmonic{x0: 0.0, k: 0.0}));
-        assert_eq!(interactions.angles(Kind(2), Kind(2), Kind(1)).unwrap().len(), 1);
-        assert_eq!(interactions.angles(Kind(1), Kind(2), Kind(2)).unwrap().len(), 1);
+        assert_eq!(interactions.angles(Kind(2), Kind(2), Kind(1)).len(), 1);
+        assert_eq!(interactions.angles(Kind(1), Kind(2), Kind(2)).len(), 1);
 
         interactions.add_angle("N", "N", "N", Box::new(Harmonic{x0: 0.0, k: 0.0}));
-        assert_eq!(interactions.angles(Kind(3), Kind(3), Kind(3)).unwrap().len(), 1);
+        assert_eq!(interactions.angles(Kind(3), Kind(3), Kind(3)).len(), 1);
     }
 
     #[test]
@@ -268,19 +298,19 @@ mod test {
         let mut interactions = Interactions::new();
 
         interactions.add_dihedral("C", "O", "H", "N", Box::new(Harmonic{x0: 0.0, k: 0.0}));
-        assert_eq!(interactions.dihedrals(Kind(0), Kind(1), Kind(2), Kind(3)).unwrap().len(), 1);
-        assert_eq!(interactions.dihedrals(Kind(3), Kind(2), Kind(1), Kind(0)).unwrap().len(), 1);
+        assert_eq!(interactions.dihedrals(Kind(0), Kind(1), Kind(2), Kind(3)).len(), 1);
+        assert_eq!(interactions.dihedrals(Kind(3), Kind(2), Kind(1), Kind(0)).len(), 1);
 
         interactions.add_dihedral("C", "C", "O", "H", Box::new(Harmonic{x0: 0.0, k: 0.0}));
-        assert_eq!(interactions.dihedrals(Kind(0), Kind(0), Kind(1), Kind(2)).unwrap().len(), 1);
-        assert_eq!(interactions.dihedrals(Kind(2), Kind(1), Kind(0), Kind(0)).unwrap().len(), 1);
+        assert_eq!(interactions.dihedrals(Kind(0), Kind(0), Kind(1), Kind(2)).len(), 1);
+        assert_eq!(interactions.dihedrals(Kind(2), Kind(1), Kind(0), Kind(0)).len(), 1);
 
         interactions.add_dihedral("C", "C", "O", "C", Box::new(Harmonic{x0: 0.0, k: 0.0}));
-        assert_eq!(interactions.dihedrals(Kind(0), Kind(0), Kind(1), Kind(0)).unwrap().len(), 1);
-        assert_eq!(interactions.dihedrals(Kind(0), Kind(1), Kind(0), Kind(0)).unwrap().len(), 1);
+        assert_eq!(interactions.dihedrals(Kind(0), Kind(0), Kind(1), Kind(0)).len(), 1);
+        assert_eq!(interactions.dihedrals(Kind(0), Kind(1), Kind(0), Kind(0)).len(), 1);
 
         interactions.add_dihedral("S", "S", "S", "S", Box::new(Harmonic{x0: 0.0, k: 0.0}));
-        assert_eq!(interactions.dihedrals(Kind(4), Kind(4), Kind(4), Kind(4)).unwrap().len(), 1);
+        assert_eq!(interactions.dihedrals(Kind(4), Kind(4), Kind(4), Kind(4)).len(), 1);
     }
 
     #[test]

@@ -206,14 +206,15 @@ impl EnergyCache {
             }
         }
 
-        let coulomb_delta = system.coulomb_potential()
-                                    .as_ref()
-                                    .map_or(0.0, |coulomb|
+
+        let coulomb_delta = if let Some(coulomb) = system.interactions().coulomb() {
             coulomb.borrow_mut().move_particles_cost(system, &idxes, newpos)
-        );
+        } else {
+            0.0
+        };
 
         let mut global_delta = 0.0;
-        for potential in system.global_potentials() {
+        for potential in system.interactions().globals() {
             global_delta += potential.borrow_mut().move_particles_cost(system, &idxes, newpos);
         }
 
@@ -242,10 +243,10 @@ impl EnergyCache {
                 }
             }
             // Update the cache for the global potentials
-            if let Some(coulomb) = system.coulomb_potential() {
+            if let Some(coulomb) = system.interactions().coulomb() {
                 coulomb.borrow_mut().update();
             }
-            for potential in system.global_potentials() {
+            for potential in system.interactions().globals() {
                 potential.borrow_mut().update();
             }
         }));

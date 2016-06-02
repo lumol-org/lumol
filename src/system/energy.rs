@@ -129,7 +129,7 @@ impl<'a> EnergyEvaluator<'a> {
     /// Compute the energy of the electrostatic interactions
     #[inline]
     pub fn coulomb(&self) -> f64 {
-        if let Some(coulomb) = self.system.coulomb_potential() {
+        if let Some(coulomb) = self.system.interactions().coulomb() {
             coulomb.borrow_mut().energy(self.system)
         } else {
             0.0
@@ -140,7 +140,7 @@ impl<'a> EnergyEvaluator<'a> {
     #[inline]
     pub fn global(&self) -> f64 {
         let mut energy = 0.0;
-        for global in self.system.global_potentials() {
+        for global in self.system.interactions().globals() {
             energy += global.borrow_mut().energy(self.system);
         }
         return energy;

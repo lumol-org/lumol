@@ -85,7 +85,7 @@ mod tests {
         system.add_particle(Particle::new("B"));
 
         read_interactions(&mut system, data_root.join("ewald.toml")).unwrap();
-        assert!(system.coulomb_potential().is_some());
+        assert!(system.interactions().coulomb().is_some());
 
         assert_eq!(system[0].charge, -8.0);
         assert_eq!(system[1].charge, 3.0);
@@ -99,7 +99,7 @@ mod tests {
         system.add_particle(Particle::new("B"));
 
         read_interactions(&mut system, data_root.join("wolf.toml")).unwrap();
-        assert!(system.coulomb_potential().is_some());
+        assert!(system.interactions().coulomb().is_some());
 
         assert_eq!(system[0].charge, -2.0);
         assert_eq!(system[1].charge, 2.0);

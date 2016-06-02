@@ -11,10 +11,8 @@ use std::slice;
 use std::cmp::{min, max};
 use std::iter::IntoIterator;
 use std::i8;
-use std::cell::RefCell;
 
 use potentials::{PairPotential, AnglePotential, DihedralPotential};
-use potentials::{CoulombicPotential, GlobalPotential};
 use types::{Vector3D, Matrix3};
 
 use super::{Particle, ParticleKind};
@@ -363,11 +361,6 @@ impl System {
     }
 }
 
-static NO_PAIR_INTERACTION: &'static [PairInteraction] = &[];
-static NO_BOND_INTERACTION: &'static [Box<PairPotential>] = &[];
-static NO_ANGLE_INTERACTION: &'static [Box<AnglePotential>] = &[];
-static NO_DIHEDRAL_INTERACTION: &'static [Box<DihedralPotential>] = &[];
-
 /// Potentials related functions
 impl System {
     /// Get an helper struct to evaluate the energy of this system.
@@ -390,15 +383,7 @@ impl System {
     pub fn pair_potentials(&self, i: usize, j: usize) -> &[PairInteraction] {
         let ikind = self.particles[i].kind;
         let jkind = self.particles[j].kind;
-        if let Some(val) = self.interactions.pairs(ikind, jkind) {
-            &val
-        } else {
-            let i = self.particles[i].name();
-            let j = self.particles[j].name();
-            // TODO: add and use the warn_once! macro
-            warn!("No potential defined for the pair ({}, {})", i, j);
-            NO_PAIR_INTERACTION
-        }
+        self.interactions.pairs(ikind, jkind)
     }
 
     /// Get the list of bonded potential acting between the particles at indexes
@@ -406,15 +391,7 @@ impl System {
     pub fn bond_potentials(&self, i: usize, j: usize) -> &[Box<PairPotential>] {
         let ikind = self.particles[i].kind;
         let jkind = self.particles[j].kind;
-        if let Some(val) = self.interactions.bonds(ikind, jkind) {
-            &val
-        } else {
-            let i = self.particles[i].name();
-            let j = self.particles[j].name();
-            // TODO: add and use the warn_once! macro
-            warn!("No potential defined for the bond ({}, {})", i, j);
-            NO_BOND_INTERACTION
-        }
+        self.interactions.bonds(ikind, jkind)
     }
 
     /// Get the list of angle interaction acting between the particles at
@@ -423,17 +400,7 @@ impl System {
         let ikind = self.particles[i].kind;
         let jkind = self.particles[j].kind;
         let kkind = self.particles[k].kind;
-
-        if let Some(val) =  self.interactions.angles(ikind, jkind, kkind) {
-            &val
-        } else {
-            let i = self.particles[i].name();
-            let j = self.particles[j].name();
-            let k = self.particles[k].name();
-            // TODO: add and use the warn_once! macro
-            warn!("No potential defined for the angle ({}, {}, {})", i, j, k);
-            NO_ANGLE_INTERACTION
-        }
+        self.interactions.angles(ikind, jkind, kkind)
     }
 
     /// Get the list of dihedral angles interaction acting between the particles
@@ -443,28 +410,7 @@ impl System {
         let jkind = self.particles[j].kind;
         let kkind = self.particles[k].kind;
         let mkind = self.particles[m].kind;
-
-        if let Some(val) = self.interactions.dihedrals(ikind, jkind, kkind, mkind) {
-            &val
-        } else {
-            let i = self.particles[i].name();
-            let j = self.particles[j].name();
-            let k = self.particles[k].name();
-            let m = self.particles[m].name();
-            // TODO: add and use the warn_once! macro
-            warn!("No potential defined for the dihedral ({}, {}, {}, {})", i, j, k, m);
-            NO_DIHEDRAL_INTERACTION
-        }
-    }
-
-    /// Get the current coulombic solver
-    pub fn coulomb_potential(&self) -> Option<&RefCell<Box<CoulombicPotential>>> {
-        self.interactions.coulomb()
-    }
-
-    /// Get all the global potentials
-    pub fn global_potentials(&self) -> &[RefCell<Box<GlobalPotential>>] {
-        self.interactions.globals()
+        self.interactions.dihedrals(ikind, jkind, kkind, mkind)
     }
 }
 
