@@ -9,7 +9,7 @@ fn main() {
     let mut system = trajectory.read().unwrap();
     system.set_cell(UnitCell::cubic(units::from(21.65, "A").unwrap()));
 
-    system.add_pair_interaction("Xe", "Xe",
+    system.interactions_mut().add_pair("Xe", "Xe",
         Box::new(LennardJones{
             sigma: units::from(4.57, "A").unwrap(),
             epsilon: units::from(1.87, "kJ/mol").unwrap()

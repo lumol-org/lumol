@@ -302,7 +302,7 @@ mod test {
         let mut velocities = BoltzmanVelocities::new(unit_from(300.0, "K"));
         velocities.init(&mut system);
 
-        system.add_pair_interaction("F", "F",
+        system.interactions_mut().add_pair("F", "F",
             Box::new(Harmonic{
                 k: unit_from(300.0, "kJ/mol/A^2"),
                 x0: unit_from(1.2, "A")
@@ -344,19 +344,19 @@ mod test {
         let _ = system.add_bond(1, 2);
         let _ = system.add_bond(2, 3);
 
-        system.add_bond_interaction("F", "F",
+        system.interactions_mut().add_bond("F", "F",
             Box::new(Harmonic{
                 k: unit_from(100.0, "kJ/mol/A^2"),
                 x0: unit_from(1.22, "A")
         }));
 
-        system.add_angle_interaction("F", "F", "F",
+        system.interactions_mut().add_angle("F", "F", "F",
             Box::new(Harmonic{
                 k: unit_from(100.0, "kJ/mol/deg^2"),
                 x0: unit_from(80.0, "deg")
         }));
 
-        system.add_dihedral_interaction("F", "F", "F", "F",
+        system.interactions_mut().add_dihedral("F", "F", "F", "F",
             Box::new(Harmonic{
                 k: unit_from(100.0, "kJ/mol/deg^2"),
                 x0: unit_from(185.0, "deg")
@@ -398,19 +398,19 @@ mod test {
         let _ = system.add_bond(1, 2);
         let _ = system.add_bond(2, 3);
 
-        system.add_bond_interaction("F", "F",
+        system.interactions_mut().add_bond("F", "F",
             Box::new(Harmonic{
                 k: unit_from(100.0, "kJ/mol/A^2"),
                 x0: unit_from(1.22, "A")
         }));
 
-        system.add_angle_interaction("F", "F", "F",
+        system.interactions_mut().add_angle("F", "F", "F",
             Box::new(Harmonic{
                 k: unit_from(100.0, "kJ/mol/deg^2"),
                 x0: unit_from(80.0, "deg")
         }));
 
-        system.add_dihedral_interaction("F", "F", "F", "F",
+        system.interactions_mut().add_dihedral("F", "F", "F", "F",
             Box::new(Harmonic{
                 k: unit_from(100.0, "kJ/mol/deg^2"),
                 x0: unit_from(185.0, "deg")

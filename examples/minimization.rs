@@ -18,18 +18,21 @@ fn main() {
     system.add_bond(0, 1);
     system.add_bond(0, 2);
 
-    system.add_pair_interaction("O", "H", Box::new(NullPotential));
-    system.add_pair_interaction("O", "O", Box::new(NullPotential));
-    system.add_pair_interaction("H", "H", Box::new(NullPotential));
+    {
+        let interactions = system.interactions_mut();
+        interactions.add_pair("O", "H", Box::new(NullPotential));
+        interactions.add_pair("O", "O", Box::new(NullPotential));
+        interactions.add_pair("H", "H", Box::new(NullPotential));
 
-    system.add_bond_interaction("O", "H", Box::new(Harmonic{
-        x0: units::from(1.1, "A").unwrap(),
-        k: units::from(100.0, "kJ/mol/A^2").unwrap(),
-    }));
-    system.add_angle_interaction("H", "O", "H", Box::new(Harmonic{
-        x0: units::from(109.0, "deg").unwrap(),
-        k: units::from(30.0, "kJ/mol/deg").unwrap(),
-    }));
+        interactions.add_bond("O", "H", Box::new(Harmonic{
+            x0: units::from(1.1, "A").unwrap(),
+            k: units::from(100.0, "kJ/mol/A^2").unwrap(),
+        }));
+        interactions.add_angle("H", "O", "H", Box::new(Harmonic{
+            x0: units::from(109.0, "deg").unwrap(),
+            k: units::from(30.0, "kJ/mol/deg").unwrap(),
+        }));
+    }
 
 
     let mut simulation = Simulation::new(Box::new(SteepestDescent::new()));

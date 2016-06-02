@@ -48,13 +48,13 @@ pub fn read_2body(system: &mut System, pairs: &[Value], form: TwoBody) -> Result
             TwoBody::Pairs => {
                 match try!(read_restriction(pair)) {
                     Some(restriction) => {
-                        system.add_pair_interaction_with_restriction(a, b, potential, restriction);
+                        system.interactions_mut().add_pair_with_restriction(a, b, potential, restriction);
                     },
-                    None => system.add_pair_interaction(a, b, potential)
+                    None => system.interactions_mut().add_pair(a, b, potential)
                 }
             },
             TwoBody::Bonds => {
-                system.add_bond_interaction(a, b, potential);
+                system.interactions_mut().add_bond(a, b, potential);
             }
         }
     }

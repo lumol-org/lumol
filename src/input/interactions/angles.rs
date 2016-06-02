@@ -27,7 +27,7 @@ pub fn read_angles(system: &mut System, angles: &[Value]) -> Result<()> {
         let c = try!(atoms[2].as_str().ok_or(Error::from("The third atom name is not a string in angle potential")));
 
         let potential = try!(read_angle_potential(angle));
-        system.add_angle_interaction(a, b, c, potential);
+        system.interactions_mut().add_angle(a, b, c, potential);
     }
     Ok(())
 }
@@ -80,7 +80,7 @@ pub fn read_dihedrals(system: &mut System, dihedrals: &[Value]) -> Result<()> {
         let d = try!(atoms[3].as_str().ok_or(Error::from("The fourth atom name is not a string in dihedral angle potential")));
 
         let potential = try!(read_dihedral_potential(dihedral));
-        system.add_dihedral_interaction(a, b, c, d, potential);
+        system.interactions_mut().add_dihedral(a, b, c, d, potential);
     }
     Ok(())
 }

@@ -203,7 +203,7 @@ mod tests {
         system.add_particle(Particle::new("F"));
         system[1].position = Vector3D::new(1.3, 0.0, 0.0);
 
-        system.add_pair_interaction("F", "F",
+        system.interactions_mut().add_pair("F", "F",
             Box::new(Harmonic{k: unit_from(300.0, "kJ/mol/A^2"), x0: unit_from(1.2, "A")}));
         return system;
     }

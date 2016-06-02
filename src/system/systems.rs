@@ -6,7 +6,6 @@
 //! An `System` consists of a list of `Particle`; a list of `Molecule`
 //! specifying how the particles are bonded together; an unit cell for boundary
 //! conditions; and the interactions between these particles.
-use std::collections::HashMap;
 use std::ops::{Index, IndexMut};
 use std::slice;
 use std::cmp::{min, max};
@@ -16,7 +15,6 @@ use std::cell::RefCell;
 
 use potentials::{PairPotential, AnglePotential, DihedralPotential};
 use potentials::{CoulombicPotential, GlobalPotential};
-use potentials::PairRestriction;
 use types::{Vector3D, Matrix3};
 
 use super::{Particle, ParticleKind};
@@ -53,8 +51,6 @@ pub struct System {
     molecules: Vec<Molecule>,
     /// Molecules indexes for all the particles
     molids: Vec<usize>,
-    /// Particles kinds, associating particles names and indexes
-    kinds: HashMap<String, ParticleKind>,
     /// Interactions manages the associations between particles and potentials
     interactions: Interactions,
     /// Current step of the simulation
@@ -68,7 +64,6 @@ impl System {
             particles: Vec::new(),
             molecules: Vec::new(),
             molids: Vec::new(),
-            kinds: HashMap::new(),
             interactions: Interactions::new(),
             cell: UnitCell::new(),
             step: 0,
@@ -269,7 +264,7 @@ impl System {
         if part.kind == ParticleKind::default() {
             // If no value have been precised, set one from the internal list
             // of particles kinds.
-            part.kind = self.get_kind(part.name());
+            part.kind = self.interactions.get_kind(part.name());
         }
         self.particles.push(part);
         self.molecules.push(Molecule::new(self.particles.len() - 1));
@@ -287,12 +282,6 @@ impl System {
     /// Get a mutable iterator over the `Particle` in this system
     #[inline] pub fn iter_mut(&mut self) -> slice::IterMut<Particle> {
         self.particles.iter_mut()
-    }
-
-    /// Get or create the kind of a particle, given its name
-    fn get_kind(&mut self, name: &str) -> ParticleKind {
-        let lenght = self.kinds.len() as u32;
-        *self.kinds.entry(name.to_owned()).or_insert(ParticleKind(lenght))
     }
 
     /// Merge the molecules at indexes `new_molid` and `old_molid` into one
@@ -386,6 +375,16 @@ impl System {
         EnergyEvaluator::new(self)
     }
 
+    /// Access the interactions for this system
+    pub fn interactions(&self) -> &Interactions {
+        &self.interactions
+    }
+
+    /// Access the interactions for this system in a mutable way
+    pub fn interactions_mut(&mut self) -> &mut Interactions {
+        &mut self.interactions
+    }
+
     /// Get the list of pair potential acting between the particles at indexes
     /// `i` and `j`.
     pub fn pair_potentials(&self, i: usize, j: usize) -> &[PairInteraction] {
@@ -466,64 +465,6 @@ impl System {
     /// Get all the global potentials
     pub fn global_potentials(&self) -> &[RefCell<Box<GlobalPotential>>] {
         self.interactions.globals()
-    }
-
-    /// Add the `potential` pair potential between the particles with names
-    /// `i` and `j`.
-    pub fn add_pair_interaction(&mut self, i: &str, j: &str, potential: Box<PairPotential>) {
-        let ikind = self.get_kind(i);
-        let jkind = self.get_kind(j);
-
-        self.interactions.add_pair(ikind, jkind, potential);
-    }
-
-    /// Add the `potential` pair potential between the particles with names
-    /// `i` and `j`, using the `restriction` restriction scheme.
-    pub fn add_pair_interaction_with_restriction(&mut self, i: &str, j: &str, potential: Box<PairPotential>, restriction: PairRestriction) {
-        let ikind = self.get_kind(i);
-        let jkind = self.get_kind(j);
-
-        self.interactions.add_pair_with_restriction(ikind, jkind, potential, restriction);
-    }
-
-    /// Add the `potential` bonded potentials between the particles with names
-    /// `i` and `j`
-    pub fn add_bond_interaction(&mut self, i: &str, j: &str, potential: Box<PairPotential>) {
-        let ikind = self.get_kind(i);
-        let jkind = self.get_kind(j);
-
-        self.interactions.add_bond(ikind, jkind, potential);
-    }
-
-    /// Add the `potential` angle potential between the particles with names `i`,
-    /// `j`, and `k`
-    pub fn add_angle_interaction(&mut self, i: &str, j: &str, k: &str, potential: Box<AnglePotential>) {
-        let ikind = self.get_kind(i);
-        let jkind = self.get_kind(j);
-        let kkind = self.get_kind(k);
-
-        self.interactions.add_angle(ikind, jkind, kkind, potential);
-    }
-
-    /// Add the `potential` dihedral angle potential between the particles with
-    /// names names `i`, `j`, `k`, and `m`
-    pub fn add_dihedral_interaction(&mut self, i: &str, j: &str, k: &str, m: &str, potential: Box<DihedralPotential>) {
-        let ikind = self.get_kind(i);
-        let jkind = self.get_kind(j);
-        let kkind = self.get_kind(k);
-        let mkind = self.get_kind(m);
-
-        self.interactions.add_dihedral(ikind, jkind, kkind, mkind, potential);
-    }
-
-    /// Set the coulombic potential to `potential`
-    pub fn set_coulomb_interaction(&mut self, potential: Box<CoulombicPotential>) {
-        self.interactions.set_coulomb(potential);
-    }
-
-    /// Add a global interaction to the system
-    pub fn add_global_interaction(&mut self, potential: Box<GlobalPotential>) {
-        self.interactions.add_global(potential);
     }
 }
 
@@ -675,7 +616,6 @@ impl IndexMut<usize> for System {
 mod tests {
     use system::*;
     use types::*;
-    use potentials::*;
 
     #[test]
     fn step() {
@@ -808,32 +748,6 @@ mod tests {
 
         system.set_cell(UnitCell::new());
         assert_eq!(system.distance(0, 1), 9.0);
-    }
-
-    #[test]
-    fn interactions() {
-        let mut system = System::new();
-        system.add_particle(Particle::new("He"));
-
-        system.add_pair_interaction("He", "He", Box::new(LennardJones{sigma: 0.3, epsilon: 2.0}));
-        system.add_pair_interaction("He", "He", Box::new(Harmonic{k: 100.0, x0: 1.1}));
-        assert_eq!(system.pair_potentials(0, 0).len(), 2);
-
-        system.add_bond_interaction("He", "He", Box::new(Harmonic{k: 100.0, x0: 1.1}));
-        assert_eq!(system.bond_potentials(0, 0).len(), 1);
-
-        system.add_angle_interaction("He", "He", "He", Box::new(Harmonic{k: 100.0, x0: 1.1}));
-        assert_eq!(system.angle_potentials(0, 0, 0).len(), 1);
-
-        system.add_dihedral_interaction("He", "He", "He", "He", Box::new(CosineHarmonic::new(0.3, 2.0)));
-        assert_eq!(system.dihedral_potentials(0, 0, 0, 0).len(), 1);
-
-        assert!(system.coulomb_potential().is_none());
-        system.set_coulomb_interaction(Box::new(Wolf::new(1.0)));
-        assert!(system.coulomb_potential().is_some());
-
-        system.add_global_interaction(Box::new(Wolf::new(1.0)));
-        assert_eq!(system.global_potentials().len(), 1);
     }
 
     #[test]

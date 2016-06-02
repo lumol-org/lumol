@@ -26,7 +26,7 @@ fn get_system() -> System {
 
 fn get_system_with_interaction() -> System {
     let mut system = get_system();
-    system.add_pair_interaction("He", "He",
+    system.interactions_mut().add_pair("He", "He",
         Box::new(LennardJones{
             sigma: units::from(2.0, "A").unwrap(),
             epsilon: units::from(0.2, "kJ/mol").unwrap()
@@ -132,7 +132,7 @@ fn cutoff_computation() {
     START.call_once(|| {Logger::stdout();});
     let mut system = get_system();
 
-    system.add_pair_interaction("He", "He",
+    system.interactions_mut().add_pair("He", "He",
         Box::new(CutoffComputation::new(
             Box::new(LennardJones{
                 sigma: units::from(2.0, "A").unwrap(),
@@ -161,7 +161,7 @@ fn table_computation() {
     START.call_once(|| {Logger::stdout();});
     let mut system = get_system();
 
-    system.add_pair_interaction("He", "He",
+    system.interactions_mut().add_pair("He", "He",
         Box::new(TableComputation::new(
             Box::new(LennardJones{
                 sigma: units::from(2.0, "A").unwrap(),

@@ -34,7 +34,7 @@ pub fn read_coulomb(system: &mut System, coulomb: &Table) -> Result<()> {
             potential.set_restriction(restriction);
         }
 
-        system.set_coulomb_interaction(potential);
+        system.interactions_mut().set_coulomb(potential);
         Ok(())
     } else {
         Err(
