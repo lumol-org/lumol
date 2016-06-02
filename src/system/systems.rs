@@ -19,7 +19,7 @@ use potentials::{CoulombicPotential, GlobalPotential};
 use potentials::PairRestriction;
 use types::{Vector3D, Matrix3};
 
-use super::Particle;
+use super::{Particle, ParticleKind};
 use super::Molecule;
 use super::{CONNECT_12, CONNECT_13, CONNECT_14, CONNECT_FAR};
 use super::UnitCell;
@@ -54,8 +54,8 @@ pub struct System {
     /// Molecules indexes for all the particles
     molids: Vec<usize>,
     /// Particles kinds, associating particles names and indexes
-    kinds: HashMap<String, u16>,
-    /// Interactions is a hash map associating particles kinds and potentials
+    kinds: HashMap<String, ParticleKind>,
+    /// Interactions manages the associations between particles and potentials
     interactions: Interactions,
     /// Current step of the simulation
     step: u64,
@@ -266,7 +266,7 @@ impl System {
     /// Insert a particle at the end of the internal list
     pub fn add_particle(&mut self, p: Particle) {
         let mut part = p;
-        if part.kind == u16::max_value() {
+        if part.kind == ParticleKind::default() {
             // If no value have been precised, set one from the internal list
             // of particles kinds.
             part.kind = self.get_kind(part.name());
@@ -289,10 +289,10 @@ impl System {
         self.particles.iter_mut()
     }
 
-    /// Get or create the usize kind index for the name `name` of a particle
-    fn get_kind(&mut self, name: &str) -> u16 {
-        let index = self.kinds.len() as u16;
-        *self.kinds.entry(name.to_owned()).or_insert(index)
+    /// Get or create the kind of a particle, given its name
+    fn get_kind(&mut self, name: &str) -> ParticleKind {
+        let lenght = self.kinds.len() as u32;
+        *self.kinds.entry(name.to_owned()).or_insert(ParticleKind(lenght))
     }
 
     /// Merge the molecules at indexes `new_molid` and `old_molid` into one

@@ -9,7 +9,7 @@ mod periodic;
 pub use self::periodic::{PeriodicTable, ElementData};
 
 mod particles;
-pub use self::particles::Particle;
+pub use self::particles::{Particle, ParticleKind};
 
 mod cells;
 pub use self::cells::{UnitCell, CellType};

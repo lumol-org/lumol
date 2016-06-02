@@ -5,6 +5,19 @@
 use types::{Vector3D, Zero};
 use super::PeriodicTable;
 
+/// A particle kind. Particles with the same name will have the same kind. This
+/// is used for faster potential lookup.
+#[derive(Clone, Copy, Hash, PartialOrd, Ord, PartialEq, Eq, Debug)]
+pub struct ParticleKind(pub u32);
+
+/// Default implementation of ParticleKind returns the invalid value
+/// `u32::max_value()`
+impl Default for ParticleKind {
+    fn default() -> ParticleKind {
+        ParticleKind(u32::max_value())
+    }
+}
+
 /// The Particle type hold basic data about a particle in the system. It is self
 /// contained, so that it will be easy to send data between parrallels
 /// processes.
@@ -14,7 +27,7 @@ pub struct Particle {
     /// and to use either `String` of `&str` to set it.
     name: String,
     /// Particle kind, an index for potentials lookup
-    pub kind: u16,
+    pub kind: ParticleKind,
     /// Particle mass
     pub mass: f64,
     /// Particle charge
@@ -38,7 +51,7 @@ impl Particle {
             name: name,
             mass: mass as f64,
             charge: 0.0,
-            kind: u16::max_value(),
+            kind: ParticleKind::default(),
             position: Vector3D::zero(),
             velocity: Vector3D::zero()
         }
