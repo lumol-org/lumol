@@ -169,8 +169,9 @@ impl Interactions {
         } else {
             let name_i = self.kinds.name(i).unwrap_or(format!("kind {}", i));
             let name_j = self.kinds.name(j).unwrap_or(format!("kind {}", j));
-            // TODO: add and use the warn_once! macro
-            warn!("No potential defined for the pair ({}, {})", name_i, name_j);
+            warn_once!(
+                "No potential defined for the pair ({}, {})", name_i, name_j
+            );
             NO_PAIR_INTERACTION
         }
     }
@@ -183,8 +184,9 @@ impl Interactions {
         } else {
             let name_i = self.kinds.name(i).unwrap_or(format!("kind {}", i));
             let name_j = self.kinds.name(j).unwrap_or(format!("kind {}", j));
-            // TODO: add and use the warn_once! macro
-            warn!("No potential defined for the bond ({}, {})", name_i, name_j);
+            warn_once!(
+                "No potential defined for the bond ({}, {})", name_i, name_j
+            );
             NO_BOND_INTERACTION
         }
     }
@@ -198,8 +200,10 @@ impl Interactions {
             let name_i = self.kinds.name(i).unwrap_or(format!("kind {}", i));
             let name_j = self.kinds.name(j).unwrap_or(format!("kind {}", j));
             let name_k = self.kinds.name(k).unwrap_or(format!("kind {}", k));
-            // TODO: add and use the warn_once! macro
-            warn!("No potential defined for the angle ({}, {}, {})", name_i, name_j, name_k);
+            warn_once!(
+                "No potential defined for the angle ({}, {}, {})",
+                name_i, name_j, name_k
+            );
             NO_ANGLE_INTERACTION
         }
     }
@@ -214,8 +218,10 @@ impl Interactions {
             let name_j = self.kinds.name(j).unwrap_or(format!("kind {}", j));
             let name_k = self.kinds.name(k).unwrap_or(format!("kind {}", k));
             let name_m = self.kinds.name(m).unwrap_or(format!("kind {}", m));
-            // TODO: add and use the warn_once! macro
-            warn!("No potential defined for the dihedral ({}, {}, {}, {})", name_i, name_j, name_k, name_m);
+            warn_once!(
+                "No potential defined for the dihedral ({}, {}, {}, {})",
+                name_i, name_j, name_k, name_m
+            );
             NO_DIHEDRAL_INTERACTION
         }
     }
