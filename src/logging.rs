@@ -22,11 +22,20 @@ pub use log::LogLevel;
 
 /// Log an error, and then panic with the same message
 macro_rules! fatal_error {
-    ($($args:tt)*) => {
+    ($($args:tt)*) => {{
         error!($($args)*);
         panic!($($args)*);
-    };
+    }};
 }
+
+macro_rules! internal_error {
+    ($($args:tt)*) => {{
+        let message = format!($($args)*);
+        let message = format!("Internal error: {}", message);
+        fatal_error!("{}", message);
+    }};
+}
+
 
 macro_rules! warn_once {
     ($($args:tt)*) => {{

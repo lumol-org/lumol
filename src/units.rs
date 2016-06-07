@@ -84,127 +84,280 @@ lazy_static!(
 
 /// Possible error causes when parsing an unit string.
 #[derive(Debug)]
-pub enum UnitParsingError {
+pub enum ParseError {
     /// Error while parsing a power in `x^y` expressions
-    PowerParsingError(num::ParseIntError),
+    Power(num::ParseIntError),
     /// Error while parsing the value part of an unit string
-    ValueParsingError(num::ParseFloatError),
+    Value(num::ParseFloatError),
     /// Parentheses are not balanced in this unit
-    UnbalancedParentheses{
-        /// The full unit that created this error
-        unit:String
-    },
-    /// Unknown binary operator
-    BadBinary{
-        /// The operator that created this error
-        op: char
-    },
+    ParenthesesMismatch,
     /// This unit was not found
-    NotFound{
-        /// The full unit that created this error
-        unit:String
+    NotFound {
+        /// The unit that created this error
+        unit: String
     },
+    /// Any other error
+    MalformedExpr(String),
 }
 
-impl From<num::ParseIntError> for UnitParsingError {
-    fn from(err: num::ParseIntError) -> UnitParsingError {
-        UnitParsingError::PowerParsingError(err)
+impl From<num::ParseIntError> for ParseError {
+    fn from(err: num::ParseIntError) -> ParseError {
+        ParseError::Power(err)
     }
 }
 
-impl From<num::ParseFloatError> for UnitParsingError {
-    fn from(err: num::ParseFloatError) -> UnitParsingError {
-        UnitParsingError::ValueParsingError(err)
+impl From<num::ParseFloatError> for ParseError {
+    fn from(err: num::ParseFloatError) -> ParseError {
+        ParseError::Value(err)
     }
 }
 
-impl fmt::Display for UnitParsingError {
+impl fmt::Display for ParseError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
-            UnitParsingError::PowerParsingError(ref err) => err.fmt(f),
-            UnitParsingError::ValueParsingError(ref err) => err.fmt(f),
-            UnitParsingError::UnbalancedParentheses{ref unit} => write!(f, "Parentheses are not equilibrated in unit: {}.", unit),
-            UnitParsingError::BadBinary{ref op} => write!(f, "Bad binary operator {}.", op),
-            UnitParsingError::NotFound{ref unit} => write!(f, "Unit '{}' not found.", unit),
+            ParseError::Power(ref err) => err.fmt(f),
+            ParseError::Value(ref err) => err.fmt(f),
+            ParseError::ParenthesesMismatch => write!(f, "Parentheses are not equilibrated."),
+            ParseError::NotFound{ref unit} => write!(f, "Unit '{}' not found.", unit),
+            ParseError::MalformedExpr(ref err) => write!(f, "Malformed expression: {}", err),
         }
     }
 }
 
-impl Error for UnitParsingError {
+impl Error for ParseError {
     fn description(&self) -> &str {
         match *self {
-            UnitParsingError::PowerParsingError(ref err) => err.description(),
-            UnitParsingError::ValueParsingError(ref err) => err.description(),
-            UnitParsingError::UnbalancedParentheses{..} => "Parentheses are not equilibrated.",
-            UnitParsingError::BadBinary{..} => "Bad binary operator.",
-            UnitParsingError::NotFound{..} => "Unit not found.",
+            ParseError::Power(ref err) => err.description(),
+            ParseError::Value(ref err) => err.description(),
+            ParseError::ParenthesesMismatch => "Parentheses are not equilibrated.",
+            ParseError::NotFound{..} => "Unit not found.",
+            ParseError::MalformedExpr(..) => "Malformed expression",
         }
     }
 }
 
-/// Recursive unit string parsing function. This return the conversion factor
-/// for a given unit.
-fn conversion(unit: &str) -> Result<f64, UnitParsingError> {
-    let unit = unit.trim();
-    // First check if we do already have a known unit
-    if let Some(val) = FACTORS.get(unit) {
-        return Ok(*val);
-    }
+/// Possible tokens in unit strings
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
+enum Token {
+    /// Left parenthese
+    LParen,
+    /// Right parenthese
+    RParen,
+    /// '*' token
+    Mul,
+    /// '/' token
+    Div,
+    /// '^' token
+    Pow,
+    /// Any other whitespace separated value
+    Value(String)
+}
 
-    let chars: Vec<char> = unit.chars().collect();
-    let strlen = chars.len();
-
-    if strlen == 0 {
-        return Ok(1.0);
-    }
-
-    // First, check parentheses equilibration and any of '/' or '.' or '*' in the string
-    let mut depth = 0;  // parentheses counter
-    let mut i = strlen - 1;
-    for (j, c) in unit.chars().rev().enumerate() {
-        match c {
-            '.' | '*' | '/' => {i = j;},
-            '(' => {depth += 1;},
-            ')' => {depth -= 1;},
-            _ => {}
+impl Token {
+    /// What is the precedence of a specific token
+    fn precedence(&self) -> usize {
+        match *self {
+            Token::LParen | Token::RParen => 0,
+            Token::Div | Token::Mul => 10,
+            Token::Pow => 20,
+            Token::Value(..) => internal_error!(
+                "invalid call to UnitTok::precedence for values"
+            )
         }
     }
-    let i = (strlen - 1) - i; // index of the first operator
 
-    if depth != 0 {
-        return Err(UnitParsingError::UnbalancedParentheses{unit: String::from(unit)});
+    /// Get the string used to build this token in tokenize
+    fn as_str(&self) -> &str {
+        match *self {
+            Token::LParen => "(",
+            Token::RParen => ")",
+            Token::Div => "/",
+            Token::Mul => "*",
+            Token::Pow => "^",
+            Token::Value(ref value) => value
+        }
+    }
+}
+
+/// Transform a string to a stream of tokens
+fn tokenize(unit: &str) -> Vec<Token> {
+    let mut tokens = Vec::new();
+    let mut token = String::new();
+    for c in unit.chars() {
+        match c {
+            '*' | '/' | '^' | '(' | ')' => {
+                if token.len() != 0 {
+                    tokens.push(Token::Value(token.clone()));
+                    token.clear();
+                }
+                match c {
+                    '*' => tokens.push(Token::Mul),
+                    '/' => tokens.push(Token::Div),
+                    '^' => tokens.push(Token::Pow),
+                    '(' => tokens.push(Token::LParen),
+                    ')' => tokens.push(Token::RParen),
+                    _ => internal_error!("invalid unit operator"),
+                }
+            },
+            other if !other.is_whitespace() => {
+                token.push(other);
+            },
+            _ => {assert!(c.is_whitespace())}
+        }
+    }
+    // Last token
+    if token.len() != 0 {
+        tokens.push(Token::Value(token));
+    }
+    return tokens;
+}
+
+static MISSING_OPERATOR: &'static str = "Oops, sorry explorator, but you felt \
+in a space-time hole. We are missing an operator here";
+
+/// Create the AST for unit expression using the Shunting-Yard algorithm.
+///
+/// See /// https://en.wikipedia.org/wiki/Shunting-yard_algorithm for a
+/// description of the algorithm.
+#[allow(trivial_casts)]
+fn shunting_yard(tokens: Vec<Token>) -> Result<Vec<Token>, ParseError> {
+    let mut operators = Vec::new();
+    let mut output = Vec::new();
+    for token in tokens {
+        match token {
+            Token::Value(..) => output.push(token),
+            Token::Mul | Token::Div | Token::Pow => {
+                 while !operators.is_empty() {
+                     // The cast is useless here, but rustc can't figure out
+                     // the type of the expression after the call to `expect`
+                     let top_operator = (operators.last().expect(MISSING_OPERATOR) as &Token).clone();
+                     // All the operators are left-associative
+                     if token.precedence() <= top_operator.precedence() {
+                         output.push(operators.pop().expect(MISSING_OPERATOR));
+                     } else {
+                         break;
+                     }
+                }
+                operators.push(token);
+            },
+            Token::LParen => operators.push(token),
+            Token::RParen => {
+                while !operators.is_empty() && operators.last() != Some(&Token::LParen) {
+                    output.push(operators.pop().expect(MISSING_OPERATOR))
+                }
+                if operators.is_empty() || operators.last() != Some(&Token::LParen) {
+                    return Err(ParseError::ParenthesesMismatch)
+                } else {
+                    let _ = operators.pop();
+                }
+            }
+        }
     }
 
-    // Are we enclosed by parentheses?
-    if chars[0] == '(' {
-        assert!(chars[strlen-1] == ')');
-        return conversion(&unit[1..strlen-1])
+    while !operators.is_empty() {
+        match *operators.last().expect(MISSING_OPERATOR) {
+            Token::LParen | Token::RParen => return Err(ParseError::ParenthesesMismatch),
+            _ => output.push(operators.pop().expect(MISSING_OPERATOR))
+        }
     }
 
-    // If a product character was found, recurse
-    if i > 0 {
-        let lhs = try!(conversion(&unit[..i]));
-        let rhs = try!(conversion(&unit[i+1..]));
+    return Ok(output);
+}
 
-        return match chars[i] {
-            '/' => Ok(lhs / rhs),
-            '*' | '.' => Ok(lhs * rhs),
-            _ => Err(UnitParsingError::BadBinary{op: chars[i]}),
-        };
+
+/// Possible members in unit expressions
+#[derive(Debug, PartialEq)]
+enum UnitExpr {
+    /// A single value
+    Val(f64),
+    /// Multiplication of left-hand side by right-hand side
+    Mul(Box<UnitExpr>, Box<UnitExpr>),
+    /// Division of left-hand side by right-hand side
+    Div(Box<UnitExpr>, Box<UnitExpr>),
+    /// Take the power of the expr by the `i32` value
+    Pow(Box<UnitExpr>, i32),
+}
+
+impl UnitExpr {
+    /// Recursively evaluate an unit expression
+    fn eval(&self) -> f64 {
+        match *self {
+            UnitExpr::Val(v) => v,
+            UnitExpr::Mul(ref lhs, ref rhs) => lhs.eval() * rhs.eval(),
+            UnitExpr::Div(ref lhs, ref rhs) => lhs.eval() / rhs.eval(),
+            UnitExpr::Pow(ref expr, pow) => expr.eval().powi(pow),
+        }
     }
 
-    // Do we have an exponentiation?
-    let mut i = strlen - 1;
-    while chars[i].is_numeric() || chars[i] == '-' {
-        i -= 1;
+    /// Parse a string, and generate the corresponding unit expression
+    fn parse(unit: &str) -> Result<UnitExpr, ParseError> {
+        let tokens = tokenize(unit);
+        let mut stream = try!(shunting_yard(tokens));
+        let ast = try!(read_expr(&mut stream));
+        if !stream.is_empty() {
+            let remainder = stream.iter().map(|t| t.as_str()).collect::<Vec<_>>().join(" ");
+            return Err(ParseError::MalformedExpr(
+                format!("remaining values after the end of the unit: {}", remainder)
+            ))
+        } else {
+            Ok(ast)
+        }
     }
-    if chars[i] == '^' {
-        let power = try!(unit[i+1..].parse::<i32>());
-        let val = try!(conversion(&unit[0..i]));
-        return Ok(val.powi(power));
-    }
+}
 
-    return Err(UnitParsingError::NotFound{unit: String::from(unit)});
+/// Read and pop (recursively) a single expression from the `stream`.
+/// The `stream` must be in reverse polish notation.
+fn read_expr(stream: &mut Vec<Token>) -> Result<UnitExpr, ParseError> {
+    if let Some(token) = stream.pop() {
+        match token {
+            Token::Value(unit) => {
+                match FACTORS.get(&*unit) {
+                    Some(&value) => Ok(UnitExpr::Val(value)),
+                    None => Err(ParseError::NotFound{unit: unit})
+                }
+            },
+            Token::Mul => {
+                let rhs = try!(read_expr(stream).map_err(|err| ParseError::MalformedExpr(
+                    format!("Error in unit at the right of '*': {}", err)
+                )));
+                let lhs = try!(read_expr(stream).map_err(|err| ParseError::MalformedExpr(
+                    format!("Error in unit at the left of '*': {}", err)
+                )));
+                Ok(UnitExpr::Mul(Box::new(lhs), Box::new(rhs)))
+            },
+            Token::Div => {
+                let rhs = try!(read_expr(stream).map_err(|err| ParseError::MalformedExpr(
+                    format!("Error in unit at the right of '/': {}", err)
+                )));
+                let lhs = try!(read_expr(stream).map_err(|err| ParseError::MalformedExpr(
+                    format!("Error in unit at the left of '/': {}", err)
+                )));
+                Ok(UnitExpr::Div(Box::new(lhs), Box::new(rhs)))
+            },
+            Token::Pow => {
+                let pow = match stream.pop() {
+                    Some(pow) => match pow {
+                        Token::Value(value) => try!(value.parse()),
+                        _ => return Err(ParseError::MalformedExpr(String::from(
+                            format!("Invalid value after ^: {}", pow.as_str())
+                        )))
+                    },
+                    None => return Err(ParseError::MalformedExpr(String::from(
+                        "Missing value after '^'"
+                    )))
+                };
+                let expr = try!(read_expr(stream).map_err(|err| ParseError::MalformedExpr(
+                    format!("Error in unit at the left of '*': {}", err)
+                )));
+                Ok(UnitExpr::Pow(Box::new(expr), pow))
+            }
+            Token::LParen | Token::RParen => internal_error!(
+                "there should not be any parenthese here"
+            )
+        }
+    } else {
+        Err(ParseError::MalformedExpr(String::from("missing a value")))
+    }
 }
 
 /// Convert the numeric value `val` from the unit `unit` to the internal unit.
@@ -216,9 +369,9 @@ fn conversion(unit: &str) -> Result<f64, UnitParsingError> {
 /// let internal = from(1.0, "kJ/mol");
 /// assert!(internal == 1000.0);
 /// ```
-pub fn from(val: f64, unit: &str) -> Result<f64, UnitParsingError> {
-    let factor = try!(conversion(unit));
-    return Ok(factor * val);
+pub fn from(value: f64, unit: &str) -> Result<f64, ParseError> {
+    let unit = try!(UnitExpr::parse(unit));
+    return Ok(unit.eval() * value);
 }
 
 /// Parse the string `val` and convert it to the corresponding internal unit
@@ -230,12 +383,16 @@ pub fn from(val: f64, unit: &str) -> Result<f64, UnitParsingError> {
 /// let internal = from("1 kJ/mol");
 /// assert!(internal == 1000.0);
 /// ```
-pub fn from_str(val: &str) -> Result<f64, UnitParsingError> {
-    let unit = val.split_whitespace().skip(1).collect::<Vec<&str>>().join(" ");
-    let factor = try!(conversion(&unit));
-    let val: &str = val.split_whitespace().take(1).collect::<Vec<&str>>()[0];
-    let val: f64 = try!(val.parse());
-    return Ok(factor * val);
+pub fn from_str(value: &str) -> Result<f64, ParseError> {
+    let unit = value.split_whitespace().skip(1).collect::<Vec<&str>>().join(" ");
+    let unit = if unit.is_empty() {
+        UnitExpr::Val(1.0)
+    } else {
+        try!(UnitExpr::parse(&unit))
+    };
+    let value: &str = value.split_whitespace().take(1).collect::<Vec<&str>>()[0];
+    let value: f64 = try!(value.parse());
+    return Ok(unit.eval() * value);
 }
 
 /// Convert the numeric value `val` (in internal units) to the unit `unit`.
@@ -247,51 +404,92 @@ pub fn from_str(val: &str) -> Result<f64, UnitParsingError> {
 /// let real = to(1e-4, "kJ/mol");
 /// assert!(internal == 1.0);
 /// ```
-pub fn to(val: f64, unit: &str) -> Result<f64, UnitParsingError> {
-    let factor = try!(conversion(unit));
-    return Ok(val / factor);
+pub fn to(value: f64, unit: &str) -> Result<f64, ParseError> {
+    let unit = try!(UnitExpr::parse(unit));
+    return Ok(value / unit.eval());
 }
 
 #[cfg(test)]
 mod test {
     use super::*;
+    use super::{tokenize, shunting_yard};
+    use super::{Token, UnitExpr};
 
     #[test]
-    fn conversions() {
-        // Get the factors rights
-        assert_eq!(from(10.0, "A").ok(), Some(10.0));
-        assert_eq!(from(10.0, "Å").ok(), Some(10.0));
-        assert_eq!(from(10.0, "pm").ok(), Some(0.1));
-        assert_eq!(from(10.0, "nm").ok(), Some(100.0));
+    fn tokens() {
+        assert_eq!(tokenize("(")[0], Token::LParen);
+        assert_eq!(tokenize(")")[0], Token::RParen);
+        assert_eq!(tokenize("*")[0], Token::Mul);
+        assert_eq!(tokenize("/")[0], Token::Div);
+        assert_eq!(tokenize("^")[0], Token::Pow);
+        assert_eq!(tokenize("foo")[0], Token::Value(String::from("foo")));
+        assert_eq!(tokenize("45")[0], Token::Value(String::from("45")));
 
-        assert_eq!(from_str("10.0 A").ok(), Some(10.0));
-        assert_eq!(from_str("10 A").ok(), Some(10.0));
-        assert_eq!(from_str("1e1 A").ok(), Some(10.0));
-        assert_eq!(from_str("10").ok(), Some(10.0));
+        assert_eq!(tokenize("(bar/m").len(), 4);
+        assert_eq!(tokenize(" ( bar\t/\n   m").len(), 4);
+    }
 
-        // Parse stuff
-        assert_eq!(from(10.0, "bohr/fs").ok(), Some(10.0*0.52917720859));
-        assert_eq!(from(10.0, "kJ/mol/A^2").ok(), Some(0.0010000000007002099));
-        assert_eq!(from(10.0, "(Ry / rad^-3   )").ok(), Some(1.3127498789124938));
-        assert_eq!(from(10.0, "bar/(m * fs^2)").ok(), Some(6.0221417942167636e-18));
-
-        assert_eq!(from_str("10 bar/(m * fs^2)").ok(), Some(6.0221417942167636e-18));
-
-        // Test the 'to' function too
-        assert_eq!(to(25.0, "m").ok(), Some(2.5e-9));
-        assert_eq!(to(25.0, "bar").ok(), Some(4.1513469550000005e9));
-        assert_eq!(to(25.0, "kJ/mol").ok(), Some(249999.99982494753));
+    fn ast_str(unit: &str) -> Result<String, ParseError> {
+        let tokens = tokenize(unit);
+        let ast = try!(shunting_yard(tokens));
+        return Ok(ast.iter().map(|t| t.as_str()).collect::<Vec<_>>().join(" "));
     }
 
     #[test]
-    fn errors() {
-        assert!(from(10.0, "(bar/m").is_err());
-        assert!(from(10.0, "m^4-8").is_err());
-        assert!(from(10.0, "m^z4").is_err());
-        assert!(from(10.0, "m/K)").is_err());
-        assert!(from(10.0, "HJK").is_err());
+    fn ast() {
+        assert_eq!(ast_str("").unwrap(), "");
+        assert_eq!(ast_str("()").unwrap(), "");
+        assert_eq!(ast_str("foo").unwrap(), "foo");
+        assert_eq!(ast_str("foo*bar").unwrap(), "foo bar *");
+        assert_eq!(ast_str("foo / bar").unwrap(), "foo bar /");
+        assert_eq!(ast_str("foo^4").unwrap(), "foo 4 ^");
+        assert_eq!(ast_str("bar/foo ^ 4").unwrap(), "bar foo 4 ^ /");
+        assert_eq!(ast_str("k*bar /foo^ 4").unwrap(), "k bar * foo 4 ^ /");
+    }
+
+    #[test]
+    fn ast_errors() {
+        assert!(ast_str("(").is_err());
+        assert!(ast_str(")").is_err());
+        assert!(ast_str("(bar/m").is_err());
+        assert!(ast_str("m/K)").is_err());
+    }
+
+    #[test]
+    fn eval() {
+        assert_eq!(UnitExpr::parse("Å").unwrap(), UnitExpr::Val(1.0));
+        assert_eq!(UnitExpr::parse("nm").unwrap(), UnitExpr::Val(10.0));
+
+        assert_eq!(UnitExpr::parse("bohr/fs").unwrap().eval(), 0.52917720859);
+        assert_approx_eq!(UnitExpr::parse("kcal/mol/A^2").unwrap().eval(), 4.184e-4, 1e-12);
+        assert_eq!(UnitExpr::parse("(Ry / rad^-3   )").unwrap().eval(), 0.13127498789124938);
+        assert_eq!(UnitExpr::parse("bar/(m * fs^2)").unwrap().eval(), 6.0221417942167636e-19);
+        assert_eq!(UnitExpr::parse("kJ/mol/deg^2").unwrap().eval(), 0.3282806352310398);
+    }
+
+    #[test]
+    fn parsing_errrors() {
+        assert!(UnitExpr::parse("m^4-8").is_err());
+        assert!(UnitExpr::parse("foo ^ bar").is_err());
+        assert!(UnitExpr::parse("m^z4").is_err());
+        assert!(UnitExpr::parse("HJK").is_err());
+    }
+
+    #[test]
+    fn unit_from_str() {
+        assert_eq!(from_str("10.0 A").unwrap(), 10.0);
+        assert_eq!(from_str("10 A").unwrap(), 10.0);
+        assert_eq!(from_str("1e1 A").unwrap(), 10.0);
+        assert_eq!(from_str("10").unwrap(), 10.0);
 
         assert!(from_str("10a.0 bar").is_err());
         assert!(from_str("h10").is_err());
+    }
+
+    #[test]
+    fn unit_to() {
+        assert_eq!(to(25.0, "m").unwrap(), 2.5e-9);
+        assert_eq!(to(25.0, "bar").unwrap(), 4.1513469550000005e9);
+        assert_eq!(to(25.0, "kJ/mol").unwrap(), 249999.99982494753);
     }
 }

@@ -9,7 +9,7 @@ use std::result;
 use toml::Parser;
 use chemfiles;
 
-use units::UnitParsingError;
+use units::ParseError;
 
 /// Custom `Result` type for input files
 pub type Result<T> = result::Result<T, Error>;
@@ -26,7 +26,7 @@ pub enum Error {
     /// File content error: missing sections, bad data types
     Config(String),
     /// Unit parsing error
-    UnitParsing(UnitParsingError),
+    Unit(ParseError),
 }
 
 impl From<io::Error> for Error {
@@ -55,8 +55,8 @@ impl From<String> for Error {
     }
 }
 
-impl From<UnitParsingError> for Error {
-    fn from(err: UnitParsingError) -> Error {Error::UnitParsing(err)}
+impl From<ParseError> for Error {
+    fn from(err: ParseError) -> Error {Error::Unit(err)}
 }
 
 impl fmt::Display for Error {
@@ -74,7 +74,7 @@ impl error::Error for Error {
             Error::Config(ref err) => err,
             Error::File(ref err) => err.description(),
             Error::Trajectory(ref err) => err.description(),
-            Error::UnitParsing(ref err) => err.description(),
+            Error::Unit(ref err) => err.description(),
         }
     }
 
@@ -84,7 +84,7 @@ impl error::Error for Error {
             Error::Config(..) => None,
             Error::File(ref err) => Some(err),
             Error::Trajectory(ref err) => Some(err),
-            Error::UnitParsing(ref err) => Some(err),
+            Error::Unit(ref err) => Some(err),
         }
     }
 }
