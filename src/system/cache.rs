@@ -347,7 +347,7 @@ mod tests {
         system[0].position = newpos[0];
         system[3].position = newpos[1];
         let new_e = system.potential_energy();
-        assert_approx_eq!(cost, new_e - old_e);
+        assert_approx_eq!(cost, new_e - old_e, 1e-14);
 
         cache.update(&mut system);
         assert_approx_eq!(cache.energy(), new_e);
@@ -360,6 +360,6 @@ mod tests {
         system[2].position = newpos[0];
         system[3].position = newpos[1];
         let new_e = system.potential_energy();
-        assert_approx_eq!(cost, new_e - old_e);
+        assert_approx_eq!(cost, new_e - old_e, 1e-14);
     }
 }

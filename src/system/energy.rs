@@ -119,13 +119,6 @@ impl<'a> EnergyEvaluator<'a> {
         return energy;
     }
 
-    /// Compute the energy of the molecule interaction, *i.e.* the sum `bonds +
-    /// angles + dihedrals`.
-    #[inline]
-    pub fn molecules(&self) -> f64 {
-        return self.bonds() + self.angles() + self.dihedrals();
-    }
-
     /// Compute the energy of the electrostatic interactions
     #[inline]
     pub fn coulomb(&self) -> f64 {
@@ -149,6 +142,79 @@ impl<'a> EnergyEvaluator<'a> {
 
 #[cfg(test)]
 mod tests {
-    // This code is tested in the src/simulation/compute.rs file, as it is used
-    // by the PotentialEnergy compute.
+    use super::*;
+    use system::{System, Particle, UnitCell};
+    use potentials::{Harmonic, LennardJones};
+    use types::Vector3D;
+    use utils::unit_from;
+
+    fn testing_system() -> System {
+        let mut system = System::from_cell(UnitCell::cubic(10.0));;
+        system.add_particle(Particle::new("F"));
+        system[0].position = Vector3D::new(0.0, 0.0, 0.0);
+        system.add_particle(Particle::new("F"));
+        system[1].position = Vector3D::new(1.0, 0.0, 0.0);
+        system.add_particle(Particle::new("F"));
+        system[2].position = Vector3D::new(1.0, 1.0, 0.0);
+        system.add_particle(Particle::new("F"));
+        system[3].position = Vector3D::new(2.0, 1.0, 0.0);
+
+        assert!(system.add_bond(0, 1).is_empty());
+        assert!(system.add_bond(1, 2).is_empty());
+        assert!(system.add_bond(2, 3).is_empty());
+
+        system.interactions_mut().add_pair("F", "F",
+            Box::new(LennardJones {
+                epsilon: unit_from(100.0, "kJ/mol/A^2"),
+                sigma: unit_from(0.8, "A")
+        }));
+
+        system.interactions_mut().add_bond("F", "F",
+            Box::new(Harmonic{
+                k: unit_from(100.0, "kJ/mol/A^2"),
+                x0: unit_from(2.0, "A")
+        }));
+
+        system.interactions_mut().add_angle("F", "F", "F",
+            Box::new(Harmonic{
+                k: unit_from(100.0, "kJ/mol/deg^2"),
+                x0: unit_from(88.0, "deg")
+        }));
+
+        system.interactions_mut().add_dihedral("F", "F", "F", "F",
+            Box::new(Harmonic{
+                k: unit_from(100.0, "kJ/mol/deg^2"),
+                x0: unit_from(185.0, "deg")
+        }));
+
+        return system;
+    }
+
+    #[test]
+    fn pairs() {
+        let system = testing_system();
+        let evaluator = EnergyEvaluator::new(&system);
+        assert_approx_eq!(evaluator.pairs(), unit_from(-258.3019360389957, "kJ/mol"));
+    }
+
+    #[test]
+    fn bonds() {
+        let system = testing_system();
+        let evaluator = EnergyEvaluator::new(&system);
+        assert_approx_eq!(evaluator.bonds(), unit_from(150.0, "kJ/mol"));
+    }
+
+    #[test]
+    fn angles() {
+        let system = testing_system();
+        let evaluator = EnergyEvaluator::new(&system);
+        assert_approx_eq!(evaluator.angles(), unit_from(400.0, "kJ/mol"));
+    }
+
+    #[test]
+    fn dihedrals() {
+        let system = testing_system();
+        let evaluator = EnergyEvaluator::new(&system);
+        assert_approx_eq!(evaluator.dihedrals(), unit_from(1250.0, "kJ/mol"));
+    }
 }

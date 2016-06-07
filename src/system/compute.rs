@@ -104,11 +104,12 @@ pub struct PotentialEnergy;
 impl Compute for PotentialEnergy {
     type Output = f64;
     fn compute(&self, system: &System) -> f64 {
-        let mut energy = 0.0;
         let evaluator = system.energy_evaluator();
 
-        energy += evaluator.pairs();
-        energy += evaluator.molecules();
+        let mut energy = evaluator.pairs();
+        energy += evaluator.bonds();
+        energy += evaluator.angles();
+        energy += evaluator.dihedrals();
         energy += evaluator.coulomb();
         energy += evaluator.global();
 
@@ -283,24 +284,18 @@ mod test {
     use types::*;
     use system::{System, Particle, UnitCell};
     use system::{InitVelocities, BoltzmanVelocities};
-    use potentials::Harmonic;
+    use potentials::{Harmonic, NullPotential};
     use constants::K_BOLTZMANN;
     use utils::unit_from;
 
-
     const EPS : f64 = 1e-8;
 
-    fn testing_system() -> System {
+    fn test_pairs_system() -> System {
         let mut system = System::from_cell(UnitCell::cubic(10.0));;
-
         system.add_particle(Particle::new("F"));
         system[0].position = Vector3D::zero();
-
         system.add_particle(Particle::new("F"));
         system[1].position = Vector3D::new(1.3, 0.0, 0.0);
-
-        let mut velocities = BoltzmanVelocities::new(unit_from(300.0, "K"));
-        velocities.init(&mut system);
 
         system.interactions_mut().add_pair("F", "F",
             Box::new(Harmonic{
@@ -308,12 +303,55 @@ mod test {
                 x0: unit_from(1.2, "A")
             })
         );
+
+        let mut velocities = BoltzmanVelocities::new(unit_from(300.0, "K"));
+        velocities.init(&mut system);
+        return system;
+    }
+
+    fn test_molecular_system() -> System {
+        let mut system = System::from_cell(UnitCell::cubic(10.0));;
+        system.add_particle(Particle::new("F"));
+        system[0].position = Vector3D::new(0.0, 0.0, 0.0);
+        system.add_particle(Particle::new("F"));
+        system[1].position = Vector3D::new(1.0, 0.0, 0.0);
+        system.add_particle(Particle::new("F"));
+        system[2].position = Vector3D::new(1.0, 1.0, 0.0);
+        system.add_particle(Particle::new("F"));
+        system[3].position = Vector3D::new(2.0, 1.0, 0.0);
+
+        assert!(system.add_bond(0, 1).is_empty());
+        assert!(system.add_bond(1, 2).is_empty());
+        assert!(system.add_bond(2, 3).is_empty());
+
+        system.interactions_mut().add_pair("F", "F",
+            Box::new(NullPotential)
+        );
+
+        system.interactions_mut().add_bond("F", "F",
+            Box::new(Harmonic{
+                k: unit_from(100.0, "kJ/mol/A^2"),
+                x0: unit_from(2.0, "A")
+        }));
+
+        system.interactions_mut().add_angle("F", "F", "F",
+            Box::new(Harmonic{
+                k: unit_from(100.0, "kJ/mol/deg^2"),
+                x0: unit_from(88.0, "deg")
+        }));
+
+        system.interactions_mut().add_dihedral("F", "F", "F", "F",
+            Box::new(Harmonic{
+                k: unit_from(100.0, "kJ/mol/deg^2"),
+                x0: unit_from(185.0, "deg")
+        }));
+
         return system;
     }
 
     #[test]
-    fn forces() {
-        let system = &testing_system();
+    fn forces_pairs() {
+        let system = &test_pairs_system();
         let res = Forces.compute(system);
 
         let forces_tot = res[0] + res[1];
@@ -331,45 +369,15 @@ mod test {
 
     #[test]
     fn force_molecular() {
-        let mut system = testing_system();
-        system.add_particle(Particle::new("F"));
-        system.add_particle(Particle::new("F"));
-
-        system[0].position = Vector3D::zero();
-        system[1].position = Vector3D::new(1.2, 0.0, 0.0);
-        system[2].position = Vector3D::new(1.2, 1.2, 0.0);
-        system[3].position = Vector3D::new(2.4, 1.2, 0.0);
-
-        let _ = system.add_bond(0, 1);
-        let _ = system.add_bond(1, 2);
-        let _ = system.add_bond(2, 3);
-
-        system.interactions_mut().add_bond("F", "F",
-            Box::new(Harmonic{
-                k: unit_from(100.0, "kJ/mol/A^2"),
-                x0: unit_from(1.22, "A")
-        }));
-
-        system.interactions_mut().add_angle("F", "F", "F",
-            Box::new(Harmonic{
-                k: unit_from(100.0, "kJ/mol/deg^2"),
-                x0: unit_from(80.0, "deg")
-        }));
-
-        system.interactions_mut().add_dihedral("F", "F", "F", "F",
-            Box::new(Harmonic{
-                k: unit_from(100.0, "kJ/mol/deg^2"),
-                x0: unit_from(185.0, "deg")
-        }));
-
+        let system = test_molecular_system();
         let res = Forces.compute(&system);
         let forces_tot = res[0] + res[1] + res[2] + res[3];
         assert_approx_eq!(forces_tot.norm2(), 0.0, 1e-12);
     }
 
     #[test]
-    fn energy() {
-        let system = &testing_system();
+    fn energy_pairs() {
+        let system = &test_pairs_system();
         let kinetic = KineticEnergy.compute(system);
         let potential = PotentialEnergy.compute(system);
         let total = TotalEnergy.compute(system);
@@ -385,43 +393,13 @@ mod test {
 
     #[test]
     fn energy_molecular() {
-        let mut system = testing_system();
-        system.add_particle(Particle::new("F"));
-        system.add_particle(Particle::new("F"));
-
-        system[0].position = Vector3D::zero();
-        system[1].position = Vector3D::new(1.2, 0.0, 0.0);
-        system[2].position = Vector3D::new(1.2, 1.2, 0.0);
-        system[3].position = Vector3D::new(2.4, 1.2, 0.0);
-
-        let _ = system.add_bond(0, 1);
-        let _ = system.add_bond(1, 2);
-        let _ = system.add_bond(2, 3);
-
-        system.interactions_mut().add_bond("F", "F",
-            Box::new(Harmonic{
-                k: unit_from(100.0, "kJ/mol/A^2"),
-                x0: unit_from(1.22, "A")
-        }));
-
-        system.interactions_mut().add_angle("F", "F", "F",
-            Box::new(Harmonic{
-                k: unit_from(100.0, "kJ/mol/deg^2"),
-                x0: unit_from(80.0, "deg")
-        }));
-
-        system.interactions_mut().add_dihedral("F", "F", "F", "F",
-            Box::new(Harmonic{
-                k: unit_from(100.0, "kJ/mol/deg^2"),
-                x0: unit_from(185.0, "deg")
-        }));
-
-        assert_approx_eq!(PotentialEnergy.compute(&system), 0.040419916002, 1e-12);
+        let system = test_molecular_system();
+        assert_approx_eq!(PotentialEnergy.compute(&system), unit_from(1800.0, "kJ/mol"));
     }
 
     #[test]
     fn temperature() {
-        let system = &testing_system();
+        let system = &test_pairs_system();
         let temperature = Temperature.compute(system);
         assert_approx_eq!(temperature, 300.0, 1e-9);
         assert_eq!(temperature, system.temperature());
@@ -429,7 +407,7 @@ mod test {
 
     #[test]
     fn volume() {
-        let system = &testing_system();
+        let system = &test_pairs_system();
         let volume = Volume.compute(system);
         assert_eq!(volume, 1000.0);
         assert_eq!(volume, system.volume());
@@ -437,7 +415,7 @@ mod test {
 
     #[test]
     fn virial() {
-        let system = &testing_system();
+        let system = &test_pairs_system();
         let virial = Virial.compute(system);
 
         let mut res = Matrix3::zero();
@@ -455,14 +433,14 @@ mod test {
     #[test]
     #[should_panic]
     fn pressure_at_temperature_negative_temperature() {
-        let system = &testing_system();
+        let system = &test_pairs_system();
         let pressure = PressureAtTemperature{temperature: -4.0};
         let _ = pressure.compute(system);
     }
 
     #[test]
     fn pressure_at_temperature() {
-        let system = &testing_system();
+        let system = &test_pairs_system();
         let pressure = PressureAtTemperature{temperature: 550.0}.compute(system);
 
         let force = unit_from(30.0, "kJ/mol/A");
@@ -483,14 +461,14 @@ mod test {
     #[test]
     #[should_panic]
     fn stress_at_temperature_negative_temperature() {
-        let system = &testing_system();
+        let system = &test_pairs_system();
         let stress = StressAtTemperature{temperature: -4.0};
         let _ = stress.compute(system);
     }
 
     #[test]
     fn stress_at_temperature() {
-        let system = &testing_system();
+        let system = &test_pairs_system();
         let stress = StressAtTemperature{temperature: 550.0}.compute(system);
         let pressure = PressureAtTemperature{temperature: 550.0}.compute(system);
 
@@ -501,7 +479,7 @@ mod test {
 
     #[test]
     fn stress() {
-        let system = &testing_system();
+        let system = &test_pairs_system();
         let stress = Stress.compute(system);
         let pressure = Pressure.compute(system);
 
@@ -512,7 +490,7 @@ mod test {
 
     #[test]
     fn pressure() {
-        let system = &testing_system();
+        let system = &test_pairs_system();
         let pressure = Pressure.compute(system);
 
         let force = unit_from(30.0, "kJ/mol/A");
