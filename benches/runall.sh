@@ -7,8 +7,7 @@ then
     echo "Error: $0 must be run from the crate root directory"
 fi
 
-multirust override nightly 2> /dev/null
-
+rustup override set nightly
 
 DATETIME=$(git log -n1 --format="%ad" --date="format:%F-%R")
 RUSTC_INFO=$(rustc -vV)
@@ -28,4 +27,4 @@ do
 done
 echo "Results written to $OUTPUT"
 
-multirust remove-override
+rustup override unset

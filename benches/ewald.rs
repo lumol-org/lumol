@@ -25,8 +25,8 @@ pub fn get_system(name: &str) -> System {
     // Use a smaller system to have faster benches and more iteration
     if name == "water.xyz" {
         for _ in 0..50 {
-            let last = system.size() - 1;
-            system.remove_molecule_containing(last);
+            let last = system.molecules().len() - 1;
+            system.remove_molecule(last);
         }
     }
 
