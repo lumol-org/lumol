@@ -70,8 +70,7 @@ impl fmt::Display for Error {
 impl error::Error for Error {
     fn description(&self) -> &str {
         match *self {
-            Error::TOML(ref err) => err,
-            Error::Config(ref err) => err,
+            Error::TOML(ref err) | Error::Config(ref err) => err,
             Error::File(ref err) => err.description(),
             Error::Trajectory(ref err) => err.description(),
             Error::Unit(ref err) => err.description(),
@@ -80,8 +79,7 @@ impl error::Error for Error {
 
     fn cause(&self) -> Option<&error::Error> {
         match *self {
-            Error::TOML(..) => None,
-            Error::Config(..) => None,
+            Error::TOML(..) | Error::Config(..) => None,
             Error::File(ref err) => Some(err),
             Error::Trajectory(ref err) => Some(err),
             Error::Unit(ref err) => Some(err),

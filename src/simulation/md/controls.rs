@@ -97,7 +97,7 @@ impl Control for BerendsenThermostat {
         let instant_temperature = system.temperature();
         let factor = f64::sqrt(1.0 + 1.0 / self.tau * (self.temperature / instant_temperature - 1.0));
         for particle in system {
-            particle.velocity = factor * particle.velocity;
+            particle.velocity *= factor;
         }
     }
 }

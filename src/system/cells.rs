@@ -216,9 +216,9 @@ impl UnitCell {
         return volume;
     }
 
-    /// Scale this unit cell in-place by multiplying the cell matrix by `s`.
-    #[inline] pub fn scale_mut(&mut self, s: Matrix3) {
-        self.cell = s * self.cell;
+    /// Scale this unit cell in-place by multiplying the cell matrix by `factor`.
+    #[inline] pub fn scale_mut(&mut self, factor: Matrix3) {
+        self.cell *= factor;
         self.inv = self.cell.inverse();
     }
 

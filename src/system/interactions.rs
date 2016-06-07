@@ -165,7 +165,7 @@ impl Interactions {
     pub fn pairs(&self, i: Kind, j: Kind) -> &[PairInteraction] {
         let (i, j) = sort_pair(i, j);
         if let Some(val) = self.pairs.get(&(i, j)) {
-            &val
+            val
         } else {
             let name_i = self.kinds.name(i).unwrap_or(format!("kind {}", i));
             let name_j = self.kinds.name(j).unwrap_or(format!("kind {}", j));
@@ -180,7 +180,7 @@ impl Interactions {
     pub fn bonds(&self, i: Kind, j: Kind) -> &[Box<PairPotential>] {
         let (i, j) = sort_pair(i, j);
         if let Some(val) = self.bonds.get(&(i, j)) {
-            &val
+            val
         } else {
             let name_i = self.kinds.name(i).unwrap_or(format!("kind {}", i));
             let name_j = self.kinds.name(j).unwrap_or(format!("kind {}", j));
@@ -195,7 +195,7 @@ impl Interactions {
     pub fn angles(&self, i: Kind, j:Kind, k:Kind) -> &[Box<AnglePotential>] {
         let (i, j, k) = sort_angle(i, j, k);
         if let Some(val) = self.angles.get(&(i, j, k)) {
-            &val
+            val
         } else {
             let name_i = self.kinds.name(i).unwrap_or(format!("kind {}", i));
             let name_j = self.kinds.name(j).unwrap_or(format!("kind {}", j));
@@ -212,7 +212,7 @@ impl Interactions {
     pub fn dihedrals(&self, i: Kind, j: Kind, k: Kind, m: Kind) -> &[Box<DihedralPotential>] {
         let (i, j, k, m) = sort_dihedral(i, j, k, m);
         if let Some(val) = self.dihedrals.get(&(i, j, k, m)) {
-            &val
+            val
         } else {
             let name_i = self.kinds.name(i).unwrap_or(format!("kind {}", i));
             let name_j = self.kinds.name(j).unwrap_or(format!("kind {}", j));

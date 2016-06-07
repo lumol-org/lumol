@@ -207,24 +207,22 @@ impl System {
         let delta = self.merge_molecules(molid_i, molid_j);
 
         let mut permutations = Permutations::new();
-        if !self.are_in_same_molecule(particle_i, particle_j) {
-            // If new_mol.last() + 1 == old_mol.first(), no one moved. Else,
-            // we generate the permutations
-            if new_mol.last() + 1 != old_mol.first() {
-                let size = old_mol.size();
-                let first = old_mol.first();
-                let second = new_mol.last() + 1;
-                // Add permutation for the molecule we just moved around
-                for i in 0..size {
-                    permutations.push((first + i, second + i));
-                }
+        // If new_mol.last() + 1 == old_mol.first(), no one moved. Else,
+        // we generate the permutations
+        if !self.are_in_same_molecule(particle_i, particle_j) && new_mol.last() + 1 != old_mol.first() {
+            let size = old_mol.size();
+            let first = old_mol.first();
+            let second = new_mol.last() + 1;
+            // Add permutation for the molecule we just moved around
+            for i in 0..size {
+                permutations.push((first + i, second + i));
+            }
 
-                // Add permutations for molecules that where shifted to make
-                // space for the just moved molecule.
-                for molecule in &self.molecules[new_molid + 1 .. old_molid] {
-                    for i in molecule {
-                        permutations.push((i - size, i));
-                    }
+            // Add permutations for molecules that where shifted to make
+            // space for the just moved molecule.
+            for molecule in &self.molecules[new_molid + 1 .. old_molid] {
+                for i in molecule {
+                    permutations.push((i - size, i));
                 }
             }
         }

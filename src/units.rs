@@ -186,7 +186,7 @@ fn tokenize(unit: &str) -> Vec<Token> {
     for c in unit.chars() {
         match c {
             '*' | '/' | '^' | '(' | ')' => {
-                if token.len() != 0 {
+                if !token.is_empty() {
                     tokens.push(Token::Value(token.clone()));
                     token.clear();
                 }
@@ -206,7 +206,7 @@ fn tokenize(unit: &str) -> Vec<Token> {
         }
     }
     // Last token
-    if token.len() != 0 {
+    if !token.is_empty() {
         tokens.push(Token::Value(token));
     }
     return tokens;

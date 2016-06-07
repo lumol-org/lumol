@@ -29,9 +29,8 @@ macro_rules! fatal_error {
 }
 
 macro_rules! internal_error {
-    ($($args:tt)*) => {{
-        let message = format!($($args)*);
-        let message = format!("Internal error: {}", message);
+    ($arg: expr) => {{
+        let message = format!("Internal error: {}", $arg);
         fatal_error!("{}", message);
     }};
 }

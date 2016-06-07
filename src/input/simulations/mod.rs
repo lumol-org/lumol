@@ -42,13 +42,9 @@ pub fn read_config<P: AsRef<Path>>(path: P) -> Result<SimulationConfig> {
     let _ = try!(file.read_to_string(&mut buffer));
 
     let mut parser = Parser::new(&buffer);
-    let config = match parser.parse() {
-        Some(config) => config,
-        None => {
-            let errors = toml_error_to_string(&parser);
-            return Err(Error::TOML(errors));
-        }
-    };
+    let config = try!(parser.parse().ok_or(
+        Error::TOML(toml_error_to_string(&parser))
+    ));
 
     try!(validate(&config));
 

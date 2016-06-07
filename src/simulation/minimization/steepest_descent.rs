@@ -20,6 +20,12 @@ pub struct SteepestDescent {
     is_converged: bool
 }
 
+impl Default for SteepestDescent {
+    fn default() -> SteepestDescent {
+        SteepestDescent::new()
+    }
+}
+
 impl SteepestDescent {
     /// Create a GradientDescent with sensible default values for energy and
     /// force convergence criteria.

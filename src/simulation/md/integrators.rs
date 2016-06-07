@@ -196,7 +196,7 @@ impl Integrator for BerendsenBarostat {
         for (i, part) in system.iter_mut().enumerate() {
             part.velocity += 0.5 * dt * self.accelerations[i];
             // Scale all positions
-            part.position = self.eta * part.position;
+            part.position *= self.eta;
             part.position += part.velocity * dt;
         }
 

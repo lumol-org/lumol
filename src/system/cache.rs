@@ -11,7 +11,6 @@ use std::mem;
 
 use super::System;
 use types::{Vector3D, Array2};
-use potentials::global::GlobalCache;
 
 /// Callback for updating a cache. It also take an `&mut System` argument for
 /// updating the cache inside the global potentials.

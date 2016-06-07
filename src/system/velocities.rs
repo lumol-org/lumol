@@ -16,7 +16,7 @@ pub fn scale(system: &mut System, temperature: f64) {
     let instant_temperature = system.temperature();
     let factor = f64::sqrt(temperature / instant_temperature);
     for particle in system {
-        particle.velocity = factor * particle.velocity;
+        particle.velocity *= factor;
     }
 }
 
