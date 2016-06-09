@@ -91,7 +91,6 @@ mod tests {
     #[test]
     fn bad_mc() {
         for path in bad_inputs("simulations", "mc") {
-            println!("{:?}", path);
             assert!(read_config(path).is_err());
         }
     }

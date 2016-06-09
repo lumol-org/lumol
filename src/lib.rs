@@ -21,20 +21,14 @@
     unused_qualifications, unused_results
 )]
 
-#![cfg_attr(feature="lint", plugin(herbie_lint))]
-#![cfg_attr(feature="lint", feature(plugin))]
-#![cfg_attr(feature="lint", plugin(clippy))]
-#![cfg_attr(feature="lint", warn(clippy))]
-// Additional lints from the Allow group in clippy
-#![cfg_attr(feature="lint", warn(
-    enum_glob_use, mut_mut, option_unwrap_used, print_stdout,
-    result_unwrap_used, single_match_else, wrong_pub_self_convention
-))]
-// These are for readability
-#![cfg_attr(feature="lint", allow(
-    needless_return, needless_range_loop, or_fun_call, new_without_default,
-    float_cmp, similar_names, many_single_char_names, doc_markdown,
-    block_in_if_condition_stmt
+#![cfg_attr(feature="clippy", warn(clippy, clippy_pedantic))]
+// List of lints we allow in this code
+#![cfg_attr(feature="clippy", allow(
+    float_arithmetic, integer_arithmetic, indexing_slicing, needless_return,
+    needless_range_loop, shadow_reuse, shadow_same, shadow_unrelated,
+    cast_possible_truncation, cast_precision_loss, cast_sign_loss,
+    cast_possible_wrap, float_cmp, or_fun_call, string_add, non_ascii_literal,
+    doc_markdown
 ))]
 
 #[macro_use]

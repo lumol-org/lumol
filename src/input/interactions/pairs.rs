@@ -69,7 +69,7 @@ fn read_pair_potential(pair: &Table) -> Result<Box<PairPotential>> {
 
     if potentials.len() != 1 {
         return Err(Error::from(
-            format!("Got more than one potential type: {:?}", potentials)
+            format!("Got more than one potential type: {}", potentials.join(" - "))
         ));
     }
 

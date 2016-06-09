@@ -128,28 +128,28 @@ fn rotate_around_axis(positions: &mut [Vector3D], masses: &[f64], axis: Vector3D
 }
 
 fn rotation_matrix(axis: &Vector3D, angle: f64) -> Matrix3 {
-    let sn = f64::sin(angle);
-    let cs = f64::cos(angle);
+    let sin = f64::sin(angle);
+    let cos = f64::cos(angle);
 
-    let x_sin = axis[0] * sn;
-    let y_sin = axis[1] * sn;
-    let z_sin = axis[2] * sn;
-    let one_cos = 1.0 - cs;
-    let xym = axis[0] * axis[1] * one_cos;
-    let xzm = axis[0] * axis[2] * one_cos;
-    let yzm = axis[1] * axis[2] * one_cos;
+    let x_sin = axis[0] * sin;
+    let y_sin = axis[1] * sin;
+    let z_sin = axis[2] * sin;
+    let one_minus_cos = 1.0 - cos;
+    let xy = axis[0] * axis[1] * one_minus_cos;
+    let xz = axis[0] * axis[2] * one_minus_cos;
+    let yz = axis[1] * axis[2] * one_minus_cos;
 
     // Build the rotation matrix
     let rotation = Matrix3::new(
-        (axis[0] * axis[0]) * one_cos + cs,
-        xym + z_sin,
-        xzm - y_sin,
-        xym - z_sin,
-        (axis[1] * axis[1]) * one_cos + cs,
-        yzm + x_sin,
-        xzm + y_sin,
-        yzm - x_sin,
-        (axis[2] * axis[2]) * one_cos + cs
+        (axis[0] * axis[0]) * one_minus_cos + cos,
+        xy + z_sin,
+        xz - y_sin,
+        xy - z_sin,
+        (axis[1] * axis[1]) * one_minus_cos + cos,
+        yz + x_sin,
+        xz + y_sin,
+        yz - x_sin,
+        (axis[2] * axis[2]) * one_minus_cos + cos
     );
 
     return rotation;

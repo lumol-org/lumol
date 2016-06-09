@@ -3,7 +3,7 @@
 use types::{Vector3D, Matrix3, One, Zero};
 use system::System;
 
-/// The Integrator trait define integrators interface for Molecular Dynamics.
+/// The `Integrator` trait define integrators interface for molecular dynamics.
 /// An integrator is an algorithm responsible for propagating the equations of
 /// motion in the system.
 pub trait Integrator {
@@ -150,7 +150,7 @@ impl Integrator for LeapFrog {
 }
 
 /******************************************************************************/
-/// This is needed for the BerendsenBarostat implentations. The value comes
+/// This is needed for the `BerendsenBarostat` implentations. The value comes
 /// from the DL_POLY source code.
 const WATER_COMPRESSIBILITY: f64 = 7372.0;
 

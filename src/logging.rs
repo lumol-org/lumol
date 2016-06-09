@@ -214,14 +214,14 @@ impl Log for Logger {
 
         if let Err(err) = write_res {
             let error_res = write!(& mut io::stderr(),
-                "Error while writing log: {:?}\nMessage was: {} at {}:{} ({})\n",
+                "Error while writing log: {}\nMessage was: {} at {}:{} ({})\n",
                 err, record.args(),
                 record.location().file(), record.location().line(),
                 record.level()
             );
             if let Err(err2) = error_res {
                 panic!(format!(
-                    "Error while logging logger error, aborting. Error chain: {:?} -> {:?} from {}:{}",
+                    "Error while logging logger error, aborting. Error chain: {} -> {} from {}:{}",
                     err, err2,
                     record.location().file(), record.location().line(),
                 ))

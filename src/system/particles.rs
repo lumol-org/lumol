@@ -12,7 +12,7 @@ use std::fmt;
 #[derive(Clone, Copy, Hash, PartialOrd, Ord, PartialEq, Eq, Debug)]
 pub struct ParticleKind(pub u32);
 
-/// Default implementation of ParticleKind returns the invalid value
+/// Default implementation of `ParticleKind` returns the invalid value
 /// `u32::max_value()`
 impl Default for ParticleKind {
     fn default() -> ParticleKind {

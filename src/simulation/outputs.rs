@@ -79,10 +79,10 @@ impl Output for CellOutput {
     fn setup(&mut self, _: &System) {
         if let Err(err) = writeln!(&mut self.file, "# Unit cell of the simulation") {
             // Do panic in early time
-            fatal_error!("Could not write to file '{}': {:?}", self.path.display(), err);
+            fatal_error!("Could not write to file '{}': {}", self.path.display(), err);
         }
         if let Err(err) = writeln!(&mut self.file, "# Step A/Å B/Å C/Å α/deg β/deg γ/deg") {
-            fatal_error!("Could not write to file '{}': {:?}", self.path.display(), err);
+            fatal_error!("Could not write to file '{}': {}", self.path.display(), err);
         }
     }
 
@@ -93,7 +93,7 @@ impl Output for CellOutput {
             system.step(), cell.a(), cell.b(), cell.c(), cell.alpha(), cell.beta(), cell.gamma()
         ) {
             // Do not panic during the simulation
-            error!("Could not write to file '{}': {:?}", self.path.display(), err);
+            error!("Could not write to file '{}': {}", self.path.display(), err);
         }
     }
 }
@@ -120,10 +120,10 @@ impl EnergyOutput {
 impl Output for EnergyOutput {
     fn setup(&mut self, _: &System) {
         if let Err(err) = writeln!(&mut self.file, "# Energy of the simulation (kJ/mol)") {
-            fatal_error!("Could not write to file '{}': {:?}", self.path.display(), err);
+            fatal_error!("Could not write to file '{}': {}", self.path.display(), err);
         }
         if let Err(err) = writeln!(&mut self.file, "# Step Potential Kinetic Total") {
-            fatal_error!("Could not write to file '{}': {:?}", self.path.display(), err);
+            fatal_error!("Could not write to file '{}': {}", self.path.display(), err);
         }
     }
 
@@ -132,7 +132,7 @@ impl Output for EnergyOutput {
         let kinetic = utils::unit_to(system.kinetic_energy(), "kJ/mol");
         let total = utils::unit_to(system.total_energy(), "kJ/mol");
         if let Err(err) = writeln!(&mut self.file, "{} {} {} {}", system.step(), potential, kinetic, total) {
-            error!("Could not write to file '{}': {:?}", self.path.display(), err);
+            error!("Could not write to file '{}': {}", self.path.display(), err);
         }
     }
 }
@@ -163,10 +163,10 @@ impl PropertiesOutput {
 impl Output for PropertiesOutput {
     fn setup(&mut self, _: &System) {
         if let Err(err) = writeln!(&mut self.file, "# Physical properties of the simulation") {
-            fatal_error!("Could not write to file '{}': {:?}", self.path.display(), err);
+            fatal_error!("Could not write to file '{}': {}", self.path.display(), err);
         }
         if let Err(err) = writeln!(&mut self.file, "# Step Volume/A^3 Temperature/K Pressure/bar") {
-            fatal_error!("Could not write to file '{}': {:?}", self.path.display(), err);
+            fatal_error!("Could not write to file '{}': {}", self.path.display(), err);
         }
     }
 
@@ -175,7 +175,7 @@ impl Output for PropertiesOutput {
         let temperature = utils::unit_to(system.temperature(), "K");
         let pressure = utils::unit_to(system.pressure(), "bar");
         if let Err(err) = writeln!(&mut self.file, "{} {} {} {}", system.step(), volume, temperature, pressure) {
-            error!("Could not write to file '{}': {:?}", self.path.display(), err);
+            error!("Could not write to file '{}': {}", self.path.display(), err);
         }
     }
 }

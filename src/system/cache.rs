@@ -40,6 +40,12 @@ pub struct EnergyCache {
     updater: Option<UpdateCallback>
 }
 
+impl Default for EnergyCache {
+    fn default() -> EnergyCache {
+        EnergyCache::new()
+    }
+}
+
 impl EnergyCache {
     /// Create a new empty energy cache.
     pub fn new() -> EnergyCache {

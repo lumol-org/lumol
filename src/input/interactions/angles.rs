@@ -40,7 +40,7 @@ fn read_angle_potential(angle: &Table) -> Result<Box<AnglePotential>> {
 
     if potentials.len() != 1 {
         return Err(Error::from(
-            format!("Got more than one potential type: {:?}", potentials)
+            format!("Got more than one potential type: {}", potentials.join(" - "))
         ));
     }
 
@@ -93,7 +93,7 @@ fn read_dihedral_potential(dihedral: &Table) -> Result<Box<DihedralPotential>> {
 
     if potentials.len() != 1 {
         return Err(Error::from(
-            format!("Got more than one potential type: {:?}", potentials)
+            format!("Got more than one potential type: {}", potentials.join(" - "))
         ));
     }
 

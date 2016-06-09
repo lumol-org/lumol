@@ -22,7 +22,7 @@ use self::pairs::{TwoBody, read_2body};
 use self::angles::{read_angles, read_dihedrals};
 use self::coulomb::{read_coulomb, set_charges};
 
-/// Convert a TOML table and a PairPotential to a Rust type. This is intended
+/// Convert a TOML table and a `PairPotential` to a Rust type. This is intended
 /// to be used by potential computation mainly.
 pub trait FromTomlWithPairs where Self: Sized {
     /// Do the conversion from `table` and `potential` to Self.

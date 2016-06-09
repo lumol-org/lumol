@@ -16,7 +16,7 @@ pub fn read_coulomb(system: &mut System, coulomb: &Table) -> Result<()> {
 
     if solvers.len() != 1 {
         return Err(Error::from(
-            format!("Got more than one coulombic solver: {:?}", solvers)
+            format!("Got more than one coulombic solver: {}", solvers.join(" - "))
         ));
     }
 

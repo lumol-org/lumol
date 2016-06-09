@@ -294,13 +294,13 @@ impl UnitExpr {
         let tokens = tokenize(unit);
         let mut stream = try!(shunting_yard(tokens));
         let ast = try!(read_expr(&mut stream));
-        if !stream.is_empty() {
-            let remainder = stream.iter().map(|t| t.as_str()).collect::<Vec<_>>().join(" ");
-            return Err(ParseError::MalformedExpr(
-                format!("remaining values after the end of the unit: {}", remainder)
-            ))
-        } else {
+        if stream.is_empty() {
             Ok(ast)
+        } else {
+            let remaining = stream.iter().map(|t| t.as_str()).collect::<Vec<_>>().join(" ");
+            return Err(ParseError::MalformedExpr(
+                format!("remaining values after the end of the unit: {}", remaining)
+            ))
         }
     }
 }

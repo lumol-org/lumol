@@ -264,7 +264,7 @@ pub fn read_molecule<P: AsRef<Path>>(path: P) -> TrajectoryResult<(Molecule, Vec
     }
     let system = try!(frame.to_cymbalum());
 
-    assert!(system.size() != 0, "No molecule in the file at {:?}", path);
+    assert!(system.size() != 0, "No molecule in the file at {}", path.display());
     let molecule = system.molecule(0).clone();
     let mut particles = Vec::new();
     for i in &molecule {

@@ -178,7 +178,6 @@ mod tests {
     #[test]
     fn bad_systems() {
         for path in bad_inputs("simulations", "system") {
-            println!("{:?}",  path);
             assert!(read_config(path).is_err());
         }
     }

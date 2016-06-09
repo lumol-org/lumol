@@ -55,6 +55,12 @@ pub struct System {
     step: u64,
 }
 
+impl Default for System {
+    fn default() -> System {
+        System::new()
+    }
+}
+
 impl System {
     /// Create a new empty System
     pub fn new() -> System {
@@ -298,6 +304,7 @@ impl System {
     ///
     /// This functions return the deplacement of the moved molecule, i.e. in
     /// this example `4`.
+    #[cfg_attr(feature="clippy", allow(block_in_if_condition_stmt))]
     fn merge_molecules(&mut self, new_molid: usize, old_molid: usize) -> usize {
         assert!(new_molid < old_molid);
         let mut new_mol = self.molecules[new_molid].clone();
@@ -432,7 +439,7 @@ impl<'a> IntoIterator for &'a mut System {
     }
 }
 
-/// UnitCell related functions
+/// `UnitCell` related functions
 impl System {
     /// Get a reference to  the system unit cell
     #[inline] pub fn cell(&self) -> &UnitCell {&self.cell}

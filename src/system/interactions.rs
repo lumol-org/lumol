@@ -89,6 +89,12 @@ pub struct Interactions {
     kinds: ParticleKinds,
 }
 
+impl Default for Interactions {
+    fn default() -> Interactions {
+        Interactions::new()
+    }
+}
+
 impl Interactions {
     pub fn new() -> Interactions {
         Interactions{
