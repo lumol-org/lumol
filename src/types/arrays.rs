@@ -2,7 +2,7 @@
 // Copyright (C) 2015-2016 G. Fraux — BSD license
 
 //! Multi-dimmensional arrays based on ndarray
-use ndarray::{OwnedArray, Ix};
+use ndarray::{Array, Ix};
 
 use std::ops::{Index, IndexMut};
 use std::cmp::PartialEq;
@@ -13,13 +13,13 @@ use types::Zero;
 /// Most of the methods are simply forwarded to ndarray, so also look the doc
 /// for this crate.
 #[derive(Debug, Clone)]
-pub struct Array2<T>(OwnedArray<T, (Ix, Ix)>);
+pub struct Array2<T>(Array<T, (Ix, Ix)>);
 
 impl<T: Zero + Clone> Array2<T> {
     /// Create a new `Array2` of the specified `size` filled with the
     /// `Zero::zero` return value.
     pub fn zeros(size: (Ix, Ix)) -> Array2<T> {
-        Array2(OwnedArray::<T, (Ix, Ix)>::zeros(size))
+        Array2(Array::<T, (Ix, Ix)>::zeros(size))
     }
 
     /// Resize the array if the current size is not `size`, and fill the
@@ -50,7 +50,7 @@ impl<T: Default> Array2<T> {
     /// Create a new `Array2` of the specified `size` filled with the
     /// `Default::default` return value.
     pub fn default(size: (Ix, Ix)) -> Array2<T>{
-        Array2(OwnedArray::<T, (Ix, Ix)>::default(size))
+        Array2(Array::<T, (Ix, Ix)>::default(size))
     }
 }
 
@@ -86,13 +86,13 @@ impl<T> IndexMut<(Ix, Ix)> for Array2<T> {
 /// Most of the methods are simply forwarded to ndarray, so also look the doc
 /// for this crate.
 #[derive(Debug, Clone)]
-pub struct Array3<T>(OwnedArray<T, (Ix, Ix, Ix)>);
+pub struct Array3<T>(Array<T, (Ix, Ix, Ix)>);
 
 impl<T: Zero + Clone> Array3<T> {
     /// Create a new `Array3` of the specified `size` filled with the
     /// `Zero::zero` return value.
     pub fn zeros(size: (Ix, Ix, Ix)) -> Array3<T> {
-        Array3(OwnedArray::<T, (Ix, Ix, Ix)>::zeros(size))
+        Array3(Array::<T, (Ix, Ix, Ix)>::zeros(size))
     }
 
     /// Resize the array if the current size is not `size`, and fill the
@@ -123,7 +123,7 @@ impl<T: Default> Array3<T> {
     /// Create a new `Array3` of the specified `size` filled with the
     /// `Default::default` return value.
     pub fn default(size: (Ix, Ix, Ix)) -> Array3<T>{
-        Array3(OwnedArray::<T, (Ix, Ix, Ix)>::default(size))
+        Array3(Array::<T, (Ix, Ix, Ix)>::default(size))
     }
 }
 

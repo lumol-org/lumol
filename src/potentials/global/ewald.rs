@@ -2,7 +2,7 @@
 // Copyright (C) 2015-2016 G. Fraux — BSD license
 
 //! Ewald summation of coulombic potential
-use special::{erfc, erf};
+use special::Error;
 use std::f64::consts::{PI, FRAC_2_SQRT_PI};
 use std::f64;
 
@@ -139,7 +139,7 @@ impl Ewald {
             return 0.0
         }
         assert!(info.scaling  == 1.0, "Scaling restriction scheme using Ewald are not implemented");
-        return qi * qj * erfc(self.alpha * r) / r / ELCC;
+        return qi * qj * f64::erfc(self.alpha * r) / r / ELCC;
     }
 
     /// Get the real-space force for one pair at distance `rij` with charges
@@ -151,7 +151,7 @@ impl Ewald {
         if r > self.rc || info.excluded {
             return Vector3D::new(0.0, 0.0, 0.0)
         }
-        let mut factor = erfc(self.alpha * r) / r;
+        let mut factor = f64::erfc(self.alpha * r) / r;
         factor += self.alpha * FRAC_2_SQRT_PI * f64::exp(-self.alpha * self.alpha * r * r);
         factor *= qi * qj / (r * r) / ELCC;
         return factor * rij;
@@ -491,7 +491,7 @@ impl Ewald {
         assert!(info.scaling  == 1.0, "Scaling restriction scheme using Ewald are not implemented");
         assert!(r < self.rc, "Atoms in molecule are separated by more than the cutoff radius of Ewald sum.");
 
-        return 0.5 * qi * qj / ELCC * erf(self.alpha * r)/r;
+        return 0.5 * qi * qj / ELCC * f64::erf(self.alpha * r)/r;
     }
 
     /// Get the molecular correction force for the pair with charges `qi` and
@@ -504,7 +504,7 @@ impl Ewald {
         assert!(r < self.rc, "Atoms in molecule are separated by more than the cutoff radius of Ewald sum.");
 
         let qiqj = qi * qj / (ELCC * r * r);
-        let factor = qiqj * (2.0 * self.alpha / f64::sqrt(PI) * f64::exp(-self.alpha * self.alpha * r * r) - erf(self.alpha * r) / r);
+        let factor = qiqj * (2.0 * self.alpha / f64::sqrt(PI) * f64::exp(-self.alpha * self.alpha * r * r) - f64::erf(self.alpha * r) / r);
         return factor * rij;
     }
 

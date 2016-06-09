@@ -2,7 +2,7 @@
 // Copyright (C) 2015-2016 G. Fraux — BSD license
 
 //! Wolf summation of coulombic potential
-use special::erfc;
+use special::Error;
 use std::f64::consts::PI;
 
 use system::System;
@@ -35,8 +35,8 @@ impl Wolf {
     pub fn new(cutoff: f64) -> Wolf {
         assert!(cutoff > 0.0, "Got a negative cutoff in Wolf summation");
         let alpha = PI/cutoff;
-        let e_cst = erfc(alpha*cutoff)/cutoff;
-        let f_cst = erfc(alpha*cutoff)/(cutoff*cutoff) + 2.0*alpha/f64::sqrt(PI) * f64::exp(-alpha*alpha*cutoff*cutoff)/cutoff;
+        let e_cst = f64::erfc(alpha*cutoff)/cutoff;
+        let f_cst = f64::erfc(alpha*cutoff)/(cutoff*cutoff) + 2.0*alpha/f64::sqrt(PI) * f64::exp(-alpha*alpha*cutoff*cutoff)/cutoff;
         Wolf{
             alpha: alpha,
             cutoff: cutoff,
@@ -54,7 +54,7 @@ impl Wolf {
         if rij > self.cutoff || info.excluded {
             return 0.0;
         }
-        info.scaling * qi * qj * (erfc(self.alpha*rij)/rij - self.energy_cst) / ELCC
+        info.scaling * qi * qj * (f64::erfc(self.alpha*rij)/rij - self.energy_cst) / ELCC
     }
 
     /// Compute the energy for self interaction of a particle with charge `qi`
@@ -72,7 +72,7 @@ impl Wolf {
         if d > self.cutoff || info.excluded {
             return Vector3D::zero();
         }
-        let factor = erfc(self.alpha*d)/(d*d) + 2.0*self.alpha/f64::sqrt(PI) * f64::exp(-self.alpha*self.alpha*d*d)/d;
+        let factor = f64::erfc(self.alpha*d)/(d*d) + 2.0*self.alpha/f64::sqrt(PI) * f64::exp(-self.alpha*self.alpha*d*d)/d;
         return info.scaling * qi * qj * (factor - self.force_cst) * rij.normalized() / ELCC;
     }
 }

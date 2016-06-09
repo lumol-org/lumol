@@ -113,7 +113,7 @@ mod connect {
         /// The `Connectivity` bitflag encode the topological distance between
         /// two particles in the molecule, i.e. the number of bonds between the
         /// particles.
-        flags Connectivity: u8 {
+        pub flags Connectivity: u8 {
             /// The particles are separated by one bond
             const CONNECT_12   = 0b0001,
             /// The particles are separated by two bonds

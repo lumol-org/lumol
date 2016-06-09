@@ -16,10 +16,10 @@ chemfiles = "0.5.5"
 rand = "0.3.14"
 log = "0.3.5"
 toml = "0.1.28"
-special = "0.5.1"
-bitflags = "0.4.0"
-ndarray = "0.4.0"
-lazy_static = "0.1.15"
+special = "0.7.0"
+bitflags = "0.7.0"
+ndarray = "0.6.0"
+lazy_static = "0.2.0"
 num-traits = "0.1.32"
 
 [dev-dependencies]
@@ -27,3 +27,4 @@ tempfile = "2.1.1"
 
 [profile.release]
 debug = true
+
