@@ -65,15 +65,23 @@ impl MonteCarlo {
 
     fn normalize_frequencies(&mut self) {
         assert!(self.frequencies.len() == self.moves.len());
-        let mut frequency_sum = 0.0;
-        for frequency in &self.frequencies {
-            frequency_sum += *frequency;
+        if self.frequencies.is_empty() {
+            warn!(
+                "No move in the Monte-Carlo simulation, \
+                did you forget to specify them?"
+            );
+            return;
         }
 
+        // Normalize the frequencies
+        let sum = self.frequencies.iter().fold(0.0, |sum, &f| sum + f);
         for frequency in &mut self.frequencies {
-            *frequency /= frequency_sum;
+            *frequency /= sum;
         }
-
+        // Make the frequencies vector contain cummulative frequencies
+        for i in 1..self.frequencies.len() {
+            self.frequencies[i] += self.frequencies[i - 1];
+        }
         let last = self.frequencies.len() - 1;
         self.frequencies[last] = 1.0;
     }
@@ -88,7 +96,7 @@ impl Propagator for MonteCarlo {
     fn propagate(&mut self, system: &mut System) {
         let mcmove = {
             let probability = self.rng.next_f64();
-            // Get the index of the first move with frequency >= move_f.
+            // Get the index of the first move with frequency >= probability.
             let (i, _) = self.frequencies.iter()
                                          .enumerate()
                                          .find(|&(_, f)| probability <= *f)
@@ -115,5 +123,42 @@ impl Propagator for MonteCarlo {
             trace!("    --> Move was rejected");
             mcmove.restore(system);
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use simulation::{MonteCarlo, MCMove, Propagator};
+    use system::{System, EnergyCache};
+    use rand::Rng;
+
+    struct DummyMove;
+    impl MCMove for DummyMove {
+        fn describe(&self) -> &str {"dummy"}
+        fn prepare(&mut self, _: &mut System, _: &mut Box<Rng>) -> bool {true}
+        fn cost(&self, _: &System, _: f64, _: &mut EnergyCache) -> f64 {0.0}
+        fn apply(&mut self, _: &mut System) {}
+        fn restore(&mut self, _: &mut System) {}
+    }
+
+    #[test]
+    fn frequencies() {
+        let mut mc = MonteCarlo::new(100.0);
+        mc.add(Box::new(DummyMove), 13.0);
+        mc.add(Box::new(DummyMove), 2.0);
+        mc.add(Box::new(DummyMove), 5.0);
+
+        mc.setup(&System::new());
+        let mut last_frequency = 0.0;
+        for &f in &mc.frequencies {
+            assert!(f > last_frequency);
+            last_frequency = f;
+        }
+        assert_eq!(mc.frequencies.last(), Some(&1.0));
+
+        assert_eq!(mc.frequencies.len(), 3);
+        assert_eq!(mc.frequencies[0], 0.65);
+        assert_eq!(mc.frequencies[1], 0.75);
+        assert_eq!(mc.frequencies[2], 1.0);
     }
 }
