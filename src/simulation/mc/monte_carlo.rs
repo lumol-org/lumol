@@ -23,6 +23,9 @@ pub struct MonteCarlo {
     rng: Box<rand::Rng>,
     /// Cache for faster energy computation
     cache: EnergyCache,
+    /// Flag checking if the moves frequencies has been converted to
+    /// cummulative frequencies or not yet.
+    initialized: bool,
 }
 
 impl MonteCarlo {
@@ -43,12 +46,24 @@ impl MonteCarlo {
             frequencies: Vec::new(),
             rng: rng,
             cache: EnergyCache::new(),
+            initialized: false,
         }
     }
 
     /// Add a the `mcmove` Monte-Carlo move to this propagator, with frequency
-    /// `frequency`.
+    /// `frequency`. All calls to this function should happen before any
+    /// simulation run.
+    ///
+    /// # Panics
+    ///
+    /// If called after a simulation run.
     pub fn add(&mut self, mcmove: Box<MCMove>, frequency: f64) {
+        if self.initialized {
+            fatal_error!(
+                "Monte-Carlo simulation has already been initialized, \
+                we can not add new moves."
+            );
+        }
         self.moves.push(mcmove);
         self.frequencies.push(frequency);
     }
@@ -73,6 +88,12 @@ impl MonteCarlo {
             return;
         }
 
+        if self.initialized {
+            error!("This Monte-Carlo simulation has already been initialized.");
+            return;
+        }
+
+        self.initialized = true;
         // Normalize the frequencies
         let sum = self.frequencies.iter().fold(0.0, |sum, &f| sum + f);
         for frequency in &mut self.frequencies {
@@ -160,5 +181,14 @@ mod tests {
         assert_eq!(mc.frequencies[0], 0.65);
         assert_eq!(mc.frequencies[1], 0.75);
         assert_eq!(mc.frequencies[2], 1.0);
+    }
+
+    #[test]
+    #[should_panic]
+    fn add_after_init() {
+        let mut mc = MonteCarlo::new(100.0);
+        mc.add(Box::new(DummyMove), 1.0);
+        mc.setup(&System::new());
+        mc.add(Box::new(DummyMove), 1.0);
     }
 }
