@@ -84,11 +84,10 @@ restriction  = "IntraMolecular"
 ## Coulombic interactions
 
 The method for treatment of electrostatic interactions is specified in the
-`coulomb` section. There are multiple
-[available](input/potentials.html#Electrostatic%20interactions) solvers for
-electrostatic interactions. Optionally, an additional
-[restriction](input/potentials.html#Restrictions) can be specified with the
-`restriction` key.
+`coulomb` section. There are multiple available solvers for [electrostatic
+interactions](input/potentials.html#Electrostatic%20interactions). Optionally,
+an additional [restriction](input/potentials.html#Restrictions) can be specified
+with the `restriction` key.
 
 ```toml
 [coulomb]
