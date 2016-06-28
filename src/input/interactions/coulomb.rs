@@ -44,6 +44,7 @@ pub fn read_coulomb(system: &mut System, coulomb: &Table) -> Result<()> {
 }
 
 pub fn set_charges(system: &mut System, charges: &Table) -> Result<()> {
+    let mut total_charge = 0.0;
     for (name, charge) in charges.iter() {
         let charge = match *charge {
             Value::Integer(val) => val as f64,
@@ -58,14 +59,19 @@ pub fn set_charges(system: &mut System, charges: &Table) -> Result<()> {
             if particle.name() == name {
                 particle.charge = charge;
                 nchanged += 1;
+                total_charge += charge;
             }
         }
 
         if nchanged == 0 {
             warn!("No particle with name '{}' was found while setting the charges", name);
         } else {
-            info!("Charge set to {} for {} {} particles", charge, nchanged, name);
+            info!("Charge set to {:+} for {} {} particles", charge, nchanged, name);
         }
+    }
+
+    if total_charge.abs() > 1e-6 {
+        warn!("System is not neutral and have a net charge of {:+}", total_charge);
     }
     Ok(())
 }
