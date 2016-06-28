@@ -200,12 +200,12 @@ impl Log for Logger {
         let write_res = match record.level() {
             LogLevel::Info => write!(&mut out, "{}\n", record.args()),
             LogLevel::Warn => write!(
-                   &mut out, "Warning: {} from {}:{}\n",
+                   &mut out, "Warning: {} (from {}:{})\n",
                    record.args(),
                    record.location().file(), record.location().line()
             ),
             _ => write!(
-                   &mut out, "{}: {} from {}:{}\n",
+                   &mut out, "{}: {} (from {}:{})\n",
                    record.level(), record.args(),
                    record.location().file(), record.location().line()
             ),
