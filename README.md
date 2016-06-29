@@ -3,7 +3,7 @@
 <div align="center">
 [![Build Status](https://travis-ci.org/Luthaf/cymbalum.svg?branch=master)](https://travis-ci.org/Luthaf/cymbalum)
 [![Coverage Status](https://codecov.io/github/Luthaf/cymbalum/coverage.svg?branch=master)](https://codecov.io/github/Luthaf/cymbalum?branch=master)
-[![Documentation](https://img.shields.io/badge/documentation-latest-brightgreen.svg)](http://luthaf.github.io/cymbalum/cymbalum/index.html)
+[![Documentation](https://img.shields.io/badge/documentation-latest-brightgreen.svg)](https://luthaf.github.io/cymbalum/latest/index.html)
 </div><br />
 
 Cymbalum is a classical molecular simulation engine that provides a solid
@@ -76,7 +76,7 @@ Binaries for examples can be compiled with
 cargo test --release --no-run
 ```
 
-Various examples will be in `target/release/examples`, and you can run 
+Various examples will be in `target/release/examples`, and you can run
 them from the `examples` directory.
 
 If you want to run the unit and integration tests, you can use these commands
