@@ -202,11 +202,51 @@ The possible values for `restriction` are:
 
 # Potential computations
 
-## Direct computation
+The same potential function (Lennard-Jones, Harmonic, *etc.*) can be computed
+with different method: directly, by sifting it at the cutoff distance, using a
+table interpolation, *etc.* This is the purpose of computation. The default way
+is to use the mathematical function corresponding to a potential to compute it.
+To use another computation, the `computation` keyword can be used in the
+`[[pairs]]` section.
 
 ## Cutoff computation
 
+It is possible to use a cutoff radius $rc$ to compute a potential $U(r)$ such
+that:
+
+$$ V(r) = \begin{cases}
+    U(r) - U(rc) & r <= rc \\\\
+    0 & r > rc
+\end{cases}$$
+
+The potential $U$ is additionally shifted to make sure it is continuous at $r =
+rc$. This is important for molecular dynamics, where a discontinuity means an
+infinite force in the integration.
+
+You can choose the `cutoff` by providing it in the input:
+```toml
+[[pairs]]
+atoms = ["O", "O"]
+lj = {sigma = "3 A", epsilon = "123 kJ/mol"}
+computation = {cutoff = "8 A"}
+```
+
 ## Table interpolation
+
+Another way to compute a potential is to pre-compute it on a regularly spaced
+grid, and then to interpolate values for points in the grid. In some cases, this
+can be faster than recomputing the function every time.
+
+This can be done with the `table` computation, which does a linear interpolation
+in regularly spaced values in the `[0, max)` segment. You need to provide the
+`max` value, and the number of points `n` for the interpolation:
+
+```toml
+[[pairs]]
+atoms = ["O", "O"]
+lj = {sigma = "3 A", epsilon = "123 kJ/mol"}
+computation = {table = {max = "8 A", n = 5000}}
+```
 
 ---
 
