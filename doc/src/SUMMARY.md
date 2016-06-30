@@ -13,9 +13,10 @@
 
 
 - [Input files](input/intro.md)
+    - [Systems](input/systems.md)
     - [Interactions](input/interactions.md)
     - [Potentials](input/potentials.md)
-    - [Initial configuration]()
+    - [Simulations](input/simulations.md)
     - [Units](input/units.md)
 
 - [Tutorial: extending Cymbalum]()
