@@ -167,6 +167,39 @@ corresponding Ewald cutoff. A value of 10 A is a good one in pure water.
 
 # Restrictions
 
+Some force fields define additional restrictions concerning which particles
+should interact together. For example, sometimes bonded particles should not
+interact through electrostatic potential, or some interactions should only be
+taken in account for particles not in the same molecule. The way to specify this
+is to use restrictions. Restrictions can be used in two places: in the
+`[[pairs]]` section, and in the `[coulomb]` section. In both cases, they are
+specified with the `restriction` keyword, and one of the possible values.
+
+```toml
+[[pairs]]
+atoms = ["O", "O"]
+lj = {sigma = "3 A", epsilon = "123 kJ/mol"}
+restriction = {scale14 = 0.5}
+
+[coulomb]
+ewald = {cutoff = "8 A", kmax = 6}
+restriction = "intermolecular"
+```
+
+The possible values for `restriction` are:
+- `"intramolecular"` or `"intra-molecular"` to restrict the potential to only
+  particles in the same molecule;
+- `"intermolecular"` or `"inter-molecular"` to restrict the potential to only
+  particles NOT in the same molecule;
+- `"exclude12"` to exclude particles directly bonded together;
+- `"exclude13"` to exclude particles directly bonded together or forming an
+  angle;
+- `"exclude14"` to exclude particles directly bonded together; forming an angle
+  or a dihedral angle;
+- `{scale14 = <scaling>}` to exclude particles directly bonded together or
+   forming an angle and to scale interaction between particles at 3 bonds of
+   distance by the given `scaling` factor. The factor must be between 0 and 1.
+
 # Potential computations
 
 ## Direct computation
