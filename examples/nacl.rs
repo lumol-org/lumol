@@ -14,7 +14,7 @@ fn main() {
     // Read the interactions from the `data/NaCl.toml` TOML file
     input::read_interactions(&mut system, "data/NaCl.toml").unwrap();
 
-    let mut velocities = BoltzmanVelocities::new(units::from(300.0, "K").unwrap());
+    let mut velocities = BoltzmannVelocities::new(units::from(300.0, "K").unwrap());
     velocities.init(&mut system);
 
     let mut md = MolecularDynamics::new(units::from(1.0, "fs").unwrap());

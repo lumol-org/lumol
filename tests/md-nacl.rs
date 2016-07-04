@@ -30,7 +30,7 @@ pub fn setup_system(potential: &str, file: &str) -> System {
     let potential = data_dir.join("data").join(potential);
     input::read_interactions(&mut system, potential).unwrap();
 
-    let mut velocities = BoltzmanVelocities::new(units::from(300.0, "K").unwrap());
+    let mut velocities = BoltzmannVelocities::new(units::from(300.0, "K").unwrap());
     velocities.init(&mut system);
     return system;
 }

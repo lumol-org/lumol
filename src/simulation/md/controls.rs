@@ -187,7 +187,7 @@ mod tests {
             }
         }
 
-        let mut velocities = BoltzmanVelocities::new(300.0);
+        let mut velocities = BoltzmannVelocities::new(300.0);
         velocities.init(&mut system);
         return system;
     }

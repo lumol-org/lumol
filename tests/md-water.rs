@@ -42,7 +42,7 @@ fn setup(potential: &str, n: usize) -> (Simulation, System) {
     let potentials = data_dir.join("data").join(potential);
     input::read_interactions(&mut system, potentials).unwrap();
 
-    let mut velocities = BoltzmanVelocities::new(units::from(300.0, "K").unwrap());
+    let mut velocities = BoltzmannVelocities::new(units::from(300.0, "K").unwrap());
     velocities.init(&mut system);
 
     let simulation = Simulation::new(Box::new(

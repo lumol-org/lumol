@@ -283,7 +283,7 @@ mod test {
     use super::*;
     use types::*;
     use system::{System, Particle, UnitCell};
-    use system::{InitVelocities, BoltzmanVelocities};
+    use system::{InitVelocities, BoltzmannVelocities};
     use potentials::{Harmonic, NullPotential};
     use constants::K_BOLTZMANN;
     use utils::unit_from;
@@ -304,7 +304,7 @@ mod test {
             })
         );
 
-        let mut velocities = BoltzmanVelocities::new(unit_from(300.0, "K"));
+        let mut velocities = BoltzmannVelocities::new(unit_from(300.0, "K"));
         velocities.init(&mut system);
         return system;
     }

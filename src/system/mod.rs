@@ -16,7 +16,7 @@ pub use self::cells::{UnitCell, CellType};
 
 pub mod velocities;
 pub use self::velocities::InitVelocities;
-pub use self::velocities::{BoltzmanVelocities, UniformVelocities};
+pub use self::velocities::{BoltzmannVelocities, UniformVelocities};
 
 mod molecules;
 pub use self::molecules::{Bond, Angle, Dihedral};

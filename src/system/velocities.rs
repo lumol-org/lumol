@@ -29,17 +29,17 @@ pub trait InitVelocities {
 }
 
 /// Initialize the velocities from a Boltzman distribution.
-pub struct BoltzmanVelocities {
+pub struct BoltzmannVelocities {
     temperature: f64,
     dist: Normal,
     rng: Isaac64Rng,
 }
 
-impl BoltzmanVelocities {
-    /// This `BoltzmanVelocities` initializer will initialize velocities at
+impl BoltzmannVelocities {
+    /// This `BoltzmannVelocities` initializer will initialize velocities at
     /// temperature `temperature`.
-    pub fn new(temperature: f64) -> BoltzmanVelocities {
-        BoltzmanVelocities{
+    pub fn new(temperature: f64) -> BoltzmannVelocities {
+        BoltzmannVelocities{
             temperature: temperature,
             dist: Normal::new(0.0, f64::sqrt(K_BOLTZMANN * temperature)),
             rng: Isaac64Rng::from_seed(&[42]),
@@ -47,7 +47,7 @@ impl BoltzmanVelocities {
     }
 }
 
-impl InitVelocities for BoltzmanVelocities {
+impl InitVelocities for BoltzmannVelocities {
     fn init(&mut self, system: &mut System) {
         for particle in system.iter_mut() {
             let m_inv = 1.0 / particle.mass;
@@ -117,7 +117,7 @@ mod test {
     #[test]
     fn init_boltzmann() {
         let mut system = testing_system();
-        let mut velocities = BoltzmanVelocities::new(300.0);
+        let mut velocities = BoltzmannVelocities::new(300.0);
         velocities.seed(1234);
         velocities.init(&mut system);
         let temperature = system.temperature();

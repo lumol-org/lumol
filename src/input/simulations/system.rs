@@ -116,7 +116,7 @@ fn init_velocities(system: &mut System, config: &Table) -> Result<()> {
     if config.get("init").is_some() {
         let temperature = extract_str!("init", config as "velocities initializer");
         let temperature = try!(units::from_str(temperature));
-        let mut velocities = BoltzmanVelocities::new(temperature);
+        let mut velocities = BoltzmannVelocities::new(temperature);
         velocities.init(system);
     } else {
         warn!("'velocities' key does nothing in this input file");

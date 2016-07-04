@@ -19,7 +19,7 @@ fn get_system() -> System {
                                         .unwrap();
     system.set_cell(UnitCell::cubic(10.0));
 
-    let mut velocities = BoltzmanVelocities::new(units::from(300.0, "K").unwrap());
+    let mut velocities = BoltzmannVelocities::new(units::from(300.0, "K").unwrap());
     velocities.init(&mut system);
     return system;
 }

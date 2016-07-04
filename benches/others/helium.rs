@@ -17,7 +17,7 @@ fn main() {
         }
     );
 
-    let mut velocities = BoltzmanVelocities::new(units::from(300.0, "K").unwrap());
+    let mut velocities = BoltzmannVelocities::new(units::from(300.0, "K").unwrap());
     velocities.seed(42);
     velocities.init(&mut system);
 
