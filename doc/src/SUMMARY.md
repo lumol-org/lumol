@@ -17,6 +17,8 @@
     - [Interactions](input/interactions.md)
     - [Potentials](input/potentials.md)
     - [Simulations](input/simulations.md)
+    - [Molecular dynamics](input/md.md)
+    - [Monte-Carlo](input/mc.md)
     - [Units](input/units.md)
 
 - [Tutorial: extending Cymbalum]()
