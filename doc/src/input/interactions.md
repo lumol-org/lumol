@@ -1,25 +1,18 @@
 # Interactions
 
-The interactions in a system can be specified using [TOML] syntax. An
-interaction is the association of atomic types, a potential function and
-optionally restrictions and mode of computation.
-
-[TOML]: https://github.com/toml-lang/toml
-
-The `pairs`, `bonds`, `angles` and `dihedrals` sections are arrays of
-interactions, listing possible atomic combinations and associated potentials.
-The `coulomb` section contains information about the treatment of long-range
-electrostatic interactions, and charges section defines the partial charges of
-the atoms.
-
-All the potentials input file must have the `input.potentials.version` key
-defined to the value 1. This value will change if the input files formating
-changes.
+An interaction is the association of atomic types, a potential function and
+optionally restrictions and mode of computation. Input files for interaction
+contains all this information, ordered in multiple sections. The `pairs`,
+`bonds`, `angles` and `dihedrals` sections are arrays of interactions, listing
+possible atomic combinations and associated potentials. The `coulomb` section
+contains information about the treatment of long-range electrostatic
+interactions, and the `charges` section defines the partial charges of the
+atoms.
 
 An example of an input file for the f-SPC model of water is given bellow:
 
 ```toml
-[input.potentials]
+[input]
 version = 1
 
 [[pairs]]
@@ -84,11 +77,10 @@ restriction  = "IntraMolecular"
 ## Coulombic interactions
 
 The method for treatment of electrostatic interactions is specified in the
-`coulomb` section. There are multiple
-[available](input/potentials.html#Electrostatic%20interactions) solvers for
-electrostatic interactions. Optionally, an additional
-[restriction](input/potentials.html#Restrictions) can be specified with the
-`restriction` key.
+`coulomb` section. There are multiple available solvers for [electrostatic
+interactions](input/potentials.html#Electrostatic%20interactions). Optionally,
+an additional [restriction](input/potentials.html#Restrictions) can be specified
+with the `restriction` key.
 
 ```toml
 [coulomb]

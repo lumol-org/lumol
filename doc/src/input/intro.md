@@ -1,21 +1,39 @@
 # Input files
 
-The input files in Cymbalum can be classified in three types:
- - Initial configuration of the system;
- - Interactions and force field description;
- - Simulation setup and configuration.
+Cymbalum input files uses the [TOML][TOML] format, a simple and minimalist
+configuration format based on `key = value` pairs. You can read an introduction
+to the TOML format [here][TOML].
 
-Currently, only the initial configuration of the system and the force field
-input files are implemented. The initial configuration can be provided in
-various formats. Check the [relevant documentation](input/initial.html) for a
-list and description of the formats.
+[TOML]: https://github.com/toml-lang/toml
 
-The force field input file uses the [TOML](https://github.com/toml-lang/toml)
-format, a simple and minimalist configuration format based on `key = value`
-pairs. If you do not know the syntax, [this
-page](https://github.com/toml-lang/toml) has a good introduction. The different
-sections in the input file are described in the [next
-page](input/interactions.html).
+The input file describe everything needed for running a simulation: which system
+to use, with which force field, and how to propagate the simulation. They
+usually contain three main sections:
+- The [input](input/intro.html#Input%20metadata) section describe metadata about
+  the input itself;
+- The [systems](input/systems.html) section describe the system to use in the
+  simulation;
+- The [simulations](input/simulations.html) section describe how to update the
+  system during the simulation;
+
+Interactions between particles in the system are a bit special: they can either
+be specified in they own input file (to be reused in multiple simulations); or
+be part of the `[[systems]]` section. This [page](input/interactions.html)
+describe the standalone input for interactions.
+
+## Input metadata
+
+All input files must contain an `[input]` section looking like this:
+
+```toml
+[input]
+version = 1
+```
+
+The purpose of the `version` key is to make changes to the input file format,
+while keeping compatibility with the previous input format. Please note that
+while Cymbalum have not reach version 1.0, no guarantee is made on input file
+compatibility.
 
 ## Units in input
 
