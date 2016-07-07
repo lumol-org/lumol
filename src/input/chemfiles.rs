@@ -34,7 +34,7 @@ impl ToCymbalum for chemfiles::UnitCell {
         let cell_type = try!(self.cell_type());
         let cell = match cell_type {
             chemfiles::CellType::Infinite => UnitCell::new(),
-            chemfiles::CellType::Orthorombic => {
+            chemfiles::CellType::Orthorhombic => {
                 let (a, b, c) = try!(self.lengths());
                 UnitCell::ortho(a, b, c)
             },
@@ -188,9 +188,6 @@ impl ToChemfiles for System {
         }
 
         try!(frame.set_topology(&topology));
-        // Guessing angles and dihedrals
-        try!(frame.guess_topology(false));
-
         let cell = try!(self.cell().to_chemfiles());
         try!(frame.set_cell(&cell));
         Ok(frame)
@@ -230,7 +227,7 @@ impl Trajectory {
     pub fn read_guess_bonds(&mut self) -> TrajectoryResult<System> {
         let mut frame = try!(chemfiles::Frame::new(0));
         try!(self.0.read(&mut frame));
-        try!(frame.guess_topology(true));
+        try!(frame.guess_topology());
         return frame.to_cymbalum();
     }
 
@@ -260,7 +257,7 @@ pub fn read_molecule<P: AsRef<Path>>(path: P) -> TrajectoryResult<(Molecule, Vec
     // Only guess the topology when we have no bond information
     let topology = try!(frame.topology());
     if try!(topology.bonds_count()) == 0 {
-        try!(frame.guess_topology(true));
+        try!(frame.guess_topology());
     }
     let system = try!(frame.to_cymbalum());
 
@@ -276,7 +273,7 @@ pub fn read_molecule<P: AsRef<Path>>(path: P) -> TrajectoryResult<(Molecule, Vec
 /// Guess the bonds in a system
 pub fn guess_bonds(system: System) -> TrajectoryResult<System> {
     let mut frame = try!(system.to_chemfiles());
-    try!(frame.guess_topology(true));
+    try!(frame.guess_topology());
     return frame.to_cymbalum();
 }
 
