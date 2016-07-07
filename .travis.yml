@@ -43,13 +43,14 @@ script:
     - cargo build
     - cargo test --lib
     - cargo test --release
-after_success:
+after_script:
     - |
-      if test "${TRAVIS_RUST_VERSION}" == "stable"; then
+      if [[ "${TRAVIS_RUST_VERSION}" == "stable" && "${TRAVIS_PULL_REQUEST}" == "false" && "${TRAVIS_BRANCH}" == "master" ]]; then
           kcov --include-pattern=$(pwd) target/kcov target/debug/cymbalum-*
           codecov --file target/kcov/cymbalum-*/cobertura.xml
+          git clone https://${GH_TOKEN}@github.com/Luthaf/cymbalum.git target/website
+          ./doc/publish.sh
       fi
-    - ./doc/publish.sh
 cache:
   directories:
       - $HOME/local/bin

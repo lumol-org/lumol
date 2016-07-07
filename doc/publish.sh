@@ -1,35 +1,34 @@
-#!/bin/bash
+#!/bin/bash -ex
 # Build the docs and the user manual, and push them to github pages.
 
-set -e
-if test "${TRAVIS_RUST_VERSION}" == "stable" && \
-        "${TRAVIS_PULL_REQUEST}" == "false"  && \
-        "${TRAVIS_BRANCH}" == "master"
-then
-    echo "Building docs"
-else
-    exit_now_as_this_command_does_not_exist
-fi
-
+# Build the doc
 cargo doc
 mdbook build doc
-cp -r doc/book target/doc
-cp doc/index.html target/doc
 
-cd target
-mkdir website
-mv doc website/latest
+# Move it to the right place
+cd target/website
+git checkout gh-pages
 
-cd website
-# Redirect to latest docs
+rm -rf latest
+mkdir latest
+mv ../../doc/book latest/book
+cp ../../doc/index.html latest/index.html
+mv ../doc/* latest/
+
 cat <<EOF > index.html
-<meta http-equiv=refresh content=0;url=latest/index.html>
+<meta http-equiv=refresh content=0;url=latest/>
 EOF
 
-git init
 git config user.name "Travis CI"
 git config user.email "luthaf@luthaf.fr"
-git add .
-git commit -m "Update documentation"
+git config push.default simple
+git add --all .
 
-git push --force --quiet "https://${GH_TOKEN}@github.com/Luthaf/cymbalum.git" master:gh-pages > /dev/null 2>&1
+# Skip push if there is no change
+if git diff --cached --exit-code --quiet; then
+    echo "No changes to the output on this push; exiting."
+    exit 0
+fi
+
+git commit -m "[AUTO-COMMIT] Documentation update"
+git push
