@@ -16,13 +16,10 @@ use super::{GlobalPotential, CoulombicPotential, GlobalCache};
 /// Ewald summation of the coulombic interactions.
 ///
 /// The Ewald summation is based on a separation of the coulombic potential `U`
-/// in two parts, using the trivial identity:
-///
-///     U(x) = U(x) * (f(x) + 1) - U(x) * f(x)
-///
-/// where `f(x)` is the `erf` function. This leads to a separation of the
-/// conditionally convergent coulombic sum into two absolutly convergent sums:
-/// one in real space, and the other in Fourier or k-space.
+/// in two parts, using the trivial identity: $$U(x) = U(x) * (f(x) + 1)  -
+/// U(x) * f(x)$$ where `f(x)` is the `erf` function. This leads to a separation
+/// of the conditionally convergent coulombic sum into two absolutly convergent
+/// sums: one in real space, and the other in Fourier or k-space.
 ///
 /// For more informations about this algorithm see [FS2002].
 ///

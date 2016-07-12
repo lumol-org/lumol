@@ -363,11 +363,9 @@ fn read_expr(stream: &mut Vec<Token>) -> Result<UnitExpr, ParseError> {
 /// Convert the numeric value `val` from the unit `unit` to the internal unit.
 ///
 /// ```
-/// let internal = from(10.0, "A");
+/// use cymbalum::units;
+/// let internal = units::from(10.0, "A").unwrap();
 /// assert!(internal == 10.0);
-///
-/// let internal = from(1.0, "kJ/mol");
-/// assert!(internal == 1000.0);
 /// ```
 pub fn from(value: f64, unit: &str) -> Result<f64, ParseError> {
     let unit = try!(UnitExpr::parse(unit));
@@ -377,11 +375,9 @@ pub fn from(value: f64, unit: &str) -> Result<f64, ParseError> {
 /// Parse the string `val` and convert it to the corresponding internal unit
 ///
 /// ```
-/// let internal = from_str("10 A");
+/// use cymbalum::units;
+/// let internal = units::from_str("10 A").unwrap();
 /// assert!(internal == 10.0);
-///
-/// let internal = from("1 kJ/mol");
-/// assert!(internal == 1000.0);
 /// ```
 pub fn from_str(value: &str) -> Result<f64, ParseError> {
     let unit = value.split_whitespace().skip(1).collect::<Vec<&str>>().join(" ");
@@ -398,11 +394,9 @@ pub fn from_str(value: &str) -> Result<f64, ParseError> {
 /// Convert the numeric value `val` (in internal units) to the unit `unit`.
 ///
 /// ```
-/// let real = to(10.0, "A");
+/// use cymbalum::units;
+/// let real = units::to(10.0, "A").unwrap();
 /// assert!(real == 10.0);
-///
-/// let real = to(1e-4, "kJ/mol");
-/// assert!(internal == 1.0);
 /// ```
 pub fn to(value: f64, unit: &str) -> Result<f64, ParseError> {
     let unit = try!(UnitExpr::parse(unit));

@@ -25,12 +25,14 @@
 //! thing to do is to implement the corresponding trait.
 //!
 //! ```
+//! # use cymbalum::potentials::{PotentialFunction, PairPotential, DihedralPotential};
+//! #[derive(Clone)]
 //! struct OnePotential;
 //!
 //! // OnePotential is a potential function
 //! impl PotentialFunction for OnePotential {
-//!     fn energy(&self, _: f64) {1.0}
-//!     fn force(&self, _: f64) {0.0}
+//!     fn energy(&self, _: f64) -> f64 {1.0}
+//!     fn force(&self, _: f64) -> f64 {0.0}
 //! }
 //!
 //! // It can be used for pair and dihedral potentials, but not for angles
@@ -45,7 +47,7 @@
 //! trait and giving methods for energy, forces and virial contributions.
 //!
 //! [`CoulombicPotential`][CoulombicPotential] are a specific version of global
-//! potentials, that are used to compute charges-charges interactions. 
+//! potentials, that are used to compute charges-charges interactions.
 //!
 //! [PotentialFunction]: trait.PotentialFunction.html
 //! [PairPotential]: trait.PairPotential.html

@@ -40,8 +40,10 @@ install:
           cargo install mdbook
       fi
 script:
-    - cargo build
+    # Run unit tests and doc tests in debug mode
     - cargo test --lib
+    - cargo test --doc
+    # Run all tests in release mode
     - cargo test --release
 after_script:
     - |

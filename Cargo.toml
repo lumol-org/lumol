@@ -9,7 +9,6 @@ license = "BSD"
 
 [lib]
 name = "cymbalum"
-doctest = false
 
 [dependencies]
 chemfiles = "0.6"
