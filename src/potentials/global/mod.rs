@@ -9,33 +9,19 @@ use system::System;
 use types::{Matrix3, Vector3D};
 use super::PairRestriction;
 
-/// The `GlobalPotential` trait represent a potential acting on the whole
-/// system at once.
+/// Potential acting on the whole system at once.
 pub trait GlobalPotential: GlobalCache + BoxCloneGlobal {
     /// Compute the energetic contribution of this potential
     fn energy(&mut self, system: &System) -> f64;
-    /// Compute the force contribution of this potential
+    /// Compute the force contribution of this potential. This function should
+    /// return a vector containing the force acting on each particle in the
+    /// system.
     fn forces(&mut self, system: &System) -> Vec<Vector3D>;
     /// Compute the virial contribution of this potential
     fn virial(&mut self, system: &System) -> Matrix3;
 }
 
-/// Energetic cache for global potentials. This trait have an opt-in default
-/// implementation that you can use by implementing the `DefaultGlobalCache`
-/// trait.
-///
-/// # Example
-///
-/// ```rust
-/// struct MyGlobalPotential;
-///
-/// impl GlobalPotential for MyGlobalPotential {
-///    ... // Implementation
-/// }
-///
-/// // Use the default cache
-/// impl DefaultGlobalCache for MyGlobalPotential {}
-/// ```
+/// Energetic cache for global potentials.
 pub trait GlobalCache {
     /// Get the cost of moving the `system` particles whose indexes are in
     /// `idxes` to `newpos`
@@ -44,8 +30,7 @@ pub trait GlobalCache {
     fn update(&mut self);
 }
 
-/// Electrostatic potential solver should implement the `CoulombicPotential`
-/// trait.
+/// Electrostatic potential solver.
 pub trait CoulombicPotential : GlobalPotential + BoxCloneCoulombic {
     /// Set the restriction scheme to use to `restriction`. All future call to
     /// `energy`, `force` or `virial` should use this restriction.

@@ -13,9 +13,10 @@ use potentials::{PairRestriction, RestrictionInfo};
 
 use super::{GlobalPotential, CoulombicPotential, GlobalCache};
 
-/// Ewald summation of the coulombic interactions. The Ewald summation is based
-/// on a separation of the coulombic potential U in two parts, using the trivial
-/// identity:
+/// Ewald summation of the coulombic interactions.
+///
+/// The Ewald summation is based on a separation of the coulombic potential `U`
+/// in two parts, using the trivial identity:
 ///
 ///     U(x) = U(x) * (f(x) + 1) - U(x) * f(x)
 ///

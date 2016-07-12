@@ -1,12 +1,10 @@
 // Cymbalum, an extensible molecular simulation engine
 // Copyright (C) 2015-2016 G. Fraux — BSD license
 
-//! Potentials traits and implementations.
 use types::{Matrix3, Vector3D};
 
-/// A `PotentialFunction` is a set of two parametric functions which takes a
-/// single scalar variable and return the energy or the norm of the force
-/// corresponding to the value of that variable.
+/// A set of two parametric functions which takes a single scalar variable and
+/// return the corresponding energy or norm of the force.
 ///
 /// The scalar variable will be the distance for pair potentials, the angle for
 /// angles or dihedral angles potentials, *etc.*
@@ -19,9 +17,11 @@ pub trait PotentialFunction : Sync + Send + BoxClonePotential {
 
 impl_box_clone!(PotentialFunction, BoxClonePotential, box_clone_potential);
 
-/// Pair potential can be expressed by implenting the `PairPotential` trait.
+/// Potential that can be used for two body interactions, either covalent or
+/// non-covalent.
 pub trait PairPotential : PotentialFunction + BoxClonePair {
-    /// Compute the virial contribution corresponding to the distance `r` between the particles
+    /// Compute the virial contribution corresponding to the distance `r`
+    /// between the particles
     fn virial(&self, r: &Vector3D) -> Matrix3 {
         let fact = self.force(r.norm());
         let rn = r.normalized();
@@ -32,20 +32,19 @@ pub trait PairPotential : PotentialFunction + BoxClonePair {
 
 impl_box_clone!(PairPotential, BoxClonePair, box_clone_pair);
 
-/// Angle potential can be expressed by implenting the `AnglePotential` trait.
+/// Potential that can be used for molecular angles.
 pub trait AnglePotential : PotentialFunction + BoxCloneAngle {}
 impl_box_clone!(AnglePotential, BoxCloneAngle, box_clone_angle);
 
-/// Dihedral angles potential can be expressed by implenting the
-/// `DihedralPotential` trait.
+/// Potential that can be used for molecular dihedral angles.
 pub trait DihedralPotential : PotentialFunction + BoxCloneDihedral {}
 impl_box_clone!(DihedralPotential, BoxCloneDihedral, box_clone_dihedral);
 
 /******************************************************************************/
-/// The `NullPotential` always returns 0.0 as energy and force.
+/// The `NullPotential` always returns 0 as energy and force.
 ///
-/// It is to be used when there is no potential interaction between two
-/// particles kinds.
+/// It should be used to indicate that there is no potential interaction between
+/// two particles kinds.
 #[derive(Clone, Copy)]
 pub struct NullPotential;
 impl PotentialFunction for NullPotential {
@@ -58,7 +57,9 @@ impl AnglePotential for NullPotential {}
 impl DihedralPotential for NullPotential {}
 
 /******************************************************************************/
-/// Lennard-Jones potential, using the following form:
+/// Lennard-Jones potential.
+///
+/// The following expression is used:
 /// $$ V(r) = 4 \epsilon \left[ (\sigma/r)^{12} - (\sigma/r)^{6} \right] $$
 /// where $\sigma$ is a distance constant, and $\epsilon$ an energetic constant.
 #[derive(Clone, Copy)]
@@ -86,7 +87,9 @@ impl PotentialFunction for LennardJones {
 impl PairPotential for LennardJones {}
 
 /******************************************************************************/
-/// Harmonic potential, using the following form:
+/// Harmonic potential.
+///
+/// The following expression is used:
 /// $$ V(x) = \frac 12 k (x - x_0)^2 $$
 /// where $x_0$ is the distance equilibrium, and $k$ the elastic constant.
 #[derive(Clone, Copy)]
@@ -115,7 +118,9 @@ impl AnglePotential for Harmonic {}
 impl DihedralPotential for Harmonic {}
 
 /******************************************************************************/
-/// Cosine harmonic potential, using the following form:
+/// Cosine harmonic potential.
+///
+/// The following expression is used:
 /// $$ V(r) = \frac 12 k (\cos r - \cos x_0)^2 $$
 /// where $x_0$ is the distance equilibrium, and $k$ the elastic constant.
 #[derive(Clone, Copy)]
@@ -151,8 +156,10 @@ impl AnglePotential for CosineHarmonic {}
 impl DihedralPotential for CosineHarmonic {}
 
 /******************************************************************************/
-/// Torsion potential, using the following form:
-/// $$ V(r) = k(1 + \cos(n\phi􏰈 - \delta)) $$
+/// Torsion potential.
+///
+/// The following expression is used:
+/// $$ V(r) = k(1 + \cos(n\phi_0 - \delta)) $$
 /// where $k$ is the force constant, `n` the periodicity of the potential, and
 /// $\delta$ the equilibrium angle.
 #[derive(Clone, Copy)]

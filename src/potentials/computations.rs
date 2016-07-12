@@ -1,16 +1,14 @@
 // Cymbalum, an extensible molecular simulation engine
 // Copyright (C) 2015-2016 G. Fraux — BSD license
 
-//! A potential computation is a way of computing a potential given its
-//! expression (represented by a `PotentialFunction`). The same potential can be
-//! computed either direcly, or using a cutoff, or by a table interpolation, ...
 use super::{PotentialFunction, PairPotential};
 
-/// A `Computation` is a way to compute a potential.
+/// Methods for energy and forces computation.
+///
+/// A potential computation is a way of computing a potential given its
+/// expression (represented by a `PotentialFunction`). The same potential can be
+/// computed either direcly, or using a cutoff, or by a table interpolation, ...
 pub trait Computation: Sync + Send {
-    // / Kind of potential we can apply this computation to
-    // type Potential: PotentialFunction + ?Sized;
-
     /// Compute the energy value at `r`
     fn compute_energy(&self, r: f64) -> f64;
 
@@ -29,8 +27,9 @@ impl<P: Computation + Clone + 'static> PotentialFunction for P {
 }
 
 /******************************************************************************/
-/// Direct computation of the potential with a cutoff applied. The computed
-/// energy is shifted to ensure `E(rc) = 0`, where `rc` is the cutoff distance.
+/// Computation of a potential with a cutoff.
+///
+/// Energy is shifted to ensure `E(rc) = 0`, where `rc` is the cutoff distance.
 #[derive(Clone)]
 pub struct CutoffComputation {
     /// Potential to compute
@@ -73,11 +72,12 @@ impl Computation for CutoffComputation {
 impl PairPotential for CutoffComputation {}
 
 /******************************************************************************/
-/// Computation of a potential using tabulated values. This can be faster than
-/// direct computation for smooth potentials, but will either uses more memory
-/// or is less precise than direct computation. Values are tabulated in the `[0,
-/// max)` range, and a cutoff is applied after `max`. Energy is shifted before
-/// the cutoff to ensure that `E(max) = 0`
+/// Computation of a potential using tabulated values.
+///
+/// This can be faster than direct computation for smooth potentials, but will
+/// either uses more memory or be less precise than direct computation. Values
+/// are tabulated in the `[0, max)` range, and a cutoff is applied after `max`.
+/// Energy is shifted to ensure `E(max) = 0`
 #[derive(Clone)]
 pub struct TableComputation {
     // TODO: use genericity over static values here if it ever comes out
@@ -85,13 +85,13 @@ pub struct TableComputation {
 
     /// Number of tabulated values
     size: usize,
-    /// Step for tabulated value. compute_energy[i]/compute_force[i] contains compute_energy/compute_force at
-    /// r = i * delta
+    /// Step for tabulated value. `energy_table[i]`/`force_table[i]` contains
+    /// energy/force at `r = i * delta`
     delta: f64,
     /// Tabulated potential
-    compute_energy: Vec<f64>,
+    energy_table: Vec<f64>,
     /// Tabulated compute_force
-    compute_force: Vec<f64>,
+    force_table: Vec<f64>,
 }
 
 
@@ -101,14 +101,19 @@ impl TableComputation {
     pub fn new(potential: Box<PairPotential>, size: usize, max:f64) -> TableComputation {
         let delta = max/(size as f64);
         let energy_shift = potential.energy(max);
-        let mut compute_energy = Vec::with_capacity(size);
-        let mut compute_force = Vec::with_capacity(size);
+        let mut energy_table = Vec::with_capacity(size);
+        let mut force_table = Vec::with_capacity(size);
         for i in 0..size {
             let pos = i as f64 * delta;
-            compute_energy.push(potential.energy(pos) - energy_shift);
-            compute_force.push(potential.force(pos));
+            energy_table.push(potential.energy(pos) - energy_shift);
+            force_table.push(potential.force(pos));
         }
-        TableComputation{size: size, delta: delta, compute_energy: compute_energy, compute_force: compute_force}
+        TableComputation {
+            size: size,
+            delta: delta,
+            energy_table: energy_table,
+            force_table: force_table
+        }
     }
 }
 
@@ -117,8 +122,8 @@ impl Computation for TableComputation {
         let bin = f64::floor(r / self.delta) as usize;
         if bin < self.size - 1 {
             let dx = r - (bin as f64)*self.delta;
-            let slope = (self.compute_energy[bin + 1] - self.compute_energy[bin])/self.delta;
-            return self.compute_energy[bin] + dx*slope;
+            let slope = (self.energy_table[bin + 1] - self.energy_table[bin])/self.delta;
+            return self.energy_table[bin] + dx*slope;
         } else {
             return 0.0;
         }
@@ -128,8 +133,8 @@ impl Computation for TableComputation {
         let bin = f64::floor(r / self.delta) as usize;
         if bin < self.size - 1 {
             let dx = r - (bin as f64)*self.delta;
-            let slope = (self.compute_force[bin + 1] - self.compute_force[bin])/self.delta;
-            return self.compute_force[bin] + dx*slope;
+            let slope = (self.force_table[bin + 1] - self.force_table[bin])/self.delta;
+            return self.force_table[bin] + dx*slope;
         } else {
             return 0.0;
         }

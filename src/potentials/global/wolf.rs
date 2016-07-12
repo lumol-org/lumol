@@ -12,8 +12,9 @@ use potentials::{PairRestriction, RestrictionInfo};
 
 use super::{GlobalPotential, CoulombicPotential, GlobalCache};
 
-/// Wolf summation for the coulombic potential, as defined in [Wolf1999]. This
-/// is a fast direct pairwise summation for coulombic potential.
+/// Wolf summation for coulombic interactions.
+///
+/// This is a fast, direct, pairwise summation for coulombic potential [Wolf1999].
 ///
 /// [Wolf1999]: Wolf, D. et al. J. Chem. Phys. 110, 8254 (1999).
 #[derive(Clone)]
