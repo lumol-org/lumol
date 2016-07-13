@@ -40,9 +40,3 @@ pub use self::systems::Permutations;
 
 pub mod compute;
 pub use self::compute::Compute;
-pub use self::compute::Forces;
-pub use self::compute::{PotentialEnergy, KineticEnergy, TotalEnergy};
-pub use self::compute::Temperature;
-pub use self::compute::Volume;
-pub use self::compute::{Virial, Stress, Pressure};
-pub use self::compute::{StressAtTemperature, PressureAtTemperature};

@@ -2,7 +2,7 @@
 // Copyright (C) 2015-2016 G. Fraux — BSD license
 
 use potentials::Potential;
-use potentials::{PairPotential, AnglePotential, DihedralPotential};
+use potentials::{PairPotential, BondPotential, AnglePotential, DihedralPotential};
 
 /// The `NullPotential` always returns 0 as energy and force.
 ///
@@ -16,6 +16,7 @@ impl Potential for NullPotential {
 }
 
 impl PairPotential for NullPotential {}
+impl BondPotential for NullPotential {}
 impl AnglePotential for NullPotential {}
 impl DihedralPotential for NullPotential {}
 
@@ -77,6 +78,7 @@ impl Potential for Harmonic {
 }
 
 impl PairPotential for Harmonic {}
+impl BondPotential for Harmonic {}
 impl AnglePotential for Harmonic {}
 impl DihedralPotential for Harmonic {}
 

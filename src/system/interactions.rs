@@ -8,7 +8,7 @@ use std::collections::BTreeMap;
 use std::cmp::max;
 use std::cell::RefCell;
 
-use potentials::{PairPotential, AnglePotential, DihedralPotential};
+use potentials::{PairPotential, BondPotential, AnglePotential, DihedralPotential};
 use potentials::{GlobalPotential, CoulombicPotential};
 use potentials::PairRestriction;
 
@@ -76,7 +76,7 @@ pub struct Interactions {
     /// Pair potentials
     pairs: BTreeMap<(Kind, Kind), Vec<PairInteraction>>,
     /// Bond potentials
-    bonds: BTreeMap<(Kind, Kind), Vec<Box<PairPotential>>>,
+    bonds: BTreeMap<(Kind, Kind), Vec<Box<BondPotential>>>,
     /// Angle potentials
     angles: BTreeMap<(Kind, Kind, Kind), Vec<Box<AnglePotential>>>,
     /// Dihedral angles potentials
@@ -127,7 +127,7 @@ impl Interactions {
     }
 
     /// Add the `potential` bonded interaction for the pair `(i, j)`
-    pub fn add_bond(&mut self, i: &str, j: &str, potential: Box<PairPotential>) {
+    pub fn add_bond(&mut self, i: &str, j: &str, potential: Box<BondPotential>) {
         let (i, j) = (self.get_kind(i), self.get_kind(j));
         let (i, j) = sort_pair(i, j);
         let bonds = self.bonds.entry((i, j)).or_insert(Vec::new());
@@ -163,7 +163,7 @@ impl Interactions {
 }
 
 static NO_PAIR_INTERACTION: &'static [PairInteraction] = &[];
-static NO_BOND_INTERACTION: &'static [Box<PairPotential>] = &[];
+static NO_BOND_INTERACTION: &'static [Box<BondPotential>] = &[];
 static NO_ANGLE_INTERACTION: &'static [Box<AnglePotential>] = &[];
 static NO_DIHEDRAL_INTERACTION: &'static [Box<DihedralPotential>] = &[];
 
@@ -184,7 +184,7 @@ impl Interactions {
     }
 
     /// Get all bonded interactions corresponding to the pair `(i, j)`
-    pub fn bonds(&self, i: Kind, j: Kind) -> &[Box<PairPotential>] {
+    pub fn bonds(&self, i: Kind, j: Kind) -> &[Box<BondPotential>] {
         let (i, j) = sort_pair(i, j);
         if let Some(val) = self.bonds.get(&(i, j)) {
             val

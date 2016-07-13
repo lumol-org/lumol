@@ -71,9 +71,9 @@ pub trait Potential : Sync + Send + BoxClonePotential {
 
 impl_box_clone!(Potential, BoxClonePotential, box_clone_potential);
 
-/// Potential that can be used for two body interactions, either covalent or
-/// non-covalent.
-pub trait PairPotential : Potential + BoxClonePair {
+/// Computation of virial contribution for a potential. The provided fucntion
+/// only apply to two-body virial contributions.
+pub trait Virial: Potential {
     /// Compute the virial contribution corresponding to the distance `r`
     /// between the particles
     fn virial(&self, r: &Vector3D) -> Matrix3 {
@@ -84,7 +84,15 @@ pub trait PairPotential : Potential + BoxClonePair {
     }
 }
 
+impl<T: Potential> Virial for T {}
+
+/// Potential that can be used for non-bonded two body interactions
+pub trait PairPotential : Virial + BoxClonePair {}
 impl_box_clone!(PairPotential, BoxClonePair, box_clone_pair);
+
+/// Potential that can be used for molecular bonds
+pub trait BondPotential : Virial + BoxCloneBond {}
+impl_box_clone!(BondPotential, BoxCloneBond, box_clone_bond);
 
 /// Potential that can be used for molecular angles.
 pub trait AnglePotential : Potential + BoxCloneAngle {}
