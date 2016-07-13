@@ -13,7 +13,7 @@ use system::System;
 ///
 /// Some pairs can be excluded from the energy computation; this enum lists the
 /// possible case of exclusion.
-#[derive(Clone, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub enum PairRestriction {
     /// No pair should be excluded
     None,

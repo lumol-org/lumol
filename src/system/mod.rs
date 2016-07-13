@@ -26,7 +26,6 @@ pub use self::molecules::Molecule;
 pub use self::molecules::moltype;
 
 mod interactions;
-pub use self::interactions::PairInteraction;
 
 mod energy;
 pub use self::energy::EnergyEvaluator;
