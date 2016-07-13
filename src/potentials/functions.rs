@@ -1,53 +1,16 @@
 // Cymbalum, an extensible molecular simulation engine
 // Copyright (C) 2015-2016 G. Fraux — BSD license
 
-use types::{Matrix3, Vector3D};
+use potentials::Potential;
+use potentials::{PairPotential, AnglePotential, DihedralPotential};
 
-/// A set of two parametric functions which takes a single scalar variable and
-/// return the corresponding energy or norm of the force.
-///
-/// The scalar variable will be the distance for pair potentials, the angle for
-/// angles or dihedral angles potentials, *etc.*
-pub trait PotentialFunction : Sync + Send + BoxClonePotential {
-    /// Get the energy corresponding to the variable `x`
-    fn energy(&self, x: f64) -> f64;
-    /// Get the force norm corresponding to the variable `x`
-    fn force(&self, x: f64) -> f64;
-}
-
-impl_box_clone!(PotentialFunction, BoxClonePotential, box_clone_potential);
-
-/// Potential that can be used for two body interactions, either covalent or
-/// non-covalent.
-pub trait PairPotential : PotentialFunction + BoxClonePair {
-    /// Compute the virial contribution corresponding to the distance `r`
-    /// between the particles
-    fn virial(&self, r: &Vector3D) -> Matrix3 {
-        let fact = self.force(r.norm());
-        let rn = r.normalized();
-        let force = fact * rn;
-        force.tensorial(r)
-    }
-}
-
-impl_box_clone!(PairPotential, BoxClonePair, box_clone_pair);
-
-/// Potential that can be used for molecular angles.
-pub trait AnglePotential : PotentialFunction + BoxCloneAngle {}
-impl_box_clone!(AnglePotential, BoxCloneAngle, box_clone_angle);
-
-/// Potential that can be used for molecular dihedral angles.
-pub trait DihedralPotential : PotentialFunction + BoxCloneDihedral {}
-impl_box_clone!(DihedralPotential, BoxCloneDihedral, box_clone_dihedral);
-
-/******************************************************************************/
 /// The `NullPotential` always returns 0 as energy and force.
 ///
 /// It should be used to indicate that there is no potential interaction between
 /// two particles kinds.
 #[derive(Clone, Copy)]
 pub struct NullPotential;
-impl PotentialFunction for NullPotential {
+impl Potential for NullPotential {
     #[inline] fn energy(&self, _: f64) -> f64 {0.0}
     #[inline] fn force(&self, _: f64) -> f64 {0.0}
 }
@@ -70,7 +33,7 @@ pub struct LennardJones {
     pub epsilon: f64,
 }
 
-impl PotentialFunction for LennardJones {
+impl Potential for LennardJones {
     #[inline]
     fn energy(&self, r: f64) -> f64 {
         let s6 = f64::powi(self.sigma/r, 6);
@@ -100,7 +63,7 @@ pub struct Harmonic {
     pub x0: f64,
 }
 
-impl PotentialFunction for Harmonic {
+impl Potential for Harmonic {
     #[inline]
     fn energy(&self, x: f64) -> f64 {
         let dx = x - self.x0;
@@ -139,7 +102,7 @@ impl CosineHarmonic {
     }
 }
 
-impl PotentialFunction for CosineHarmonic {
+impl Potential for CosineHarmonic {
     #[inline]
     fn energy(&self, x: f64) -> f64 {
         let dr = f64::cos(x) - self.cos_x0;
@@ -172,7 +135,7 @@ pub struct Torsion {
     pub n: usize,
 }
 
-impl PotentialFunction for Torsion {
+impl Potential for Torsion {
     #[inline]
     fn energy(&self, phi: f64) -> f64 {
         let n = self.n as f64;
@@ -195,6 +158,7 @@ impl DihedralPotential for Torsion {}
 #[cfg(test)]
 mod tests {
     use super::*;
+    use potentials::Potential;
     const EPS: f64 = 1e-9;
 
     #[test]

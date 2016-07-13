@@ -1,12 +1,12 @@
 // Cymbalum, an extensible molecular simulation engine
 // Copyright (C) 2015-2016 G. Fraux — BSD license
 
-use super::{PotentialFunction, PairPotential};
+use super::{Potential, PairPotential};
 
 /// Methods for energy and forces computation.
 ///
 /// A potential computation is a way of computing a potential given its
-/// expression (represented by a `PotentialFunction`). The same potential can be
+/// expression (represented by a `Potential`). The same potential can be
 /// computed either direcly, or using a cutoff, or by a table interpolation, ...
 pub trait Computation: Sync + Send {
     /// Compute the energy value at `r`
@@ -16,7 +16,7 @@ pub trait Computation: Sync + Send {
     fn compute_force(&self, r: f64) -> f64;
 }
 
-impl<P: Computation + Clone + 'static> PotentialFunction for P {
+impl<P: Computation + Clone + 'static> Potential for P {
     #[inline] fn energy(&self, r:f64) -> f64 {
         self.compute_energy(r)
     }

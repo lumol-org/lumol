@@ -7,7 +7,7 @@
 //!
 //! A potential function is defined as a parametric function giving the energy
 //! and the force acting on a specific particle. These function are represented
-//! by the [`PotentialFunction`][PotentialFunction] trait, and allow to compute
+//! by the [`Potential`][Potential] trait, and allow to compute
 //! the energy or force norm corresponding to a scalar variable. This scalar
 //! variable will be the distance for non-bonded pair interactions; the angle
 //! for covalent angles interactions, *etc.*
@@ -25,12 +25,12 @@
 //! thing to do is to implement the corresponding trait.
 //!
 //! ```
-//! # use cymbalum::potentials::{PotentialFunction, PairPotential, DihedralPotential};
+//! # use cymbalum::potentials::{Potential, PairPotential, DihedralPotential};
 //! #[derive(Clone)]
 //! struct OnePotential;
 //!
 //! // OnePotential is a potential function
-//! impl PotentialFunction for OnePotential {
+//! impl Potential for OnePotential {
 //!     fn energy(&self, _: f64) -> f64 {1.0}
 //!     fn force(&self, _: f64) -> f64 {0.0}
 //! }
@@ -49,16 +49,52 @@
 //! [`CoulombicPotential`][CoulombicPotential] are a specific version of global
 //! potentials, that are used to compute charges-charges interactions.
 //!
-//! [PotentialFunction]: trait.PotentialFunction.html
+//! [Potential]: trait.Potential.html
 //! [PairPotential]: trait.PairPotential.html
 //! [AnglePotential]: trait.AnglePotential.html
 //! [DihedralPotential]: trait.DihedralPotential.html
 //! [GlobalPotential]: trait.GlobalPotential.html
 //! [CoulombicPotential]: trait.CoulombicPotential.html
+use types::{Matrix3, Vector3D};
+
+/// A set of two parametric functions which takes a single scalar variable and
+/// return the corresponding energy or norm of the force.
+///
+/// The scalar variable will be the distance for pair potentials, the angle for
+/// angles or dihedral angles potentials, *etc.*
+pub trait Potential : Sync + Send + BoxClonePotential {
+    /// Get the energy corresponding to the variable `x`
+    fn energy(&self, x: f64) -> f64;
+    /// Get the force norm corresponding to the variable `x`
+    fn force(&self, x: f64) -> f64;
+}
+
+impl_box_clone!(Potential, BoxClonePotential, box_clone_potential);
+
+/// Potential that can be used for two body interactions, either covalent or
+/// non-covalent.
+pub trait PairPotential : Potential + BoxClonePair {
+    /// Compute the virial contribution corresponding to the distance `r`
+    /// between the particles
+    fn virial(&self, r: &Vector3D) -> Matrix3 {
+        let fact = self.force(r.norm());
+        let rn = r.normalized();
+        let force = fact * rn;
+        force.tensorial(r)
+    }
+}
+
+impl_box_clone!(PairPotential, BoxClonePair, box_clone_pair);
+
+/// Potential that can be used for molecular angles.
+pub trait AnglePotential : Potential + BoxCloneAngle {}
+impl_box_clone!(AnglePotential, BoxCloneAngle, box_clone_angle);
+
+/// Potential that can be used for molecular dihedral angles.
+pub trait DihedralPotential : Potential + BoxCloneDihedral {}
+impl_box_clone!(DihedralPotential, BoxCloneDihedral, box_clone_dihedral);
 
 mod functions;
-pub use self::functions::PotentialFunction;
-pub use self::functions::{PairPotential, AnglePotential, DihedralPotential};
 pub use self::functions::{NullPotential, LennardJones, Harmonic, CosineHarmonic};
 pub use self::functions::Torsion;
 
