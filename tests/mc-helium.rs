@@ -19,12 +19,11 @@ fn get_system() -> System {
                                         .unwrap();
     system.set_cell(UnitCell::cubic(10.0));
 
-    system.interactions_mut().add_pair("He", "He",
-        Box::new(LennardJones{
-            sigma: units::from(2.0, "A").unwrap(),
-            epsilon: units::from(0.2, "kJ/mol").unwrap()
-        })
-    );
+    let lj = Box::new(LennardJones{
+        sigma: units::from(2.0, "A").unwrap(),
+        epsilon: units::from(0.2, "kJ/mol").unwrap()
+    });
+    system.interactions_mut().add_pair("He", "He", PairInteraction::new(lj, 5.0));
     return system;
 }
 

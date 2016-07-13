@@ -41,12 +41,11 @@ fn main() {
     system[1].position = Vector3D::new(1.5, 0.0, 0.0);
 
     // We can now use our new potential in the system
-    system.interactions_mut().add_pair("F", "F",
-        Box::new(LJ {
-            a: units::from(675.5, "kJ/mol/A^12").unwrap(),
-            b: units::from(40.26, "kJ/mol/A^6").unwrap()
-        }
-    ));
+    let lj = Box::new(LJ {
+        a: units::from(675.5, "kJ/mol/A^12").unwrap(),
+        b: units::from(40.26, "kJ/mol/A^6").unwrap()
+    });
+    system.interactions_mut().add_pair("F", "F", PairInteraction::new(lj, 10.0));
 
     let mut simulation = Simulation::new(Box::new(
         MolecularDynamics::new(units::from(1.0, "fs").unwrap())

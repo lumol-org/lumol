@@ -7,7 +7,7 @@ use input::error::{Error, Result};
 use input::FromToml;
 use super::{FromTomlWithPairs, read_restriction};
 
-use potentials::{PairPotential, BondPotential};
+use potentials::{PairPotential, PairInteraction, BondPotential};
 use potentials::{Harmonic, LennardJones, NullPotential};
 use potentials::{TableComputation, CutoffComputation};
 
@@ -42,12 +42,12 @@ pub fn read_pairs(system: &mut System, pairs: &[Value]) -> Result<()> {
             potential
         };
 
-        match try!(read_restriction(pair)) {
-            Some(restriction) => {
-                system.interactions_mut().add_pair_with_restriction(a, b, potential, restriction);
-            },
-            None => system.interactions_mut().add_pair(a, b, potential)
+        // TODO: get the real cutoff
+        let mut interaction = PairInteraction::new(potential, 10000.0);
+        if let Some(restriction) = try!(read_restriction(pair)) {
+            interaction.set_restriction(restriction);
         }
+        system.interactions_mut().add_pair(a, b, interaction);
     }
     Ok(())
 }

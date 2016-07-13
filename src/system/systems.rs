@@ -12,6 +12,7 @@ use std::cmp::{min, max};
 use std::iter::IntoIterator;
 use std::i8;
 
+use potentials::PairInteraction;
 use potentials::{BondPotential, AnglePotential, DihedralPotential};
 use types::{Vector3D, Matrix3};
 
@@ -19,7 +20,7 @@ use super::{Particle, ParticleKind};
 use super::Molecule;
 use super::{CONNECT_12, CONNECT_13, CONNECT_14, CONNECT_FAR};
 use super::UnitCell;
-use super::interactions::{Interactions, PairInteraction};
+use super::interactions::Interactions;
 use super::EnergyEvaluator;
 use super::molecules::moltype;
 

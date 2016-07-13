@@ -8,9 +8,8 @@ use std::collections::BTreeMap;
 use std::cmp::max;
 use std::cell::RefCell;
 
-use potentials::{PairPotential, BondPotential, AnglePotential, DihedralPotential};
+use potentials::{PairInteraction, BondPotential, AnglePotential, DihedralPotential};
 use potentials::{GlobalPotential, CoulombicPotential};
-use potentials::PairRestriction;
 
 use system::ParticleKind as Kind;
 
@@ -66,9 +65,6 @@ impl ParticleKinds {
     if max(i, j) < max(k, m) { (i, j, k, m) } else { (m, k, j, i) }
 }
 
-/// Type associating a potential and a pair restriction
-pub type PairInteraction = (Box<PairPotential>, PairRestriction);
-
 /// The Interaction type hold all data about the potentials in the system,
 /// indexed by particle type.
 #[derive(Clone)]
@@ -113,17 +109,11 @@ impl Interactions {
     }
 
     /// Add the `potential` pair interaction for the pair `(i, j)`
-    pub fn add_pair(&mut self, i: &str, j: &str, potential: Box<PairPotential>) {
-        self.add_pair_with_restriction(i, j, potential, PairRestriction::None);
-    }
-
-    /// Add the `potential` pair interaction for the pair `(i, j)`, with the
-    /// restriction scheme `restrict`.
-    pub fn add_pair_with_restriction(&mut self, i: &str, j: &str, potential: Box<PairPotential>, restrict: PairRestriction) {
+    pub fn add_pair(&mut self, i: &str, j: &str, potential: PairInteraction) {
         let (i, j) = (self.get_kind(i), self.get_kind(j));
         let (i, j) = sort_pair(i, j);
         let pairs = self.pairs.entry((i, j)).or_insert(Vec::new());
-        pairs.push((potential, restrict));
+        pairs.push(potential);
     }
 
     /// Add the `potential` bonded interaction for the pair `(i, j)`
@@ -249,7 +239,7 @@ impl Interactions {
 #[cfg(test)]
 mod test {
     use super::*;
-    use potentials::{Harmonic, Wolf};
+    use potentials::{Harmonic, Wolf, PairInteraction};
     use system::ParticleKind as Kind;
 
     #[test]
@@ -267,13 +257,13 @@ mod test {
     #[test]
     fn pairs() {
         let mut interactions = Interactions::new();
-
-        interactions.add_pair("H", "O", Box::new(Harmonic{x0: 0.0, k: 0.0}));
+        let pair = PairInteraction::new(Box::new(Harmonic{x0: 0.0, k: 0.0}), 0.0);
+        interactions.add_pair("H", "O", pair.clone());
         assert_eq!(interactions.pairs(Kind(0), Kind(1)).len(), 1);
         assert_eq!(interactions.pairs(Kind(1), Kind(0)).len(), 1);
 
         assert_eq!(interactions.pairs(Kind(0), Kind(0)).len(), 0);
-        interactions.add_pair("H", "H", Box::new(Harmonic{x0: 0.0, k: 0.0}));
+        interactions.add_pair("H", "H", pair.clone());
         assert_eq!(interactions.pairs(Kind(0), Kind(0)).len(), 1);
     }
 

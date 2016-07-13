@@ -20,9 +20,10 @@ fn main() {
 
     {
         let interactions = system.interactions_mut();
-        interactions.add_pair("O", "H", Box::new(NullPotential));
-        interactions.add_pair("O", "O", Box::new(NullPotential));
-        interactions.add_pair("H", "H", Box::new(NullPotential));
+        let null_interaction = PairInteraction::new(Box::new(NullPotential), 10.0);
+        interactions.add_pair("O", "H", null_interaction.clone());
+        interactions.add_pair("O", "O", null_interaction.clone());
+        interactions.add_pair("H", "H", null_interaction.clone());
 
         interactions.add_bond("O", "H", Box::new(Harmonic{
             x0: units::from(1.1, "A").unwrap(),
