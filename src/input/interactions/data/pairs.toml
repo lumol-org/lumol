@@ -10,12 +10,6 @@ atoms = ["A", "B"]
 harmonic = {x0 = "3 A", k = "5.9 kJ/mol/A^2"}
 
 [[pairs]]
-# Cutoff computations
-atoms = ["A", "B"]
-null = {}
-computation = {cutoff = "8 A"}
-
-[[pairs]]
 # Table computations
 atoms = ["A", "B"]
 null = {}

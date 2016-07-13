@@ -9,7 +9,7 @@ use super::{FromTomlWithPairs, read_restriction};
 
 use potentials::{PairPotential, PairInteraction, BondPotential};
 use potentials::{Harmonic, LennardJones, NullPotential};
-use potentials::{TableComputation, CutoffComputation};
+use potentials::TableComputation;
 
 /// Read either the "pairs" section from the configuration.
 pub fn read_pairs(system: &mut System, pairs: &[Value]) -> Result<()> {
@@ -139,9 +139,6 @@ fn read_pair_computation(computation: &Table, potential: Box<PairPotential>) -> 
     }
 
     match computation.keys().map(|s| s.as_ref()).next() {
-        Some("cutoff") => Ok(
-            Box::new(try!(CutoffComputation::from_toml(computation, potential)))
-        ),
         Some("table") => Ok(
             Box::new(try!(TableComputation::from_toml(computation, potential)))
         ),
@@ -168,7 +165,7 @@ mod tests {
 
         read_interactions(&mut system, data_root.join("pairs.toml")).unwrap();
 
-        assert_eq!(system.pair_potentials(0, 1).len(), 10);
+        assert_eq!(system.pair_potentials(0, 1).len(), 9);
     }
 
     #[test]

@@ -107,8 +107,7 @@ pub use self::functions::{NullPotential, LennardJones, Harmonic, CosineHarmonic}
 pub use self::functions::Torsion;
 
 mod computations;
-pub use self::computations::Computation;
-pub use self::computations::{TableComputation, CutoffComputation};
+pub use self::computations::{Computation, TableComputation};
 
 mod restrictions;
 pub use self::restrictions::{PairRestriction, RestrictionInfo};
