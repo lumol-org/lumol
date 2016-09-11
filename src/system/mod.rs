@@ -12,7 +12,7 @@ mod particles;
 pub use self::particles::{Particle, ParticleKind};
 
 mod cells;
-pub use self::cells::{UnitCell, CellType};
+pub use self::cells::{UnitCell, CellShape};
 
 pub mod velocities;
 pub use self::velocities::InitVelocities;

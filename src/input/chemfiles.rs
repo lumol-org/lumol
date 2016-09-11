@@ -2,7 +2,7 @@
 // Copyright (C) 2015-2016 G. Fraux — BSD license
 
 //! [Chemfiles](https://github.com/chemfiles/chemfiles/) adaptators for Cymbalum.
-use system::{System, Particle, Molecule, UnitCell, CellType};
+use system::{System, Particle, Molecule, UnitCell, CellShape};
 use types::Vector3D;
 use chemfiles;
 use input::error::TrajectoryError;
@@ -126,15 +126,15 @@ impl ToChemfiles for Particle {
 impl ToChemfiles for UnitCell {
     type Output = chemfiles::UnitCell;
     fn to_chemfiles(&self) -> TrajectoryResult<chemfiles::UnitCell> {
-        let res = match self.celltype() {
-            CellType::Infinite => {
+        let res = match self.shape() {
+            CellShape::Infinite => {
                 try!(chemfiles::UnitCell::infinite())
             }
-            CellType::Orthorombic => {
+            CellShape::Orthorombic => {
                 let (a, b, c) = (self.a(), self.b(), self.c());
                 try!(chemfiles::UnitCell::new(a, b, c))
             },
-            CellType::Triclinic => {
+            CellShape::Triclinic => {
                 let (a, b, c) = (self.a(), self.b(), self.c());
                 let (alpha, beta, gamma) = (self.alpha(), self.beta(), self.gamma());
                 try!(chemfiles::UnitCell::triclinic(a, b, c, alpha, beta, gamma))

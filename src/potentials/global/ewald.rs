@@ -6,7 +6,7 @@ use special::Error;
 use std::f64::consts::{PI, FRAC_2_SQRT_PI};
 use std::f64;
 
-use system::{System, UnitCell, CellType};
+use system::{System, UnitCell, CellShape};
 use types::{Matrix3, Vector3D, Array3, Complex, Zero};
 use constants::ELCC;
 use potentials::{PairRestriction, RestrictionInfo};
@@ -77,14 +77,14 @@ impl Ewald {
                 return;
             }
         }
-        match cell.celltype() {
-            CellType::Infinite => {
+        match cell.shape() {
+            CellShape::Infinite => {
                 fatal_error!("Can not use Ewald sum with Infinite cell.");
             },
-            CellType::Triclinic => {
+            CellShape::Triclinic => {
                 fatal_error!("Can not (yet) use Ewald sum with Triclinic cell.");
             },
-            CellType::Orthorombic => {
+            CellShape::Orthorombic => {
                 // All good!
             },
         }
