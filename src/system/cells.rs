@@ -20,7 +20,12 @@ pub enum CellShape {
     Triclinic,
 }
 
-/// The System type hold all the data about a system.
+/// An UnitCell defines the system physical boundaries.
+///
+/// The shape of the cell can be any of the [`CellShape`][CellShape], and will
+/// influe on how periodic boundary conditions are applied.
+///
+/// [CellShape]: enum.CellShape.html
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct UnitCell {
     /// Unit cell matrix

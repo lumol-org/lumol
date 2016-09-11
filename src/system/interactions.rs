@@ -112,12 +112,12 @@ impl Interactions {
         self.kinds.kind(name)
     }
 
-    /// Add the `potential` pair interaction to the pair `(i, j)`
+    /// Add the `potential` pair interaction for the pair `(i, j)`
     pub fn add_pair(&mut self, i: &str, j: &str, potential: Box<PairPotential>) {
         self.add_pair_with_restriction(i, j, potential, PairRestriction::None);
     }
 
-    /// Add the `potential` pair interaction to the pair `(i, j)`, with the
+    /// Add the `potential` pair interaction for the pair `(i, j)`, with the
     /// restriction scheme `restrict`.
     pub fn add_pair_with_restriction(&mut self, i: &str, j: &str, potential: Box<PairPotential>, restrict: PairRestriction) {
         let (i, j) = (self.get_kind(i), self.get_kind(j));
@@ -126,7 +126,7 @@ impl Interactions {
         pairs.push((potential, restrict));
     }
 
-    /// Add the `potential` bonded interaction to the pair `(i, j)`
+    /// Add the `potential` bonded interaction for the pair `(i, j)`
     pub fn add_bond(&mut self, i: &str, j: &str, potential: Box<PairPotential>) {
         let (i, j) = (self.get_kind(i), self.get_kind(j));
         let (i, j) = sort_pair(i, j);
@@ -134,7 +134,7 @@ impl Interactions {
         bonds.push(potential);
     }
 
-    /// Add the `potential` angle interaction to the angle `(i, j, k)`
+    /// Add the `potential` angle interaction for the angle `(i, j, k)`
     pub fn add_angle(&mut self, i: &str, j: &str, k: &str, potential: Box<AnglePotential>) {
         let (i, j, k) = (self.get_kind(i), self.get_kind(j), self.get_kind(k));
         let (i, j, k) = sort_angle(i, j, k);
@@ -142,7 +142,8 @@ impl Interactions {
         angles.push(potential);
     }
 
-    /// Add the `potential` dihedral interaction to the dihedral `(i, j, k, m)`
+    /// Add the `potential` dihedral interaction for the dihedral angle `(i, j,
+    /// k, m)`
     pub fn add_dihedral(&mut self, i: &str, j: &str, k: &str, m: &str, potential: Box<DihedralPotential>) {
         let (i, j, k, m) = (self.get_kind(i), self.get_kind(j), self.get_kind(k), self.get_kind(m));
         let (i, j, k, m) = sort_dihedral(i, j, k, m);
