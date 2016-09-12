@@ -14,7 +14,7 @@ use potentials::{Harmonic, LennardJones, NullPotential};
 use potentials::TableComputation;
 
 /// Read the "pairs" section from the configuration.
-pub fn read_pairs(system: &mut System, pairs: &[Value], global_cutoff: Option<f64>) -> Result<()> {
+pub fn read_pairs(system: &mut System, pairs: &[Value], global_cutoff: Option<&Value>) -> Result<()> {
     for pair in pairs {
         let pair = try!(pair.as_table().ok_or(
             Error::from("Pair potential entry must be a table")
@@ -44,19 +44,37 @@ pub fn read_pairs(system: &mut System, pairs: &[Value], global_cutoff: Option<f6
             potential
         };
 
-        let cutoff = if pair.get("cutoff").is_some() {
-            let cutoff = extract_str!("cutoff", pair as "pair potential");
-            try!(units::from_str(cutoff))
-        } else {
-            try!(global_cutoff.ok_or(Error::from(
+        let cutoff = match pair.get("cutoff") {
+            Some(cutoff) => cutoff,
+            None => try!(global_cutoff.ok_or(Error::from(
                 "Missing 'cutoff' value for pair potential"
             )))
         };
 
-        let mut interaction = PairInteraction::new(potential, cutoff);
+        let mut interaction = match cutoff {
+            &Value::String(ref cutoff) => {
+                let cutoff = try!(units::from_str(cutoff));
+                PairInteraction::new(potential, cutoff)
+            }
+            &Value::Table(ref table) => {
+                let shifted = try!(table.get("shifted").ok_or(Error::from(
+                    "'cutoff' table can only contain 'shifted' key"
+                )));
+                let cutoff = try!(shifted.as_str().ok_or(Error::from(
+                    "'cutoff.shifted' value must be a string"
+                )));
+                let cutoff = try!(units::from_str(cutoff));
+                PairInteraction::shifted(potential, cutoff)
+            }
+            _ => return Err(Error::from(
+                "'cutoff' must be a string or a table in pair potential"
+            ))
+        };
+
         if let Some(restriction) = try!(read_restriction(pair)) {
             interaction.set_restriction(restriction);
         }
+
         system.interactions_mut().add_pair(a, b, interaction);
     }
     Ok(())
@@ -177,7 +195,7 @@ mod tests {
 
         read_interactions(&mut system, data_root.join("pairs.toml")).unwrap();
 
-        assert_eq!(system.pair_potentials(0, 1).len(), 10);
+        assert_eq!(system.pair_potentials(0, 1).len(), 11);
     }
 
     #[test]

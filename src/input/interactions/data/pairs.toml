@@ -59,3 +59,9 @@ restriction = {scale14 = 0.8}
 atoms = ["A", "B"]
 harmonic = {x0 = "3 A", k = "5.9 kJ/mol/A^2"}
 cutoff = "18 A"
+
+[[pairs]]
+# Shifted cutoff treatment
+atoms = ["A", "B"]
+harmonic = {x0 = "3 A", k = "5.9 kJ/mol/A^2"}
+cutoff = {shifted = "18 A"}
