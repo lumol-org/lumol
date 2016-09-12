@@ -8,6 +8,7 @@ use std::path::Path;
 
 use system::System;
 use potentials::{PairPotential, PairRestriction};
+use units;
 
 use input::{Error, Result};
 use input::validate;
@@ -62,7 +63,25 @@ pub fn read_interactions_toml(system: &mut System, config: &Table) -> Result<()>
         let pairs = try!(pairs.as_slice().ok_or(
             Error::from("The 'pairs' section must be an array")
         ));
-        try!(read_pairs(system, pairs));
+
+        let cutoff = if let Some(global) = config.get("global") {
+            let global = try!(global.as_table().ok_or(Error::from(
+                "'global' section must be a table"
+            )));
+            match global.get("cutoff") {
+                None => None,
+                Some(toml) => {
+                    let cutoff = try!(toml.as_str().ok_or(Error::from(
+                        "'global.cutoff' entry must be a string"
+                    )));
+                    Some(try!(units::from_str(cutoff)))
+                }
+            }
+        } else {
+            None
+        };
+
+        try!(read_pairs(system, pairs, cutoff));
     }
 
     if let Some(bonds) = config.get("bonds") {

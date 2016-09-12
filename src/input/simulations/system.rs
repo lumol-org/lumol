@@ -161,7 +161,7 @@ mod tests {
         let last = system.size();
         system.add_particle(Particle::new("A"));
         system.add_particle(Particle::new("B"));
-        assert_eq!(system.pair_potentials(last, last + 1).len(), 9);
+        assert_eq!(system.pair_potentials(last, last + 1).len(), 10);
     }
 
     #[test]

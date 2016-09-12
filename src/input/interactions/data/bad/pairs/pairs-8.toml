@@ -1,0 +1,10 @@
+[input]
+version = 1
+
+[global]
+# cutoff value is not a string
+cutoff = 2
+
+[[pairs]]
+atoms = ["A", "A"]
+lj = {sigma = "3 A", epsilon = "5.9 kJ/mol"}

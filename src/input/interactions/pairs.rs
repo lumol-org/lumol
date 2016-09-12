@@ -3,6 +3,8 @@
 use toml::{Value, Table};
 
 use system::System;
+use units;
+
 use input::error::{Error, Result};
 use input::FromToml;
 use super::{FromTomlWithPairs, read_restriction};
@@ -11,8 +13,8 @@ use potentials::{PairPotential, PairInteraction, BondPotential};
 use potentials::{Harmonic, LennardJones, NullPotential};
 use potentials::TableComputation;
 
-/// Read either the "pairs" section from the configuration.
-pub fn read_pairs(system: &mut System, pairs: &[Value]) -> Result<()> {
+/// Read the "pairs" section from the configuration.
+pub fn read_pairs(system: &mut System, pairs: &[Value], global_cutoff: Option<f64>) -> Result<()> {
     for pair in pairs {
         let pair = try!(pair.as_table().ok_or(
             Error::from("Pair potential entry must be a table")
@@ -42,8 +44,16 @@ pub fn read_pairs(system: &mut System, pairs: &[Value]) -> Result<()> {
             potential
         };
 
-        // TODO: get the real cutoff
-        let mut interaction = PairInteraction::new(potential, 10000.0);
+        let cutoff = if pair.get("cutoff").is_some() {
+            let cutoff = extract_str!("cutoff", pair as "pair potential");
+            try!(units::from_str(cutoff))
+        } else {
+            try!(global_cutoff.ok_or(Error::from(
+                "Missing 'cutoff' value for pair potential"
+            )))
+        };
+
+        let mut interaction = PairInteraction::new(potential, cutoff);
         if let Some(restriction) = try!(read_restriction(pair)) {
             interaction.set_restriction(restriction);
         }
@@ -77,8 +87,10 @@ pub fn read_bonds(system: &mut System, bonds: &[Value]) -> Result<()> {
 
 
 fn read_pair_potential(pair: &Table) -> Result<Box<PairPotential>> {
+    const KEYWORDS: &'static[&'static str] = &["restriction", "computation", "atoms", "cutoff"];
+
     let potentials = pair.keys().cloned()
-                    .filter(|k| k != "restriction" && k != "computation" && k != "atoms")
+                    .filter(|key| !KEYWORDS.contains(&key.as_ref()))
                     .collect::<Vec<_>>();
 
     if potentials.len() != 1 {
@@ -165,7 +177,7 @@ mod tests {
 
         read_interactions(&mut system, data_root.join("pairs.toml")).unwrap();
 
-        assert_eq!(system.pair_potentials(0, 1).len(), 9);
+        assert_eq!(system.pair_potentials(0, 1).len(), 10);
     }
 
     #[test]
