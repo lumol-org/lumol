@@ -1,6 +1,9 @@
 [input]
 version = 1
 
+[global]
+cutoff = "11 A"
+
 [[pairs]]
 atoms = ["Na", "Cl"]
 lj = {sigma = "3.5545 A", epsilon = "0.04425 kcal/mol"}

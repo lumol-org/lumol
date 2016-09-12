@@ -3,6 +3,7 @@ version = 1
 
 [[pairs]]
 atoms = ["C", "C"]
+cutoff = {shifted = "10 A"}
 lj = {sigma = "3.4 A", epsilon = "0.7 kcal/mol"}
 restriction = "InterMolecular"
 

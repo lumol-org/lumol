@@ -1,6 +1,9 @@
 [input]
 version = 1
 
+[global]
+cutoff = {shifted = "10 A"}
+
 [[pairs]]
 atoms = ["C", "C"]
 lj = {sigma = "3.7 A", epsilon = "0.2981 kcal/mol"}
