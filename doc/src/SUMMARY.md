@@ -12,7 +12,7 @@
     - [Adsorption in zeolites]()
 
 
-- [Input files](input/intro.md)
+- [Input files reference](input/intro.md)
     - [Systems](input/systems.md)
     - [Interactions](input/interactions.md)
     - [Potentials](input/potentials.md)
