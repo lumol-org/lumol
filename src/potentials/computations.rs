@@ -1,12 +1,12 @@
 // Cymbalum, an extensible molecular simulation engine
 // Copyright (C) 2015-2016 G. Fraux — BSD license
 
-use super::{PotentialFunction, PairPotential};
+use super::{Potential, PairPotential};
 
 /// Methods for energy and forces computation.
 ///
 /// A potential computation is a way of computing a potential given its
-/// expression (represented by a `PotentialFunction`). The same potential can be
+/// expression (represented by a `Potential`). The same potential can be
 /// computed either direcly, or using a cutoff, or by a table interpolation, ...
 pub trait Computation: Sync + Send {
     /// Compute the energy value at `r`
@@ -16,7 +16,7 @@ pub trait Computation: Sync + Send {
     fn compute_force(&self, r: f64) -> f64;
 }
 
-impl<P: Computation + Clone + 'static> PotentialFunction for P {
+impl<P: Computation + Clone + 'static> Potential for P {
     #[inline] fn energy(&self, r:f64) -> f64 {
         self.compute_energy(r)
     }
@@ -26,52 +26,6 @@ impl<P: Computation + Clone + 'static> PotentialFunction for P {
     }
 }
 
-/******************************************************************************/
-/// Computation of a potential with a cutoff.
-///
-/// Energy is shifted to ensure `E(rc) = 0`, where `rc` is the cutoff distance.
-#[derive(Clone)]
-pub struct CutoffComputation {
-    /// Potential to compute
-    potential: Box<PairPotential>,
-    /// Cutoff distance
-    cutoff: f64,
-    /// Energy at cutoff
-    delta: f64,
-}
-
-impl CutoffComputation {
-    /// Create a new `CutoffComputation` for `potential`, with cutoff distance
-    /// of `cutoff`.
-    pub fn new(potential: Box<PairPotential>, cutoff: f64) -> CutoffComputation {
-        let delta = potential.energy(cutoff);
-        CutoffComputation{potential: potential, cutoff: cutoff, delta: delta}
-    }
-}
-
-impl Computation for CutoffComputation {
-    #[inline]
-    fn compute_energy(&self, r: f64) -> f64 {
-        if r > self.cutoff {
-            return 0.0;
-        } else {
-            return self.potential.energy(r) - self.delta;
-        }
-    }
-
-    #[inline]
-    fn compute_force(&self, r: f64) -> f64 {
-        if r > self.cutoff {
-            return 0.0;
-        } else {
-            return self.potential.force(r);
-        }
-    }
-}
-
-impl PairPotential for CutoffComputation {}
-
-/******************************************************************************/
 /// Computation of a potential using tabulated values.
 ///
 /// This can be faster than direct computation for smooth potentials, but will
@@ -149,17 +103,6 @@ impl PairPotential for TableComputation {}
 mod test {
     use super::*;
     use potentials::Harmonic;
-
-    #[test]
-    fn cutoff() {
-        let cutoff = CutoffComputation::new(Box::new(Harmonic{k: 50.0, x0: 2.0}), 4.0);
-
-        assert_eq!(cutoff.compute_force(2.5), -25.0);
-        assert_eq!(cutoff.compute_energy(2.5), -93.75);
-
-        assert_eq!(cutoff.compute_force(4.1), 0.0);
-        assert_eq!(cutoff.compute_energy(4.1), 0.0);
-    }
 
     #[test]
     fn table() {

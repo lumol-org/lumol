@@ -18,7 +18,7 @@ mod pairs;
 mod angles;
 mod coulomb;
 
-use self::pairs::{TwoBody, read_2body};
+use self::pairs::{read_pairs, read_bonds};
 use self::angles::{read_angles, read_dihedrals};
 use self::coulomb::{read_coulomb, set_charges};
 
@@ -62,14 +62,24 @@ pub fn read_interactions_toml(system: &mut System, config: &Table) -> Result<()>
         let pairs = try!(pairs.as_slice().ok_or(
             Error::from("The 'pairs' section must be an array")
         ));
-        try!(read_2body(system, pairs, TwoBody::Pairs));
+
+        let cutoff = if let Some(global) = config.get("global") {
+            let global = try!(global.as_table().ok_or(Error::from(
+                "'global' section must be a table"
+            )));
+            global.get("cutoff")
+        } else {
+            None
+        };
+
+        try!(read_pairs(system, pairs, cutoff));
     }
 
     if let Some(bonds) = config.get("bonds") {
         let bonds = try!(bonds.as_slice().ok_or(
             Error::from("The 'bonds' section must be an array")
         ));
-        try!(read_2body(system, bonds, TwoBody::Bonds));
+        try!(read_bonds(system, bonds));
     }
 
     if let Some(angles) = config.get("angles") {

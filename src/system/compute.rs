@@ -5,6 +5,7 @@
 use constants::K_BOLTZMANN;
 use types::{Matrix3, Vector3D, Zero, One};
 use system::System;
+use potentials::{Potential, Virial as VirialTrait};
 
 /// The compute trait allow to compute properties of a system, whithout
 /// modifying this system. The Output type is the type of the computed
@@ -31,8 +32,8 @@ impl Compute for Forces {
                 let d = system.nearest_image(i, j);
                 let dn = d.normalized();
                 let r = d.norm();
-                for &(ref potential, ref restriction) in system.pair_potentials(i, j) {
-                    let info = restriction.informations(system, i, j);
+                for potential in system.pair_potentials(i, j) {
+                    let info = potential.restriction().informations(system, i, j);
                     if !info.excluded {
                         let force = info.scaling * potential.force(r) * dn;
                         res[i] += force;
@@ -178,8 +179,8 @@ impl Compute for Virial {
         let mut res = Matrix3::zero();
         for i in 0..system.size() {
             for j in (i+1)..system.size() {
-                for &(ref potential, ref restriction) in system.pair_potentials(i, j) {
-                    let info = restriction.informations(system, i, j);
+                for potential in system.pair_potentials(i, j) {
+                    let info = potential.restriction().informations(system, i, j);
                     if !info.excluded {
                         let d = system.nearest_image(i, j);
                         res += info.scaling * potential.virial(&d);
@@ -284,7 +285,7 @@ mod test {
     use types::*;
     use system::{System, Particle, UnitCell};
     use system::{InitVelocities, BoltzmannVelocities};
-    use potentials::{Harmonic, NullPotential};
+    use potentials::{Harmonic, NullPotential, PairInteraction};
     use constants::K_BOLTZMANN;
     use utils::unit_from;
 
@@ -297,11 +298,12 @@ mod test {
         system.add_particle(Particle::new("F"));
         system[1].position = Vector3D::new(1.3, 0.0, 0.0);
 
+        let lj = Box::new(Harmonic{
+            k: unit_from(300.0, "kJ/mol/A^2"),
+            x0: unit_from(1.2, "A")
+        });
         system.interactions_mut().add_pair("F", "F",
-            Box::new(Harmonic{
-                k: unit_from(300.0, "kJ/mol/A^2"),
-                x0: unit_from(1.2, "A")
-            })
+            PairInteraction::new(lj, 5.0)
         );
 
         let mut velocities = BoltzmannVelocities::new(unit_from(300.0, "K"));
@@ -325,7 +327,7 @@ mod test {
         assert!(system.add_bond(2, 3).is_empty());
 
         system.interactions_mut().add_pair("F", "F",
-            Box::new(NullPotential)
+            PairInteraction::new(Box::new(NullPotential), 0.0)
         );
 
         system.interactions_mut().add_bond("F", "F",

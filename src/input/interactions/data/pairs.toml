@@ -1,6 +1,9 @@
 [input]
 version = 1
 
+[global]
+cutoff = "3 A"
+
 [[pairs]]
 atoms = ["A", "B"]
 lj = {sigma = "3 A", epsilon = "5.9 kJ/mol"}
@@ -8,12 +11,6 @@ lj = {sigma = "3 A", epsilon = "5.9 kJ/mol"}
 [[pairs]]
 atoms = ["A", "B"]
 harmonic = {x0 = "3 A", k = "5.9 kJ/mol/A^2"}
-
-[[pairs]]
-# Cutoff computations
-atoms = ["A", "B"]
-null = {}
-computation = {cutoff = "8 A"}
 
 [[pairs]]
 # Table computations
@@ -56,3 +53,15 @@ restriction = "exclude14"
 atoms = ["A", "B"]
 null = {}
 restriction = {scale14 = 0.8}
+
+[[pairs]]
+# Cutoff
+atoms = ["A", "B"]
+harmonic = {x0 = "3 A", k = "5.9 kJ/mol/A^2"}
+cutoff = "18 A"
+
+[[pairs]]
+# Shifted cutoff treatment
+atoms = ["A", "B"]
+harmonic = {x0 = "3 A", k = "5.9 kJ/mol/A^2"}
+cutoff = {shifted = "18 A"}

@@ -292,6 +292,9 @@ mod tests {
         [input]
         version = 1
 
+        [global]
+        cutoff = "3 A"
+
         # Values are completely random, just having a bit of all the types
         [[pairs]]
         atoms = ["H", "H"]

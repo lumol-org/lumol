@@ -1,4 +1,4 @@
-# Input files
+# Input files syntax reference
 
 Cymbalum input files uses the [TOML][TOML] format, a simple and minimalist
 configuration format based on `key = value` pairs. You can read an introduction

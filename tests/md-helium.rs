@@ -26,13 +26,12 @@ fn get_system() -> System {
 
 fn get_system_with_interaction() -> System {
     let mut system = get_system();
-    system.interactions_mut().add_pair("He", "He",
-        Box::new(LennardJones{
-            sigma: units::from(2.0, "A").unwrap(),
-            epsilon: units::from(0.2, "kJ/mol").unwrap()
-        })
-    );
+    let lj = Box::new(LennardJones{
+        sigma: units::from(2.0, "A").unwrap(),
+        epsilon: units::from(0.2, "kJ/mol").unwrap()
+    });
 
+    system.interactions_mut().add_pair("He", "He", PairInteraction::new(lj, 10.0));
     return system;
 }
 
@@ -128,18 +127,16 @@ fn berendsen_barostat() {
 }
 
 #[test]
-fn cutoff_computation() {
+fn shifted() {
     START.call_once(|| {Logger::stdout();});
     let mut system = get_system();
 
+    let lj = Box::new(LennardJones{
+        sigma: units::from(2.0, "A").unwrap(),
+        epsilon: units::from(0.2, "kJ/mol").unwrap()
+    });
     system.interactions_mut().add_pair("He", "He",
-        Box::new(CutoffComputation::new(
-            Box::new(LennardJones{
-                sigma: units::from(2.0, "A").unwrap(),
-                epsilon: units::from(0.2, "kJ/mol").unwrap()
-            }),
-            units::from(7.0, "A").unwrap()
-        ))
+        PairInteraction::shifted(lj, units::from(7.0, "A").unwrap())
     );
 
     let mut simulation = Simulation::new(Box::new(
@@ -161,15 +158,16 @@ fn table_computation() {
     START.call_once(|| {Logger::stdout();});
     let mut system = get_system();
 
+    let potential = Box::new(TableComputation::new(
+        Box::new(LennardJones{
+            sigma: units::from(2.0, "A").unwrap(),
+            epsilon: units::from(0.2, "kJ/mol").unwrap()
+        }),
+        1000,
+        units::from(7.0, "A").unwrap()
+    ));
     system.interactions_mut().add_pair("He", "He",
-        Box::new(TableComputation::new(
-            Box::new(LennardJones{
-                sigma: units::from(2.0, "A").unwrap(),
-                epsilon: units::from(0.2, "kJ/mol").unwrap()
-            }),
-            1000,
-            units::from(7.0, "A").unwrap()
-        ))
+        PairInteraction::new(potential, units::from(7.0, "A").unwrap())
     );
 
     let mut simulation = Simulation::new(Box::new(

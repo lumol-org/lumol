@@ -26,7 +26,6 @@ pub use self::molecules::Molecule;
 pub use self::molecules::moltype;
 
 mod interactions;
-pub use self::interactions::PairInteraction;
 
 mod energy;
 pub use self::energy::EnergyEvaluator;
@@ -40,9 +39,3 @@ pub use self::systems::Permutations;
 
 pub mod compute;
 pub use self::compute::Compute;
-pub use self::compute::Forces;
-pub use self::compute::{PotentialEnergy, KineticEnergy, TotalEnergy};
-pub use self::compute::Temperature;
-pub use self::compute::Volume;
-pub use self::compute::{Virial, Stress, Pressure};
-pub use self::compute::{StressAtTemperature, PressureAtTemperature};

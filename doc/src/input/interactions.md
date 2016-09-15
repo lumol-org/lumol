@@ -15,6 +15,9 @@ An example of an input file for the f-SPC model of water is given bellow:
 [input]
 version = 1
 
+[global]
+cutoff = "12.5 A"
+
 [[pairs]]
 atoms = ["O", "O"]
 lj = {sigma = "3.16 A", epsilon = "0.155 kcal/mol"}
@@ -61,10 +64,17 @@ atoms = ["C", "H"]
 harmonic = {x0 = "3.405 A", k = "2385 kcal/mol/A^2"}
 ```
 
-It is also possible in the `pairs` section to specify an additional
-[restriction](input/potentials.html#Restrictions) using the `restriction` key;
-or a [computation method](input/potentials.html#Potential%20computations) using
-the `computation` key.
+Within the `pairs` section, additional information about how to compute the
+pair potential can be given:
+
+- A [restriction](input/potentials.html#Restrictions) restrict the potential
+  to a subset of the pairs in the system with the `restriction` keyword;
+- A different [computation method](   
+  input/potentials.html#Potential%20computations) can be specified with the
+  `computation` keyword;
+- A different [cutoff treatment](
+  input/interactions.html#Cutoff%20treatment%20for%20pair%20interactions) is
+  specified by the `cutoff` keyword.
 
 ```toml
 [[pairs]]
@@ -74,13 +84,59 @@ computation = {table = {n = 2000, max = "20.0 A"}}
 restriction  = "IntraMolecular"
 ```
 
+### Cutoff treatment for pair interactions
+
+Two different cutoff treatments are available for pair interactions: a simple
+cutoff distance, or a shifted potential with a cutoff. With a simple cutoff the
+potential is only set to zero after the cutoff distance. With a shifted
+potential, the potential energy is shifted so that it is zero at the cutoff
+distance and after. This mean that the energy is continuous for the shifted
+potential, which is a desirable property for molecular dynamics stability.
+
+In the input files, a simple cutoff can be used with `cutoff = "8 A"`, and a
+shifted potential can be used with `cutoff = {shifted = "8 A"}`. The cutoff treatment can be set either globally in the `[global]` table:
+
+```toml
+[input]
+version = 1
+
+[global]
+cutoff = "8 A"
+
+[[pairs]]
+# ...
+# All pairs interaction will use a 8 A cutoff, unless specified otherwise.
+```
+
+or specifically for each pair interaction:
+
+```toml
+[input]
+version = 1
+
+[[pairs]]
+cutoff = "8 A"
+# ...
+
+[[pairs]]
+cutoff = {shifted: "7 A"}
+# ...
+
+[[pairs]]
+cutoff = "12 A"
+# ...
+```
+
+If a global cutoff is defined, defining another cutoff in a `pairs` section
+will override the global cutoff.
+
 ## Coulombic interactions
 
 The method for treatment of electrostatic interactions is specified in the
 `coulomb` section. There are multiple available solvers for [electrostatic
 interactions](input/potentials.html#Electrostatic%20interactions). Optionally,
-an additional [restriction](input/potentials.html#Restrictions) can be specified
-with the `restriction` key.
+an additional [restriction](input/potentials.html#Restrictions) can be
+specified with the `restriction` key.
 
 ```toml
 [coulomb]

@@ -3,22 +3,18 @@
 use toml::{Value, Table};
 
 use system::System;
+use units;
+
 use input::error::{Error, Result};
 use input::FromToml;
 use super::{FromTomlWithPairs, read_restriction};
 
-use potentials::PairPotential;
+use potentials::{PairPotential, PairInteraction, BondPotential};
 use potentials::{Harmonic, LennardJones, NullPotential};
-use potentials::{TableComputation, CutoffComputation};
+use potentials::TableComputation;
 
-pub enum TwoBody {
-    Pairs,
-    Bonds
-}
-
-/// Read either the "pairs" or the "bonds" section from the configuration. The
-/// `form` enum set where the interactions will be saved.
-pub fn read_2body(system: &mut System, pairs: &[Value], form: TwoBody) -> Result<()> {
+/// Read the "pairs" section from the configuration.
+pub fn read_pairs(system: &mut System, pairs: &[Value], global_cutoff: Option<&Value>) -> Result<()> {
     for pair in pairs {
         let pair = try!(pair.as_table().ok_or(
             Error::from("Pair potential entry must be a table")
@@ -27,12 +23,16 @@ pub fn read_2body(system: &mut System, pairs: &[Value], form: TwoBody) -> Result
         let atoms = extract_slice!("atoms", pair as "pair potential");
         if atoms.len() != 2 {
             return Err(Error::from(
-                format!("Wrong size for 'atoms' section in pair potentials. Should be 2, is {}", atoms.len())
+                format!("Wrong size for 'atoms' section in pair potential. Should be 2, is {}", atoms.len())
             ));
         }
 
-        let a = try!(atoms[0].as_str().ok_or(Error::from("The first atom name is not a string in pair potential")));
-        let b = try!(atoms[1].as_str().ok_or(Error::from("The second atom name is not a string in pair potential")));
+        let a = try!(atoms[0].as_str().ok_or(Error::from(
+            "The first atom name is not a string in pair potential"
+        )));
+        let b = try!(atoms[1].as_str().ok_or(Error::from(
+            "The second atom name is not a string in pair potential"
+        )));
 
         let potential = try!(read_pair_potential(pair));
         let potential = if let Some(computation) = pair.get("computation") {
@@ -44,27 +44,71 @@ pub fn read_2body(system: &mut System, pairs: &[Value], form: TwoBody) -> Result
             potential
         };
 
-        match form {
-            TwoBody::Pairs => {
-                match try!(read_restriction(pair)) {
-                    Some(restriction) => {
-                        system.interactions_mut().add_pair_with_restriction(a, b, potential, restriction);
-                    },
-                    None => system.interactions_mut().add_pair(a, b, potential)
-                }
-            },
-            TwoBody::Bonds => {
-                system.interactions_mut().add_bond(a, b, potential);
+        let cutoff = match pair.get("cutoff") {
+            Some(cutoff) => cutoff,
+            None => try!(global_cutoff.ok_or(Error::from(
+                "Missing 'cutoff' value for pair potential"
+            )))
+        };
+
+        let mut interaction = match cutoff {
+            &Value::String(ref cutoff) => {
+                let cutoff = try!(units::from_str(cutoff));
+                PairInteraction::new(potential, cutoff)
             }
+            &Value::Table(ref table) => {
+                let shifted = try!(table.get("shifted").ok_or(Error::from(
+                    "'cutoff' table can only contain 'shifted' key"
+                )));
+                let cutoff = try!(shifted.as_str().ok_or(Error::from(
+                    "'cutoff.shifted' value must be a string"
+                )));
+                let cutoff = try!(units::from_str(cutoff));
+                PairInteraction::shifted(potential, cutoff)
+            }
+            _ => return Err(Error::from(
+                "'cutoff' must be a string or a table in pair potential"
+            ))
+        };
+
+        if let Some(restriction) = try!(read_restriction(pair)) {
+            interaction.set_restriction(restriction);
         }
+
+        system.interactions_mut().add_pair(a, b, interaction);
+    }
+    Ok(())
+}
+
+/// Read the "bonds" section from the configuration.
+pub fn read_bonds(system: &mut System, bonds: &[Value]) -> Result<()> {
+    for bond in bonds {
+        let bond = try!(bond.as_table().ok_or(
+            Error::from("Bond potential entry must be a table")
+        ));
+
+        let atoms = extract_slice!("atoms", bond as "bond potential");
+        if atoms.len() != 2 {
+            return Err(Error::from(
+                format!("Wrong size for 'atoms' section in bond potential. Should be 2, is {}", atoms.len())
+            ));
+        }
+
+        let a = try!(atoms[0].as_str().ok_or(Error::from("The first atom name is not a string in pair potential")));
+        let b = try!(atoms[1].as_str().ok_or(Error::from("The second atom name is not a string in pair potential")));
+
+        let potential = try!(read_bond_potential(bond));
+        system.interactions_mut().add_bond(a, b, potential);
     }
     Ok(())
 }
 
 
 fn read_pair_potential(pair: &Table) -> Result<Box<PairPotential>> {
+    const KEYWORDS: &'static[&'static str] = &["restriction", "computation", "atoms", "cutoff"];
+
     let potentials = pair.keys().cloned()
-                    .filter(|k| k != "restriction" && k != "computation" && k != "atoms")
+                    .filter(|key| !KEYWORDS.contains(&key.as_ref()))
                     .collect::<Vec<_>>();
 
     if potentials.len() != 1 {
@@ -90,6 +134,33 @@ fn read_pair_potential(pair: &Table) -> Result<Box<PairPotential>> {
     }
 }
 
+fn read_bond_potential(pair: &Table) -> Result<Box<BondPotential>> {
+    let potentials = pair.keys().cloned()
+                    .filter(|k| k != "atoms")
+                    .collect::<Vec<_>>();
+
+    if potentials.len() != 1 {
+        return Err(Error::from(
+            format!("Got more than one potential type: {}", potentials.join(" - "))
+        ));
+    }
+
+    let key = &*potentials[0];
+    if let Value::Table(ref table) = pair[key] {
+        match key {
+            "null" => Ok(Box::new(try!(NullPotential::from_toml(table)))),
+            "harmonic" => Ok(Box::new(try!(Harmonic::from_toml(table)))),
+            other => Err(
+                Error::from(format!("Unknown potential type '{}'", other))
+            ),
+        }
+    } else {
+        Err(
+            Error::from(format!("potential '{}' must be a table", key))
+        )
+    }
+}
+
 /******************************************************************************/
 
 fn read_pair_computation(computation: &Table, potential: Box<PairPotential>) -> Result<Box<PairPotential>> {
@@ -98,9 +169,6 @@ fn read_pair_computation(computation: &Table, potential: Box<PairPotential>) -> 
     }
 
     match computation.keys().map(|s| s.as_ref()).next() {
-        Some("cutoff") => Ok(
-            Box::new(try!(CutoffComputation::from_toml(computation, potential)))
-        ),
         Some("table") => Ok(
             Box::new(try!(TableComputation::from_toml(computation, potential)))
         ),
@@ -127,7 +195,7 @@ mod tests {
 
         read_interactions(&mut system, data_root.join("pairs.toml")).unwrap();
 
-        assert_eq!(system.pair_potentials(0, 1).len(), 10);
+        assert_eq!(system.pair_potentials(0, 1).len(), 11);
     }
 
     #[test]

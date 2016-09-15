@@ -6,6 +6,7 @@
 //! This module provides simple function to compute separated components of the
 //! potential energy of an `System`.
 use system::System;
+use potentials::Potential;
 
 /// An helper struct to evaluate energy components of a system.
 pub struct EnergyEvaluator<'a> {
@@ -27,8 +28,8 @@ impl<'a> EnergyEvaluator<'a> {
     #[inline]
     pub fn pair(&self, r: f64, i: usize, j: usize) -> f64 {
         let mut energy = 0.0;
-        for &(ref potential, ref restriction) in self.system.pair_potentials(i, j) {
-            let info = restriction.informations(self.system, i, j);
+        for potential in self.system.pair_potentials(i, j) {
+            let info = potential.restriction().informations(self.system, i, j);
             if !info.excluded {
                 energy += info.scaling * potential.energy(r);
             }
@@ -144,7 +145,7 @@ impl<'a> EnergyEvaluator<'a> {
 mod tests {
     use super::*;
     use system::{System, Particle, UnitCell};
-    use potentials::{Harmonic, LennardJones};
+    use potentials::{Harmonic, LennardJones, PairInteraction};
     use types::Vector3D;
     use utils::unit_from;
 
@@ -163,11 +164,11 @@ mod tests {
         assert!(system.add_bond(1, 2).is_empty());
         assert!(system.add_bond(2, 3).is_empty());
 
-        system.interactions_mut().add_pair("F", "F",
-            Box::new(LennardJones {
-                epsilon: unit_from(100.0, "kJ/mol/A^2"),
-                sigma: unit_from(0.8, "A")
-        }));
+        let lj = Box::new(LennardJones {
+            epsilon: unit_from(100.0, "kJ/mol/A^2"),
+            sigma: unit_from(0.8, "A")
+        });
+        system.interactions_mut().add_pair("F", "F", PairInteraction::new(lj, 5.0));
 
         system.interactions_mut().add_bond("F", "F",
             Box::new(Harmonic{

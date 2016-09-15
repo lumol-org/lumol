@@ -10,7 +10,7 @@ use super::FromTomlWithPairs;
 
 use potentials::{Harmonic, LennardJones, NullPotential, CosineHarmonic, Torsion};
 use potentials::{Wolf, Ewald};
-use potentials::{PairPotential, TableComputation, CutoffComputation};
+use potentials::{PairPotential, TableComputation};
 
 macro_rules! try_extract_parameter {
     ($table: expr, $key: expr, $context: expr) => (
@@ -100,20 +100,6 @@ impl FromToml for Torsion {
 }
 
 /******************************************************************************/
-
-impl FromTomlWithPairs for CutoffComputation {
-    fn from_toml(table: &Table, potential: Box<PairPotential>) -> Result<CutoffComputation> {
-        let cutoff = try_extract_parameter!(table, "cutoff", "cutoff computation");
-        if let Some(cutoff) = cutoff.as_str() {
-            let cutoff = try!(::units::from_str(cutoff));
-            Ok(CutoffComputation::new(potential, cutoff))
-        } else {
-            Err(
-                Error::from("'cutoff' must be a string in cutoff computation")
-            )
-        }
-    }
-}
 
 impl FromTomlWithPairs for TableComputation {
     fn from_toml(table: &Table, potential: Box<PairPotential>) -> Result<TableComputation> {

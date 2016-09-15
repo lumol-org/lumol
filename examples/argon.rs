@@ -23,11 +23,13 @@ fn main() {
             }
         }
     }
+
+    let lj = Box::new(LennardJones {
+        sigma: units::from(3.4, "A").unwrap(),
+        epsilon: units::from(1.0, "kJ/mol").unwrap()
+    });
     system.interactions_mut().add_pair("Ar", "Ar",
-        Box::new(LennardJones {
-            sigma: units::from(3.4, "A").unwrap(),
-            epsilon: units::from(1.0, "kJ/mol").unwrap()
-        })
+        PairInteraction::new(lj, units::from(8.5, "A").unwrap())
     );
 
     let mut velocities = BoltzmannVelocities::new(units::from(300.0, "K").unwrap());

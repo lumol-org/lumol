@@ -12,14 +12,15 @@ use std::cmp::{min, max};
 use std::iter::IntoIterator;
 use std::i8;
 
-use potentials::{PairPotential, AnglePotential, DihedralPotential};
+use potentials::PairInteraction;
+use potentials::{BondPotential, AnglePotential, DihedralPotential};
 use types::{Vector3D, Matrix3};
 
 use super::{Particle, ParticleKind};
 use super::Molecule;
 use super::{CONNECT_12, CONNECT_13, CONNECT_14, CONNECT_FAR};
 use super::UnitCell;
-use super::interactions::{Interactions, PairInteraction};
+use super::interactions::Interactions;
 use super::EnergyEvaluator;
 use super::molecules::moltype;
 
@@ -393,7 +394,7 @@ impl System {
 
     /// Get the list of bonded potential acting between the particles at indexes
     /// `i` and `j`.
-    pub fn bond_potentials(&self, i: usize, j: usize) -> &[Box<PairPotential>] {
+    pub fn bond_potentials(&self, i: usize, j: usize) -> &[Box<BondPotential>] {
         let ikind = self.particles[i].kind;
         let jkind = self.particles[j].kind;
         self.interactions.bonds(ikind, jkind)
@@ -500,12 +501,12 @@ impl System {
 
 /******************************************************************************/
 use system::Compute;
-use system::{PotentialEnergy, KineticEnergy, TotalEnergy};
-use system::Forces;
-use system::Temperature;
-use system::Volume;
-use system::{Virial, Stress, Pressure};
-use system::{StressAtTemperature, PressureAtTemperature};
+use system::compute::{PotentialEnergy, KineticEnergy, TotalEnergy};
+use system::compute::Forces;
+use system::compute::Temperature;
+use system::compute::Volume;
+use system::compute::{Virial, Stress, Pressure};
+use system::compute::{StressAtTemperature, PressureAtTemperature};
 
 /// Functions to get pysical properties of a system.
 impl System {
