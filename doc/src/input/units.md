@@ -1,6 +1,6 @@
 # Units
 
-Cymbalum features a set of internal units and offers facilities to convert
+Lumol features a set of internal units and offers facilities to convert
 from and to this set of internal units.
 
 The internal unit system is the following:
@@ -17,7 +17,7 @@ Any other internal unit is derived from this set:
 - The internal unit of pressure is `u A^-1 fs^-2`;
 - *etc.*
 
-Cymbalum knows how to convert any value in these internal unit to others units.
+Lumol knows how to convert any value in these internal unit to others units.
 The accepted units are:
 
 | Quantity    | Accepted units                    |

@@ -1,6 +1,6 @@
 //! Monte-Carlo simulation of a binary mixture of H20 and CO2.
-extern crate cymbalum;
-use cymbalum::*;
+extern crate lumol;
+use lumol::*;
 
 fn main() {
     Logger::stdout();

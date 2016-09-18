@@ -4,7 +4,7 @@
     - [System](engine/system.md)
     - [Simulation](engine/simulation.md)
 
-- [Tutorial: using Cymbalum]()
+- [Tutorial: using Lumol]()
     - [Monte-Carlo of argon]()
     - [Molecular dynamics of water]()
     - [Gibbs simulation of ethane]()
@@ -21,7 +21,7 @@
     - [Monte-Carlo](input/mc.md)
     - [Units](input/units.md)
 
-- [Tutorial: extending Cymbalum]()
+- [Tutorial: extending Lumol]()
     - [Adding potentials]()
     - [Adding outputs]()
     - [Extending Molecular dynamics]()

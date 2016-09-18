@@ -1,10 +1,10 @@
-// Cymbalum, an extensible molecular simulation engine
+// Lumol, an extensible molecular simulation engine
 // Copyright (C) 2015-2016 G. Fraux — BSD license
 
 //! Testing physical properties of a Lennard-Jones gaz of Helium using
 //! Monte-Carlo simulation
-extern crate cymbalum;
-use cymbalum::*;
+extern crate lumol;
+use lumol::*;
 
 use std::sync::{Once, ONCE_INIT};
 static START: Once = ONCE_INIT;

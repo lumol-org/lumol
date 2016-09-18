@@ -1,7 +1,7 @@
-// Cymbalum, an extensible molecular simulation engine
+// Lumol, an extensible molecular simulation engine
 // Copyright (C) 2015-2016 G. Fraux — BSD license
 
-//! [Chemfiles](https://github.com/chemfiles/chemfiles/) adaptators for Cymbalum.
+//! [Chemfiles](https://github.com/chemfiles/chemfiles/) adaptators for Lumol.
 use system::{System, Particle, Molecule, UnitCell, CellShape};
 use types::Vector3D;
 use chemfiles;
@@ -9,17 +9,17 @@ use input::error::TrajectoryError;
 
 use std::path::Path;
 
-/// Convert chemfiles types to Cymbalum types
-pub trait ToCymbalum {
+/// Convert chemfiles types to Lumol types
+pub trait ToLumol {
     /// Output type
     type Output;
     /// Conversion function
-    fn to_cymbalum(self) -> TrajectoryResult<Self::Output>;
+    fn to_lumol(self) -> TrajectoryResult<Self::Output>;
 }
 
-impl ToCymbalum for chemfiles::Atom {
+impl ToLumol for chemfiles::Atom {
     type Output = Particle;
-    fn to_cymbalum(self) -> TrajectoryResult<Particle> {
+    fn to_lumol(self) -> TrajectoryResult<Particle> {
         let name = try!(self.name());
         let mut part = Particle::new(name);
         let mass = try!(self.mass());
@@ -28,9 +28,9 @@ impl ToCymbalum for chemfiles::Atom {
     }
 }
 
-impl ToCymbalum for chemfiles::UnitCell {
+impl ToLumol for chemfiles::UnitCell {
     type Output = UnitCell;
-    fn to_cymbalum(self) -> TrajectoryResult<UnitCell> {
+    fn to_lumol(self) -> TrajectoryResult<UnitCell> {
         let cell_type = try!(self.cell_type());
         let cell = match cell_type {
             chemfiles::CellType::Infinite => UnitCell::new(),
@@ -48,11 +48,11 @@ impl ToCymbalum for chemfiles::UnitCell {
     }
 }
 
-impl ToCymbalum for chemfiles::Frame {
+impl ToLumol for chemfiles::Frame {
     type Output = System;
-    fn to_cymbalum(self) -> TrajectoryResult<System> {
+    fn to_lumol(self) -> TrajectoryResult<System> {
         let cell = try!(self.cell());
-        let cell = try!(cell.to_cymbalum());
+        let cell = try!(cell.to_lumol());
         let mut system = System::from_cell(cell);
         let topology = try!(self.topology());
         let natoms = try!(self.natoms());
@@ -60,7 +60,7 @@ impl ToCymbalum for chemfiles::Frame {
         let positions = try!(self.positions());
         for i in 0..natoms {
             let atom = try!(topology.atom(i));
-            let particle = try!(atom.to_cymbalum());
+            let particle = try!(atom.to_lumol());
 
             system.add_particle(particle);
             let position = Vector3D::new(
@@ -106,7 +106,7 @@ fn apply_particle_permutation(bonds: &mut Vec<[usize; 2]>, perms: Vec<(usize, us
 
 /******************************************************************************/
 
-/// Convert Cymbalum types to chemfiles types
+/// Convert Lumol types to chemfiles types
 pub trait ToChemfiles {
     /// Output type
     type Output;
@@ -219,7 +219,7 @@ impl Trajectory {
     pub fn read(&mut self) -> TrajectoryResult<System> {
         let mut frame = try!(chemfiles::Frame::new(0));
         try!(self.0.read(&mut frame));
-        return frame.to_cymbalum();
+        return frame.to_lumol();
     }
 
     /// Read the next step of the trajectory, and guess the bonds of the
@@ -228,7 +228,7 @@ impl Trajectory {
         let mut frame = try!(chemfiles::Frame::new(0));
         try!(self.0.read(&mut frame));
         try!(frame.guess_topology());
-        return frame.to_cymbalum();
+        return frame.to_lumol();
     }
 
     /// Write the system to the trajectory.
@@ -259,7 +259,7 @@ pub fn read_molecule<P: AsRef<Path>>(path: P) -> TrajectoryResult<(Molecule, Vec
     if try!(topology.bonds_count()) == 0 {
         try!(frame.guess_topology());
     }
-    let system = try!(frame.to_cymbalum());
+    let system = try!(frame.to_lumol());
 
     assert!(system.size() != 0, "No molecule in the file at {}", path.display());
     let molecule = system.molecule(0).clone();
@@ -274,7 +274,7 @@ pub fn read_molecule<P: AsRef<Path>>(path: P) -> TrajectoryResult<(Molecule, Vec
 pub fn guess_bonds(system: System) -> TrajectoryResult<System> {
     let mut frame = try!(system.to_chemfiles());
     try!(frame.guess_topology());
-    return frame.to_cymbalum();
+    return frame.to_lumol();
 }
 
 

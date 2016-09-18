@@ -1,5 +1,5 @@
-extern crate cymbalum;
-use cymbalum::*;
+extern crate lumol;
+use lumol::*;
 use std::path::Path;
 
 #[test]

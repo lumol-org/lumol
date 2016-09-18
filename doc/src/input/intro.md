@@ -1,6 +1,6 @@
 # Input files syntax reference
 
-Cymbalum input files uses the [TOML][TOML] format, a simple and minimalist
+Lumol input files uses the [TOML][TOML] format, a simple and minimalist
 configuration format based on `key = value` pairs. You can read an introduction
 to the TOML format [here][TOML].
 
@@ -32,7 +32,7 @@ version = 1
 
 The purpose of the `version` key is to make changes to the input file format,
 while keeping compatibility with the previous input format. Please note that
-while Cymbalum have not reach version 1.0, no guarantee is made on input file
+while Lumol have not reach version 1.0, no guarantee is made on input file
 compatibility.
 
 ## Units in input

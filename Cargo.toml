@@ -1,5 +1,5 @@
 [package]
-name = "cymbalum"
+name = "lumol"
 version = "0.1.0"
 authors = ["Luthaf <luthaf@luthaf.fr>"]
 documentation = "https://luthaf.github.io/cymbalum"
@@ -8,7 +8,7 @@ readme = "README.md"
 license = "BSD"
 
 [lib]
-name = "cymbalum"
+name = "lumol"
 
 [dependencies]
 chemfiles = "0.6"

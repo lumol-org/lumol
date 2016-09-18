@@ -1,8 +1,8 @@
-# Cymbalum documentation
+# Lumol documentation
 
 ## User manual
 
-This directory contains the HTML user manual for the Cymbalum molecular
+This directory contains the HTML user manual for the Lumol molecular
 simulation engine. You need `cargo` to build it, like this:
 
 ```bash
@@ -19,12 +19,12 @@ every change.
 
 ## Programming interface documentation
 
-In addition to the user manual, Cymbalum provides a complete programming
+In addition to the user manual, Lumol provides a complete programming
 interface documentation, which you can build by running
 
 ```
 cargo doc --open
 ```
 
-This interface documentation is only useful if you want to use Cymbalum as a
+This interface documentation is only useful if you want to use Lumol as a
 library in you own code.

@@ -1,9 +1,9 @@
-// Cymbalum, an extensible molecular simulation engine
+// Lumol, an extensible molecular simulation engine
 // Copyright (C) 2015-2016 G. Fraux — BSD license
 #![feature(test)]
 extern crate test;
-extern crate cymbalum;
-use cymbalum::*;
+extern crate lumol;
+use lumol::*;
 
 use std::path::Path;
 use std::sync::{Once, ONCE_INIT};
@@ -52,7 +52,7 @@ pub fn get_ewald() -> Ewald {
 
 mod nacl {
     use super::*;
-    use cymbalum::*;
+    use lumol::*;
     use test::Bencher;
 
     #[bench]
@@ -81,7 +81,7 @@ mod nacl {
 
 mod water {
     use super::*;
-    use cymbalum::*;
+    use lumol::*;
     use test::Bencher;
 
     #[bench]

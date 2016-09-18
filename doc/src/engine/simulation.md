@@ -1,6 +1,6 @@
 # Simulation
 
-The flow of a simulation in Cymbalum is represented below.
+The flow of a simulation in Lumol is represented below.
 
 ![Simulation flow graph](static/img/simulation.svg#center)
 

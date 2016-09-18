@@ -1,4 +1,4 @@
-So you want to contribute to Cymbalum and create the next generation of
+So you want to contribute to Lumol and create the next generation of
 molecular simulation engine? Great! This document try to explain how you can
 contribute, but in case of doubt do not hesitate to contact me at
 luthaf@luthaf.fr.
@@ -13,7 +13,7 @@ with your bug report.
 
 # Area of contribution
 
-A lot of contributions can be made to Cymbalum, and most of them do not involve
+A lot of contributions can be made to Lumol, and most of them do not involve
 writing code:
 
 - Improving the documentation and the usage of English language;
@@ -30,5 +30,5 @@ of pull request); or you can send me patches by email at luthaf@luthaf.fr.
 If you want to pick something easy to get started with code, have a look at the
 [Level:Easy](https://github.com/Luthaf/cymbalum/labels/L%3AEasy) issues.
 
-If you want to add a new feature to Cymbalum, please create an issue so that we
+If you want to add a new feature to Lumol, please create an issue so that we
 can discuss it, and you have more chances to see your changes incorporated.

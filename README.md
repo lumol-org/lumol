@@ -1,4 +1,4 @@
-# Cymbalum: extensible molecular simulation engine
+# Lumol: extensible molecular simulation engine
 
 <div align="center">
 [![Build Status](https://travis-ci.org/Luthaf/cymbalum.svg?branch=master)](https://travis-ci.org/Luthaf/cymbalum)
@@ -7,11 +7,11 @@
 [![Gitter](https://badges.gitter.im/Luthaf/cymbalum.svg)](https://gitter.im/Luthaf/cymbalum)
 </div><br />
 
-Cymbalum is a classical molecular simulation engine that provides a solid
+Lumol is a classical molecular simulation engine that provides a solid
 base for developing new algorithms and methods.
 
-Using Cymbalum, you can customize the behavior of all the algorithms in a
-simulation (from force fields to barostats and Monte-Carlo moves). Cymbalum is
+Using Lumol, you can customize the behavior of all the algorithms in a
+simulation (from force fields to barostats and Monte-Carlo moves). Lumol is
 
 - **Easy to extend**: the code is modular, object-oriented, well documented,
   open-source and readable;
@@ -19,7 +19,7 @@ simulation (from force fields to barostats and Monte-Carlo moves). Cymbalum is
 - **Stable**: it will never crash on a good input, and try to provide helpful
   error messages.
 
-Cymbalum is actively developed, and should be considered as alpha software. If
+Lumol is actively developed, and should be considered as alpha software. If
 you are interested, have some question or want to participate, you can open a
 Github issue or go to the project [chat room][Gitter].
 
@@ -42,7 +42,7 @@ In a short-term, I'd like to add:
 
 ## Getting started
 
-Cymbalum is usable both as a Rust library to write your own simulation code
+Lumol is usable both as a Rust library to write your own simulation code
 using the provided bricks, and as a ready to use command line tool for running
 simulations.
 
@@ -93,15 +93,15 @@ in two main parts:
 
 - The [user manual](http://luthaf.github.io/cymbalum/latest/book/) contains
   informations to use cymbalum as a command line tool, and the complete input
-  file documentation. Use this documentation if you want to use Cymbalum as a
+  file documentation. Use this documentation if you want to use Lumol as a
   simulation engine — without writing code.
-- To use Cymbalum as a library inside your own code, we have a [developer
+- To use Lumol as a library inside your own code, we have a [developer
   documentation](http://luthaf.github.io/cymbalum/latest/cymbalum/), which
   should be complete with all functions documented.
 
 ## Contributing
 
-If you want to contribute to Cymbalum, there are several ways to go: improving
+If you want to contribute to Lumol, there are several ways to go: improving
 the documentation and the usage of English language; testing the code on your
 systems to find bugs; adding new algorithms and potentials; providing feature
 requests. Please come by and [talk with us][Gitter] a bit before staring new

@@ -1,7 +1,7 @@
 //! Molecular dynamics simulation of a crystal NaCl, reading system and
 //! potentials from files.
-extern crate cymbalum;
-use cymbalum::*;
+extern crate lumol;
+use lumol::*;
 
 fn main() {
     Logger::stdout();

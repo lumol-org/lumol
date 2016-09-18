@@ -1,5 +1,5 @@
-extern crate cymbalum;
-use cymbalum::input::read_config;
+extern crate lumol;
+use lumol::input::read_config;
 
 use std::env;
 use std::process::exit;

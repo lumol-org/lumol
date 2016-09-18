@@ -1,6 +1,6 @@
 //! Geometry minization of a molecule of water
-extern crate cymbalum;
-use cymbalum::*;
+extern crate lumol;
+use lumol::*;
 
 fn main() {
     Logger::stdout();

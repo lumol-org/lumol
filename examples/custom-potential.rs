@@ -1,6 +1,6 @@
 //! Using a custom potential in simulations
-extern crate cymbalum;
-use cymbalum::*;
+extern crate lumol;
+use lumol::*;
 
 /// Let's define a new version of the LennardJones potential, using the
 /// alternative form:
