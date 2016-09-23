@@ -305,7 +305,7 @@ impl System {
     ///
     /// This functions return the deplacement of the moved molecule, i.e. in
     /// this example `4`.
-    #[cfg_attr(feature="clippy", allow(block_in_if_condition_stmt))]
+    #[allow(block_in_if_condition_stmt)]
     fn merge_molecules(&mut self, new_molid: usize, old_molid: usize) -> usize {
         assert!(new_molid < old_molid);
         let mut new_mol = self.molecules[new_molid].clone();

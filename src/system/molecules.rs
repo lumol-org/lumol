@@ -108,7 +108,7 @@ impl Dihedral {
 
 /******************************************************************************/
 mod connect {
-    #![cfg_attr(feature="clippy", allow(if_not_else))]
+    // #![cfg_attr(feature="clippy", allow(if_not_else))]
     bitflags! {
         /// The `Connectivity` bitflag encode the topological distance between
         /// two particles in the molecule, i.e. the number of bonds between the

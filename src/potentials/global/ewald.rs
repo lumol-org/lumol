@@ -365,7 +365,7 @@ impl Ewald {
     /// Get the force factor for particles `i` and `j` with charges `qi` and
     /// `qj`, at k point  `(ikx, iky, ikz)`
     #[inline]
-    #[cfg_attr(feature="clippy", allow(too_many_arguments))]
+    #[allow(too_many_arguments)]
     fn kspace_force_factor(&self, i: usize, j: usize, ikx: usize, iky: usize, ikz: usize, qi: f64, qj: f64) -> f64 {
         let fourier_i = self.fourier_phases[(ikx, i, 0)]
                       * self.fourier_phases[(iky, i, 1)]

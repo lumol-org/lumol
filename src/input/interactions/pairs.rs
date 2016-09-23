@@ -51,12 +51,12 @@ pub fn read_pairs(system: &mut System, pairs: &[Value], global_cutoff: Option<&V
             )))
         };
 
-        let mut interaction = match cutoff {
-            &Value::String(ref cutoff) => {
+        let mut interaction = match *cutoff {
+            Value::String(ref cutoff) => {
                 let cutoff = try!(units::from_str(cutoff));
                 PairInteraction::new(potential, cutoff)
             }
-            &Value::Table(ref table) => {
+            Value::Table(ref table) => {
                 let shifted = try!(table.get("shifted").ok_or(Error::from(
                     "'cutoff' table can only contain 'shifted' key"
                 )));

@@ -21,15 +21,17 @@
     unused_qualifications, unused_results
 )]
 
-#![cfg_attr(feature="clippy", warn(clippy, clippy_pedantic))]
+#![warn(clippy, clippy_pedantic)]
+#![allow(unknown_lints)]
 // List of lints we allow in this code
-#![cfg_attr(feature="clippy", allow(
+#![allow(
     float_arithmetic, integer_arithmetic, indexing_slicing, needless_return,
     needless_range_loop, shadow_reuse, shadow_same, shadow_unrelated,
     cast_possible_truncation, cast_precision_loss, cast_sign_loss,
     cast_possible_wrap, float_cmp, or_fun_call, string_add, non_ascii_literal,
-    doc_markdown
-))]
+    doc_markdown, missing_docs_in_private_items, module_inception, stutter,
+    unseparated_literal_suffix
+)]
 
 #[macro_use]
 extern crate log;
