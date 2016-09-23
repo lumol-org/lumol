@@ -23,6 +23,6 @@ fn main() {
 }
 
 fn usage() {
-    let name = env::args().next().unwrap_or("cymba".into());
+    let name = env::args().next().unwrap_or("lumol".into());
     println!("Usage: {} input.toml", name);
 }

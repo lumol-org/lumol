@@ -50,7 +50,7 @@ after_script:
       if [[ "${TRAVIS_RUST_VERSION}" == "stable" && "${TRAVIS_PULL_REQUEST}" == "false" && "${TRAVIS_BRANCH}" == "master" ]]; then
           kcov --include-pattern=$(pwd) target/kcov target/debug/lumol-*
           codecov --file target/kcov/lumol-*/cobertura.xml
-          git clone https://${GH_TOKEN}@github.com/Luthaf/cymbalum.git target/website
+          git clone https://${GH_TOKEN}@github.com/lumol-org/lumol.git target/website
           ./doc/publish.sh
       fi
 cache:

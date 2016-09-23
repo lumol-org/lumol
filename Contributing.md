@@ -6,7 +6,7 @@ luthaf@luthaf.fr.
 # Bug reports and feature requests
 
 Bug and feature requests should be reported as [Github
-issue](https://github.com/Luthaf/cymbalum/issues/new). For bugs, you should
+issue](https://github.com/lumol-org/lumol/issues/new). For bugs, you should
 provide informations for reproducing the bug: what did you tried, what was
 expected, what happened. Please provide any useful code snippet or input file
 with your bug report.
@@ -28,7 +28,7 @@ Github pull request (have a look
 of pull request); or you can send me patches by email at luthaf@luthaf.fr.
 
 If you want to pick something easy to get started with code, have a look at the
-[Level:Easy](https://github.com/Luthaf/cymbalum/labels/L%3AEasy) issues.
+[Level:Easy](https://github.com/lumol-org/lumol/labels/L%3AEasy) issues.
 
 If you want to add a new feature to Lumol, please create an issue so that we
 can discuss it, and you have more chances to see your changes incorporated.
