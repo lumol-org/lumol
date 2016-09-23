@@ -1,11 +1,9 @@
 # Lumol: extensible molecular simulation engine
 
-<div align="center">
 [![Build Status](https://travis-ci.org/lumol-org/lumol.svg?branch=master)](https://travis-ci.org/lumol-org/lumol)
 [![Coverage](https://codecov.io/gh/lumol-org/lumol/branch/master/graph/badge.svg)](https://codecov.io/gh/lumol-org/lumol)
 [![Documentation](https://img.shields.io/badge/documentation-latest-brightgreen.svg)](https://lumol-org.github.io/lumol/latest/index.html)
 [![Gitter](https://badges.gitter.im/lumol-org/lumol.svg)](https://gitter.im/lumol-org/lumol)
-</div>
 
 Lumol is a classical molecular simulation engine that provides a solid
 base for developing new algorithms and methods.
