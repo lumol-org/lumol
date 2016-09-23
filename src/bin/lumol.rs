@@ -1,5 +1,5 @@
-extern crate cymbalum;
-use cymbalum::input::read_config;
+extern crate lumol;
+use lumol::input::read_config;
 
 use std::env;
 use std::process::exit;
@@ -23,6 +23,6 @@ fn main() {
 }
 
 fn usage() {
-    let name = env::args().next().unwrap_or("cymba".into());
+    let name = env::args().next().unwrap_or("lumol".into());
     println!("Usage: {} input.toml", name);
 }

@@ -2,8 +2,8 @@
 //!
 //! In this example, we do everything by hand, from the system setup to the
 //! simulation run.
-extern crate cymbalum;
-use cymbalum::*;
+extern crate lumol;
+use lumol::*;
 
 fn main() {
     Logger::stdout();

@@ -14,7 +14,7 @@ It contains four types of data:
 
 ## Unit cells
 
-Cymbalum knows about three types of unit cells:
+Lumol knows about three types of unit cells:
 
 * Infinite cells do not have any boundaries, and can be used to simulate
   systems in vacuum;
@@ -28,7 +28,7 @@ simulate infinite systems.
 
 ## Interactions
 
-Interactions associate a potential and some particles kind. Cymbalum provides
+Interactions associate a potential and some particles kind. Lumol provides
 code for various potentials types:
 
 * Non-bonding pair potentials;

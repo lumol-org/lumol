@@ -1,7 +1,7 @@
-// Cymbalum, an extensible molecular simulation engine
+// Lumol, an extensible molecular simulation engine
 // Copyright (C) 2015-2016 G. Fraux — BSD license
 
-//! The base type for simulation data in `cymbalum` is the `System` type.
+//! The base type for simulation data in `lumol` is the `System` type.
 //!
 //! An `System` consists of a list of `Particle`; a list of `Molecule`
 //! specifying how the particles are bonded together; an unit cell for boundary

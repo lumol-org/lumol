@@ -1,7 +1,7 @@
-// Cymbalum, an extensible molecular simulation engine
+// Lumol, an extensible molecular simulation engine
 // Copyright (C) 2015-2016 G. Fraux — BSD license
 
-//! Input capacities for cymbalum
+//! Input capacities for lumol
 //!
 //! This module provide input files reader for two types of files:
 //!

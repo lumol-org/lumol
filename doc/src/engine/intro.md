@@ -1,6 +1,6 @@
-# Welcome to Cymbalum user manual!
+# Welcome to Lumol user manual!
 
-Cymbalum is a flexible and extensible molecular simulation engine. That means:
+Lumol is a flexible and extensible molecular simulation engine. That means:
 
 * You can use it to drive classical molecular simulations; from Monte-Carlo to
   molecular dynamics and energy minimization;
@@ -8,12 +8,12 @@ Cymbalum is a flexible and extensible molecular simulation engine. That means:
 * You can *easily* extend the engine with new algorithms, and hook into its
   internals.
 
-This user manual describes how to use Cymbalum either as a command line tool or
+This user manual describes how to use Lumol either as a command line tool or
 a library.
 
 ## Systems and Simulations
 
-The two main concepts in Cymbalum are a `System` and a `Simulation`. A `System`
+The two main concepts in Lumol are a `System` and a `Simulation`. A `System`
 contains all the simulated system data: atomic names, positions and velocities,
 force-field, simulation box. On the other hand, a `Simulation` contains
 everything needed to run a simulation with a system, *i.e.* algorithms and

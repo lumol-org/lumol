@@ -1,4 +1,4 @@
-// Cymbalum, an extensible molecular simulation engine
+// Lumol, an extensible molecular simulation engine
 // Copyright (C) 2015-2016 G. Fraux — BSD license
 
 /// Extract the table at the given `key`, from a TOML table interpreted as

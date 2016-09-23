@@ -1,4 +1,4 @@
-// Cymbalum, an extensible molecular simulation engine
+// Lumol, an extensible molecular simulation engine
 // Copyright (C) 2015-2016 G. Fraux — BSD license
 
 //! Saving properties of the simulation to some stream (file or stdout mainly)

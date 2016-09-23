@@ -1,10 +1,10 @@
-// Cymbalum, an extensible molecular simulation engine
+// Lumol, an extensible molecular simulation engine
 // Copyright (C) 2015-2016 G. Fraux — BSD license
 
 //! Logging configuration
 //!
 //! This module provides a `Logger` struct which can be used for logging
-//! messages from Cymbalum. One and only one of the initilialization function
+//! messages from Lumol. One and only one of the initilialization function
 //! should be called, and it should only be called once. Any call to
 //! initializing function after the first one will be ignored.
 //!

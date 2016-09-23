@@ -1,8 +1,8 @@
 //! Example of a run using input files for the simulation and the system
 //! This is the exact same simulation as the one in `binary.rs`
 
-extern crate cymbalum;
-use cymbalum::*;
+extern crate lumol;
+use lumol::*;
 
 fn main() {
     Logger::stdout();

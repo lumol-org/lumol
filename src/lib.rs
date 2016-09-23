@@ -1,13 +1,13 @@
-// Cymbalum, an extensible molecular simulation engine
+// Lumol, an extensible molecular simulation engine
 // Copyright (C) 2015-2016 G. Fraux — BSD license
 
-//! Cymbalum is a classical molecular simulation engine that provides a solid
+//! Lumol is a classical molecular simulation engine that provides a solid
 //! base for developing new algorithms and methods.
 //!
-//! Using Cymbalum, you can customize the behavior of all the algorithms in a
+//! Using Lumol, you can customize the behavior of all the algorithms in a
 //! simulation (from force fields to barostats and Monte-Carlo moves).
 //!
-//! Cymbalum goals are to be:
+//! Lumol goals are to be:
 //!
 //! - **Easy to extend**: the code is modular, object-oriented, well documented,
 //!   well tested, open-source and readable;

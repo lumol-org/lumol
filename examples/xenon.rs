@@ -1,6 +1,6 @@
 //! Monte-Carlo simulation of a Xenon crystal melt.
-extern crate cymbalum;
-use cymbalum::*;
+extern crate lumol;
+use lumol::*;
 
 fn main() {
     Logger::stdout();

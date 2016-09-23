@@ -1,4 +1,4 @@
-// Cymbalum, an extensible molecular simulation engine
+// Lumol, an extensible molecular simulation engine
 // Copyright (C) 2015-2016 G. Fraux — BSD license
 
 //! This module allow to convert from and to the internal unit system.
@@ -363,7 +363,7 @@ fn read_expr(stream: &mut Vec<Token>) -> Result<UnitExpr, ParseError> {
 /// Convert the numeric value `val` from the unit `unit` to the internal unit.
 ///
 /// ```
-/// use cymbalum::units;
+/// use lumol::units;
 /// let internal = units::from(10.0, "A").unwrap();
 /// assert!(internal == 10.0);
 /// ```
@@ -375,7 +375,7 @@ pub fn from(value: f64, unit: &str) -> Result<f64, ParseError> {
 /// Parse the string `val` and convert it to the corresponding internal unit
 ///
 /// ```
-/// use cymbalum::units;
+/// use lumol::units;
 /// let internal = units::from_str("10 A").unwrap();
 /// assert!(internal == 10.0);
 /// ```
@@ -394,7 +394,7 @@ pub fn from_str(value: &str) -> Result<f64, ParseError> {
 /// Convert the numeric value `val` (in internal units) to the unit `unit`.
 ///
 /// ```
-/// use cymbalum::units;
+/// use lumol::units;
 /// let real = units::to(10.0, "A").unwrap();
 /// assert!(real == 10.0);
 /// ```

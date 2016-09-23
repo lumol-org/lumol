@@ -1,4 +1,4 @@
-// Cymbalum, an extensible molecular simulation engine
+// Lumol, an extensible molecular simulation engine
 // Copyright (C) 2015-2016 G. Fraux — BSD license
 
 //! Interaction potentials for energy and forces computations
@@ -25,7 +25,7 @@
 //! thing to do is to implement the corresponding trait.
 //!
 //! ```
-//! # use cymbalum::potentials::{Potential, PairPotential, DihedralPotential};
+//! # use lumol::potentials::{Potential, PairPotential, DihedralPotential};
 //! #[derive(Clone)]
 //! struct OnePotential;
 //!

@@ -1,6 +1,6 @@
 # Available potentials
 
-This section is a list of all the available potentials in Cymbalum, with the
+This section is a list of all the available potentials in Lumol, with the
 associated parameters. All potentials have to provide additional parameters in
 there definition, as a TOML table. Using inline tables is the easiest way to do
 so:

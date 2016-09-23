@@ -1,14 +1,18 @@
 [package]
-name = "cymbalum"
+name = "lumol"
 version = "0.1.0"
 authors = ["Luthaf <luthaf@luthaf.fr>"]
-documentation = "https://luthaf.github.io/cymbalum"
-repository = "https://github.com/Luthaf/cymbalum"
+documentation = "https://lumol-org.github.io/lumol"
+repository = "https://github.com/lumol-org/lumol"
 readme = "README.md"
 license = "BSD"
 
 [lib]
-name = "cymbalum"
+name = "lumol"
+
+[[bin]]
+name = "lumol"
+doc = false
 
 [dependencies]
 chemfiles = "0.6"

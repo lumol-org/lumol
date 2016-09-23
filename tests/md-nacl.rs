@@ -1,9 +1,9 @@
-// Cymbalum, an extensible molecular simulation engine
+// Lumol, an extensible molecular simulation engine
 // Copyright (C) 2015-2016 G. Fraux — BSD license
 
 //! Testing physical properties of a NaCl crystal
-extern crate cymbalum;
-use cymbalum::*;
+extern crate lumol;
+use lumol::*;
 
 use std::path::Path;
 use std::sync::{Once, ONCE_INIT};
@@ -37,7 +37,7 @@ pub fn setup_system(potential: &str, file: &str) -> System {
 
 mod wolf {
     use super::*;
-    use cymbalum::*;
+    use lumol::*;
 
     #[test]
     fn constant_energy() {
@@ -75,7 +75,7 @@ mod wolf {
 
 mod ewald {
     use super::*;
-    use cymbalum::*;
+    use lumol::*;
 
     #[test]
     fn constant_energy() {
