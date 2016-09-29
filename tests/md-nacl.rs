@@ -3,6 +3,7 @@
 
 //! Testing physical properties of a NaCl crystal
 extern crate lumol;
+extern crate lumol_input as input;
 use lumol::*;
 
 use std::path::Path;
@@ -14,9 +15,9 @@ pub fn setup_system(potential: &str, file: &str) -> System {
 
     let configuration = String::from("NaCl-") + file + ".xyz";
     let configuration = data_dir.join("data").join(configuration);
-    let mut system = input::Trajectory::open(configuration)
-                                        .and_then(|mut traj| traj.read())
-                                        .unwrap();
+    let mut system = Trajectory::open(configuration)
+                                .and_then(|mut traj| traj.read())
+                                .unwrap();
 
     if file == "small" {
         system.set_cell(UnitCell::cubic(11.2804));

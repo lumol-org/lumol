@@ -1,5 +1,7 @@
 extern crate lumol;
-use lumol::input::read_config;
+extern crate lumol_input;
+
+use lumol_input::read_config;
 
 use std::env;
 use std::process::exit;

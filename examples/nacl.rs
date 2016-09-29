@@ -1,13 +1,14 @@
 //! Molecular dynamics simulation of a crystal NaCl, reading system and
 //! potentials from files.
 extern crate lumol;
+extern crate lumol_input as input;
 use lumol::*;
 
 fn main() {
     Logger::stdout();
 
     // Read the system fromt the `data/nacl.xyz` file
-    let mut trajectory = input::Trajectory::open("data/nacl.xyz").unwrap();
+    let mut trajectory = Trajectory::open("data/nacl.xyz").unwrap();
     let mut system = trajectory.read().unwrap();
     // Set the unit cell, as there is no unit cell data in XYZ files
     system.set_cell(UnitCell::cubic(units::from(22.5608, "A").unwrap()));

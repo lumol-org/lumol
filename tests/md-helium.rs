@@ -14,7 +14,7 @@ use std::path::Path;
 fn get_system() -> System {
     let data_dir = Path::new(file!()).parent().unwrap();
     let configuration = data_dir.join("data").join("helium.xyz");
-    let mut system = input::Trajectory::open(configuration)
+    let mut system = chfl::Trajectory::open(configuration)
                                         .and_then(|mut traj| traj.read())
                                         .unwrap();
     system.set_cell(UnitCell::cubic(10.0));

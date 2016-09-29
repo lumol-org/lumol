@@ -3,6 +3,7 @@
 
 //! Testing physical properties of f-SPC water
 extern crate lumol;
+extern crate lumol_input as input;
 use lumol::*;
 
 use std::path::Path;

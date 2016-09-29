@@ -1,18 +1,14 @@
 [package]
-name = "lumol"
+name = "lumol-input"
 version = "0.1.0"
 authors = ["Luthaf <luthaf@luthaf.fr>"]
 documentation = "https://lumol-org.github.io/lumol"
 repository = "https://github.com/lumol-org/lumol"
-readme = "README.md"
+readme = "../../README.md"
 license = "BSD"
 
 [dependencies]
-lumol-core = {path = "src/core"}
-lumol-input = {path = "src/input"}
-
-[workspace]
-members = [
-	"src/core",
-    "src/input"
-]
+lumol-core = {path = "../core"}
+toml = "0.1"
+log = "0.3"
+chemfiles = "0.6"
