@@ -11,6 +11,11 @@ license = "BSD"
 lumol-core = {path = "src/core"}
 lumol-input = {path = "src/input"}
 
+[[bin]]
+name = "lumol"
+path = "src/bin/lumol.rs"
+doc = false
+
 [workspace]
 members = [
 	"src/core",
