@@ -5,60 +5,62 @@ use lumol::simulation::Simulation;
 
 use error::{Error, Result};
 use extract;
-use super::outputs::read_outputs;
-use super::propagator::read_propagator;
+use super::Input;
 
-pub fn read_simulation(config: &Table) -> Result<Simulation> {
-    let config = try!(simulation_table(config));
-    let propagator = try!(read_propagator(config));
-
-    let mut simulation = Simulation::new(propagator);
-
-    if let Some(outputs) = config.get("outputs") {
-        let outputs = try!(outputs.as_slice().ok_or(
-            Error::from("'outputs' must be an array")
-        ));
-
-        let outputs = try!(read_outputs(outputs));
-        for (output, frequency) in outputs {
-            simulation.add_output_with_frequency(output, frequency);
+impl Input {
+    /// Get the the simulation. This is an internal function, public because of
+    /// the code organization.
+    // TODO: use restricted privacy here
+    pub fn read_simulation(&self) -> Result<Simulation> {
+        let propagator = try!(self.read_propagator());
+        let mut simulation = Simulation::new(propagator);
+        if let Some(outputs) = try!(self.read_outputs()) {
+            for (output, frequency) in outputs {
+                simulation.add_output_with_frequency(output, frequency);
+            }
         }
+
+        Ok(simulation)
     }
 
-    Ok(simulation)
-}
-
-pub fn read_nsteps(config: &Table) -> Result<usize> {
-    let simulation = try!(simulation_table(config));
-    let nsteps = try!(simulation.get("nsteps").ok_or(
-        Error::from("Missing 'nsteps' key in simulation")
-    ));
-
-    let nsteps = try!(nsteps.as_integer().ok_or(
-        Error::from("'nsteps' key must be an integer")
-    ));
-
-    Ok(nsteps as usize)
-}
-
-fn simulation_table(config: &Table) -> Result<&Table> {
-    let simulations = try!(extract::slice("simulations", config, "input file"));
-    if simulations.len() != 1 {
-        return Err(Error::from(
-            "Only one simulation is supported in the input"
+    /// Get the number of steps in the simulation. This is an internal function,
+    /// public because of the code organization.
+    // TODO: use restricted privacy here
+    pub fn read_nsteps(&self) -> Result<usize> {
+        let simulation = try!(self.simulation_table());
+        let nsteps = try!(simulation.get("nsteps").ok_or(
+            Error::from("Missing 'nsteps' key in simulation")
         ));
+
+        let nsteps = try!(nsteps.as_integer().ok_or(
+            Error::from("'nsteps' key must be an integer")
+        ));
+
+        Ok(nsteps as usize)
     }
 
-    let simulation = try!(simulations[0].as_table().ok_or(
-        Error::from("Simulations should be tables")
-    ));
+    /// Get the simulation TOML table. This is an internal function, public
+    /// because of the code organization.
+    // TODO: use restricted privacy here
+    pub fn simulation_table(&self) -> Result<&Table> {
+        let simulations = try!(extract::slice("simulations", &self.config, "input file"));
+        if simulations.len() != 1 {
+            return Err(Error::from(
+                "Only one simulation is supported in the input"
+            ));
+        }
 
-    return Ok(simulation);
+        let simulation = try!(simulations[0].as_table().ok_or(
+            Error::from("Simulations should be tables")
+        ));
+
+        return Ok(simulation);
+    }
 }
 
 #[cfg(test)]
 mod tests {
-    use read_config;
+    use Input;
     use testing::{bad_inputs, cleanup};
     use std::path::Path;
 
@@ -67,7 +69,8 @@ mod tests {
         let path = Path::new(file!()).parent().unwrap()
                                      .join("data")
                                      .join("md.toml");
-        let config = read_config(&path).unwrap();
+        let input = Input::new(&path).unwrap();
+        let config = input.read().unwrap();
         assert_eq!(config.nsteps, 1000000);
         cleanup(&path);
     }
@@ -75,7 +78,7 @@ mod tests {
     #[test]
     fn bad_nsteps() {
         for path in bad_inputs("simulations", "nsteps") {
-            assert!(read_config(path).is_err());
+            assert!(Input::new(path).and_then(|input| input.read()).is_err());
         }
     }
 }

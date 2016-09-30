@@ -1,6 +1,6 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) 2015-2016 G. Fraux — BSD license
-use toml::{Value, Table};
+use toml::Table;
 
 use lumol::simulation::Output;
 use lumol::simulation::{TrajectoryOutput, CellOutput, EnergyOutput, PropertiesOutput};
@@ -8,38 +8,53 @@ use lumol::simulation::{TrajectoryOutput, CellOutput, EnergyOutput, PropertiesOu
 use error::{Error, Result};
 use FromToml;
 use extract;
+use super::Input;
 
-pub fn read_outputs(outputs: &[Value]) -> Result<Vec<(Box<Output>, u64)>> {
-    let mut res = Vec::new();
-    for output in outputs {
-        let output = try!(output.as_table().ok_or(
-            Error::from("All values in outputs should be tables")
-        ));
+impl Input {
+    /// Get the the simulation outputs. This is an internal function, public
+    /// because of the code organization.
+    // TODO: use restricted privacy here
+    pub fn read_outputs(&self) -> Result<Option<Vec<(Box<Output>, u64)>>> {
+        let config = try!(self.simulation_table());
+        if let Some(outputs) = config.get("outputs") {
+            let outputs = try!(outputs.as_slice().ok_or(
+                Error::from("'outputs' must be an array")
+            ));
 
-        let frequency = match output.get("frequency") {
-            Some(frequency) => {
-                try!(frequency.as_integer().ok_or(
-                    Error::from("'frequency' must be an integer")
-                )) as u64
-            },
-            None => 1u64
-        };
+            let mut result = Vec::new();
+            for output in outputs {
+                let output = try!(output.as_table().ok_or(
+                    Error::from("All values in outputs should be tables")
+                ));
 
-        let output: Box<Output> = match try!(extract::typ(output, "output")) {
-            "Trajectory" | "trajectory" => Box::new(try!(TrajectoryOutput::from_toml(output))),
-            "Energy" | "energy" => Box::new(try!(EnergyOutput::from_toml(output))),
-            "Cell" | "cell" => Box::new(try!(CellOutput::from_toml(output))),
-            "Properties" | "properties" => Box::new(try!(PropertiesOutput::from_toml(output))),
-            other => {
-                return Err(Error::from(
-                    format!("Unknown output type '{}'", other)
-                ))
+                let frequency = match output.get("frequency") {
+                    Some(frequency) => {
+                        try!(frequency.as_integer().ok_or(
+                            Error::from("'frequency' must be an integer")
+                        )) as u64
+                    },
+                    None => 1u64
+                };
+
+                let output: Box<Output> = match try!(extract::typ(output, "output")) {
+                    "Trajectory" | "trajectory" => Box::new(try!(TrajectoryOutput::from_toml(output))),
+                    "Energy" | "energy" => Box::new(try!(EnergyOutput::from_toml(output))),
+                    "Cell" | "cell" => Box::new(try!(CellOutput::from_toml(output))),
+                    "Properties" | "properties" => Box::new(try!(PropertiesOutput::from_toml(output))),
+                    other => {
+                        return Err(Error::from(
+                            format!("Unknown output type '{}'", other)
+                        ))
+                    }
+                };
+
+                result.push((output, frequency));
             }
-        };
-
-        res.push((output, frequency));
+            Ok(Some(result))
+        } else {
+            Ok(None)
+        }
     }
-    Ok(res)
 }
 
 fn get_file(config: &Table) -> Result<&str> {
@@ -86,7 +101,7 @@ impl FromToml for PropertiesOutput {
 
 #[cfg(test)]
 mod tests {
-    use read_config;
+    use Input;
     use testing::{bad_inputs, cleanup};
     use std::path::Path;
 
@@ -95,7 +110,8 @@ mod tests {
         let path = Path::new(file!()).parent().unwrap()
                                      .join("data")
                                      .join("md.toml");
-        let _ = read_config(&path).unwrap();
+        let input = Input::new(&path).unwrap();
+        assert!(input.read().is_ok());
         // TODO: add this test without breaking encapsulation
         // assert_eq!(config.simulation.outputs().len(), 2);
         cleanup(&path);
@@ -104,7 +120,7 @@ mod tests {
     #[test]
     fn bad_outputs() {
         for path in bad_inputs("simulations", "outputs") {
-            assert!(read_config(path).is_err());
+            assert!(Input::new(path).and_then(|input| input.read()).is_err());
         }
     }
 }

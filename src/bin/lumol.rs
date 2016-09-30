@@ -1,7 +1,7 @@
 extern crate lumol;
 extern crate lumol_input;
 
-use lumol_input::read_config;
+use lumol_input::Input;
 
 use std::env;
 use std::process::exit;
@@ -13,7 +13,7 @@ fn main() {
     }
 
     let input = &args[1];
-    let mut config = match read_config(input) {
+    let mut config = match Input::new(input).and_then(|input| input.read()) {
         Ok(config) => config,
         Err(err) => {
             println!("Error in input file: {}", err);

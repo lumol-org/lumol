@@ -79,7 +79,7 @@ impl FromToml for Rotate {
 #[cfg(test)]
 mod tests {
     use std::path::Path;
-    use read_config;
+    use Input;
     use testing::bad_inputs;
 
     #[test]
@@ -87,13 +87,14 @@ mod tests {
         let path = Path::new(file!()).parent().unwrap()
                                      .join("data")
                                      .join("mc.toml");
-        assert!(read_config(&path).is_ok());
+        let input = Input::new(path).unwrap();
+        assert!(input.read().is_ok());
     }
 
     #[test]
     fn bad_mc() {
         for path in bad_inputs("simulations", "mc") {
-            assert!(read_config(path).is_err());
+            assert!(Input::new(path).and_then(|input| input.read()).is_err());
         }
     }
 }

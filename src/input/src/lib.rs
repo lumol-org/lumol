@@ -53,7 +53,7 @@ pub mod testing;
 
 pub use self::error::{Error, Result};
 pub use self::interactions::read_interactions;
-pub use self::simulations::read_config;
+pub use self::simulations::Input;
 
 /// Convert a TOML table to a Rust type.
 pub trait FromToml: Sized {

@@ -10,96 +10,134 @@ use error::{Error, Result};
 use read_interactions;
 use interactions::read_interactions_toml;
 use extract;
+use super::Input;
 
-pub fn read_system(config: &Table) -> Result<System> {
-    let config = try!(system_table(config));
+impl Input {
+    /// Get the the simulated system. This is an internal function, public
+    /// because of the code organization.
+    // TODO: use restricted privacy here
+    pub fn read_system(&self) -> Result<System> {
+        let config = try!(self.system_table());
 
-    let file = try!(extract::str("file", config, "system input"));
-    let mut trajectory = try!(Trajectory::open(file));
+        let file = try!(extract::str("file", config, "system input"));
+        let mut trajectory = try!(Trajectory::open(file));
 
-    if let Some(cell) = try!(read_cell(config)) {
-        let cell = try!(cell.to_chemfiles());
-        try!(trajectory.as_chemfiles().set_cell(cell));
-    }
-
-    if config.get("topology").is_some() {
-        let topology = try!(extract::str("topology", config, "system input"));
-        try!(trajectory.as_chemfiles().set_topology_file(topology));
-    }
-
-    let guess_bonds = if let Some(guess_bonds) = config.get("guess_bonds") {
-        try!(guess_bonds.as_bool().ok_or(
-            Error::from("'guess_bonds' should be a boolean value in system")
-        ))
-    } else { false };
-
-    let mut system = if guess_bonds {
-        try!(trajectory.read_guess_bonds())
-    } else {
-        try!(trajectory.read())
-    };
-
-    try!(read_potentials(&mut system, config));
-
-    if let Some(velocities) = config.get("velocities") {
-        let velocities = try!(velocities.as_table().ok_or(
-            Error::from("'velocities' must be a table in system input")
-        ));
-        try!(init_velocities(&mut system, velocities));
-    }
-
-    Ok(system)
-}
-
-fn system_table(config: &Table) -> Result<&Table> {
-    let systems = try!(extract::slice("systems", config, "input file"));
-    if systems.len() != 1 {
-        return Err(Error::from(
-            "Only one system is supported in the input"
-        ));
-    }
-
-    let system = try!(systems[0].as_table().ok_or(
-        Error::from("Systems should be tables")
-    ));
-
-    return Ok(system);
-}
-
-fn read_cell(config: &Table) -> Result<Option<UnitCell>> {
-    if let Some(cell) = config.get("cell") {
-        match *cell {
-            Value::Array(ref cell) => {
-                if cell.len() == 3 {
-                    let a = try!(get_cell_number(&cell[0]));
-                    let b = try!(get_cell_number(&cell[1]));
-                    let c = try!(get_cell_number(&cell[2]));
-
-                    Ok(Some(UnitCell::ortho(a, b, c)))
-                } else if cell.len() == 6 {
-                    let a = try!(get_cell_number(&cell[0]));
-                    let b = try!(get_cell_number(&cell[1]));
-                    let c = try!(get_cell_number(&cell[2]));
-                    let alpha = try!(get_cell_number(&cell[3]));
-                    let beta  = try!(get_cell_number(&cell[4]));
-                    let gamma = try!(get_cell_number(&cell[5]));
-
-                    Ok(Some(UnitCell::triclinic(a, b, c, alpha, beta, gamma)))
-                } else {
-                    Err(Error::from("'cell' array must have a size of 3 or 6"))
-                }
-            },
-            Value::Integer(lenght) => {
-                let lenght = lenght as f64;
-                Ok(Some(UnitCell::cubic(lenght)))
-            },
-            Value::Float(lenght) => {
-                Ok(Some(UnitCell::cubic(lenght)))
-            },
-            _ => Err(Error::from("'cell' must be a number or an array"))
+        if let Some(cell) = try!(self.read_cell()) {
+            let cell = try!(cell.to_chemfiles());
+            try!(trajectory.as_chemfiles().set_cell(cell));
         }
-    } else {
-        Ok(None)
+
+        if config.get("topology").is_some() {
+            let topology = try!(extract::str("topology", config, "system input"));
+            try!(trajectory.as_chemfiles().set_topology_file(topology));
+        }
+
+        let guess_bonds = if let Some(guess_bonds) = config.get("guess_bonds") {
+            try!(guess_bonds.as_bool().ok_or(
+                Error::from("'guess_bonds' should be a boolean value in system")
+            ))
+        } else { false };
+
+        let mut system = if guess_bonds {
+            try!(trajectory.read_guess_bonds())
+        } else {
+            try!(trajectory.read())
+        };
+
+        try!(self.read_potentials(&mut system));
+        try!(self.init_velocities(&mut system));
+
+        Ok(system)
+    }
+
+    fn system_table(&self) -> Result<&Table> {
+        let systems = try!(extract::slice("systems", &self.config, "input file"));
+        if systems.len() != 1 {
+            return Err(Error::from(
+                "Only one system is supported in the input"
+            ));
+        }
+
+        let system = try!(systems[0].as_table().ok_or(
+            Error::from("Systems should be tables")
+        ));
+
+        return Ok(system);
+    }
+
+    fn read_cell(&self) -> Result<Option<UnitCell>> {
+        let config = try!(self.system_table());
+        if let Some(cell) = config.get("cell") {
+            match *cell {
+                Value::Array(ref cell) => {
+                    if cell.len() == 3 {
+                        let a = try!(get_cell_number(&cell[0]));
+                        let b = try!(get_cell_number(&cell[1]));
+                        let c = try!(get_cell_number(&cell[2]));
+
+                        Ok(Some(UnitCell::ortho(a, b, c)))
+                    } else if cell.len() == 6 {
+                        let a = try!(get_cell_number(&cell[0]));
+                        let b = try!(get_cell_number(&cell[1]));
+                        let c = try!(get_cell_number(&cell[2]));
+                        let alpha = try!(get_cell_number(&cell[3]));
+                        let beta  = try!(get_cell_number(&cell[4]));
+                        let gamma = try!(get_cell_number(&cell[5]));
+
+                        Ok(Some(UnitCell::triclinic(a, b, c, alpha, beta, gamma)))
+                    } else {
+                        Err(Error::from("'cell' array must have a size of 3 or 6"))
+                    }
+                },
+                Value::Integer(lenght) => {
+                    let lenght = lenght as f64;
+                    Ok(Some(UnitCell::cubic(lenght)))
+                },
+                Value::Float(lenght) => {
+                    Ok(Some(UnitCell::cubic(lenght)))
+                },
+                _ => Err(Error::from("'cell' must be a number or an array"))
+            }
+        } else {
+            Ok(None)
+        }
+    }
+
+    fn init_velocities(&self, system: &mut System) -> Result<()> {
+        let config = try!(self.system_table());
+
+        if let Some(velocities) = config.get("velocities") {
+            let velocities = try!(velocities.as_table().ok_or(
+                Error::from("'velocities' must be a table in system input")
+            ));
+
+            if velocities.get("init").is_some() {
+                let temperature = try!(extract::str("init", velocities, "velocities initializer"));
+                let temperature = try!(units::from_str(temperature));
+                let mut velocities = BoltzmannVelocities::new(temperature);
+                velocities.init(system);
+            } else {
+                warn!("'velocities' key does nothing in this input file");
+            }
+        }
+
+        Ok(())
+    }
+
+    fn read_potentials(&self, system: &mut System) -> Result<()> {
+        let config = try!(self.system_table());
+        if let Some(potentials) = config.get("potentials") {
+            if let Some(potentials) = potentials.as_str() {
+                try!(read_interactions(system, potentials));
+            } else if let Some(potentials) = potentials.as_table() {
+                try!(read_interactions_toml(system, potentials));
+            } else {
+                return Err(Error::from("'potentials' must be a string or a table"))
+            }
+        } else {
+            warn!("No potentials found in input file");
+        }
+        Ok(())
     }
 }
 
@@ -113,39 +151,11 @@ fn get_cell_number(value: &Value) -> Result<f64> {
     }
 }
 
-fn init_velocities(system: &mut System, config: &Table) -> Result<()> {
-    if config.get("init").is_some() {
-        let temperature = try!(extract::str("init", config, "velocities initializer"));
-        let temperature = try!(units::from_str(temperature));
-        let mut velocities = BoltzmannVelocities::new(temperature);
-        velocities.init(system);
-    } else {
-        warn!("'velocities' key does nothing in this input file");
-    }
-
-    Ok(())
-}
-
-fn read_potentials(system: &mut System, config: &Table) -> Result<()> {
-    if let Some(potentials) = config.get("potentials") {
-        if let Some(potentials) = potentials.as_str() {
-            try!(read_interactions(system, potentials));
-        } else if let Some(potentials) = potentials.as_table() {
-            try!(read_interactions_toml(system, potentials));
-        } else {
-            return Err(Error::from("'potentials' must be a string or a table"))
-        }
-    } else {
-        warn!("No potentials found in input file");
-    }
-    Ok(())
-}
-
 
 #[cfg(test)]
 mod tests {
     use std::path::Path;
-    use read_config;
+    use Input;
     use testing::bad_inputs;
     use lumol::system::{Particle, UnitCell};
 
@@ -154,7 +164,8 @@ mod tests {
         let path = Path::new(file!()).parent().unwrap()
                                      .join("data")
                                      .join("system.toml");
-        let config = read_config(&path).unwrap();
+        let input = Input::new(path).unwrap();
+        let config = input.read().unwrap();
         assert_eq!(*config.system.cell(), UnitCell::cubic(20.0));
         assert!(f64::abs(config.system.temperature() - 300.0) < 1e-12);
 
@@ -170,7 +181,8 @@ mod tests {
         let path = Path::new(file!()).parent().unwrap()
                                      .join("data")
                                      .join("potentials.toml");
-        let config = read_config(&path).unwrap();
+        let input = Input::new(path).unwrap();
+        let config = input.read().unwrap();
         assert_eq!(*config.system.cell(), UnitCell::cubic(20.0));
         assert!(f64::abs(config.system.temperature() - 300.0) < 1e-12);
         assert_eq!(config.system.pair_potentials(0, 1).len(), 2);
@@ -179,7 +191,7 @@ mod tests {
     #[test]
     fn bad_systems() {
         for path in bad_inputs("simulations", "system") {
-            assert!(read_config(path).is_err());
+            assert!(Input::new(path).and_then(|input| input.read()).is_err());
         }
     }
 }

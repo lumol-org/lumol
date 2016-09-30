@@ -1,9 +1,9 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) 2015-2016 G. Fraux — BSD license
-use toml::Parser;
+use toml::{Parser, Table};
 
 use std::io::prelude::*;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::fs::File;
 
 use validate;
@@ -20,13 +20,10 @@ mod simulations;
 mod md;
 mod mc;
 
-use self::system::read_system;
-use self::simulations::{read_simulation, read_nsteps};
-
 /// A configuration about how to run a single simulation. This contains the
 /// system to simulate, the simulation itself and the number of steps to run
 /// the simulation.
-pub struct SimulationConfig {
+pub struct Config {
     /// The simulated system
     pub system: System,
     /// The simulation object
@@ -35,39 +32,57 @@ pub struct SimulationConfig {
     pub nsteps: usize,
 }
 
-/// Read a whole simulation input file.
-pub fn read_config<P: AsRef<Path>>(path: P) -> Result<SimulationConfig> {
-    let mut file = try!(File::open(path));
-    let mut buffer = String::new();
-    let _ = try!(file.read_to_string(&mut buffer));
+/// An input file for Lumol.
+pub struct Input {
+    /// The input file path
+    path: PathBuf,
+    /// The TOML configuration
+    config: Table,
+}
 
-    let mut parser = Parser::new(&buffer);
-    let config = try!(parser.parse().ok_or(
-        Error::TOML(toml_error_to_string(&parser))
-    ));
+impl Input {
+    /// Read the file at `Path` and create a new `Input` from it.
+    pub fn new<P: AsRef<Path>>(path: P) -> Result<Input> {
+        let mut file = try!(File::open(&path));
+        let mut buffer = String::new();
+        let _ = try!(file.read_to_string(&mut buffer));
 
-    try!(validate(&config));
+        let mut parser = Parser::new(&buffer);
+        let config = try!(parser.parse().ok_or(
+            Error::TOML(toml_error_to_string(&parser))
+        ));
 
-    let system = try!(read_system(&config));
-    let simulation = try!(read_simulation(&config));
-    let nsteps = try!(read_nsteps(&config));
+        try!(validate(&config));
 
-    Ok(SimulationConfig {
-        system: system,
-        simulation: simulation,
-        nsteps: nsteps,
-    })
+        Ok(Input {
+            path: path.as_ref().to_path_buf(),
+            config: config,
+        })
+    }
+
+    /// Read input file and get the corresponding `Config`
+    pub fn read(&self) -> Result<Config> {
+        let system = try!(self.read_system());
+        let simulation = try!(self.read_simulation());
+        let nsteps = try!(self.read_nsteps());
+
+        Ok(Config {
+            system: system,
+            simulation: simulation,
+            nsteps: nsteps,
+        })
+    }
 }
 
 #[cfg(test)]
 mod tests {
-    use read_config;
+    use Input;
     use testing::bad_inputs;
 
     #[test]
     fn bad_input() {
         for path in bad_inputs("simulations", "generic") {
-            assert!(read_config(path).is_err());
+            assert!(Input::new(path).and_then(|input| input.read()).is_err());
         }
     }
 }
