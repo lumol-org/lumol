@@ -10,8 +10,8 @@ use lumol::potentials::{Harmonic, LennardJones, NullPotential};
 use lumol::potentials::TableComputation;
 
 use error::{Error, Result};
-use FromToml;
-use super::{FromTomlWithPairs, read_restriction};
+use {FromToml, FromTomlWithData};
+use super::read_restriction;
 
 /// Read the "pairs" section from the configuration.
 pub fn read_pairs(system: &mut System, pairs: &[Value], global_cutoff: Option<&Value>) -> Result<()> {

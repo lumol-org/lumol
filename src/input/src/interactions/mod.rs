@@ -22,13 +22,6 @@ use self::pairs::{read_pairs, read_bonds};
 use self::angles::{read_angles, read_dihedrals};
 use self::coulomb::{read_coulomb, set_charges};
 
-/// Convert a TOML table and a `PairPotential` to a Rust type. This is intended
-/// to be used by potential computation mainly.
-pub trait FromTomlWithPairs where Self: Sized {
-    /// Do the conversion from `table` and `potential` to Self.
-    fn from_toml(table: &Table, potential: Box<PairPotential>) -> Result<Self>;
-}
-
 /// Read interactions from the TOML file at `path`, and add them to the
 /// `system`. For a full documentation of the input files syntax, see the user
 /// manual.

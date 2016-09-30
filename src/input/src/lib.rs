@@ -18,7 +18,6 @@
 //! `read_config` function reads a whole simulation (`Simulation` and `System`
 //! objects).
 
-
 #![warn(
     missing_docs, trivial_casts, unused_import_braces, variant_size_differences,
     unused_qualifications, unused_results
@@ -42,26 +41,34 @@ extern crate toml;
 extern crate chemfiles;
 extern crate lumol;
 
-mod error;
-pub use self::error::{Error, Result};
+use toml::Table;
 
 #[macro_use]
 mod macros;
-
+mod error;
 mod interactions;
-pub use self::interactions::read_interactions;
-pub use self::interactions::FromTomlWithPairs;
-
 mod simulations;
-pub use self::simulations::read_config;
 
 #[cfg(test)]
 pub mod testing;
 
-#[cfg(test)]
-pub use self::interactions::read_interactions_string;
+pub use self::error::{Error, Result};
+pub use self::interactions::read_interactions;
+pub use self::simulations::read_config;
 
-use toml::Table;
+/// Convert a TOML table to a Rust type.
+pub trait FromToml: Sized {
+    /// Do the conversion from `table` to Self.
+    fn from_toml(table: &Table) -> Result<Self>;
+}
+
+/// Convert a TOML table and some additional data to a Rust type.
+pub trait FromTomlWithData: Sized {
+    /// The type of the additional data needed.
+    type Data;
+    /// Do the conversion from `table` and `data` to Self.
+    fn from_toml(table: &Table, data: Self::Data) -> Result<Self>;
+}
 
 fn validate(config: &Table) -> Result<()> {
     let input = try!(config.get("input").ok_or(
@@ -82,19 +89,4 @@ fn validate(config: &Table) -> Result<()> {
         ))
     }
     Ok(())
-}
-
-
-/// Convert a TOML table to a Rust type.
-pub trait FromToml: Sized {
-    /// Do the conversion from `table` to Self.
-    fn from_toml(table: &Table) -> Result<Self>;
-}
-
-/// Convert a TOML table and some additional data to a Rust type.
-pub trait FromTomlWithData: Sized {
-    /// The type of the additional data needed.
-    type Data;
-    /// Do the conversion from `table` and `data` to Self.
-    fn from_toml(table: &Table, data: Self::Data) -> Result<Self>;
 }

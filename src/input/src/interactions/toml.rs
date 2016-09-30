@@ -6,7 +6,7 @@ use toml::Table;
 
 use error::{Error, Result};
 use FromToml;
-use super::FromTomlWithPairs;
+use FromTomlWithData;
 
 use lumol::potentials::{Harmonic, LennardJones, NullPotential, CosineHarmonic, Torsion};
 use lumol::potentials::{Wolf, Ewald};
@@ -101,7 +101,9 @@ impl FromToml for Torsion {
 
 /******************************************************************************/
 
-impl FromTomlWithPairs for TableComputation {
+impl FromTomlWithData for TableComputation {
+    type Data = Box<PairPotential>;
+
     fn from_toml(table: &Table, potential: Box<PairPotential>) -> Result<TableComputation> {
         let table = try!(table["table"].as_table().ok_or(
             Error::from("'table' key in computation must be a TOML table")
