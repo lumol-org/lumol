@@ -9,11 +9,12 @@ use lumol::system::*;
 use error::{Error, Result};
 use read_interactions;
 use interactions::read_interactions_toml;
+use extract;
 
 pub fn read_system(config: &Table) -> Result<System> {
     let config = try!(system_table(config));
 
-    let file = extract_str!("file", config as "system input");
+    let file = try!(extract::str("file", config, "system input"));
     let mut trajectory = try!(Trajectory::open(file));
 
     if let Some(cell) = try!(read_cell(config)) {
@@ -22,7 +23,7 @@ pub fn read_system(config: &Table) -> Result<System> {
     }
 
     if config.get("topology").is_some() {
-        let topology = extract_str!("topology", config as "system input");
+        let topology = try!(extract::str("topology", config, "system input"));
         try!(trajectory.as_chemfiles().set_topology_file(topology));
     }
 
@@ -51,7 +52,7 @@ pub fn read_system(config: &Table) -> Result<System> {
 }
 
 fn system_table(config: &Table) -> Result<&Table> {
-    let systems = extract_slice!("systems", config as "input file");
+    let systems = try!(extract::slice("systems", config, "input file"));
     if systems.len() != 1 {
         return Err(Error::from(
             "Only one system is supported in the input"
@@ -114,7 +115,7 @@ fn get_cell_number(value: &Value) -> Result<f64> {
 
 fn init_velocities(system: &mut System, config: &Table) -> Result<()> {
     if config.get("init").is_some() {
-        let temperature = extract_str!("init", config as "velocities initializer");
+        let temperature = try!(extract::str("init", config, "velocities initializer"));
         let temperature = try!(units::from_str(temperature));
         let mut velocities = BoltzmannVelocities::new(temperature);
         velocities.init(system);

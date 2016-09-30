@@ -11,6 +11,7 @@ use lumol::potentials::TableComputation;
 
 use error::{Error, Result};
 use {FromToml, FromTomlWithData};
+use extract;
 use super::read_restriction;
 
 /// Read the "pairs" section from the configuration.
@@ -20,7 +21,7 @@ pub fn read_pairs(system: &mut System, pairs: &[Value], global_cutoff: Option<&V
             Error::from("Pair potential entry must be a table")
         ));
 
-        let atoms = extract_slice!("atoms", pair as "pair potential");
+        let atoms = try!(extract::slice("atoms", pair, "pair potential"));
         if atoms.len() != 2 {
             return Err(Error::from(
                 format!("Wrong size for 'atoms' section in pair potential. Should be 2, is {}", atoms.len())
@@ -87,7 +88,7 @@ pub fn read_bonds(system: &mut System, bonds: &[Value]) -> Result<()> {
             Error::from("Bond potential entry must be a table")
         ));
 
-        let atoms = extract_slice!("atoms", bond as "bond potential");
+        let atoms = try!(extract::slice("atoms", bond, "bond potential"));
         if atoms.len() != 2 {
             return Err(Error::from(
                 format!("Wrong size for 'atoms' section in bond potential. Should be 2, is {}", atoms.len())

@@ -7,11 +7,12 @@ use lumol::units;
 
 use error::{Error, Result};
 use {FromToml, FromTomlWithData};
+use extract;
 
 impl FromToml for MolecularDynamics {
     fn from_toml(config: &Table) -> Result<MolecularDynamics> {
         // Get the timestep of the simulation
-        let timestep = extract_str!("timestep", config as "molecular dynamics propagator");
+        let timestep = try!(extract::str("timestep", config, "molecular dynamics propagator"));
         let timestep = try!(units::from_str(timestep));
 
         let mut md;
@@ -20,7 +21,7 @@ impl FromToml for MolecularDynamics {
                 Error::from("'integrator' must be a table in molecular dynamics")
             ));
 
-            let integrator: Box<Integrator> = match extract_type!(integrator) {
+            let integrator: Box<Integrator> = match try!(extract::typ(integrator, "integrator")) {
                 "BerendsenBarostat" => Box::new(try!(
                     BerendsenBarostat::from_toml(integrator, timestep)
                 )),
@@ -51,7 +52,7 @@ impl FromToml for MolecularDynamics {
                 Error::from("'thermostat' must be a table in molecular dynamics")
             ));
 
-            let thermostat: Box<Thermostat> = match extract_type!(thermostat) {
+            let thermostat: Box<Thermostat> = match try!(extract::typ(thermostat, "thermostat")) {
                 "Berendsen" => Box::new(try!(
                     BerendsenThermostat::from_toml(thermostat)
                 )),
@@ -75,7 +76,7 @@ impl FromToml for MolecularDynamics {
                     Error::from("All controls must be tables in molecular dynamics")
                 ));
 
-                let control: Box<Control> = match extract_type!(control) {
+                let control: Box<Control> = match try!(extract::typ(control, "control")) {
                     "RemoveTranslation" => Box::new(try!(
                         RemoveTranslation::from_toml(control)
                     )),
@@ -120,9 +121,9 @@ impl FromTomlWithData for LeapFrog {
 impl FromTomlWithData for BerendsenBarostat {
     type Data = f64;
     fn from_toml(config: &Table, timestep: f64) -> Result<BerendsenBarostat> {
-        let pressure = extract_str!("pressure", config as "Berendsen barostat");
+        let pressure = try!(extract::str("pressure", config, "Berendsen barostat"));
         let pressure = try!(units::from_str(pressure));
-        let tau = extract_number!("timestep", config as "Berendsen barostat");
+        let tau = try!(extract::number("timestep", config, "Berendsen barostat"));
         Ok(BerendsenBarostat::new(timestep, pressure, tau))
     }
 }
@@ -131,9 +132,9 @@ impl FromTomlWithData for AnisoBerendsenBarostat {
     type Data = f64;
     fn from_toml(config: &Table, timestep: f64) -> Result<AnisoBerendsenBarostat> {
         // TODO: implement a way to give the stress matrix
-        let pressure = extract_str!("pressure", config as "anisotropic Berendsen barostat");
+        let pressure = try!(extract::str("pressure", config, "anisotropic Berendsen barostat"));
         let pressure = try!(units::from_str(pressure));
-        let tau = extract_number!("timestep", config as "anisotropic Berendsen barostat");
+        let tau = try!(extract::number("timestep", config, "anisotropic Berendsen barostat"));
         Ok(AnisoBerendsenBarostat::hydrostatic(timestep, pressure, tau))
     }
 }
@@ -142,16 +143,16 @@ impl FromTomlWithData for AnisoBerendsenBarostat {
 
 impl FromToml for BerendsenThermostat {
     fn from_toml(config: &Table) -> Result<BerendsenThermostat> {
-        let temperature = extract_str!("temperature", config as "Berendsen thermostat");
+        let temperature = try!(extract::str("temperature", config, "Berendsen thermostat"));
         let temperature = try!(units::from_str(temperature));
-        let tau = extract_number!("timestep", config as "Berendsen thermostat");
+        let tau = try!(extract::number("timestep", config, "Berendsen thermostat"));
         Ok(BerendsenThermostat::new(temperature, tau))
     }
 }
 
 impl FromToml for RescaleThermostat {
     fn from_toml(config: &Table) -> Result<RescaleThermostat> {
-        let temperature = extract_str!("temperature", config as "Berendsen thermostat");
+        let temperature = try!(extract::str("temperature", config, "Berendsen thermostat"));
         let temperature = try!(units::from_str(temperature));
 
         if let Some(tolerance) = config.get("tolerance") {

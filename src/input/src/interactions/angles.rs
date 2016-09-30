@@ -8,6 +8,7 @@ use lumol::potentials::{AnglePotential, DihedralPotential};
 
 use error::{Error, Result};
 use FromToml;
+use extract;
 
 pub fn read_angles(system: &mut System, angles: &[Value]) -> Result<()> {
     for angle in angles {
@@ -15,7 +16,7 @@ pub fn read_angles(system: &mut System, angles: &[Value]) -> Result<()> {
             Error::from("Angle potential entry must be a table")
         ));
 
-        let atoms = extract_slice!("atoms", angle as "angle potential");
+        let atoms = try!(extract::slice("atoms", angle, "angle potential"));
         if atoms.len() != 3 {
             return Err(Error::from(
                 format!("Wrong size for 'atoms' section in angle potentials. Should be 3, is {}", atoms.len())
@@ -67,7 +68,7 @@ pub fn read_dihedrals(system: &mut System, dihedrals: &[Value]) -> Result<()> {
             Error::from("Dihedral angle potential entry must be a table")
         ));
 
-        let atoms = extract_slice!("atoms", dihedral as "dihedral angle potential");
+        let atoms = try!(extract::slice("atoms", dihedral, "dihedral angle potential"));
         if atoms.len() != 4 {
             return Err(Error::from(
                 format!("Wrong size for 'atoms' section in dihedral angle potentials. Should be 4, is {}", atoms.len())

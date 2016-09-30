@@ -7,6 +7,7 @@ use lumol::simulation::{TrajectoryOutput, CellOutput, EnergyOutput, PropertiesOu
 
 use error::{Error, Result};
 use FromToml;
+use extract;
 
 pub fn read_outputs(outputs: &[Value]) -> Result<Vec<(Box<Output>, u64)>> {
     let mut res = Vec::new();
@@ -24,7 +25,7 @@ pub fn read_outputs(outputs: &[Value]) -> Result<Vec<(Box<Output>, u64)>> {
             None => 1u64
         };
 
-        let output: Box<Output> = match extract_type!(output) {
+        let output: Box<Output> = match try!(extract::typ(output, "output")) {
             "Trajectory" | "trajectory" => Box::new(try!(TrajectoryOutput::from_toml(output))),
             "Energy" | "energy" => Box::new(try!(EnergyOutput::from_toml(output))),
             "Cell" | "cell" => Box::new(try!(CellOutput::from_toml(output))),

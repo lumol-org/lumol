@@ -6,10 +6,11 @@ use lumol::simulation::{Propagator, MolecularDynamics, MonteCarlo};
 
 use error::{Error, Result};
 use FromToml;
+use extract;
 
 pub fn read_propagator(config: &Table) -> Result<Box<Propagator>> {
-    let propagator = extract_table!("propagator", config as "simulation");
-    match extract_type!(propagator) {
+    let propagator = try!(extract::table("propagator", config, "simulation"));
+    match try!(extract::typ(propagator, "propagator")) {
         "MolecularDynamics" => Ok(Box::new(try!(
             MolecularDynamics::from_toml(propagator)
         ))),

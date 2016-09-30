@@ -9,27 +9,28 @@ use lumol::units;
 
 use error::{Error, Result};
 use FromToml;
+use extract;
 
 impl FromToml for MonteCarlo {
     fn from_toml(config: &Table) -> Result<MonteCarlo> {
-        let temperature = extract_str!("temperature", config as "Monte-Carlo propagator");
+        let temperature = try!(extract::str("temperature", config, "Monte-Carlo propagator"));
         let temperature = try!(units::from_str(temperature));
 
         let mut mc = MonteCarlo::new(temperature);
 
-        let moves = extract_slice!("moves", config as "Monte-Carlo propagator");
+        let moves = try!(extract::slice("moves", config, "Monte-Carlo propagator"));
         for mc_move in moves {
             let mc_move = try!(mc_move.as_table().ok_or(
                 Error::from("All moves must be tables in Monte-Carlo")
             ));
 
             let frequency = if mc_move.get("frequency").is_some() {
-                extract_number!("frequency", mc_move as "Monte-Carlo move")
+                try!(extract::number("frequency", mc_move, "Monte-Carlo move"))
             } else {
                 1.0
             };
 
-            let mc_move: Box<MCMove> = match extract_type!(mc_move) {
+            let mc_move: Box<MCMove> = match try!(extract::typ(mc_move, "Monte-Carlo move")) {
                 "Translate" => Box::new(try!(Translate::from_toml(mc_move))),
                 "Rotate" => Box::new(try!(Rotate::from_toml(mc_move))),
                 other => return Err(Error::from(
@@ -45,11 +46,11 @@ impl FromToml for MonteCarlo {
 
 impl FromToml for Translate {
     fn from_toml(config: &Table) -> Result<Translate> {
-        let delta = extract_str!("delta", config as "Translate move");
+        let delta = try!(extract::str("delta", config, "Translate move"));
         let delta = try!(units::from_str(delta));
 
         if config.get("molecule").is_some() {
-            let molfile = extract_str!("molecule", config as "Translate move");
+            let molfile = try!(extract::str("molecule", config, "Translate move"));
             let (molecule, atoms) = try!(read_molecule(molfile));
             let moltype = moltype(&molecule, &atoms);
             Ok(Translate::with_moltype(delta, moltype))
@@ -61,11 +62,11 @@ impl FromToml for Translate {
 
 impl FromToml for Rotate {
     fn from_toml(config: &Table) -> Result<Rotate> {
-        let delta = extract_str!("delta", config as "Rotate move");
+        let delta = try!(extract::str("delta", config, "Rotate move"));
         let delta = try!(units::from_str(delta));
 
         if config.get("molecule").is_some() {
-            let molfile = extract_str!("molecule", config as "Translate move");
+            let molfile = try!(extract::str("molecule", config, "Translate move"));
             let (molecule, atoms) = try!(read_molecule(molfile));
             let moltype = moltype(&molecule, &atoms);
             Ok(Rotate::with_moltype(delta, moltype))

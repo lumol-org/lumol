@@ -7,7 +7,7 @@ use std::fs::File;
 use std::path::Path;
 
 use lumol::system::System;
-use lumol::potentials::{PairPotential, PairRestriction};
+use lumol::potentials::PairRestriction;
 
 use {Error, Result};
 use validate;

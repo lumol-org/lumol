@@ -43,8 +43,7 @@ extern crate lumol;
 
 use toml::Table;
 
-#[macro_use]
-mod macros;
+mod extract;
 mod error;
 mod interactions;
 mod simulations;
