@@ -5,6 +5,7 @@
 extern crate lumol;
 extern crate lumol_input as input;
 use lumol::*;
+use input::InteractionsInput;
 
 use std::path::Path;
 use std::sync::{Once, ONCE_INIT};
@@ -18,8 +19,8 @@ fn setup_system() -> System {
                                         .unwrap();
     system.set_cell(UnitCell::cubic(20.0));
 
-    let interactions = data_dir.join("butane.toml");
-    input::read_interactions(&mut system, interactions).unwrap();
+    let input = InteractionsInput::new(data_dir.join("butane.toml")).unwrap();
+    input.read(&mut system).unwrap();
 
     let mut velocities = BoltzmannVelocities::new(units::from(300.0, "K").unwrap());
     velocities.init(&mut system);

@@ -3,6 +3,7 @@
 extern crate lumol;
 extern crate lumol_input as input;
 use lumol::*;
+use input::InteractionsInput;
 
 use std::path::Path;
 use std::sync::{Once, ONCE_INIT};
@@ -16,8 +17,8 @@ fn get_system(potential: &str) -> System {
                                 .unwrap();
     system.set_cell(UnitCell::cubic(18.0));
 
-    let potentials = data_dir.join(potential);
-    input::read_interactions(&mut system, potentials).unwrap();
+    let input = InteractionsInput::new(data_dir.join(potential)).unwrap();
+    input.read(&mut system).unwrap();
     return system;
 }
 

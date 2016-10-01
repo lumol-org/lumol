@@ -52,7 +52,7 @@ mod simulations;
 pub mod testing;
 
 pub use self::error::{Error, Result};
-pub use self::interactions::read_interactions;
+pub use self::interactions::InteractionsInput;
 pub use self::simulations::Input;
 
 /// Convert a TOML table to a Rust type.

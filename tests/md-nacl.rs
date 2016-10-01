@@ -5,6 +5,7 @@
 extern crate lumol;
 extern crate lumol_input as input;
 use lumol::*;
+use input::InteractionsInput;
 
 use std::path::Path;
 use std::sync::{Once, ONCE_INIT};
@@ -29,7 +30,8 @@ pub fn setup_system(potential: &str, file: &str) -> System {
 
     let potential = String::from("NaCl-") + potential + ".toml";
     let potential = data_dir.join("data").join(potential);
-    input::read_interactions(&mut system, potential).unwrap();
+    let input = InteractionsInput::new(potential).unwrap();
+    input.read(&mut system).unwrap();
 
     let mut velocities = BoltzmannVelocities::new(units::from(300.0, "K").unwrap());
     velocities.init(&mut system);

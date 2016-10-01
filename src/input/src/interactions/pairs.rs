@@ -13,97 +13,130 @@ use error::{Error, Result};
 use {FromToml, FromTomlWithData};
 use extract;
 use super::read_restriction;
+use super::InteractionsInput;
 
-/// Read the "pairs" section from the configuration.
-pub fn read_pairs(system: &mut System, pairs: &[Value], global_cutoff: Option<&Value>) -> Result<()> {
-    for pair in pairs {
-        let pair = try!(pair.as_table().ok_or(
-            Error::from("Pair potential entry must be a table")
+impl InteractionsInput {
+    /// Read the "pairs" section from the potential configuration. This is an
+    /// internal function, public because of the code organization.
+    // TODO: use restricted privacy here
+    pub fn read_pairs(&self, system: &mut System) -> Result<()> {
+        let pairs = match self.config.get("pairs") {
+            Some(pairs) => pairs,
+            None => return Ok(())
+        };
+
+        let pairs = try!(pairs.as_slice().ok_or(
+            Error::from("The 'pairs' section must be an array")
         ));
 
-        let atoms = try!(extract::slice("atoms", pair, "pair potential"));
-        if atoms.len() != 2 {
-            return Err(Error::from(
-                format!("Wrong size for 'atoms' section in pair potential. Should be 2, is {}", atoms.len())
-            ));
-        }
-
-        let a = try!(atoms[0].as_str().ok_or(Error::from(
-            "The first atom name is not a string in pair potential"
-        )));
-        let b = try!(atoms[1].as_str().ok_or(Error::from(
-            "The second atom name is not a string in pair potential"
-        )));
-
-        let potential = try!(read_pair_potential(pair));
-        let potential = if let Some(computation) = pair.get("computation") {
-            let computation = try!(computation.as_table().ok_or(
-                Error::from("'computation' section must be a table")
-            ));
-            try!(read_pair_computation(computation, potential))
+        let global_cutoff = if let Some(global) = self.config.get("global") {
+            let global = try!(global.as_table().ok_or(Error::from(
+                "'global' section must be a table"
+            )));
+            global.get("cutoff")
         } else {
-            potential
+            None
         };
 
-        let cutoff = match pair.get("cutoff") {
-            Some(cutoff) => cutoff,
-            None => try!(global_cutoff.ok_or(Error::from(
-                "Missing 'cutoff' value for pair potential"
-            )))
-        };
+        for pair in pairs {
+            let pair = try!(pair.as_table().ok_or(
+                Error::from("Pair potential entry must be a table")
+            ));
 
-        let mut interaction = match *cutoff {
-            Value::String(ref cutoff) => {
-                let cutoff = try!(units::from_str(cutoff));
-                PairInteraction::new(potential, cutoff)
+            let atoms = try!(extract::slice("atoms", pair, "pair potential"));
+            if atoms.len() != 2 {
+                return Err(Error::from(
+                    format!("Wrong size for 'atoms' section in pair potential. Should be 2, is {}", atoms.len())
+                ));
             }
-            Value::Table(ref table) => {
-                let shifted = try!(table.get("shifted").ok_or(Error::from(
-                    "'cutoff' table can only contain 'shifted' key"
-                )));
-                let cutoff = try!(shifted.as_str().ok_or(Error::from(
-                    "'cutoff.shifted' value must be a string"
-                )));
-                let cutoff = try!(units::from_str(cutoff));
-                PairInteraction::shifted(potential, cutoff)
-            }
-            _ => return Err(Error::from(
-                "'cutoff' must be a string or a table in pair potential"
-            ))
-        };
 
-        if let Some(restriction) = try!(read_restriction(pair)) {
-            interaction.set_restriction(restriction);
+            let a = try!(atoms[0].as_str().ok_or(Error::from(
+                "The first atom name is not a string in pair potential"
+            )));
+            let b = try!(atoms[1].as_str().ok_or(Error::from(
+                "The second atom name is not a string in pair potential"
+            )));
+
+            let potential = try!(read_pair_potential(pair));
+            let potential = if let Some(computation) = pair.get("computation") {
+                let computation = try!(computation.as_table().ok_or(
+                    Error::from("'computation' section must be a table")
+                ));
+                try!(read_pair_computation(computation, potential))
+            } else {
+                potential
+            };
+
+            let cutoff = match pair.get("cutoff") {
+                Some(cutoff) => cutoff,
+                None => try!(global_cutoff.ok_or(Error::from(
+                    "Missing 'cutoff' value for pair potential"
+                )))
+            };
+
+            let mut interaction = match *cutoff {
+                Value::String(ref cutoff) => {
+                    let cutoff = try!(units::from_str(cutoff));
+                    PairInteraction::new(potential, cutoff)
+                }
+                Value::Table(ref table) => {
+                    let shifted = try!(table.get("shifted").ok_or(Error::from(
+                        "'cutoff' table can only contain 'shifted' key"
+                    )));
+                    let cutoff = try!(shifted.as_str().ok_or(Error::from(
+                        "'cutoff.shifted' value must be a string"
+                    )));
+                    let cutoff = try!(units::from_str(cutoff));
+                    PairInteraction::shifted(potential, cutoff)
+                }
+                _ => return Err(Error::from(
+                    "'cutoff' must be a string or a table in pair potential"
+                ))
+            };
+
+            if let Some(restriction) = try!(read_restriction(pair)) {
+                interaction.set_restriction(restriction);
+            }
+
+            system.interactions_mut().add_pair(a, b, interaction);
         }
-
-        system.interactions_mut().add_pair(a, b, interaction);
+        Ok(())
     }
-    Ok(())
-}
 
-/// Read the "bonds" section from the configuration.
-pub fn read_bonds(system: &mut System, bonds: &[Value]) -> Result<()> {
-    for bond in bonds {
-        let bond = try!(bond.as_table().ok_or(
-            Error::from("Bond potential entry must be a table")
+    /// Read the "bonds" section from the potential configuration. This is an
+    /// internal function, public because of the code organization.
+    // TODO: use restricted privacy here
+    pub fn read_bonds(&self, system: &mut System) -> Result<()> {
+        let bonds = match self.config.get("bonds") {
+            Some(bonds) => bonds,
+            None => return Ok(())
+        };
+
+        let bonds = try!(bonds.as_slice().ok_or(
+            Error::from("The 'bonds' section must be an array")
         ));
 
-        let atoms = try!(extract::slice("atoms", bond, "bond potential"));
-        if atoms.len() != 2 {
-            return Err(Error::from(
-                format!("Wrong size for 'atoms' section in bond potential. Should be 2, is {}", atoms.len())
+        for bond in bonds {
+            let bond = try!(bond.as_table().ok_or(
+                Error::from("Bond potential entry must be a table")
             ));
+
+            let atoms = try!(extract::slice("atoms", bond, "bond potential"));
+            if atoms.len() != 2 {
+                return Err(Error::from(
+                    format!("Wrong size for 'atoms' section in bond potential. Should be 2, is {}", atoms.len())
+                ));
+            }
+
+            let a = try!(atoms[0].as_str().ok_or(Error::from("The first atom name is not a string in pair potential")));
+            let b = try!(atoms[1].as_str().ok_or(Error::from("The second atom name is not a string in pair potential")));
+
+            let potential = try!(read_bond_potential(bond));
+            system.interactions_mut().add_bond(a, b, potential);
         }
-
-        let a = try!(atoms[0].as_str().ok_or(Error::from("The first atom name is not a string in pair potential")));
-        let b = try!(atoms[1].as_str().ok_or(Error::from("The second atom name is not a string in pair potential")));
-
-        let potential = try!(read_bond_potential(bond));
-        system.interactions_mut().add_bond(a, b, potential);
+        Ok(())
     }
-    Ok(())
 }
-
 
 fn read_pair_potential(pair: &Table) -> Result<Box<PairPotential>> {
     const KEYWORDS: &'static[&'static str] = &["restriction", "computation", "atoms", "cutoff"];
@@ -182,49 +215,59 @@ fn read_pair_computation(computation: &Table, potential: Box<PairPotential>) -> 
 
 #[cfg(test)]
 mod tests {
-    use read_interactions;
+    use InteractionsInput;
     use testing::bad_inputs;
     use lumol::system::{Particle, System};
     use std::path::Path;
 
     #[test]
     fn pairs() {
-        let data_root = Path::new(file!()).parent().unwrap().join("data");
         let mut system = System::new();
         system.add_particle(Particle::new("A"));
         system.add_particle(Particle::new("B"));
 
-        read_interactions(&mut system, data_root.join("pairs.toml")).unwrap();
+        let path = Path::new(file!()).parent().unwrap().join("data").join("pairs.toml");
+        let input = InteractionsInput::new(path).unwrap();
+        input.read(&mut system).unwrap();
 
         assert_eq!(system.pair_potentials(0, 1).len(), 11);
     }
 
     #[test]
     fn bonds() {
-        let data_root = Path::new(file!()).parent().unwrap().join("data");
         let mut system = System::new();
         system.add_particle(Particle::new("A"));
         system.add_particle(Particle::new("B"));
         let _ = system.add_bond(0, 1);
 
-        read_interactions(&mut system, data_root.join("bonds.toml")).unwrap();
+        let path = Path::new(file!()).parent().unwrap().join("data").join("bonds.toml");
+        let input = InteractionsInput::new(path).unwrap();
+        input.read(&mut system).unwrap();
 
         assert_eq!(system.bond_potentials(0, 1).len(), 2);
     }
 
     #[test]
     fn bad_pairs() {
+        let mut system = System::new();
         for path in bad_inputs("interactions", "pairs") {
-            let mut system = System::new();
-            assert!(read_interactions(&mut system, path).is_err());
+            assert!(
+                InteractionsInput::new(path)
+                .and_then(|input| input.read(&mut system))
+                .is_err()
+            );
         }
     }
 
     #[test]
     fn bad_bonds() {
+        let mut system = System::new();
         for path in bad_inputs("interactions", "bonds") {
-            let mut system = System::new();
-            assert!(read_interactions(&mut system, path).is_err());
+            assert!(
+                InteractionsInput::new(path)
+                .and_then(|input| input.read(&mut system))
+                .is_err()
+            );
         }
     }
 }

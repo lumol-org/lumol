@@ -5,6 +5,7 @@
 extern crate lumol;
 extern crate lumol_input as input;
 use lumol::*;
+use input::InteractionsInput;
 
 use std::path::Path;
 use std::sync::{Once, ONCE_INIT};
@@ -41,7 +42,8 @@ fn setup(potential: &str, n: usize) -> (Simulation, System) {
 
     let data_dir = Path::new(file!()).parent().unwrap();
     let potentials = data_dir.join("data").join(potential);
-    input::read_interactions(&mut system, potentials).unwrap();
+    let input = InteractionsInput::new(potentials).unwrap();
+    input.read(&mut system).unwrap();
 
     let mut velocities = BoltzmannVelocities::new(units::from(300.0, "K").unwrap());
     velocities.init(&mut system);

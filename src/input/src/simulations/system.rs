@@ -7,10 +7,8 @@ use lumol::units;
 use lumol::system::*;
 
 use error::{Error, Result};
-use read_interactions;
-use interactions::read_interactions_toml;
 use extract;
-use super::Input;
+use {Input, InteractionsInput};
 
 impl Input {
     /// Get the the simulated system. This is an internal function, public
@@ -128,9 +126,11 @@ impl Input {
         let config = try!(self.system_table());
         if let Some(potentials) = config.get("potentials") {
             if let Some(potentials) = potentials.as_str() {
-                try!(read_interactions(system, potentials));
+                let input = try!(InteractionsInput::new(potentials));
+                try!(input.read(system));
             } else if let Some(potentials) = potentials.as_table() {
-                try!(read_interactions_toml(system, potentials));
+                let input = try!(InteractionsInput::from_toml(potentials.clone()));
+                try!(input.read(system));
             } else {
                 return Err(Error::from("'potentials' must be a string or a table"))
             }

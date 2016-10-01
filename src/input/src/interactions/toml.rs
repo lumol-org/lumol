@@ -156,14 +156,15 @@ impl FromToml for Ewald {
 #[cfg(test)]
 mod tests {
     use lumol::system::System;
-    use read_interactions;
+    use InteractionsInput;
     use testing::bad_inputs;
 
     #[test]
     fn bad_potentials() {
+        let mut system = System::new();
         for path in bad_inputs("interactions", "toml") {
-            let mut system = System::new();
-            assert!(read_interactions(&mut system, path).is_err());
+            let input = InteractionsInput::new(path).unwrap();
+            assert!(input.read(&mut system).is_err());
         }
     }
 }

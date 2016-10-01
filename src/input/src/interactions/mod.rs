@@ -18,92 +18,51 @@ mod pairs;
 mod angles;
 mod coulomb;
 
-use self::pairs::{read_pairs, read_bonds};
-use self::angles::{read_angles, read_dihedrals};
-use self::coulomb::{read_coulomb, set_charges};
-
-/// Read interactions from the TOML file at `path`, and add them to the
-/// `system`. For a full documentation of the input files syntax, see the user
-/// manual.
-pub fn read_interactions<P: AsRef<Path>>(system: &mut System, path: P) -> Result<()> {
-    let mut file = try!(File::open(path));
-    let mut buffer = String::new();
-    let _ = try!(file.read_to_string(&mut buffer));
-    return read_interactions_string(system, &buffer);
+/// An interaction input file for Lumol.
+pub struct InteractionsInput {
+    /// The TOML configuration
+    config: Table,
 }
 
-
-/// This is the same as `read_interactions`, but directly read a TOML formated
-/// string.
-// TODO: use restricted privacy for this function
-pub fn read_interactions_string(system: &mut System, string: &str) -> Result<()> {
-    let mut parser = Parser::new(string);
-    let config = try!(parser.parse().ok_or(
-        Error::TOML(toml_error_to_string(&parser))
-    ));
-
-    try!(validate(&config));
-    return read_interactions_toml(system, &config);
-}
-
-
-/// This is the same as `read_interactions`, but directly read a TOML table.
-/// The `config` is assumed to be validated by a call to `validate`.
-// TODO: use restricted privacy for this function
-pub fn read_interactions_toml(system: &mut System, config: &Table) -> Result<()> {
-    if let Some(pairs) = config.get("pairs") {
-        let pairs = try!(pairs.as_slice().ok_or(
-            Error::from("The 'pairs' section must be an array")
-        ));
-
-        let cutoff = if let Some(global) = config.get("global") {
-            let global = try!(global.as_table().ok_or(Error::from(
-                "'global' section must be a table"
-            )));
-            global.get("cutoff")
-        } else {
-            None
-        };
-
-        try!(read_pairs(system, pairs, cutoff));
+impl InteractionsInput {
+    /// Read interactions from the TOML formated file at `path`.
+    pub fn new<P: AsRef<Path>>(path: P) -> Result<InteractionsInput> {
+        let mut file = try!(File::open(&path));
+        let mut buffer = String::new();
+        let _ = try!(file.read_to_string(&mut buffer));
+        return InteractionsInput::from_string(&buffer);
     }
 
-    if let Some(bonds) = config.get("bonds") {
-        let bonds = try!(bonds.as_slice().ok_or(
-            Error::from("The 'bonds' section must be an array")
+    /// Read the interactions from a TOML formated string.
+    pub fn from_string(string: &str) -> Result<InteractionsInput> {
+        let mut parser = Parser::new(string);
+        let config = try!(parser.parse().ok_or(
+            Error::TOML(toml_error_to_string(&parser))
         ));
-        try!(read_bonds(system, bonds));
+
+        try!(validate(&config));
+        return InteractionsInput::from_toml(config);
     }
 
-    if let Some(angles) = config.get("angles") {
-        let angles = try!(angles.as_slice().ok_or(
-            Error::from("The 'angles' section must be an array")
-        ));
-        try!(read_angles(system, angles));
+    /// Read the interactions from a TOML table. This is an internal function,
+    /// public because of the code organization.
+    // TODO: use restricted privacy here
+    pub fn from_toml(config: Table) -> Result<InteractionsInput> {
+        Ok(InteractionsInput{
+            config: config
+        })
     }
 
-    if let Some(dihedrals) = config.get("dihedrals") {
-        let dihedrals = try!(dihedrals.as_slice().ok_or(
-            Error::from("The 'dihedrals' section must be an array")
-        ));
-        try!(read_dihedrals(system, dihedrals));
+    /// Read the interactions from this input into the `system`.
+    pub fn read(&self, system: &mut System) -> Result<()> {
+        try!(self.read_pairs(system));
+        try!(self.read_bonds(system));
+        try!(self.read_angles(system));
+        try!(self.read_dihedrals(system));
+        try!(self.read_coulomb(system));
+        try!(self.read_charges(system));
+        Ok(())
     }
-
-    if let Some(coulomb) = config.get("coulomb") {
-        let coulomb = try!(coulomb.as_table().ok_or(
-            Error::from("The 'coulomb' section must be a table")
-        ));
-        try!(read_coulomb(system, coulomb));
-    }
-
-    if let Some(charges) = config.get("charges") {
-        let charges = try!(charges.as_table().ok_or(
-            Error::from("The 'charges' section must be a table")
-        ));
-        try!(set_charges(system, charges));
-    }
-
-    Ok(())
 }
 
 fn read_restriction(config: &Table) -> Result<Option<PairRestriction>> {
@@ -148,14 +107,18 @@ fn read_restriction(config: &Table) -> Result<Option<PairRestriction>> {
 #[cfg(test)]
 mod tests {
     use lumol::system::System;
-    use read_interactions;
+    use InteractionsInput;
     use testing::bad_inputs;
 
     #[test]
     fn bad_input() {
+        let mut system = System::new();
         for path in bad_inputs("interactions", "generic") {
-            let mut system = System::new();
-            assert!(read_interactions(&mut system, path).is_err());
+            assert!(
+                InteractionsInput::new(path)
+                .and_then(|input| input.read(&mut system))
+                .is_err()
+            );
         }
     }
 }

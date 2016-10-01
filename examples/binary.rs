@@ -2,6 +2,7 @@
 extern crate lumol;
 extern crate lumol_input as input;
 use lumol::*;
+use input::InteractionsInput;
 
 fn main() {
     Logger::stdout();
@@ -16,7 +17,8 @@ fn main() {
     }
 
     system.set_cell(UnitCell::cubic(25.0));
-    input::read_interactions(&mut system, "data/binary.toml").unwrap();
+    let input = InteractionsInput::new("data/binary.toml").unwrap();
+    input.read(&mut system).unwrap();
 
     let co2 = {
         // We can read files to get moltype
