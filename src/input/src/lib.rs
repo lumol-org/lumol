@@ -1,23 +1,49 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) 2015-2016 G. Fraux — BSD license
 
-//! Input capacities for lumol
+//! This crate provide a way to build a Lumol simulation using input files.
 //!
-//! This module provide input files reader for two types of files:
+//! Instead of building the `System` object, the `Simulation` object by hand
+//! before being able to use them to run the simulation, this crate allow to
+//! describe the simulation and the system in a TOML input file, using a simple
+//! syntax.
 //!
-//! * Configuration files uses the TOML format to define a `System` or a
-//!   `Simulation` in an human-readable way, without writing any code. This
-//!   type of input is further divided in potentials input files and whole
-//!   simulation input files;
-//! * Structures files defines the positions and the names of particles in a
-//!   `System` or in a specific `Molecule`.
+//! The main entry point of this crate is the `Input` struct, which allow to
+//! read a whole simulation configuration. The easiest way to run a simulation
+//! using Lumol is:
 //!
-//! # Reading configuration files
+//! ```no_run
+//! extern crate lumol_input;
+//! use lumol_input::Input;
 //!
-//! The `read_interactions` function read interactions into a `System`, and the
-//! `read_config` function reads a whole simulation (`Simulation` and `System`
-//! objects).
-
+//! fn main() {
+//!     let input = Input::new("simulation.toml").unwrap();
+//!     let mut config = input.read().unwrap();
+//!
+//!     config.simulation.run(&mut config.system, config.nsteps);
+//! }
+//! ```
+//!
+//! This crate also provide an `InteractionsInput` for reading interactions
+//! from a TOML file. It can be used to set the interactions in a system:
+//! 
+//! ```no_run
+//! extern crate lumol;
+//! extern crate lumol_input;
+//! use lumol::System;
+//! use lumol_input::InteractionsInput;
+//!
+//! fn main() {
+//!     let mut system = System::new();
+//!
+//!     // ... Build the system by hand
+//!
+//!     // Read the interactions
+//!     let input = InteractionsInput::new("potentials.toml").unwrap();
+//!     input.read(&mut system).unwrap();
+//! }
+//! ```
+//!
 #![warn(
     missing_docs, trivial_casts, unused_import_braces, variant_size_differences,
     unused_qualifications, unused_results
