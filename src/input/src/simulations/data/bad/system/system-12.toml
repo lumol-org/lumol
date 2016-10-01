@@ -2,7 +2,7 @@
 version = 1
 
 [[systems]]
-file = "src/input/simulations/data/CO2.xyz"
+file = "../../CO2.xyz"
 # 'init' in velocities is not a string
 velocities = {init = true}
 

@@ -3,7 +3,7 @@
 use lumol::simulation::{Propagator, MolecularDynamics, MonteCarlo};
 
 use error::{Error, Result};
-use FromToml;
+use {FromToml, FromTomlWithData};
 use extract;
 use super::Input;
 
@@ -19,7 +19,7 @@ impl Input {
                 MolecularDynamics::from_toml(propagator)
             ))),
             "MonteCarlo" => Ok(Box::new(try!(
-                MonteCarlo::from_toml(propagator)
+                MonteCarlo::from_toml(propagator, self.path.clone())
             ))),
             other => Err(Error::from(
                 format!("Unknown propagator type '{}'", other)

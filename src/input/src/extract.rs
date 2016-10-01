@@ -53,14 +53,6 @@ pub fn slice<'a>(key: &str, config: &'a Table, context: &str) -> Result<&'a [Val
 }
 
 /// Extract the string 'type' key in a TOML table
-///
-/// ```
-/// let value = match try!(extract::typ(config)) {
-///     "foo" => create_foo(config),
-///     "bar" => create_bar(config),
-///     other => error!("Unknown type of stuff '{}'", other),
-/// }
-/// ```
 pub fn typ<'a>(config: &'a Table, context: &str) -> Result<&'a str> {
     let typ = try!(config.get("type").ok_or(Error::from(
         format!("Missing 'type' key in {}", context)

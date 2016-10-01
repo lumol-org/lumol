@@ -2,7 +2,7 @@
 version = 1
 
 [[systems]]
-file = "src/input/simulations/data/CO2.xyz"
+file = "../../CO2.xyz"
 # potentials is not a string or a table
 potentials = 34
 

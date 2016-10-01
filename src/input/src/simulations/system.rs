@@ -9,6 +9,7 @@ use lumol::system::*;
 use error::{Error, Result};
 use extract;
 use {Input, InteractionsInput};
+use simulations::get_input_path;
 
 impl Input {
     /// Get the the simulated system. This is an internal function, public
@@ -18,6 +19,7 @@ impl Input {
         let config = try!(self.system_table());
 
         let file = try!(extract::str("file", config, "system input"));
+        let file = get_input_path(&self.path, file);
         let mut trajectory = try!(Trajectory::open(file));
 
         if let Some(cell) = try!(self.read_cell()) {
@@ -126,7 +128,8 @@ impl Input {
         let config = try!(self.system_table());
         if let Some(potentials) = config.get("potentials") {
             if let Some(potentials) = potentials.as_str() {
-                let input = try!(InteractionsInput::new(potentials));
+                let path = get_input_path(&self.path, potentials);
+                let input = try!(InteractionsInput::new(path));
                 try!(input.read(system));
             } else if let Some(potentials) = potentials.as_table() {
                 let input = try!(InteractionsInput::from_toml(potentials.clone()));

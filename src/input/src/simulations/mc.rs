@@ -1,6 +1,7 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) 2015-2016 G. Fraux — BSD license
 use toml::Table;
+use std::path::PathBuf;
 
 use lumol::chfl::read_molecule;
 use lumol::system::moltype;
@@ -8,11 +9,13 @@ use lumol::simulation::mc::*;
 use lumol::units;
 
 use error::{Error, Result};
-use FromToml;
+use FromTomlWithData;
 use extract;
+use simulations::get_input_path;
 
-impl FromToml for MonteCarlo {
-    fn from_toml(config: &Table) -> Result<MonteCarlo> {
+impl FromTomlWithData for MonteCarlo {
+    type Data = PathBuf;
+    fn from_toml(config: &Table, root: PathBuf) -> Result<MonteCarlo> {
         let temperature = try!(extract::str("temperature", config, "Monte-Carlo propagator"));
         let temperature = try!(units::from_str(temperature));
 
@@ -31,8 +34,8 @@ impl FromToml for MonteCarlo {
             };
 
             let mc_move: Box<MCMove> = match try!(extract::typ(mc_move, "Monte-Carlo move")) {
-                "Translate" => Box::new(try!(Translate::from_toml(mc_move))),
-                "Rotate" => Box::new(try!(Rotate::from_toml(mc_move))),
+                "Translate" => Box::new(try!(Translate::from_toml(mc_move, root.clone()))),
+                "Rotate" => Box::new(try!(Rotate::from_toml(mc_move, root.clone()))),
                 other => return Err(Error::from(
                     format!("Unknown Monte-Carlo move '{}'", other)
                 ))
@@ -44,13 +47,15 @@ impl FromToml for MonteCarlo {
     }
 }
 
-impl FromToml for Translate {
-    fn from_toml(config: &Table) -> Result<Translate> {
+impl FromTomlWithData for Translate {
+    type Data = PathBuf;
+    fn from_toml(config: &Table, root: PathBuf) -> Result<Translate> {
         let delta = try!(extract::str("delta", config, "Translate move"));
         let delta = try!(units::from_str(delta));
 
         if config.get("molecule").is_some() {
             let molfile = try!(extract::str("molecule", config, "Translate move"));
+            let molfile = get_input_path(root, molfile);
             let (molecule, atoms) = try!(read_molecule(molfile));
             let moltype = moltype(&molecule, &atoms);
             Ok(Translate::with_moltype(delta, moltype))
@@ -60,13 +65,15 @@ impl FromToml for Translate {
     }
 }
 
-impl FromToml for Rotate {
-    fn from_toml(config: &Table) -> Result<Rotate> {
+impl FromTomlWithData for Rotate {
+    type Data = PathBuf;
+    fn from_toml(config: &Table, root: PathBuf) -> Result<Rotate> {
         let delta = try!(extract::str("delta", config, "Rotate move"));
         let delta = try!(units::from_str(delta));
 
         if config.get("molecule").is_some() {
             let molfile = try!(extract::str("molecule", config, "Translate move"));
+            let molfile = get_input_path(root, molfile);
             let (molecule, atoms) = try!(read_molecule(molfile));
             let moltype = moltype(&molecule, &atoms);
             Ok(Rotate::with_moltype(delta, moltype))

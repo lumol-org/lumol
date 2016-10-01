@@ -74,6 +74,16 @@ impl Input {
     }
 }
 
+fn get_input_path<P1: AsRef<Path>, P2: AsRef<Path>>(root: P1, path: P2) -> PathBuf {
+    let path = PathBuf::from(path.as_ref());
+    if path.is_absolute() {
+        path
+    } else {
+        let parent = root.as_ref().parent().unwrap();
+        parent.join(path)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use Input;
