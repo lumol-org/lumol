@@ -3,6 +3,7 @@ version = 1
 
 [[systems]]
 file = "CO2.xyz"
+cell = []
 
 [[simulations]]
 nsteps = 1000000

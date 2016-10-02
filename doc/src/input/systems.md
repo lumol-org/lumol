@@ -94,7 +94,15 @@ We offer three different ways to set the cell:
   topology = "topology.pdb"
   cell = 40
   ```
-
+- `cell = []` create an infinite unit cell, without boundaries. This can be
+  used when periodic boundary conditions are undesirables, for example to
+  simulate aggregats in the void;
+  ```toml
+  [[systems]]
+  file = "water.xyz"
+  topology = "topology.pdb"
+  cell = []
+  ```
 - `cell = [<a>, <b>, <c>]` creates an orthorhombic unit cell.
   You should provide the lengths of the cell, `<a>`, `<b>`, and `<c>` as numeric
   values in Angstrom.
