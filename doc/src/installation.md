@@ -1,41 +1,34 @@
 # Installation
 
-Lumol is written in the Rust programming language. To compile it, we need a
-stable Rust compiler. We can simply install Lumol using *cargo*, the Rust
-package manager. You can use Lumol as a command line tool or as a library.
+Lumol is written in [Rust][Rust] ([why?][why-rust]), and you will need a Rust
+compiler to compile it. You can download one from [here][rust-download], or
+using your package manager (Rust is available on Fedora, and with Homebrew).
+Lumol also depends on some C++ libraries, so you will need a C++ compiler and
+cmake to be installed.
 
+Lumol is tested on Linux and OsX, and should build on Windows without any issue.
+You will need a C++11 capable compiler on Windows (MSVC > 15 or Mingw with gcc >
+4.9). Be sure to pick the corresponding version of the Rust compiler.
 
-## Installation as command line tool
-
-Via cargo:
-
-```
-cargo install --git https://github.com/Luthaf/lumol
-```
-
-This will produce the binary named `cymba` in ~/.cargo/bin.
-
-## Installation as library
-
-To use Lumol as library the easiest way is to clone it from github.
+When all the dependencies are installed on you system, you can install the
+latest release of Lumol using:
 
 ```
-git clone https://github.com/Luthaf/lumol
-cd lumol
-cargo build
+cargo install lumol
 ```
 
-We provide some examples in the examples directory. You can build them by
-running `cargo test --release --no-run`. To run examples, change to the examples
-directory and run the binaries.
-
-We also have unit and integration tests that you can run.
+and the latest development version with:
 
 ```
-# Run only the unit test
-cargo test --lib
-# Run all the tests in release mode.
-cargo test --release
+cargo install --git https://github.com/lumol-org/lumol
 ```
 
-Any failing test is an issue, please report it!
+Both of these commands will download and install the command line interface for
+Lumol in `~/.cargo/bin/lumol`, where `~` is your home directory. You may want to
+add `~/.cargo/bin` to your PATH or move the `lumol` binary in another directory
+accessible in your PATH.
+
+
+[Rust]: https://www.rust-lang.org/
+[why-rust]: faq.html#Why%20is%20Lumol%20written%20in%20Rust?
+[rust-download]: https://www.rust-lang.org/downloads.html

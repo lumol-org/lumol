@@ -3,7 +3,7 @@
 - [Introduction](intro.md)
 - [Installation](installation.md)
 
-- [First simulations]()
+- [First simulations](tutorial/intro.md)
     - [Monte-Carlo of argon]()
     - [Molecular dynamics of water]()
     - [Gibbs simulation of ethane]()
