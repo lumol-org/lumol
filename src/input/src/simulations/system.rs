@@ -22,9 +22,11 @@ impl Input {
         let file = get_input_path(&self.path, file);
         let mut trajectory = try!(Trajectory::open(file));
 
+        let mut with_cell = false;
         if let Some(cell) = try!(self.read_cell()) {
             let cell = try!(cell.to_chemfiles());
             try!(trajectory.as_chemfiles().set_cell(cell));
+            with_cell = true;
         }
 
         if config.get("topology").is_some() {
@@ -46,6 +48,12 @@ impl Input {
 
         try!(self.read_potentials(&mut system));
         try!(self.init_velocities(&mut system));
+
+        if !with_cell && system.cell().shape() == CellShape::Infinite {
+            warn!("No unit cell in the system, using an infinite unit cell.\n\
+            You can silent this warning by using `cell = []` in the input file \
+            if this is what you want.");
+        }
 
         Ok(system)
     }
