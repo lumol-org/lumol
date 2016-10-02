@@ -1,0 +1,41 @@
+[input]
+version = 1
+
+
+[[systems]]
+file = "nacl.xyz"
+cell = 22.5608
+
+[systems.potentials.global]
+cutoff = "8 A"
+
+[systems.potentials.charges]
+Na = 1.0
+Cl = -1.0
+
+[[systems.potentials.pairs]]
+atoms = ["Na", "Cl"]
+lj = {sigma = "3.5545 A", epsilon = "0.04425 kcal/mol"}
+
+[[systems.potentials.pairs]]
+atoms = ["Na", "Na"]
+lj = {sigma = "2.497 A", epsilon = "0.07826 kcal/mol"}
+
+[[systems.potentials.pairs]]
+atoms = ["Cl", "Cl"]
+lj = {sigma = "4.612 A", epsilon = "0.02502 kcal/mol"}
+
+[systems.potentials.coulomb]
+wolf = {cutoff = "8 A"}
+
+
+
+[[simulations]]
+nsteps = 5000
+outputs = [
+    {type = "Trajectory", file = "trajectory.xyz", frequency = 10}
+]
+
+[simulations.propagator]
+type = "MolecularDynamics"
+timestep = "1 fs"

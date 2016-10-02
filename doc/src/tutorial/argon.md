@@ -75,5 +75,11 @@ moves = [
 ]
 ```
 
+So now we know how to run simulations of Lennard-Jones fluids. How about we add
+electrostatic interactions in the next example? Say hello to [Sodium
+Chloride][nacl]!
+
 [argon.xyz]: data/argon.xyz
+[argon.toml]: data/argon.toml
 [TOML]: https://github.com/toml-lang/toml
+[nacl]: tutorial/nacl.html
