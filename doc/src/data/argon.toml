@@ -1,0 +1,24 @@
+[input]
+version = 1
+
+[[systems]]
+file = "argon.xyz"
+cell = 21.65
+
+[[systems.potentials.pairs]]
+atoms = ["Ar", "Ar"]
+cutoff = "10 A"
+lj = {sigma = "3.4 A", epsilon = "1.0 kJ/mol"}
+
+[[simulations]]
+nsteps = 100000
+outputs = [
+    {type = "Energy", file = "energy.dat", frequency = 100},
+    {type = "Trajectory", file = "trajectory.xyz", frequency = 100}
+]
+[simulations.propagator]
+type = "MonteCarlo"
+temperature = "500 K"
+moves = [
+    {type = "Translate", delta = "1 A"},
+]

@@ -4,10 +4,10 @@
 - [Installation](installation.md)
 
 - [First simulations](tutorial/intro.md)
-    - [Monte-Carlo of argon]()
+    - [Monte-Carlo of Argon](tutorial/argon.md)
+    - [Hello Sodium Chloride]()
     - [Molecular dynamics of water]()
     - [Gibbs simulation of ethane]()
-    - [Hello Sodium Chloride]()
     - [Adsorption in zeolites]()
 
 - [Conceptual guides]()
