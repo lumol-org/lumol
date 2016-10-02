@@ -30,3 +30,5 @@
     - [Extending Molecular dynamics]()
     - [Extending Monte-Carlo]()
     - [Adding propagators]()
+
+- [FAQ](faq.md)
