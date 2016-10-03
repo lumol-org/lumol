@@ -6,7 +6,7 @@ use std::ops::{Add, Sub, Mul, Div, Index, IndexMut};
 use std::ops::{AddAssign, SubAssign, MulAssign, DivAssign};
 use types::{Vector3D, Zero, One};
 
-/// 3x3 dimensional matrix type, implementing all usual operations
+/// A 3x3 square matrix type
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub struct Matrix3 {
     data : [[f64; 3]; 3]

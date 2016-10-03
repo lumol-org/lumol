@@ -1,7 +1,10 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) 2015-2016 G. Fraux — BSD license
 
-//! Some basic types used in all the other modules
+//! Linear algebra types for Lumol.
+//!
+//! This module provides vectors, matrix, 2D and 3D tensors for use in all other
+//! modules.
 pub use num::{One, Zero};
 
 mod vectors;

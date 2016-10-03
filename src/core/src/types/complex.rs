@@ -8,7 +8,7 @@ use std::f64;
 use types::{Zero, One};
 
 #[derive(Debug, Clone, Copy, PartialEq, Default)]
-/// Complex number, only implemented for f64 real and imag parts
+/// Complex number, with double precision real and imaginary parts.
 pub struct Complex {
     /// Real part of the complex
     real: f64,

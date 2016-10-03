@@ -7,7 +7,7 @@ use std::ops::{AddAssign, SubAssign, MulAssign, DivAssign};
 use std::cmp::PartialEq;
 use types::{Matrix3, Zero};
 
-/// A simple 3-dimensional vector type, storing three `f64`.
+/// A 3-dimensional vector type
 ///
 /// A `Vector3D` implement all the arithmetics operations:
 /// ```rust

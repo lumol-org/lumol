@@ -8,7 +8,7 @@ use std::ops::{Index, IndexMut};
 use std::cmp::PartialEq;
 use types::Zero;
 
-/// Two dimmensional array, based on ndarray.
+/// Two dimmensional tensors, based on ndarray.
 ///
 /// Most of the methods are simply forwarded to ndarray, so also look the doc
 /// for this crate.
@@ -81,7 +81,7 @@ impl<T> IndexMut<(Ix, Ix)> for Array2<T> {
 
 /******************************************************************************/
 
-/// Three dimmensional array, based on ndarray
+/// Three dimmensional tensors, based on ndarray
 ///
 /// Most of the methods are simply forwarded to ndarray, so also look the doc
 /// for this crate.
