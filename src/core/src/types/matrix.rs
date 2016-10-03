@@ -6,7 +6,64 @@ use std::ops::{Add, Sub, Mul, Div, Index, IndexMut};
 use std::ops::{AddAssign, SubAssign, MulAssign, DivAssign};
 use types::{Vector3D, Zero, One};
 
-/// A 3x3 square matrix type
+/// A 3x3 square matrix type.
+///
+/// `Matrix3` implements all the usual arithmetics operations:
+///
+/// ```
+/// use lumol::{Matrix3, Vector3D, One};
+///
+/// let one = Matrix3::one();
+/// let a = Matrix3::new(
+///     1.0, 0.0, 3.0,
+///     0.0, 2.0, 5.6,
+///     0.0, 0.0, 8.0
+/// );
+///
+/// let v = Vector3D::new(3.0, 2.0, 1.0);
+///
+/// // Indexing
+/// assert_eq!(a[0][0], 1.0);
+/// assert_eq!(a[1][2], 5.6);
+///
+/// // Addition
+/// let c = a + one;
+/// assert_eq!(c, Matrix3::new(
+///     2.0, 0.0, 3.0,
+///     0.0, 3.0, 5.6,
+///     0.0, 0.0, 9.0
+/// ));
+///
+/// // Subtraction
+/// let c = a - one;
+/// assert_eq!(c, Matrix3::new(
+///     0.0, 0.0, 3.0,
+///     0.0, 1.0, 5.6,
+///     0.0, 0.0, 7.0
+/// ));
+///
+/// // Multiplication
+/// let c = a * one;  // matrix - matrix
+/// assert_eq!(c, a);
+///
+/// let c = a * v;  // matrix - vector
+/// assert_eq!(c, Vector3D::new(6.0, 9.6, 8.0));
+///
+/// let c = 42.0 * one;  // matrix - scalar
+/// assert_eq!(c, Matrix3::new(
+///     42., 0.0, 0.0,
+///     0.0, 42., 0.0,
+///     0.0, 0.0, 42.
+/// ));
+///
+/// // Division
+/// let c = a / 2.0;
+/// assert_eq!(c, Matrix3::new(
+///     0.5, 0.0, 1.5,
+///     0.0, 1.0, 2.8,
+///     0.0, 0.0, 4.0
+/// ));
+/// ```
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub struct Matrix3 {
     data : [[f64; 3]; 3]
@@ -14,6 +71,16 @@ pub struct Matrix3 {
 
 impl Matrix3 {
     /// Create a new `Matrix3` specifying all its components
+    /// # Examples
+    /// ```
+    /// # use lumol::Matrix3;
+    /// let matrix = Matrix3::new(
+    ///     0.0, 0.0, 3.0,
+    ///     0.0, 1.0, 5.6,
+    ///     0.0, 0.0, 7.0
+    /// );
+    /// assert_eq!(matrix[0][2], 3.0);
+    /// ```
     #[allow(too_many_arguments)]
     pub fn new(m00: f64, m01: f64, m02: f64,
                m10: f64, m11: f64, m12: f64,
@@ -24,11 +91,46 @@ impl Matrix3 {
     }
 
     /// Compute the trace of the matrix
+    /// # Examples
+    /// ```
+    /// # use lumol::Matrix3;
+    /// let matrix = Matrix3::new(
+    ///     0.0, 0.0, 3.0,
+    ///     0.0, 1.0, 5.6,
+    ///     0.0, 0.0, 7.0
+    /// );
+    /// assert_eq!(matrix.trace(), 8.0);
+    /// ```
     pub fn trace(&self) -> f64 {
         return self[(0, 0)] + self[(1, 1)] + self[(2, 2)];
     }
 
-    /// Computes the inverse of a matrix, which is assumed to exist
+    /// Computes the inverse of a matrix
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use lumol::{Matrix3, One};
+    /// // A diagonal matrix is trivially inversible
+    /// let matrix = Matrix3::new(
+    ///     4.0, 0.0, 0.0,
+    ///     0.0, 1.0, 0.0,
+    ///     0.0, 0.0, 7.0
+    /// );
+    ///
+    /// let inverted = Matrix3::new(
+    ///     1.0 / 4.0, 0.0,    0.0,
+    ///        0.0,    1.0,    0.0,
+    ///        0.0,    0.0, 1.0 / 7.0
+    /// );
+    ///
+    /// assert_eq!(matrix.inverse(), inverted);
+    /// ```
+    ///
+    /// # Panics
+    ///
+    /// If the matrix is not inversible, *i.e.* if the matrix determinant
+    /// equals zero.
     pub fn inverse(&self) -> Matrix3 {
         let mut determinant = 0.0;
         determinant += self[(0, 0)] * (self[(1, 1)] * self[(2, 2)] - self[(2, 1)] * self[(1, 2)]);
