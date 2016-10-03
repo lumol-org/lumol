@@ -10,51 +10,117 @@ use types::{Matrix3, Zero};
 /// A 3-dimensional vector type
 ///
 /// A `Vector3D` implement all the arithmetics operations:
-/// ```rust
-/// // `u`, `v` and `w` are vectors. `a` and `b` are scalar
+///
+/// ```
+/// # use lumol::Vector3D;
 /// let u = Vector3D::new(1.0, 2.0, 3.0);
-/// let v = Vector3D::new(1.0, 2.0, 3.0);
-/// let a = 42.0;
+/// let v = Vector3D::new(4.0, -2.0, 1.0);
+///
+/// // Indexing
+/// assert_eq!(u[0], 1.0);
+/// assert_eq!(u[1], 2.0);
+/// assert_eq!(u[2], 3.0);
 ///
 /// // Addition
 /// let w = u + v;
+/// assert_eq!(w, Vector3D::new(5.0, 0.0, 4.0));
+///
 /// // Substraction
 /// let w = u - v;
+/// assert_eq!(w, Vector3D::new(-3.0, 4.0, 2.0));
+///
 /// // Negation
 /// let w = -u;
+/// assert_eq!(w, Vector3D::new(-1.0, -2.0, -3.0));
+///
 /// // Cross product
 /// let w = u ^ v;
+/// assert_eq!(w, Vector3D::new(8.0, 11.0, -10.0));
 ///
 /// // Multiplication
-/// let w = a * u;
-/// let w = v * a;
+/// let w = 2.0 * u;
+/// assert_eq!(w, Vector3D::new(2.0, 4.0, 6.0));
+///
+/// let w = u * 3.0;
+/// assert_eq!(w, Vector3D::new(3.0, 6.0, 9.0));
+///
 /// // Division
-/// let w = u / a;
+/// let w = u / 2.0;
+/// assert_eq!(w, Vector3D::new(0.5, 1.0, 1.5));
 ///
 /// // Dot product
-/// let b = u * v;
+/// let a = u * v;
+/// assert_eq!(a, 3.0);
 /// ```
 #[derive(Copy, Clone, Debug)]
 pub struct Vector3D([f64; 3]);
 
 impl Vector3D {
     /// Create a new `Vector3D` with components `x`, `y`, `z`
+    ///
+    /// # Examples
+    /// ```
+    /// # use lumol::Vector3D;
+    /// let vec = Vector3D::new(1.0, 0.0, -42.0);
+    /// ```
     pub fn new(x: f64, y: f64, z: f64) -> Vector3D {
         Vector3D([x, y, z])
     }
+
     /// Return the squared euclidean norm of a Vector3D
+    ///
+    /// # Examples
+    /// ```
+    /// # use lumol::Vector3D;
+    /// let vec = Vector3D::new(1.0, 0.0, -4.0);
+    /// assert_eq!(vec.norm2(), 17.0);
+    /// ```
     #[inline] pub fn norm2(&self) -> f64 {
         self * self
     }
+
     /// Return the euclidean norm of a Vector3D
+    /// # Examples
+    /// ```
+    /// # use lumol::Vector3D;
+    /// # use std::f64;
+    /// let vec = Vector3D::new(1.0, 0.0, -4.0);
+    /// assert_eq!(vec.norm(), f64::sqrt(17.0));
+    /// ```
     #[inline] pub fn norm(&self) -> f64 {
         f64::sqrt(self.norm2())
     }
-    /// Normalize a Vector3D
+
+    /// Normalize a `Vector3D`.
+    /// # Examples
+    /// ```
+    /// # use lumol::Vector3D;
+    /// let vec = Vector3D::new(1.0, 0.0, -4.0);
+    /// let n = vec.normalized();
+    /// assert_eq!(n.norm(), 1.0);
+    /// ```
     #[inline] pub fn normalized(&self) -> Vector3D {
         self / self.norm()
     }
-    /// Tensorial product between vectors
+
+    /// Tensorial product between vectors. The tensorial product between the
+    /// vectors `a` and `b` creates a `Matrix3` with component (i, j) equals to
+    /// `a[i] * b[j]`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use lumol::Vector3D;
+    /// # use lumol::Matrix3;
+    /// let a = Vector3D::new(1.0, 0.0, -4.0);
+    /// let b = Vector3D::new(1.0, 2.0, 3.0);
+    /// let matrix = Matrix3::new(
+    ///     1.0, 2.0, 3.0,
+    ///     0.0, 0.0, 0.0,
+    ///     -4.0, -8.0, -12.0
+    /// );
+    /// assert_eq!(a.tensorial(&b), matrix);
+    /// ```
     pub fn tensorial(&self, other: &Vector3D) -> Matrix3 {
         Matrix3::new(self[0] * other[0], self[0] * other[1], self[0] * other[2],
                      self[1] * other[0], self[1] * other[1], self[1] * other[2],
@@ -167,7 +233,6 @@ impl PartialEq for Vector3D {
     }
 }
 
-/// This is provided for convenience only, and is slower than direct field access
 impl Index<usize> for Vector3D {
     type Output = f64;
     #[inline]
@@ -176,7 +241,6 @@ impl Index<usize> for Vector3D {
     }
 }
 
-/// This is provided for convenience only, and is slower than direct field access
 impl IndexMut<usize> for Vector3D {
     #[inline]
     fn index_mut(&mut self, index: usize) -> &mut f64 {
