@@ -5,7 +5,6 @@
 use ndarray::{Array, Ix};
 
 use std::ops::{Index, IndexMut};
-use std::cmp::PartialEq;
 use types::Zero;
 
 /// Two dimensional tensors, based on ndarray.
@@ -23,7 +22,7 @@ use types::Zero;
 /// a[(0, 4)] = 7.0;
 /// assert_eq!(a[(0, 4)], 7.0);
 /// ```
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Array2<T>(Array<T, (Ix, Ix)>);
 
 impl<T> Array2<T> {
@@ -114,12 +113,6 @@ impl<T: Default> Array2<T> {
     }
 }
 
-impl<T: PartialEq> PartialEq for Array2<T> {
-    fn eq(&self, other: &Array2<T>) -> bool {
-        self == other
-    }
-}
-
 impl<T> Index<(Ix, Ix)> for Array2<T> {
     type Output = T;
     fn index(&self, index: (Ix, Ix)) -> &T {
@@ -156,7 +149,7 @@ impl<T> IndexMut<(Ix, Ix)> for Array2<T> {
 /// a[(0, 4, 1)] = 7.0;
 /// assert_eq!(a[(0, 4, 1)], 7.0);
 /// ```
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Array3<T>(Array<T, (Ix, Ix, Ix)>);
 
 impl<T> Array3<T> {
