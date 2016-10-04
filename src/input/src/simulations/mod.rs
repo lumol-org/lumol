@@ -79,7 +79,7 @@ fn get_input_path<P1: AsRef<Path>, P2: AsRef<Path>>(root: P1, path: P2) -> PathB
     if path.is_absolute() {
         path
     } else {
-        let parent = root.as_ref().parent().unwrap();
+        let parent = root.as_ref().parent().expect("Could not get parent path");
         parent.join(path)
     }
 }

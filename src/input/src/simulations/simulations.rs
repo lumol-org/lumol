@@ -14,10 +14,8 @@ impl Input {
     pub fn read_simulation(&self) -> Result<Simulation> {
         let propagator = try!(self.read_propagator());
         let mut simulation = Simulation::new(propagator);
-        if let Some(outputs) = try!(self.read_outputs()) {
-            for (output, frequency) in outputs {
-                simulation.add_output_with_frequency(output, frequency);
-            }
+        for (output, frequency) in try!(self.read_outputs()) {
+            simulation.add_output_with_frequency(output, frequency);
         }
 
         Ok(simulation)

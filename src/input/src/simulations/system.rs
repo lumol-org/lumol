@@ -78,7 +78,7 @@ impl Input {
         if let Some(cell) = config.get("cell") {
             match *cell {
                 Value::Array(ref cell) => {
-                    if cell.len() == 0 {
+                    if cell.is_empty() {
                         Ok(Some(UnitCell::new()))
                     } else if cell.len() == 3 {
                         let a = try!(get_cell_number(&cell[0]));
