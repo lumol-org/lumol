@@ -1,0 +1,35 @@
+# f-SPC model of water, using ewald summation for electrostatics
+[input]
+version = 1
+
+[global]
+cutoff = "14 A"
+
+[[pairs]]
+atoms = ["O", "O"]
+lj = {sigma = "3.16 A", epsilon = "0.155 kcal/mol"}
+
+[[pairs]]
+atoms = ["H", "H"]
+harmonic = {k = "79.8 kcal/mol/A^2", x0 = "1.633 A"}
+restriction = "IntraMolecular"
+
+[[pairs]]
+atoms = ["H", "O"]
+null = {}
+
+[[bonds]]
+atoms = ["O", "H"]
+harmonic = {k = "1054.2 kcal/mol/A^2", x0 = "1.0 A"}
+
+[[angles]]
+atoms = ["H", "O", "H"]
+harmonic = {k = "75.9 kcal/mol/rad^2", x0 = "109.5 deg"}
+
+[coulomb]
+ewald = {cutoff = "8.5 A", kmax = 3}
+restriction = "inter-molecular"
+
+[charges]
+O = -0.82
+H = 0.41

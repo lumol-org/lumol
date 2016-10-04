@@ -96,3 +96,6 @@ timestep of 1fs for integration.
 type = "MolecularDynamics"
 timestep = "1 fs"
 ```
+
+In the next example, we will see how to simulate molecules of
+[water](tutorial/water.html).

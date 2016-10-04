@@ -6,7 +6,7 @@
 - [First simulations](tutorial/intro.md)
     - [Monte-Carlo of Argon](tutorial/argon.md)
     - [Hello Sodium Chloride](tutorial/nacl.md)
-    - [Molecular dynamics of water]()
+    - [Molecular dynamics of water](tutorial/water.md)
     - [Gibbs simulation of ethane]()
     - [Adsorption in zeolites]()
 

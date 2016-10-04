@@ -1,0 +1,18 @@
+[input]
+version = 1
+
+[[systems]]
+file = "water.xyz"
+guess_bonds = true
+cell = 28.0
+potentials = "water-fSCP.toml"
+
+[[simulations]]
+nsteps = 5000
+outputs = [
+    {type = "Trajectory", file = "trajectory.xyz", frequency = 10}
+]
+
+[simulations.propagator]
+type = "MolecularDynamics"
+timestep = "1 fs"
