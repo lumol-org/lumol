@@ -1,25 +1,35 @@
-# Input files syntax reference
+# Input files
 
-Lumol input files uses the [TOML][TOML] format, a simple and minimalist
+An input file contains all information that you need to run a simulation.
+It is usually organized in three main sections: **input**, **systems** and
+**simulations**.
+
+- The [input](input/intro.html#Input%20metadata) section contains metadata about
+  the input itself (i.e. a version number).
+- The [systems](input/systems.html) section contains information about the
+  intial configuration, the interactions between atoms and the simulation cell.
+- The [simulations](input/simulations.html) section defines how your system will
+  propagate. You can generally choose between molecular dynamics (MD) or Monte-
+  Carlo (MC).
+
+Interactions (often also called *force field*) are the heart of every simulation
+since they encapsulate the physical behaviour of atoms by defining how they
+interact with each other. You can specify interactions within the main input
+file as a part of the `systems` section, but since your system can contain a
+huge number of interactions it is often more convenient to create a separate
+input file. Doing so has two advantages. First, it will keep your main input
+file short and readable and second, you can simply reuse your force field input
+for different simulations (you can even build your own force fields library). We
+talk more about standalone input files for interactions on this
+[page](input/interactions.html).
+
+## Format
+
+Lumol input files use the [TOML][TOML] format, a simple and minimalistic
 configuration format based on `key = value` pairs. You can read an introduction
 to the TOML format [here][TOML].
 
 [TOML]: https://github.com/toml-lang/toml
-
-The input file describe everything needed for running a simulation: which system
-to use, with which force field, and how to propagate the simulation. They
-usually contain three main sections:
-- The [input](input/intro.html#Input%20metadata) section describe metadata about
-  the input itself;
-- The [systems](input/systems.html) section describe the system to use in the
-  simulation;
-- The [simulations](input/simulations.html) section describe how to update the
-  system during the simulation;
-
-Interactions between particles in the system are a bit special: they can either
-be specified in they own input file (to be reused in multiple simulations); or
-be part of the `[[systems]]` section. This [page](input/interactions.html)
-describe the standalone input for interactions.
 
 ## Input metadata
 
@@ -30,18 +40,17 @@ All input files must contain an `[input]` section looking like this:
 version = 1
 ```
 
-The purpose of the `version` key is to make changes to the input file format,
-while keeping compatibility with the previous input format. Please note that
-while Lumol have not reach version 1.0, no guarantee is made on input file
-compatibility.
+Introducing a `version` key helps us to make changes to the input file format
+while keeping compatibility with previous formats. Please note that
+Lumol is not in version 1.0 yet and we currently cannot guarantee compatibility
+for input files.
 
 ## Units in input
 
 The unit of a value can be defined by a specific string, which will be parsed
-and converted to the [internal unit system](input/units.html).
+and converted to the [internal unit system](concepts/units.html).
 If there is no unit in the string, the internal unit for this type is used.
-No consistency check is performed, and it is up to the code users to check the
-given units.
+No consistency check is performed, and it is up to you to check the given units.
 
 ```toml
 # Here, 'cutoff' is a distance

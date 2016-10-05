@@ -1,27 +1,30 @@
 # Summary
 
-- [Introduction](engine/intro.md)
-    - [System](engine/system.md)
-    - [Simulation](engine/simulation.md)
+- [Introduction](intro.md)
+- [Installation](installation.md)
 
-- [Tutorial: using Lumol]()
+- [First simulations]()
     - [Monte-Carlo of argon]()
     - [Molecular dynamics of water]()
     - [Gibbs simulation of ethane]()
     - [Hello Sodium Chloride]()
     - [Adsorption in zeolites]()
 
+- [Conceptual guides]()
+    - [System](concepts/system.md)
+    - [Simulation](concepts/simulation.md)
+    - [Units](concepts/units.md)
 
-- [Input files reference](input/intro.md)
+- [Input files](input/intro.md)
+    - [TOML syntax]()
     - [Systems](input/systems.md)
     - [Interactions](input/interactions.md)
     - [Potentials](input/potentials.md)
     - [Simulations](input/simulations.md)
     - [Molecular dynamics](input/md.md)
     - [Monte-Carlo](input/mc.md)
-    - [Units](input/units.md)
 
-- [Tutorial: extending Lumol]()
+- [Advanced tutorials]()
     - [Adding potentials]()
     - [Adding outputs]()
     - [Extending Molecular dynamics]()
