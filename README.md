@@ -14,11 +14,11 @@ simulation (from force fields to barostats and Monte-Carlo moves). Lumol is
 - **Easy to extend**: the code is modular, object-oriented, well documented,
   open-source and readable;
 - **Easy to use**: the user interface is nice, with human-oriented input files.
-- **Stable**: it will never crash on a good input, and try to provide helpful
+- **Stable**: it will never crash on a good input, and tries to provide helpful
   error messages.
 
 Lumol is actively developed, and should be considered as alpha software. If
-you are interested, have some question or want to participate, you can open a
+you are interested, have some questions or want to participate, you can open a
 Github issue or go to the project [chat room][Gitter].
 
 [Gitter]: https://gitter.im/lumol-org/lumol
@@ -59,7 +59,7 @@ This will produce the a `lumol` binary in `~/.cargo/bin`.
 
 ### Usage as a library & developement
 
-You can also clone a build lumol locally, for developing it or using it as a
+You can also clone and build lumol locally, for developing it or using it as a
 library by running:
 
 ```bash
@@ -68,10 +68,10 @@ cd lumol
 cargo build
 ```
 
-Various usage are in the `examples` directory. You can build them by running
+Various options for use are in the `examples` directory. You can build them by running
 `cargo test --release --no-run`; and run them from the `examples` directory.
 
-We also have unit and integration tests, that you can run with:
+We also have unit and integration tests that you can run with:
 
 ```bash
 # Run only the unit test
@@ -90,7 +90,7 @@ Documentation is hosted [here](http://lumol-org.github.io/lumol), and separated
 in two main parts:
 
 - The [user manual](http://lumol-org.github.io/lumol/latest/book/) contains
-  informations to use lumol as a command line tool, and the complete input
+  information on how to use lumol as a command line tool, and the complete input
   file documentation. Use this documentation if you want to use Lumol as a
   simulation engine — without writing code.
 - To use Lumol as a library inside your own code, we have a [developer
@@ -100,7 +100,7 @@ in two main parts:
 ## Contributing
 
 If you want to contribute to Lumol, there are several ways to go: improving
-the documentation and the usage of English language; testing the code on your
+the documentation and helping with language issues; testing the code on your
 systems to find bugs; adding new algorithms and potentials; providing feature
 requests. Please come by and [talk with us][Gitter] a bit before staring new
 work, or open an [issue][NewIssue] to discuss improvements. We also have
