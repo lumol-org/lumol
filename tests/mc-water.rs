@@ -1,8 +1,9 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) 2015-2016 G. Fraux — BSD license
-
 extern crate lumol;
+extern crate lumol_input as input;
 use lumol::*;
+use input::InteractionsInput;
 
 use std::path::Path;
 use std::sync::{Once, ONCE_INIT};
@@ -11,13 +12,13 @@ static START: Once = ONCE_INIT;
 fn get_system(potential: &str) -> System {
     let data_dir = Path::new(file!()).parent().unwrap().join("data");
     let configuration = data_dir.join("water.xyz");
-    let mut system = input::Trajectory::open(configuration)
-                                        .and_then(|mut traj| traj.read_guess_bonds())
-                                        .unwrap();
+    let mut system = Trajectory::open(configuration)
+                                .and_then(|mut traj| traj.read_guess_bonds())
+                                .unwrap();
     system.set_cell(UnitCell::cubic(18.0));
 
-    let potentials = data_dir.join(potential);
-    input::read_interactions(&mut system, potentials).unwrap();
+    let input = InteractionsInput::new(data_dir.join(potential)).unwrap();
+    input.read(&mut system).unwrap();
     return system;
 }
 

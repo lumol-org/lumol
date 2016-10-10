@@ -1,13 +1,15 @@
 //! Monte-Carlo simulation of a binary mixture of H20 and CO2.
 extern crate lumol;
+extern crate lumol_input as input;
 use lumol::*;
+use input::InteractionsInput;
 
 fn main() {
     Logger::stdout();
 
-    let mut system = input::Trajectory::open("data/binary.xyz")
-                                        .and_then(|mut traj| traj.read())
-                                        .unwrap();
+    let mut system = Trajectory::open("data/binary.xyz")
+                                .and_then(|mut traj| traj.read())
+                                .unwrap();
     // Add bonds in the system
     for i in 0..system.molecules().len() / 3 {
         system.add_bond(3 * i,     3 * i + 1);
@@ -15,11 +17,12 @@ fn main() {
     }
 
     system.set_cell(UnitCell::cubic(25.0));
-    input::read_interactions(&mut system, "data/binary.toml").unwrap();
+    let input = InteractionsInput::new("data/binary.toml").unwrap();
+    input.read(&mut system).unwrap();
 
     let co2 = {
         // We can read files to get moltype
-        let (molecule, atoms) = input::read_molecule("data/CO2.xyz").unwrap();
+        let (molecule, atoms) = read_molecule("data/CO2.xyz").unwrap();
         moltype(&molecule, &atoms)
     };
     let h2o = {

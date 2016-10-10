@@ -41,15 +41,18 @@ install:
       fi
 script:
     # Run unit tests and doc tests in debug mode
-    - cargo test --lib
-    - cargo test --doc
+    - cd src/core && cargo test
+    - cd ../..
+    - cd src/input && cargo test
+    - cd ../..
     # Run all tests in release mode
     - cargo test --release
 after_script:
     - |
       if [[ "${TRAVIS_RUST_VERSION}" == "stable" && "${TRAVIS_PULL_REQUEST}" == "false" && "${TRAVIS_BRANCH}" == "master" ]]; then
           kcov --include-pattern=$(pwd) target/kcov target/debug/lumol-*
-          codecov --file target/kcov/lumol-*/cobertura.xml
+          kcov --include-pattern=$(pwd) target/kcov target/debug/lumol_input-*
+          codecov --file target/kcov/lumol-*/cobertura.xml target/kcov/lumol_input-*/cobertura.xml
           git clone https://${GH_TOKEN}@github.com/lumol-org/lumol.git target/website
           ./doc/publish.sh
       fi

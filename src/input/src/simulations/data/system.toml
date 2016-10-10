@@ -1,0 +1,15 @@
+[input]
+version = 1
+
+[[systems]]
+cell = 20
+file = "CO2.xyz"
+guess_bonds = true
+velocities = {init = "300 K"}
+potentials = "../../interactions/data/pairs.toml"
+
+[[simulations]]
+nsteps = 1
+[simulations.propagator]
+type = "MolecularDynamics"
+timestep = "1 fs"

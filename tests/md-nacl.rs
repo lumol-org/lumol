@@ -3,7 +3,9 @@
 
 //! Testing physical properties of a NaCl crystal
 extern crate lumol;
+extern crate lumol_input as input;
 use lumol::*;
+use input::InteractionsInput;
 
 use std::path::Path;
 use std::sync::{Once, ONCE_INIT};
@@ -14,9 +16,9 @@ pub fn setup_system(potential: &str, file: &str) -> System {
 
     let configuration = String::from("NaCl-") + file + ".xyz";
     let configuration = data_dir.join("data").join(configuration);
-    let mut system = input::Trajectory::open(configuration)
-                                        .and_then(|mut traj| traj.read())
-                                        .unwrap();
+    let mut system = Trajectory::open(configuration)
+                                .and_then(|mut traj| traj.read())
+                                .unwrap();
 
     if file == "small" {
         system.set_cell(UnitCell::cubic(11.2804));
@@ -28,7 +30,8 @@ pub fn setup_system(potential: &str, file: &str) -> System {
 
     let potential = String::from("NaCl-") + potential + ".toml";
     let potential = data_dir.join("data").join(potential);
-    input::read_interactions(&mut system, potential).unwrap();
+    let input = InteractionsInput::new(potential).unwrap();
+    input.read(&mut system).unwrap();
 
     let mut velocities = BoltzmannVelocities::new(units::from(300.0, "K").unwrap());
     velocities.init(&mut system);

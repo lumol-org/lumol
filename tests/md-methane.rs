@@ -3,7 +3,9 @@
 
 //! Testing molecular dynamics of methane
 extern crate lumol;
+extern crate lumol_input as input;
 use lumol::*;
+use input::InteractionsInput;
 
 use std::path::Path;
 use std::sync::{Once, ONCE_INIT};
@@ -12,13 +14,14 @@ static START: Once = ONCE_INIT;
 fn setup_system() -> System {
     let data_dir = Path::new(file!()).parent().unwrap();
     let configuration = data_dir.join("data").join("methane.xyz");
-    let mut system = input::Trajectory::open(configuration)
-                                        .and_then(|mut traj| traj.read_guess_bonds())
-                                        .unwrap();
+    let mut system = Trajectory::open(configuration)
+                                .and_then(|mut traj| traj.read_guess_bonds())
+                                .unwrap();
     system.set_cell(UnitCell::cubic(20.0));
 
     let interactions = data_dir.join("data").join("methane.toml");
-    input::read_interactions(&mut system, interactions).unwrap();
+    let input = InteractionsInput::new(interactions).unwrap();
+    input.read(&mut system).unwrap();
 
     let mut velocities = BoltzmannVelocities::new(units::from(300.0, "K").unwrap());
     velocities.init(&mut system);

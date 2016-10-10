@@ -1,0 +1,13 @@
+[input]
+version = 1
+
+[[systems]]
+file = "../../CO2.xyz"
+# potentials is not a string or a table
+potentials = 34
+
+[[simulations]]
+nsteps = 1
+[simulations.propagator]
+type = "MolecularDynamics"
+timestep = "1 fs"

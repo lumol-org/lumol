@@ -2,7 +2,11 @@
 # Build the docs and the user manual, and push them to github pages.
 
 # Build the doc
+cd src/core
 cargo doc
+cd ../input
+cargo doc
+cd ../..
 mdbook build doc
 
 # Move it to the right place

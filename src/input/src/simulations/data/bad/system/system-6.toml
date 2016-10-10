@@ -1,0 +1,13 @@
+[input]
+version = 1
+
+[[systems]]
+file = "../../CO2.xyz"
+# cell is not a number or an array of numbers
+cell = true
+
+[[simulations]]
+nsteps = 1
+[simulations.propagator]
+type = "MolecularDynamics"
+timestep = "1 fs"

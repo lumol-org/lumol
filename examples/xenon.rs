@@ -5,7 +5,7 @@ use lumol::*;
 fn main() {
     Logger::stdout();
 
-    let mut trajectory = input::Trajectory::open("data/NaCl.xyz").unwrap();
+    let mut trajectory = Trajectory::open("data/NaCl.xyz").unwrap();
     let mut system = trajectory.read().unwrap();
     system.set_cell(UnitCell::cubic(units::from(21.65, "A").unwrap()));
 

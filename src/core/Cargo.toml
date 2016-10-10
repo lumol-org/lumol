@@ -1,0 +1,24 @@
+[package]
+name = "lumol-core"
+version = "0.1.0"
+authors = ["Luthaf <luthaf@luthaf.fr>"]
+documentation = "https://lumol-org.github.io/lumol"
+repository = "https://github.com/lumol-org/lumol"
+readme = "../../README.md"
+license = "BSD"
+
+[lib]
+name = "lumol"
+
+[dependencies]
+chemfiles = "0.6"
+rand = "0.3"
+log = "0.3"
+special = "0.7"
+bitflags = "0.7"
+ndarray = "0.6"
+lazy_static = "0.2"
+num-traits = "0.1"
+
+[dev-dependencies]
+tempfile = "2.1"
