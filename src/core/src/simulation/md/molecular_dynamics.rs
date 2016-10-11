@@ -2,7 +2,7 @@
 // Copyright (C) 2015-2016 G. Fraux — BSD license
 
 use system::System;
-use simulation::Propagator;
+use simulation::{Propagator, TemperatureStrategy};
 
 use super::{Integrator, Control, Thermostat};
 use super::VelocityVerlet;
@@ -46,6 +46,10 @@ impl MolecularDynamics {
 }
 
 impl Propagator for MolecularDynamics {
+    fn temperature_strategy(&self) -> TemperatureStrategy {
+        TemperatureStrategy::Velocities
+    }
+
     fn setup(&mut self, system: &System) {
         self.integrator.setup(system);
         for control in &mut self.controls {

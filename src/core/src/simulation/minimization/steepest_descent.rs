@@ -3,7 +3,7 @@
 
 use utils;
 use System;
-use simulation::Propagator;
+use simulation::{Propagator, TemperatureStrategy};
 
 /// Steepest gradient descent for energy minization.
 ///
@@ -57,6 +57,10 @@ impl SteepestDescent {
 }
 
 impl Propagator for SteepestDescent {
+    fn temperature_strategy(&self) -> TemperatureStrategy {
+        TemperatureStrategy::None
+    }
+
     fn setup(&mut self, _: &System) {
         self.is_converged = false;
     }

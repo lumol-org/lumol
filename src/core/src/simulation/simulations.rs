@@ -3,8 +3,9 @@
 
 use system::System;
 
-use super::Propagator;
-use super::Output;
+use simulation::Propagator;
+use simulation::TemperatureStrategy;
+use simulation::Output;
 
 /// Writting an output at a given frequency
 struct OutputFrequency {
@@ -66,6 +67,14 @@ impl Simulation {
 
     /// Run the simulation on System for `nsteps` steps.
     pub fn run(&mut self, system: &mut System, nsteps: usize) {
+        match self.propagator.temperature_strategy() {
+            TemperatureStrategy::External(temperature) => {
+                system.external_temperature(Some(temperature))
+            }
+            TemperatureStrategy::Velocities => system.external_temperature(None),
+            TemperatureStrategy::None => {}
+        }
+
         self.setup(system);
         for _ in 0..nsteps {
             self.propagator.propagate(system);

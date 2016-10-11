@@ -6,7 +6,7 @@ use rand::{self, SeedableRng};
 
 use constants::K_BOLTZMANN;
 use system::{System, EnergyCache};
-use simulation::Propagator;
+use simulation::{Propagator, TemperatureStrategy};
 
 use super::MCMove;
 
@@ -109,6 +109,10 @@ impl MonteCarlo {
 }
 
 impl Propagator for MonteCarlo {
+    fn temperature_strategy(&self) -> TemperatureStrategy {
+        TemperatureStrategy::External(self.temperature())
+    }
+
     fn setup(&mut self, system: &System) {
         self.normalize_frequencies();
         self.cache.init(system);
