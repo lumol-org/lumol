@@ -54,6 +54,9 @@ pub struct System {
     interactions: Interactions,
     /// Current step of the simulation
     step: u64,
+    /// Externally managed temperature for the system, if the propagation
+    /// algorithm does not update the velocities.
+    external_temperature: Option<f64>
 }
 
 impl Default for System {
@@ -65,13 +68,14 @@ impl Default for System {
 impl System {
     /// Create a new empty System
     pub fn new() -> System {
-        System{
+        System {
             particles: Vec::new(),
             molecules: Vec::new(),
             molids: Vec::new(),
             interactions: Interactions::new(),
             cell: UnitCell::new(),
             step: 0,
+            external_temperature: None
         }
     }
 
@@ -516,8 +520,27 @@ impl System {
     pub fn potential_energy(&self) -> f64 {PotentialEnergy.compute(self)}
     /// Get the total energy of the system.
     pub fn total_energy(&self) -> f64 {TotalEnergy.compute(self)}
+
+    /// Use an external temperature for all the system properties. Calling this
+    /// with `Some(temperature)` will replace all the computation of the
+    /// temperature from the velocities with the given values. Calling it with
+    /// `None` will use the velocities.
+    ///
+    /// The default is to use the velocities unless this function is called.
+    pub fn external_temperature(&mut self, temperature: Option<f64>) {
+        if let Some(temperature) = temperature {
+            assert!(temperature >= 0.0, "External temperature must be positive");
+        }
+        self.external_temperature = temperature;
+    }
+
     /// Get the temperature of the system.
-    pub fn temperature(&self) -> f64 {Temperature.compute(self)}
+    pub fn temperature(&self) -> f64 {
+        match self.external_temperature {
+            Some(value) => value,
+            None => Temperature.compute(self)
+        }
+    }
 
     /// Get the volume of the system.
     pub fn volume(&self) -> f64 {Volume.compute(self)}
@@ -526,20 +549,23 @@ impl System {
     pub fn virial(&self) -> Matrix3 {Virial.compute(self)}
     /// Get the pressure of the system from the virial equation, at the system
     /// instananeous temperature.
-    pub fn pressure(&self) -> f64 {Pressure.compute(self)}
-    /// Get the stress tensor of the system from the virial equation, at the
-    /// system instananeous temperature.
-    pub fn stress(&self) -> Matrix3 {Stress.compute(self)}
-
-    /// Get the pressure of the system from the virial equation, at the given
-    /// `temperature`.
-    pub fn pressure_at_temperature(&self, temperature: f64) -> f64 {
-        PressureAtTemperature{temperature: temperature}.compute(self)
+    pub fn pressure(&self) -> f64 {
+        match self.external_temperature {
+            Some(temperature) => {
+                PressureAtTemperature{temperature: temperature}.compute(self)
+            }
+            None => Pressure.compute(self)
+        }
     }
-    /// Get the stress tensor of the system from the virial equation, at the
-    /// given `temperature`.
-    pub fn stress_at_temperature(&self, temperature: f64) -> Matrix3 {
-        StressAtTemperature{temperature: temperature}.compute(self)
+    /// Get the stress tensor of the system from the virial equation.
+    pub fn stress(&self) -> Matrix3 {
+        match self.external_temperature {
+            Some(temperature) => {
+                StressAtTemperature{temperature: temperature}.compute(self)
+            }
+            None => Stress.compute(self)
+        }
+
     }
 
     /// Get the forces acting on all the particles in the system
@@ -744,5 +770,12 @@ mod tests {
         // The waters
         assert!(system.moltype(1) == system.moltype(2));
         assert!(system.moltype(1) != system.moltype(4));
+    }
+
+    #[test]
+    #[should_panic]
+    fn negative_external_temperature() {
+        let mut system = System::new();
+        system.external_temperature(Some(-1.0));
     }
 }

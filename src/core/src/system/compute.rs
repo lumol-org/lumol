@@ -442,22 +442,28 @@ mod test {
 
     #[test]
     fn pressure_at_temperature() {
-        let system = &test_pairs_system();
-        let pressure = PressureAtTemperature{temperature: 550.0}.compute(system);
+        let system = &mut test_pairs_system();
 
+        let temperature = 550.0;
         let force = unit_from(30.0, "kJ/mol/A");
         let virial = -force * 1.3;
         let natoms = 2.0;
-        let temperature = 550.0;
         let volume = 1000.0;
+
+        // Direct computation
         let expected = natoms * K_BOLTZMANN * temperature / volume + virial / (3.0 * volume);
-
+        let pressure = PressureAtTemperature{temperature: temperature}.compute(system);
         assert_approx_eq!(pressure, expected, 1e-9);
-        assert_eq!(pressure, system.pressure_at_temperature(550.0));
 
+        // Computation with the real system temperature
         let pressure = PressureAtTemperature{temperature: system.temperature()};
-        let exact = pressure.compute(system);
-        assert_eq!(exact, system.pressure());
+        let pressure = pressure.compute(system);
+        assert_eq!(pressure, system.pressure());
+
+        // Computation with an external temperature for the system
+        let pressure = PressureAtTemperature{temperature: temperature}.compute(system);
+        system.external_temperature(Some(temperature));
+        assert_eq!(pressure, system.pressure());
     }
 
     #[test]
@@ -470,13 +476,16 @@ mod test {
 
     #[test]
     fn stress_at_temperature() {
-        let system = &test_pairs_system();
-        let stress = StressAtTemperature{temperature: 550.0}.compute(system);
-        let pressure = PressureAtTemperature{temperature: 550.0}.compute(system);
+        let system = &mut test_pairs_system();
+        let temperature = 550.0;
+        let stress = StressAtTemperature{temperature: temperature}.compute(system);
+        let pressure = PressureAtTemperature{temperature: temperature}.compute(system);
 
         let trace = (stress[(0, 0)] + stress[(1, 1)] + stress[(2, 2)]) / 3.0;
         assert_approx_eq!(trace, pressure, 1e-9);
-        assert_eq!(stress, system.stress_at_temperature(550.0));
+
+        system.external_temperature(Some(temperature));
+        assert_eq!(stress, system.stress());
     }
 
     #[test]

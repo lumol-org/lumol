@@ -45,7 +45,7 @@ fn perfect_gaz() {
     system.set_cell(UnitCell::cubic(60.0));
 
     simulation.run(&mut system, 5000);
-    let pressure = system.pressure_at_temperature(temperature);
+    let pressure = system.pressure();
     let volume = system.volume();
 
     let pv = pressure * volume;
