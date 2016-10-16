@@ -125,6 +125,7 @@ impl Matrix3 {
     /// );
     ///
     /// assert_eq!(matrix.inverse(), inverted);
+    /// assert_eq!(matrix * matrix.inverse(), Matrix3::one());
     /// ```
     ///
     /// # Panics
@@ -132,11 +133,7 @@ impl Matrix3 {
     /// If the matrix is not inversible, *i.e.* if the matrix determinant
     /// equals zero.
     pub fn inverse(&self) -> Matrix3 {
-        let mut determinant = 0.0;
-        determinant += self[(0, 0)] * (self[(1, 1)] * self[(2, 2)] - self[(2, 1)] * self[(1, 2)]);
-        determinant -= self[(0, 1)] * (self[(1, 0)] * self[(2, 2)] - self[(1, 2)] * self[(2, 0)]);
-        determinant += self[(0, 2)] * (self[(1, 0)] * self[(2, 1)] - self[(1, 1)] * self[(2, 0)]);;
-
+        let determinant = self.determinant();
         assert!(determinant != 0.0, "The matrix is not inversible!");
         let invdet = 1.0 / determinant;
         let mut res = Matrix3::zero();
@@ -150,6 +147,55 @@ impl Matrix3 {
         res[(2, 1)] = (self[(2, 0)] * self[(0, 1)] - self[(0, 0)] * self[(2, 1)]) * invdet;
         res[(2, 2)] = (self[(0, 0)] * self[(1, 1)] - self[(1, 0)] * self[(0, 1)]) * invdet;
         return res;
+    }
+
+    /// Computes the [determinant][Wiki] of a matrix
+    ///
+    /// [Wiki]: https://en.wikipedia.org/wiki/Determinant
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use lumol::Matrix3;
+    /// let matrix = Matrix3::new(
+    ///     4.0, 0.0, 0.0,
+    ///     0.0, 1.5, 0.0,
+    ///     0.0, 0.0, 7.0
+    /// );
+    ///
+    /// assert_eq!(matrix.determinant(), 4.0 * 1.5 * 7.0);
+    /// ```
+    pub fn determinant(&self) -> f64 {
+        ( self[(0, 0)] * (self[(1, 1)] * self[(2, 2)] - self[(2, 1)] * self[(1, 2)])
+        - self[(0, 1)] * (self[(1, 0)] * self[(2, 2)] - self[(1, 2)] * self[(2, 0)])
+        + self[(0, 2)] * (self[(1, 0)] * self[(2, 1)] - self[(1, 1)] * self[(2, 0)]))
+    }
+
+    /// Transpose this matrix into a new matrix
+    /// # Examples
+    ///
+    /// ```
+    /// # use lumol::Matrix3;
+    /// let matrix = Matrix3::new(
+    ///     1.0, 2.0, 4.0,
+    ///     0.0, 1.0, 3.0,
+    ///     0.0, 0.0, 1.0
+    /// );
+    ///
+    /// let transposed = Matrix3::new(
+    ///     1.0, 0.0, 0.0,
+    ///     2.0, 1.0, 0.0,
+    ///     4.0, 3.0, 1.0
+    /// );
+    ///
+    /// assert_eq!(matrix.transposed(), transposed);
+    /// ```
+    pub fn transposed(&self) -> Matrix3 {
+        Matrix3::new(
+            self[(0, 0)], self[(1, 0)], self[(2, 0)],
+            self[(0, 1)], self[(1, 1)], self[(2, 1)],
+            self[(0, 2)], self[(1, 2)], self[(2, 2)]
+        )
     }
 }
 
@@ -338,10 +384,10 @@ impl One for Matrix3 {
     }
 }
 
-/******************************************************************************/
-
 #[cfg(test)]
 mod tests {
+    // TODO: remove most of these when we can generate coverage from doc tests
+    // see https://github.com/rust-lang/rust/issues/36956
     use super::*;
     use types::{Vector3D, Zero, One};
 
@@ -357,8 +403,8 @@ mod tests {
         let a = Matrix3::zero();
         let b = Matrix3::one();
 
-        for i in 0..2 {
-            for j in 0..2 {
+        for i in 0..3 {
+            for j in 0..3 {
                 assert_eq!(a[(i, j)], 0.0);
                 if i == j {
                     assert_eq!(b[(i, j)], 1.0);
@@ -369,31 +415,19 @@ mod tests {
         }
     }
 
-
     #[test]
     fn add() {
         let mut a = Matrix3::new(1.0, 2.0, 3.0,
                                  4.0, 5.0, 6.0,
                                  8.0, 9.0, 10.0);
-        let b = Matrix3::one();
-        let add = a + b;
-
         let res = Matrix3::new(2.0, 2.0, 3.0,
                                4.0, 6.0, 6.0,
                                8.0, 9.0, 11.0);
 
-        for i in 0..3 {
-            for j in 0..3 {
-                assert_eq!(add[(i, j)], res[(i, j)]);
-            }
-        }
+        assert_eq!(a + Matrix3::one(), res);
 
-        a += b;
-        for i in 0..3 {
-            for j in 0..3 {
-                assert_eq!(a[(i, j)], res[(i, j)]);
-            }
-        }
+        a += Matrix3::one();
+        assert_eq!(a, res);
     }
 
     #[test]
@@ -401,25 +435,14 @@ mod tests {
         let mut a = Matrix3::new(1.0, 2.0, 3.0,
                                  4.0, 5.0, 6.0,
                                  8.0, 9.0, 10.0);
-        let b = Matrix3::one();
-        let sub = a - b;
-
         let res = Matrix3::new(0.0, 2.0, 3.0,
                                4.0, 4.0, 6.0,
                                8.0, 9.0, 9.0);
 
-        for i in 0..3 {
-            for j in 0..3 {
-                assert_eq!(sub[(i, j)], res[(i, j)]);
-            }
-        }
+        assert_eq!(a - Matrix3::one(), res);
 
-        a -= b;
-        for i in 0..3 {
-            for j in 0..3 {
-                assert_eq!(a[(i, j)], res[(i, j)]);
-            }
-        }
+        a -= Matrix3::one();
+        assert_eq!(a, res);
     }
 
     #[test]
@@ -427,27 +450,14 @@ mod tests {
         let mut a = Matrix3::new(1.0, 2.0, 3.0,
                                  4.0, 5.0, 6.0,
                                  8.0, 9.0, 10.0);
-        let b = 2.0;
-        let mul_r = a * b;
-        let mul_l = b * a;
-
         let res = Matrix3::new(2.0, 4.0, 6.0,
                                8.0, 10.0, 12.0,
                                16.0, 18.0, 20.0);
+        assert_eq!(a * 2.0, res);
+        assert_eq!(2.0 * a, res);
 
-        for i in 0..3 {
-            for j in 0..3 {
-                assert_eq!(mul_r[(i, j)], res[(i, j)]);
-                assert_eq!(mul_l[(i, j)], res[(i, j)]);
-            }
-        }
-
-        a *= b;
-        for i in 0..3 {
-            for j in 0..3 {
-                assert_eq!(a[(i, j)], res[(i, j)]);
-            }
-        }
+        a *= 2.0;
+        assert_eq!(a, res);
     }
 
     #[test]
@@ -455,55 +465,29 @@ mod tests {
         let mut a = Matrix3::new(1.0, 2.0, 3.0,
                                  4.0, 5.0, 6.0,
                                  8.0, 9.0, 10.0);
-        let b = 2.0;
-        let div = a / b;
-
         let res = Matrix3::new(0.5, 1.0, 1.5,
                                2.0, 2.5, 3.0,
                                4.0, 4.5, 5.0);
+        assert_eq!(a / 2.0, res);
 
-        for i in 0..3 {
-            for j in 0..3 {
-                assert_eq!(div[(i, j)], res[(i, j)]);
-            }
-        }
-
-        a /= b;
-        for i in 0..3 {
-            for j in 0..3 {
-                assert_eq!(a[(i, j)], res[(i, j)]);
-            }
-        }
+        a /= 2.0;
+        assert_eq!(a, res);
     }
 
     #[test]
     fn mul_matrix() {
         let unit = Matrix3::one();
-        let unit_sq = unit * unit;
-
         let mut a = Matrix3::new(2.0, 4.0, 6.0,
                                  8.0, 10.0, 12.0,
                                  16.0, 18.0, 20.0);
-        let mul_r = unit * a;
-        let mul_l = a * unit;
 
-        for i in 0..3 {
-            for j in 0..3 {
-                // One is the same as (One)*(One)
-                assert_eq!(unit[(i, j)], unit_sq[(i, j)]);
-                // (One)*A is the same as A and A*(One)
-                assert_eq!(mul_l[(i, j)], a[(i, j)]);
-                assert_eq!(mul_r[(i, j)], a[(i, j)]);
-            }
-        }
+        assert_eq!(unit, unit * unit);
+        assert_eq!(unit * a, a);
+        assert_eq!(a * unit, a);
 
-        let res = a.clone();
+        let previous = a;
         a *= unit;
-        for i in 0..3 {
-            for j in 0..3 {
-                assert_eq!(a[(i, j)], res[(i, j)]);
-            }
-        }
+        assert_eq!(previous, a);
     }
 
     #[test]
@@ -513,44 +497,61 @@ mod tests {
                              8.0, 9.0, 10.0);
 
         let vec = Vector3D::new(1.0, 1.0, 1.0);
-        let mul = a * vec;
-        let res = Vector3D::new(6.0, 15.0, 27.0);
-
-        assert_eq!(mul[0], res[0]);
-        assert_eq!(mul[1], res[1]);
-        assert_eq!(mul[2], res[2]);
+        assert_eq!(a * vec, Vector3D::new(6.0, 15.0, 27.0));
 
         let unit = Matrix3::one();
         let vec = Vector3D::new(567.45, 356.8, 215673.12);
-        let mul = unit * vec;
-        let res = vec;
-
-        assert_eq!(mul[0], res[0]);
-        assert_eq!(mul[1], res[1]);
-        assert_eq!(mul[2], res[2]);
+        assert_eq!(unit * vec, vec);
     }
 
     #[test]
     fn inverse() {
         let one = Matrix3::one();
-        let res = one.inverse();
-
-        for i in 0..3 {
-            for j in 0..3 {
-                assert_eq!(one[(i, j)], res[(i, j)]);
-            }
-        }
+        assert_eq!(one, one.inverse());
 
         let a = Matrix3::new(1.0, 2.0, 3.0,
                              2.0, 5.0, 3.0,
                              1.0, 3.0, 8.0,);
-        let b = a.inverse();
+        assert!(a.determinant() != 0.0);
+        assert_eq!(one, a * a.inverse());
+    }
 
-        let c = a*b;
-        for i in 0..3 {
-            for j in 0..3 {
-                assert_eq!(one[(i, j)], c[(i, j)]);
-            }
-        }
+    #[test]
+    fn determinant() {
+        let one = Matrix3::one();
+        assert_eq!(one.determinant(), 1.0);
+
+        let a = Matrix3::new(1.0, 2.0, 3.0,
+                             2.0, 5.0, 3.0,
+                             1.0, 3.0, 8.0,);
+        assert_eq!(a.determinant(), 8.0);
+    }
+
+    #[test]
+    fn trace() {
+        let one = Matrix3::one();
+        assert_eq!(one.trace(), 3.0);
+
+        let a = Matrix3::new(1.0, 2.0, 3.0,
+                             2.0, 5.0, 3.0,
+                             1.0, 3.0, 8.0,);
+        assert_eq!(a.trace(), 14.0);
+    }
+
+    #[test]
+    fn transposed() {
+        let matrix = Matrix3::new(
+            1.0, 2.0, 4.0,
+            0.0, 1.0, 3.0,
+            0.0, 0.0, 1.0
+        );
+
+        let transposed = Matrix3::new(
+            1.0, 0.0, 0.0,
+            2.0, 1.0, 0.0,
+            4.0, 3.0, 1.0
+        );
+
+        assert_eq!(matrix.transposed(), transposed);
     }
 }

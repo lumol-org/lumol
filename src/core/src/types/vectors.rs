@@ -262,7 +262,7 @@ impl Zero for Vector3D {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use types::{Vector3D, Matrix3};
 
     #[test]
     fn add() {
@@ -428,6 +428,19 @@ mod tests {
         assert_eq!(a[0], 1.0);
         assert_eq!(a[1], 1.0);
         assert_eq!(a[2], 1.0);
+    }
+
+    #[test]
+    fn tensorial() {
+        let a = Vector3D::new(1.0, 0.0, -4.0);
+        let b = Vector3D::new(1.0, 2.0, 3.0);
+        let matrix = Matrix3::new(
+            1.0, 2.0, 3.0,
+            0.0, 0.0, 0.0,
+            -4.0, -8.0, -12.0
+        );
+        assert_eq!(a.tensorial(&b), matrix);
+        assert_eq!(b.tensorial(&a), matrix.transposed());
     }
 
     #[test]
