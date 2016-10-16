@@ -15,7 +15,6 @@ rust:
     - stable
     - beta
 install:
-    - pip install --user codecov
     - export PATH=$HOME/.local/bin:$PATH:$HOME/local/bin:$HOME/.cargo/bin
     - export CC=gcc-4.9
     - export CXX=g++-4.9
@@ -40,19 +39,27 @@ install:
           cargo install mdbook
       fi
 script:
+    # Run all tests in release mode
+    - cargo test --release
     # Run unit tests and doc tests in debug mode
     - cd src/core && cargo test
     - cd ../..
     - cd src/input && cargo test
     - cd ../..
-    # Run all tests in release mode
-    - cargo test --release
 after_script:
     - |
+      if [[ "${TRAVIS_RUST_VERSION}" == "stable" ]]; then
+          cd $TRAVIS_BUILD_DIR
+          mkdir target/kcov
+          KCOV_ARGS="--include-pattern=$(pwd) --exclude-pattern=target"
+          kcov $KCOV_ARGS target/kcov target/debug/deps/lumol-*
+          cd src/input
+          kcov $KCOV_ARGS ../../target/kcov ../../target/debug/deps/lumol_input-*
+          cd ../..
+          bash <(curl -s https://codecov.io/bash) -s target/kcov
+      fi
+    - |
       if [[ "${TRAVIS_RUST_VERSION}" == "stable" && "${TRAVIS_PULL_REQUEST}" == "false" && "${TRAVIS_BRANCH}" == "master" ]]; then
-          kcov --include-pattern=$(pwd) target/kcov target/debug/lumol-*
-          kcov --include-pattern=$(pwd) target/kcov target/debug/lumol_input-*
-          codecov --file target/kcov/lumol-*/cobertura.xml target/kcov/lumol_input-*/cobertura.xml
           git clone https://${GH_TOKEN}@github.com/lumol-org/lumol.git target/website
           ./doc/publish.sh
       fi
