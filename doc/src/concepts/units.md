@@ -5,7 +5,7 @@ from and to this set of internal units.
 
 The internal unit system is the following:
 - Angstrom (`A`) for distances;
-- Femto-second (`fs`) for time;
+- Femtosecond (`fs`) for time;
 - Unified atomic mass unit (`u` or `Da`) for mass;
 - Kelvin (`K`) for temperature;
 - Number of particles for quantity of matter;

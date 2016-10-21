@@ -233,7 +233,7 @@ computation = {cutoff = "8 A"}
 
 ## Table interpolation
 
-Another way to compute a potential is to pre-compute it on a regularly spaced
+Another way to compute a potential is to compute it on a regularly spaced
 grid, and then to interpolate values for points in the grid. In some cases, this
 can be faster than recomputing the function every time.
 
@@ -250,7 +250,7 @@ computation = {table = {max = "8 A", n = 5000}}
 
 ---
 
-[Frenkel2002] Frenkel, D. & Smit, B. *Understanding molecular simulation.*
+[Frenkel2002] Frenkel, D. & Smith, B. *Understanding molecular simulation.*
 (Academic press, 2002).
 
 [Wolf1999] Wolf, D., Keblinski, P., Phillpot, S. R. & Eggebrecht, J. *Exact

@@ -63,10 +63,10 @@ Here are some reasons for you not to use Lumol:
 - You need to get the fastest code for your simulations because you are working
   with a lot of atoms. Lumol is relatively young and is not yet fully optimized;
 - You need to scale on a lot of processors, to make your computations faster.
-  Lumol is [not yet parallel][parrallel], and will be made so, but you should
+  Lumol is [not yet parallel][parallel], and will be made so, but you should
   continue to use other codes in the meantime.
 
-[parrallel]: faq.html#Is%20the%20code%20parallel?%20If%20so,%20how%20well%20does%20it%20scale?
+[parallel]: faq.html#Is%20the%20code%20parallel?%20If%20so,%20how%20well%20does%20it%20scale?
 
 ## Why is Lumol written in Rust?
 

@@ -112,8 +112,8 @@ null = {}
 ```
 
 Then comes the bonds and angles definitions. These are the interactions used
-between bonded particles (or angles formed by two bonds and dihedrals formed by
-three bonds).
+between bonded particles (or angles formed by two bonds and dihedral angles
+formed by three bonds).
 
 ```toml
 [[bonds]]

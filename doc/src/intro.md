@@ -23,7 +23,7 @@ As the code is likely to change so is this documentation.
 ## Systems and Simulations
 
 Lumol mainly consists of two building blocks: the `System` and the `Simulation`.
-The `System` contains general informations about the system, such as atomic
+The `System` contains general information about the system, such as atomic
 names, positions and velocities, force-field, simulation box. On the other hand,
 a `Simulation` contains everything needed to run a simulation with a system,
 *i.e.* algorithms and associated data.

@@ -1,8 +1,8 @@
 # Interactions
 
 Interactions describe the energies between atoms - or more general - between
-interaction sites. These energies arrise due to covalent bonding of atoms to
-form molecules,  short-range van der Waals or long-range coulombic energies. To
+interaction sites. These energies arise due to covalent bonding of atoms to
+form molecules, short-range van der Waals or long-range coulombic energies. To
 describe interactions we use *potentials* which are functions  that take a set
 of parameters and geometrical coordinates (for example distances  or angles) as
 input and yield energies and forces. A set of potential functions  and
@@ -12,14 +12,14 @@ interchangeably.
 
 To be more specific, we distinguish between the following contributions:
   - `pairs` are van der Waals interactions between pairs of atoms,
-  - `bonds` describe the energy between covalently bonded atoms,
+  - `bonds` describe the energy between bonded atoms,
   - `angles` and `dihedrals` describe energy contributions due to bending and
-  twisting of covalently bonded atoms,
-  - `coulomb` and `charges` describe long-range contributions due to electrostatic
-  interactions.
+  twisting of bonded atoms,
+  - `coulomb` and `charges` describe long-range contributions due to
+  electrostatic interactions.
 
 Information about interactions for `pairs`, `bonds`, `angles` and `dihedrals`
-are organised as arrays of TOML tables. The `coulomb` section contains
+are organized as arrays of TOML tables. The `coulomb` section contains
 information about the treatment of long-range electrostatic interactions and the
 `charges` section defines the partial charges of the atoms.
 

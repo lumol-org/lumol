@@ -4,7 +4,7 @@ Let's talk about how you can set up your system. The system contains information
 about:
 - the configuration, i.e. the positions (and velocities) of your atoms;
 - which atoms are connected (bonded) to form molecules;
-- how atoms will interact with each othe;
+- how atoms will interact with each other;
 - and the simulation cell (i.e. volume).
 
 All these details are listed after the `[[systems]]` keyword. The double
@@ -67,16 +67,16 @@ separately from your configuration file.
 
 - The second option is to use the `guess_bonds` key to utilize a distance-based
   algorithm that will guess the bonds in the system. The algorithm is the same
-  as the one in [VMD][VMD]. You should always check and confirm that the
-  bondings guessed by the algorithm are coherent with your system.
+  as the one in [VMD][VMD]. You should always check and confirm that the bonds
+  guessed by the algorithm are coherent with your system.
   ```toml
   [[systems]]
   file = "water.xyz"
   guess_bonds = true
   ```
 
-  Note that `guess_bonds` takes a boolean as argument: there are no quotation
-  marks around `true`. Also, TOML is case sensitive, i.e. writing
+  Note that `guess_bonds` takes a boolean value as argument: there are no
+  quotation marks around `true`. Also, TOML is case sensitive, i.e. writing
   `guess_bonds = True` will throw an error.
 
 [PDB]: http://wwpdb.org/
@@ -96,7 +96,7 @@ We offer three different ways to set the cell:
   ```
 - `cell = []` create an infinite unit cell, without boundaries. This can be
   used when periodic boundary conditions are undesirables, for example to
-  simulate aggregats in the void;
+  simulate aggregates in the void;
   ```toml
   [[systems]]
   file = "water.xyz"

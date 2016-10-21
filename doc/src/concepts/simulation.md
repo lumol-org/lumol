@@ -5,7 +5,7 @@ The flow of a simulation in Lumol is represented below.
 ![Simulation flow graph](static/img/simulation.svg#center)
 
 First, it uses a system to setup any algorithms which uses system specific
-informations.
+information.
 
 Then it propagate the system for one step, compute the physical properties as
 needed, and output these properties to the hard drive.

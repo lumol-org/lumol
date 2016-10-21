@@ -2,13 +2,13 @@
 
 Lumol is written in [Rust][Rust] ([why?][why-rust]), and you will need a Rust
 compiler to compile it. You can download one from [here][rust-download], or
-using your package manager (Rust is available on Fedora, and with Homebrew).
-Lumol also depends on some C++ libraries, so you will need a C++ compiler and
-cmake to be installed.
+using your package manager (Rust is available on Fedora, and with Homebrew on OS
+X). Lumol also depends on some C++ libraries, so you will need a C++ compiler
+and CMake to be installed.
 
-Lumol is tested on Linux and OsX, and should build on Windows without any issue.
-You will need a C++11 capable compiler on Windows (MSVC > 15 or Mingw with gcc >
-4.9). Be sure to pick the corresponding version of the Rust compiler.
+Lumol is tested on Linux and OS X, and should build on Windows without any
+issue. You will need a C++11 capable compiler on Windows (MSVC > 15 or Mingw
+with gcc > 4.9). Be sure to pick the corresponding version of the Rust compiler.
 
 When all the dependencies are installed on you system, you can install the
 latest release of Lumol using:

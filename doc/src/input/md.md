@@ -31,7 +31,7 @@ integrator is a Velocity-Verlet integrator.
 ### Velocity-Verlet integrator
 
 Velocity-Verlet is the most common NVE integrator for molecular dynamics. See
-this [page][VelocityVerlet] for more informations about the algorithm.
+this [page][VelocityVerlet] for more information about the algorithm.
 
 In the input, it can be specified by using the `VelocityVerlet` integrator type:
 
@@ -47,7 +47,7 @@ integrator = {type = "VelocityVerlet"}
 ### Verlet integrator
 
 Verlet algorithm is another simple NVE integrator. See this [page][Verlet] for
-more informations. Most of the time, the Velocity-Verlet algorithm is
+more information. Most of the time, the Velocity-Verlet algorithm is
 preferable, since it produces more precise velocities.
 
 In the input, it can be specified by using the `Verlet` integrator type:
@@ -82,7 +82,7 @@ integrator = {type = "LeapFrog"}
 The Berendsen barostat integrator algorithm use the Berendsen barostat with a
 Velocity-Verlet integrator to achieve NPT integration. It must be use together
 with a thermostat, preferentially the Berendsen thermostat. See this
-[page][BerendsenBarostat] for more informations about the algorithm.
+[page][BerendsenBarostat] for more information about the algorithm.
 
 This algorithm exists in two versions: an isotropic one and an anisotropic one.
 The isotropic version of the barostat scale all the cell parameter by the same
@@ -130,7 +130,7 @@ given value. They are specified in the input by the `thermostat` key.
 
 ### Berendsen thermostat
 
-The Berendsen barostat is described [here][BerendsenThermostat], and provide a
+The Berendsen thermostat is described [here][BerendsenThermostat], and provide a
 simple exponential relaxation of the temperature to a target value. In the
 input, it is declared with the `Berendsen` thermostat type, a target
 `temperature` value, and a `timestep`.
@@ -149,9 +149,9 @@ for the Berendsen barostat.
 
 ### Rescaling thermostat
 
-A rescaling thermostat is the simplest thermostating algorithm possible: it just
+A rescaling thermostat is the simplest thermostat algorithm possible: it just
 rescale all the velocities to set the temperature to the wanted value. It can be
-useful for equilibrations, for a fast convergence. In the input, it is specified
+useful for equilibration as it converges quickly. In the input, it is specified
 by the `Rescale` thermostat type, a target `temperature` value, and a
 `tolerance` value. The tolerance value is optional, and is used to let the
 system fluctuate around the wanted temperature: while the instant temperature is

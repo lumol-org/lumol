@@ -89,7 +89,7 @@ outputs = [
 ```
 
 We are using here a molecular dynamics simulation of the NaCl crystal, and a
-timestep of 1fs for integration.
+timestep of 1 fs for integration.
 
 ```toml
 [simulations.propagator]

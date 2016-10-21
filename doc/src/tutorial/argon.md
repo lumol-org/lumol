@@ -2,7 +2,7 @@
 
 So let's run a simulation with Lumol. The easiest system to simulate is a
 Lennard-Jones fluid, which is a good model for noble gases fluids. Here we will
-simulate supercritical argon using Metropolis Monte-Carlo algorithm.
+simulate super-critical argon using Metropolis Monte-Carlo algorithm.
 
 For this simulation, you will need the initial configuration available
 [here][argon.xyz]. Download it and save it under the name `argon.xyz`.
@@ -15,7 +15,7 @@ with:
 lumol argon.toml
 ```
 
-The simulation should complete in a few second (8s on my system), and produce
+The simulation should complete in a few second (8 s on my system), and produce
 two files: `energy.dat` and `trajectory.xyz`.
 
 ## Input file anatomy

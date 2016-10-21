@@ -7,7 +7,7 @@ It is usually organized in three main sections: **input**, **systems** and
 - The [input](input/intro.html#Input%20metadata) section contains metadata about
   the input itself (i.e. a version number).
 - The [systems](input/systems.html) section contains information about the
-  intial configuration, the interactions between atoms and the simulation cell.
+  initial configuration, the interactions between atoms and the simulation cell.
 - The [simulations](input/simulations.html) section defines how your system will
   propagate. You can generally choose between molecular dynamics (MD) or Monte-
   Carlo (MC).
@@ -25,7 +25,7 @@ talk more about standalone input files for interactions on this
 
 ## Format
 
-Lumol input files use the [TOML][TOML] format, a simple and minimalistic
+Lumol input files use the [TOML][TOML] format, a simple and minimalist
 configuration format based on `key = value` pairs. You can read an introduction
 to the TOML format [here][TOML].
 
