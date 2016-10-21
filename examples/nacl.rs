@@ -2,7 +2,13 @@
 //! potentials from files.
 extern crate lumol;
 extern crate lumol_input as input;
-use lumol::*;
+
+use lumol::Logger;
+use lumol::system::{UnitCell, Trajectory};
+use lumol::system::{BoltzmannVelocities, InitVelocities};
+use lumol::simulation::{Simulation, MolecularDynamics, RescaleThermostat};
+use lumol::units;
+
 use input::InteractionsInput;
 
 fn main() {

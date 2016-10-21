@@ -4,7 +4,16 @@
 //! Testing physical properties of a Lennard-Jones gaz of Helium using Molecular
 //! dynamics
 extern crate lumol;
-use lumol::*;
+
+use lumol::Logger;
+use lumol::system::{System, Trajectory, UnitCell};
+use lumol::system::{BoltzmannVelocities, InitVelocities};
+use lumol::potentials::{LennardJones, PairInteraction};
+use lumol::potentials::TableComputation;
+use lumol::simulation::{Simulation, MolecularDynamics};
+use lumol::simulation::{LeapFrog, VelocityVerlet, Verlet, BerendsenBarostat};
+use lumol::constants::K_BOLTZMANN;
+use lumol::units;
 
 use std::sync::{Once, ONCE_INIT};
 static START: Once = ONCE_INIT;
@@ -104,7 +113,7 @@ fn perfect_gaz() {
     let temperature = system.temperature();
     let n = system.size() as f64;
 
-    assert!(f64::abs(pressure * volume - n * constants::K_BOLTZMANN * temperature) < 1e-3);
+    assert!(f64::abs(pressure * volume - n * K_BOLTZMANN * temperature) < 1e-3);
 }
 
 #[test]

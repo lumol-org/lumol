@@ -2,7 +2,12 @@
 // Copyright (C) 2015-2016 G. Fraux — BSD license
 extern crate lumol;
 extern crate lumol_input as input;
-use lumol::*;
+
+use lumol::Logger;
+use lumol::system::{UnitCell, System, Trajectory};
+use lumol::units;
+use lumol::simulation::{Simulation, MonteCarlo, Translate, Rotate};
+
 use input::InteractionsInput;
 
 use std::path::Path;

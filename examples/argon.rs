@@ -3,7 +3,15 @@
 //! In this example, we do everything by hand, from the system setup to the
 //! simulation run.
 extern crate lumol;
-use lumol::*;
+
+use lumol::Logger;
+use lumol::system::{System, UnitCell, Particle};
+use lumol::system::{BoltzmannVelocities, InitVelocities};
+use lumol::potentials::{LennardJones, PairInteraction};
+use lumol::simulation::{Simulation, MolecularDynamics};
+use lumol::simulation::{TrajectoryOutput, EnergyOutput};
+use lumol::types::Vector3D;
+use lumol::units;
 
 fn main() {
     Logger::stdout();

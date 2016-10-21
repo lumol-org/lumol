@@ -1,7 +1,13 @@
 //! Monte-Carlo simulation of a binary mixture of H20 and CO2.
 extern crate lumol;
 extern crate lumol_input as input;
-use lumol::*;
+
+use lumol::Logger;
+use lumol::system::{Molecule, Particle, Trajectory, UnitCell};
+use lumol::system::{read_molecule, moltype};
+use lumol::simulation::{Simulation, MonteCarlo, Translate, Rotate};
+use lumol::units;
+
 use input::InteractionsInput;
 
 fn main() {

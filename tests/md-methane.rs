@@ -4,7 +4,13 @@
 //! Testing molecular dynamics of methane
 extern crate lumol;
 extern crate lumol_input as input;
-use lumol::*;
+
+use lumol::Logger;
+use lumol::system::{System, UnitCell, Trajectory};
+use lumol::system::{BoltzmannVelocities, InitVelocities};
+use lumol::simulation::{Simulation, MolecularDynamics};
+use lumol::units;
+
 use input::InteractionsInput;
 
 use std::path::Path;

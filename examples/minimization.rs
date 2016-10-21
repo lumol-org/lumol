@@ -1,6 +1,12 @@
 //! Geometry minization of a molecule of water
 extern crate lumol;
-use lumol::*;
+
+use lumol::Logger;
+use lumol::system::{System, Particle};
+use lumol::types::{Vector3D, Zero};
+use lumol::potentials::{PairInteraction, NullPotential, Harmonic};
+use lumol::simulation::{Simulation, SteepestDescent, EnergyOutput};
+use lumol::units;
 
 fn main() {
     Logger::stdout();

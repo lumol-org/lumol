@@ -14,7 +14,7 @@ use types::Zero;
 /// indices and is though as storage backend for multi-dimensional data.
 ///
 /// ```
-/// # use lumol::Array2;
+/// # use lumol::types::Array2;
 /// let mut a = Array2::zeros((3, 5));
 ///
 /// assert_eq!(a[(0, 4)], 0.0);
@@ -29,7 +29,7 @@ impl<T> Array2<T> {
     /// Get the shape of the array
     /// # Examples
     /// ```
-    /// # use lumol::Array2;
+    /// # use lumol::types::Array2;
     /// let a: Array2<f64> = Array2::zeros((3, 5));
     /// assert_eq!(a.shape(), (3, 5));
     /// ```
@@ -46,7 +46,7 @@ impl<T: Zero + Clone> Array2<T> {
     /// # Examples
     ///
     /// ```
-    /// # use lumol::Array2;
+    /// # use lumol::types::Array2;
     /// let a: Array2<f64> = Array2::zeros((8, 5));
     /// assert_eq!(a[(6, 2)], 0.0);
     /// ```
@@ -60,7 +60,7 @@ impl<T: Zero + Clone> Array2<T> {
     /// # Examples
     ///
     /// ```
-    /// # use lumol::Array2;
+    /// # use lumol::types::Array2;
     /// let mut a = Array2::zeros((8, 5));
     ///
     /// a[(3, 3)] = 42.0;
@@ -84,7 +84,7 @@ impl<T: Clone> Array2<T> {
     /// Assign the given scalar to all entries in this array
     /// # Examples
     /// ```
-    /// # use lumol::Array2;
+    /// # use lumol::types::Array2;
     /// let mut a = Array2::zeros((8, 5));
     /// a.assign(33.0);
     ///
@@ -102,7 +102,7 @@ impl<T: Default> Array2<T> {
     /// # Examples
     ///
     /// ```
-    /// # use lumol::Array2;
+    /// # use lumol::types::Array2;
     /// let a: Array2<f64> = Array2::zeros((8, 5));
     /// let b: Array2<f64> = Array2::default((8, 5));
     ///
@@ -141,7 +141,7 @@ impl<T> IndexMut<(Ix, Ix)> for Array2<T> {
 /// indices and is though as storage backend for multi-dimensional data.
 ///
 /// ```
-/// # use lumol::Array3;
+/// # use lumol::types::Array3;
 /// let mut a = Array3::zeros((3, 5, 2));
 ///
 /// assert_eq!(a[(0, 4, 1)], 0.0);
@@ -156,7 +156,7 @@ impl<T> Array3<T> {
     /// Get the shape of the array.
     /// # Examples
     /// ```
-    /// # use lumol::Array3;
+    /// # use lumol::types::Array3;
     /// let a: Array3<f64> = Array3::zeros((3, 5, 7));
     /// assert_eq!(a.shape(), (3, 5, 7));
     /// ```
@@ -173,7 +173,7 @@ impl<T: Zero + Clone> Array3<T> {
     /// # Examples
     ///
     /// ```
-    /// # use lumol::Array3;
+    /// # use lumol::types::Array3;
     /// let a: Array3<f64> = Array3::zeros((8, 5, 2));
     /// assert_eq!(a[(6, 2, 0)], 0.0);
     /// ```
@@ -187,7 +187,7 @@ impl<T: Zero + Clone> Array3<T> {
     /// # Examples
     ///
     /// ```
-    /// # use lumol::Array3;
+    /// # use lumol::types::Array3;
     /// let mut a = Array3::zeros((8, 5, 7));
     ///
     /// a[(3, 3, 3)] = 42.0;
@@ -222,7 +222,7 @@ impl<T: Default> Array3<T> {
     /// # Examples
     ///
     /// ```
-    /// # use lumol::Array3;
+    /// # use lumol::types::Array3;
     /// let a: Array3<f64> = Array3::zeros((8, 5, 2));
     /// let b: Array3<f64> = Array3::default((8, 5, 2));
     ///

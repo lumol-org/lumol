@@ -2,7 +2,7 @@
 // Copyright (C) 2015-2016 G. Fraux — BSD license
 
 use utils;
-use System;
+use system::System;
 use simulation::{Propagator, TemperatureStrategy};
 
 /// Steepest gradient descent for energy minization.

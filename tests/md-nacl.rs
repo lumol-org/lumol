@@ -4,14 +4,18 @@
 //! Testing physical properties of a NaCl crystal
 extern crate lumol;
 extern crate lumol_input as input;
-use lumol::*;
+
+use lumol::system::{System, Trajectory, UnitCell};
+use lumol::system::{BoltzmannVelocities, InitVelocities};
+use lumol::units;
+
 use input::InteractionsInput;
 
 use std::path::Path;
 use std::sync::{Once, ONCE_INIT};
 pub static START: Once = ONCE_INIT;
 
-pub fn setup_system(potential: &str, file: &str) -> System {
+fn setup_system(potential: &str, file: &str) -> System {
     let data_dir = Path::new(file!()).parent().unwrap();
 
     let configuration = String::from("NaCl-") + file + ".xyz";
@@ -39,8 +43,13 @@ pub fn setup_system(potential: &str, file: &str) -> System {
 }
 
 mod wolf {
-    use super::*;
-    use lumol::*;
+    use setup_system;
+    use START;
+
+    use lumol::Logger;
+    use lumol::simulation::{Simulation, MolecularDynamics};
+    use lumol::simulation::AnisoBerendsenBarostat;
+    use lumol::units;
 
     #[test]
     fn constant_energy() {
@@ -77,8 +86,12 @@ mod wolf {
 }
 
 mod ewald {
-    use super::*;
-    use lumol::*;
+    use setup_system;
+    use START;
+
+    use lumol::Logger;
+    use lumol::simulation::{Simulation, MolecularDynamics};
+    use lumol::units;
 
     #[test]
     fn constant_energy() {

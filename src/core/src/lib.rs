@@ -46,23 +46,21 @@ extern crate num_traits as num;
 extern crate rand;
 extern crate special;
 
+// Helper modules
 #[macro_use]
 mod tests;
 #[macro_use]
 mod utils;
 #[macro_use]
 mod logging;
-pub use logging::{Logger, LogLevel};
 
 pub mod units;
 pub mod constants;
 
+pub use logging::{Logger, LogLevel};
+
+// Main modules
 pub mod types;
 pub mod potentials;
 pub mod system;
 pub mod simulation;
-
-pub use types::*;
-pub use potentials::*;
-pub use system::*;
-pub use simulation::*;

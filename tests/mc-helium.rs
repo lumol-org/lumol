@@ -5,7 +5,13 @@
 //! Monte-Carlo simulation
 extern crate lumol;
 extern crate lumol_input as input;
-use lumol::*;
+
+use lumol::Logger;
+use lumol::system::{System, Trajectory, UnitCell};
+use lumol::potentials::{LennardJones, PairInteraction};
+use lumol::simulation::{Simulation, MonteCarlo, Translate};
+use lumol::units;
+use lumol::constants::K_BOLTZMANN;
 
 use std::sync::{Once, ONCE_INIT};
 static START: Once = ONCE_INIT;
@@ -49,6 +55,6 @@ fn perfect_gaz() {
     let volume = system.volume();
 
     let pv = pressure * volume;
-    let nkt = system.size() as f64 * constants::K_BOLTZMANN * temperature;
+    let nkt = system.size() as f64 * K_BOLTZMANN * temperature;
     assert!(f64::abs(pv - nkt) / pv < 2e-2);
 }

@@ -4,7 +4,14 @@
 //! Testing physical properties of f-SPC water
 extern crate lumol;
 extern crate lumol_input as input;
-use lumol::*;
+
+use lumol::Logger;
+use lumol::types::Vector3D;
+use lumol::system::{System, UnitCell, Particle};
+use lumol::system::{BoltzmannVelocities, InitVelocities};
+use lumol::simulation::{Simulation, MolecularDynamics};
+use lumol::units;
+
 use input::InteractionsInput;
 
 use std::path::Path;
