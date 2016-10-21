@@ -9,6 +9,6 @@ license = "BSD"
 
 [dependencies]
 lumol-core = {path = "../core"}
-toml = "0.1"
+toml = "0.2"
 log = "0.3"
 chemfiles = "0.6"
