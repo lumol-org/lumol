@@ -4,7 +4,7 @@ extern crate lumol_input as input;
 
 use lumol::Logger;
 use lumol::system::{Molecule, Particle, Trajectory, UnitCell};
-use lumol::system::{read_molecule, moltype};
+use lumol::system::{read_molecule, molecule_type};
 use lumol::simulation::{Simulation, MonteCarlo, Translate, Rotate};
 use lumol::units;
 
@@ -27,9 +27,9 @@ fn main() {
     input.read(&mut system).unwrap();
 
     let co2 = {
-        // We can read files to get moltype
+        // We can read files to get molecule type
         let (molecule, atoms) = read_molecule("data/CO2.xyz").unwrap();
-        moltype(&molecule, &atoms)
+        molecule_type(&molecule, &atoms)
     };
     let h2o = {
         // Or define a new molecule by hand
@@ -40,7 +40,7 @@ fn main() {
         molecule.add_bond(0, 1);
         molecule.add_bond(1, 2);
 
-        moltype(&molecule, &[Particle::new("H"), Particle::new("O"), Particle::new("H")])
+        molecule_type(&molecule, &[Particle::new("H"), Particle::new("O"), Particle::new("H")])
     };
 
     let mut mc = MonteCarlo::new(units::from(500.0, "K").unwrap());

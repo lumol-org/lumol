@@ -308,7 +308,7 @@ mod tests {
 
     use super::*;
     use std::io::prelude::*;
-    use system::moltype;
+    use system::molecule_type;
 
     static MOLECULE: &'static str = "3
 
@@ -334,6 +334,6 @@ H 0.0 1.0 0.0
 
         // This is only a simple regression test on the moltype function. Feel
         // free to change the value if the molecule type algorithm change.
-        assert_eq!(moltype(&molecule, &atoms), 4144180246440175497);
+        assert_eq!(molecule_type(&molecule, &atoms), 4144180246440175497);
     }
 }

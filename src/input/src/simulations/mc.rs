@@ -3,7 +3,7 @@
 use toml::Table;
 use std::path::PathBuf;
 
-use lumol::system::{read_molecule, moltype};
+use lumol::system::{read_molecule, molecule_type};
 use lumol::simulation::mc::*;
 use lumol::units;
 
@@ -56,7 +56,7 @@ impl FromTomlWithData for Translate {
             let molfile = try!(extract::str("molecule", config, "Translate move"));
             let molfile = get_input_path(root, molfile);
             let (molecule, atoms) = try!(read_molecule(molfile));
-            let moltype = moltype(&molecule, &atoms);
+            let moltype = molecule_type(&molecule, &atoms);
             Ok(Translate::with_moltype(delta, moltype))
         } else {
             Ok(Translate::new(delta))
@@ -74,7 +74,7 @@ impl FromTomlWithData for Rotate {
             let molfile = try!(extract::str("molecule", config, "Translate move"));
             let molfile = get_input_path(root, molfile);
             let (molecule, atoms) = try!(read_molecule(molfile));
-            let moltype = moltype(&molecule, &atoms);
+            let moltype = molecule_type(&molecule, &atoms);
             Ok(Rotate::with_moltype(delta, moltype))
         } else {
             Ok(Rotate::new(delta))

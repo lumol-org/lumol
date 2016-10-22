@@ -22,7 +22,7 @@ use super::{CONNECT_12, CONNECT_13, CONNECT_14, CONNECT_FAR};
 use super::UnitCell;
 use super::interactions::Interactions;
 use super::EnergyEvaluator;
-use super::molecules::moltype;
+use super::molecules::molecule_type;
 
 /// Particles permutations:. Indexes are given in the `(old, new)` form.
 pub type Permutations = Vec<(usize, usize)>;
@@ -103,16 +103,16 @@ impl System {
     /// the atoms names, and the set of bonds in the molecule. This means that
     /// two molecules will have the same type if and only if they contains the
     /// same atoms and the same bonds, **in the same order**.
-    pub fn moltype(&self, molid: usize) -> u64 {
+    pub fn molecule_type(&self, molid: usize) -> u64 {
         let molecule = self.molecule(molid);
-        moltype(molecule, &self.particles[molecule.into_iter()])
+        molecule_type(molecule, &self.particles[molecule.into_iter()])
     }
 
     /// Get a list of molecules with `moltype` molecule type.
     pub fn molecules_with_moltype(&self, moltype: u64) -> Vec<usize> {
         let mut res = Vec::new();
         for i in 0..self.molecules().len() {
-            if self.moltype(i) == moltype {
+            if self.molecule_type(i) == moltype {
                 res.push(i);
             }
         }
@@ -764,12 +764,12 @@ mod tests {
         let _ = system.add_bond(8, 10);
 
         assert_eq!(system.molecules().len(), 5);
-        // The heliums
-        assert_eq!(system.moltype(0), system.moltype(3));
+        // The helium particles
+        assert_eq!(system.molecule_type(0), system.molecule_type(3));
 
-        // The waters
-        assert!(system.moltype(1) == system.moltype(2));
-        assert!(system.moltype(1) != system.moltype(4));
+        // The water molecules
+        assert!(system.molecule_type(1) == system.molecule_type(2));
+        assert!(system.molecule_type(1) != system.molecule_type(4));
     }
 
     #[test]

@@ -439,8 +439,8 @@ impl Molecule {
 
 /// Get the molecule type of the given `molecule` containing the `particles`.
 /// This type can be used to identify all the molecules containing the same
-/// bonds and particles (see `System::moltype` for more information).
-pub fn moltype(molecule: &Molecule, particles: &[Particle]) -> u64 {
+/// bonds and particles (see `System::molecule_type` for more information).
+pub fn molecule_type(molecule: &Molecule, particles: &[Particle]) -> u64 {
     assert!(particles.len() == molecule.size());
     let mut hasher = SipHasher::new();
     molecule.cached_hash.hash(&mut hasher);
