@@ -3,9 +3,9 @@ extern crate lumol;
 
 use lumol::Logger;
 use lumol::types::{Vector3D, Zero};
-use lumol::system::{System, Particle};
-use lumol::potentials::{Potential, PairPotential, PairInteraction};
-use lumol::simulation::{Simulation, MolecularDynamics};
+use lumol::sys::{System, Particle};
+use lumol::energy::{Potential, PairPotential, PairInteraction};
+use lumol::sim::{Simulation, MolecularDynamics};
 use lumol::units;
 
 /// Let's define a new version of the LennardJones potential, using the

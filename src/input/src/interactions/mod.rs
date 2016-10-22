@@ -6,8 +6,8 @@ use std::io::prelude::*;
 use std::fs::File;
 use std::path::PathBuf;
 
-use lumol::system::System;
-use lumol::potentials::PairRestriction;
+use lumol::sys::System;
+use lumol::energy::PairRestriction;
 
 use {Error, Result};
 use validate;
@@ -107,7 +107,7 @@ fn read_restriction(config: &Table) -> Result<Option<PairRestriction>> {
 
 #[cfg(test)]
 mod tests {
-    use lumol::system::System;
+    use lumol::sys::System;
     use InteractionsInput;
     use testing::bad_inputs;
 

@@ -3,8 +3,8 @@
 use toml::Table;
 use std::path::PathBuf;
 
-use lumol::simulation::Output;
-use lumol::simulation::{TrajectoryOutput, CellOutput, EnergyOutput, PropertiesOutput};
+use lumol::out::Output;
+use lumol::out::{TrajectoryOutput, CellOutput, EnergyOutput, PropertiesOutput};
 
 use error::{Error, Result};
 use FromToml;

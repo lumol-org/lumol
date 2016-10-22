@@ -5,8 +5,8 @@
 extern crate lumol;
 extern crate lumol_input as input;
 
-use lumol::system::{System, Trajectory, UnitCell};
-use lumol::system::{BoltzmannVelocities, InitVelocities};
+use lumol::sys::{System, Trajectory, UnitCell};
+use lumol::sys::veloc::{BoltzmannVelocities, InitVelocities};
 use lumol::units;
 
 use input::InteractionsInput;
@@ -47,8 +47,8 @@ mod wolf {
     use START;
 
     use lumol::Logger;
-    use lumol::simulation::{Simulation, MolecularDynamics};
-    use lumol::simulation::AnisoBerendsenBarostat;
+    use lumol::sim::Simulation;
+    use lumol::sim::md::{MolecularDynamics, AnisoBerendsenBarostat};
     use lumol::units;
 
     #[test]
@@ -90,7 +90,7 @@ mod ewald {
     use START;
 
     use lumol::Logger;
-    use lumol::simulation::{Simulation, MolecularDynamics};
+    use lumol::sim::{Simulation, MolecularDynamics};
     use lumol::units;
 
     #[test]

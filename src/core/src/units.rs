@@ -21,7 +21,7 @@ use std::num;
 use std::fmt;
 use std::error::Error;
 
-use constants::{BOHR_RADIUS, NA};
+use consts::{BOHR_RADIUS, NA};
 
 // Atomic mass unit in kg
 const U_IN_KG : f64 = 1.660538782e-27;

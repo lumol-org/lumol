@@ -10,8 +10,8 @@ use validate;
 use error::{Error, Result};
 use error::toml_error_to_string;
 
-use lumol::simulation::Simulation;
-use lumol::system::System;
+use lumol::sim::Simulation;
+use lumol::sys::System;
 
 mod system;
 mod outputs;

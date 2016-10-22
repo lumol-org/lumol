@@ -3,7 +3,8 @@
 use toml::{Table, Value};
 
 use lumol::units;
-use lumol::system::*;
+use lumol::sys::*;
+use lumol::sys::veloc::{BoltzmannVelocities, InitVelocities};
 
 use error::{Error, Result};
 use extract;
@@ -169,7 +170,7 @@ mod tests {
     use std::path::Path;
     use Input;
     use testing::bad_inputs;
-    use lumol::system::{Particle, UnitCell};
+    use lumol::sys::{Particle, UnitCell};
 
     #[test]
     fn system() {

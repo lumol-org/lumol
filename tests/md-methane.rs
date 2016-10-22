@@ -6,9 +6,9 @@ extern crate lumol;
 extern crate lumol_input as input;
 
 use lumol::Logger;
-use lumol::system::{System, UnitCell, Trajectory};
-use lumol::system::{BoltzmannVelocities, InitVelocities};
-use lumol::simulation::{Simulation, MolecularDynamics};
+use lumol::sys::{System, UnitCell, Trajectory};
+use lumol::sys::veloc::{BoltzmannVelocities, InitVelocities};
+use lumol::sim::{Simulation, MolecularDynamics};
 use lumol::units;
 
 use input::InteractionsInput;

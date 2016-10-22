@@ -3,7 +3,9 @@
 #![feature(test)]
 extern crate test;
 extern crate lumol;
-use lumol::*;
+
+use lumol::sys::{System, Trajectory, UnitCell};
+use lumol::energy::{Ewald, PairRestriction, CoulombicPotential};
 
 use std::path::Path;
 use std::sync::{Once, ONCE_INIT};
@@ -12,9 +14,9 @@ pub static START: Once = ONCE_INIT;
 pub fn get_system(name: &str) -> System {
     let data_dir = Path::new(file!()).parent().unwrap();
     let configuration = data_dir.join("data").join(name);
-    let mut system = input::Trajectory::open(configuration)
-                                        .and_then(|mut traj| traj.read())
-                                        .unwrap();
+    let mut system = Trajectory::open(configuration)
+                                .and_then(|mut traj| traj.read())
+                                .unwrap();
     let cell = if name == "NaCl.xyz" {
         UnitCell::cubic(11.2804)
     } else if name == "water.xyz" {
@@ -51,9 +53,10 @@ pub fn get_ewald() -> Ewald {
 }
 
 mod nacl {
-    use super::*;
-    use lumol::*;
+    use lumol::Logger;
+    use lumol::energy::GlobalPotential;
     use test::Bencher;
+    use super::*;
 
     #[bench]
     fn energy(bencher: &mut Bencher) {
@@ -80,9 +83,10 @@ mod nacl {
 
 
 mod water {
-    use super::*;
-    use lumol::*;
+    use lumol::Logger;
+    use lumol::energy::GlobalPotential;
     use test::Bencher;
+    use super::*;
 
     #[bench]
     fn energy(bencher: &mut Bencher) {

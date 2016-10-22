@@ -2,12 +2,12 @@
 // Copyright (C) 2015-2016 G. Fraux — BSD license
 use toml::{Value, Table};
 
-use lumol::system::System;
+use lumol::sys::System;
 use lumol::units;
 
-use lumol::potentials::{PairPotential, PairInteraction, BondPotential};
-use lumol::potentials::{Harmonic, LennardJones, NullPotential};
-use lumol::potentials::TableComputation;
+use lumol::energy::{PairPotential, PairInteraction, BondPotential};
+use lumol::energy::{Harmonic, LennardJones, NullPotential};
+use lumol::energy::TableComputation;
 
 use error::{Error, Result};
 use {FromToml, FromTomlWithData};
@@ -217,7 +217,7 @@ fn read_pair_computation(computation: &Table, potential: Box<PairPotential>) -> 
 mod tests {
     use InteractionsInput;
     use testing::bad_inputs;
-    use lumol::system::{Particle, System};
+    use lumol::sys::{Particle, System};
     use std::path::Path;
 
     #[test]

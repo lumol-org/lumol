@@ -55,12 +55,13 @@ mod utils;
 mod logging;
 
 pub mod units;
-pub mod constants;
+pub mod consts;
 
 pub use logging::{Logger, LogLevel};
 
 // Main modules
 pub mod types;
-pub mod potentials;
-pub mod system;
-pub mod simulation;
+pub mod energy;
+pub mod sys;
+pub mod sim;
+pub mod out;

@@ -2,9 +2,9 @@
 // Copyright (C) 2015-2016 G. Fraux — BSD license
 use toml::{Value, Table};
 
-use lumol::system::System;
-use lumol::potentials::{Harmonic, CosineHarmonic, Torsion, NullPotential};
-use lumol::potentials::{AnglePotential, DihedralPotential};
+use lumol::sys::System;
+use lumol::energy::{Harmonic, CosineHarmonic, Torsion, NullPotential};
+use lumol::energy::{AnglePotential, DihedralPotential};
 
 use error::{Error, Result};
 use FromToml;
@@ -145,7 +145,7 @@ fn read_dihedral_potential(dihedral: &Table) -> Result<Box<DihedralPotential>> {
 mod tests {
     use InteractionsInput;
     use testing::bad_inputs;
-    use lumol::system::{Particle, System};
+    use lumol::sys::{Particle, System};
     use std::path::Path;
 
     #[test]

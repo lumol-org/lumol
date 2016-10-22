@@ -7,11 +7,12 @@ extern crate lumol;
 extern crate lumol_input as input;
 
 use lumol::Logger;
-use lumol::system::{System, Trajectory, UnitCell};
-use lumol::potentials::{LennardJones, PairInteraction};
-use lumol::simulation::{Simulation, MonteCarlo, Translate};
+use lumol::sys::{System, Trajectory, UnitCell};
+use lumol::energy::{LennardJones, PairInteraction};
+use lumol::sim::Simulation;
+use lumol::sim::mc::{MonteCarlo, Translate};
 use lumol::units;
-use lumol::constants::K_BOLTZMANN;
+use lumol::consts::K_BOLTZMANN;
 
 use std::sync::{Once, ONCE_INIT};
 static START: Once = ONCE_INIT;

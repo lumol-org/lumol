@@ -2,8 +2,8 @@
 // Copyright (C) 2015-2016 G. Fraux — BSD license
 use toml::Value;
 
-use lumol::system::System;
-use lumol::potentials::{Wolf, Ewald, CoulombicPotential};
+use lumol::sys::System;
+use lumol::energy::{Wolf, Ewald, CoulombicPotential};
 
 use error::{Error, Result};
 use FromToml;
@@ -107,7 +107,7 @@ impl InteractionsInput {
 mod tests {
     use InteractionsInput;
     use testing::bad_inputs;
-    use lumol::system::{Particle, System};
+    use lumol::sys::{Particle, System};
     use std::path::Path;
 
     #[test]

@@ -30,7 +30,7 @@
 //! ```no_run
 //! extern crate lumol;
 //! extern crate lumol_input;
-//! use lumol::system::System;
+//! use lumol::sys::System;
 //! use lumol_input::InteractionsInput;
 //!
 //! fn main() {

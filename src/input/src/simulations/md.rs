@@ -2,7 +2,7 @@
 // Copyright (C) 2015-2016 G. Fraux — BSD license
 use toml::Table;
 
-use lumol::simulation::md::*;
+use lumol::sim::md::*;
 use lumol::units;
 
 use error::{Error, Result};

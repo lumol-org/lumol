@@ -6,13 +6,13 @@
 extern crate lumol;
 
 use lumol::Logger;
-use lumol::system::{System, Trajectory, UnitCell};
-use lumol::system::{BoltzmannVelocities, InitVelocities};
-use lumol::potentials::{LennardJones, PairInteraction};
-use lumol::potentials::TableComputation;
-use lumol::simulation::{Simulation, MolecularDynamics};
-use lumol::simulation::{LeapFrog, VelocityVerlet, Verlet, BerendsenBarostat};
-use lumol::constants::K_BOLTZMANN;
+use lumol::sys::{System, Trajectory, UnitCell};
+use lumol::sys::veloc::{BoltzmannVelocities, InitVelocities};
+use lumol::energy::{LennardJones, PairInteraction};
+use lumol::energy::TableComputation;
+use lumol::sim::{Simulation, MolecularDynamics};
+use lumol::sim::md::{LeapFrog, VelocityVerlet, Verlet, BerendsenBarostat};
+use lumol::consts::K_BOLTZMANN;
 use lumol::units;
 
 use std::sync::{Once, ONCE_INIT};

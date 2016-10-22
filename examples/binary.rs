@@ -3,9 +3,10 @@ extern crate lumol;
 extern crate lumol_input as input;
 
 use lumol::Logger;
-use lumol::system::{Molecule, Particle, Trajectory, UnitCell};
-use lumol::system::{read_molecule, molecule_type};
-use lumol::simulation::{Simulation, MonteCarlo, Translate, Rotate};
+use lumol::sys::{Molecule, Particle, Trajectory, UnitCell};
+use lumol::sys::{read_molecule, molecule_type};
+use lumol::sim::Simulation;
+use lumol::sim::mc::{MonteCarlo, Translate, Rotate};
 use lumol::units;
 
 use input::InteractionsInput;

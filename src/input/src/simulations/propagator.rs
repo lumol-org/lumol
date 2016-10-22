@@ -1,6 +1,6 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) 2015-2016 G. Fraux — BSD license
-use lumol::simulation::{Propagator, MolecularDynamics, MonteCarlo};
+use lumol::sim::{Propagator, MolecularDynamics, MonteCarlo};
 
 use error::{Error, Result};
 use {FromToml, FromTomlWithData};

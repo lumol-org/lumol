@@ -2,10 +2,11 @@
 extern crate lumol;
 
 use lumol::Logger;
-use lumol::system::{Trajectory, UnitCell};
-use lumol::potentials::{PairInteraction, LennardJones};
-use lumol::simulation::{Simulation, MonteCarlo, Translate};
-use lumol::simulation::TrajectoryOutput;
+use lumol::sys::{Trajectory, UnitCell};
+use lumol::energy::{PairInteraction, LennardJones};
+use lumol::sim::Simulation;
+use lumol::sim::mc::{MonteCarlo, Translate};
+use lumol::out::TrajectoryOutput;
 use lumol::units;
 
 fn main() {

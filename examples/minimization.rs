@@ -2,10 +2,11 @@
 extern crate lumol;
 
 use lumol::Logger;
-use lumol::system::{System, Particle};
+use lumol::sys::{System, Particle};
 use lumol::types::{Vector3D, Zero};
-use lumol::potentials::{PairInteraction, NullPotential, Harmonic};
-use lumol::simulation::{Simulation, SteepestDescent, EnergyOutput};
+use lumol::energy::{PairInteraction, NullPotential, Harmonic};
+use lumol::sim::{Simulation, SteepestDescent};
+use lumol::out::EnergyOutput;
 use lumol::units;
 
 fn main() {

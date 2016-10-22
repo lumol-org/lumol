@@ -4,9 +4,9 @@
 //! Read static string using the XYZ file format, and create the corresponding
 //! system.
 
-use system::{System, Particle};
 use types::Vector3D;
-use system::guess_bonds;
+use sys::{System, Particle};
+use sys::guess_bonds;
 
 /// Read the `content` string, assuming XYZ format, and create the corresponding
 /// system. This function is intended for testing purposes only, and will

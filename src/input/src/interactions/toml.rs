@@ -8,9 +8,9 @@ use error::{Error, Result};
 use FromToml;
 use FromTomlWithData;
 
-use lumol::potentials::{Harmonic, LennardJones, NullPotential, CosineHarmonic, Torsion};
-use lumol::potentials::{Wolf, Ewald};
-use lumol::potentials::{PairPotential, TableComputation};
+use lumol::energy::{Harmonic, LennardJones, NullPotential, CosineHarmonic, Torsion};
+use lumol::energy::{Wolf, Ewald};
+use lumol::energy::{PairPotential, TableComputation};
 
 macro_rules! try_extract_parameter {
     ($table: expr, $key: expr, $context: expr) => (
@@ -155,7 +155,7 @@ impl FromToml for Ewald {
 
 #[cfg(test)]
 mod tests {
-    use lumol::system::System;
+    use lumol::sys::System;
     use InteractionsInput;
     use testing::bad_inputs;
 

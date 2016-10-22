@@ -5,11 +5,11 @@
 extern crate lumol;
 
 use lumol::Logger;
-use lumol::system::{System, UnitCell, Particle};
-use lumol::system::{BoltzmannVelocities, InitVelocities};
-use lumol::potentials::{LennardJones, PairInteraction};
-use lumol::simulation::{Simulation, MolecularDynamics};
-use lumol::simulation::{TrajectoryOutput, EnergyOutput};
+use lumol::sys::{System, UnitCell, Particle};
+use lumol::sys::veloc::{BoltzmannVelocities, InitVelocities};
+use lumol::energy::{LennardJones, PairInteraction};
+use lumol::sim::{Simulation, MolecularDynamics};
+use lumol::out::{TrajectoryOutput, EnergyOutput};
 use lumol::types::Vector3D;
 use lumol::units;
 
