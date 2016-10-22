@@ -2,7 +2,6 @@
 // Copyright (C) 2015-2016 G. Fraux — BSD license
 use toml::{Table, Value};
 
-use lumol::chfl::{Trajectory, ToChemfiles};
 use lumol::units;
 use lumol::system::*;
 

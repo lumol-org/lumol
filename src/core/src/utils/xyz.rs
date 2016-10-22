@@ -6,7 +6,7 @@
 
 use system::{System, Particle};
 use types::Vector3D;
-use chfl::guess_bonds;
+use system::guess_bonds;
 
 /// Read the `content` string, assuming XYZ format, and create the corresponding
 /// system. This function is intended for testing purposes only, and will

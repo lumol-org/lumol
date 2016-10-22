@@ -11,7 +11,7 @@ use toml::Parser;
 use chemfiles;
 
 use lumol::units::ParseError;
-use lumol::chfl::TrajectoryError;
+use lumol::system::TrajectoryError;
 
 /// Custom `Result` type for input files
 pub type Result<T> = result::Result<T, Error>;

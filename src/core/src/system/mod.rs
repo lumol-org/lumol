@@ -39,3 +39,8 @@ pub use self::systems::Permutations;
 
 pub mod compute;
 pub use self::compute::Compute;
+
+mod chfl;
+pub use self::chfl::{Trajectory, TrajectoryError};
+pub use self::chfl::{guess_bonds, read_molecule};
+pub use self::chfl::ToChemfiles;

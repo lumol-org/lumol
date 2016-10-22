@@ -9,7 +9,7 @@ use std::path::{Path, PathBuf};
 
 use utils;
 use system::System;
-use chfl::{Trajectory, TrajectoryError};
+use system::{Trajectory, TrajectoryError};
 
 /// The `Output` trait define the interface for all the quantities outputed by
 /// the simulation during the run. An Output can be a text or a binary data

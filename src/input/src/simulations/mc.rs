@@ -3,8 +3,7 @@
 use toml::Table;
 use std::path::PathBuf;
 
-use lumol::chfl::read_molecule;
-use lumol::system::moltype;
+use lumol::system::{read_molecule, moltype};
 use lumol::simulation::mc::*;
 use lumol::units;
 

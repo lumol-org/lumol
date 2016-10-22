@@ -61,10 +61,8 @@ pub mod types;
 pub mod potentials;
 pub mod system;
 pub mod simulation;
-pub mod chfl;
 
 pub use types::*;
 pub use potentials::*;
 pub use system::*;
 pub use simulation::*;
-pub use chfl::*;
