@@ -3,7 +3,7 @@
 use types::{Vector3D, Matrix3, One, Zero};
 use sys::System;
 
-/// The `Integrator` trait define integrators interface for molecular dynamics.
+/// The `Integrator` trait define integrator interface for molecular dynamics.
 /// An integrator is an algorithm responsible for propagating the equations of
 /// motion in the system.
 pub trait Integrator {
@@ -150,7 +150,7 @@ impl Integrator for LeapFrog {
 }
 
 /******************************************************************************/
-/// This is needed for the `BerendsenBarostat` implentations. The value comes
+/// This is needed for the `BerendsenBarostat` implementation. The value comes
 /// from the DL_POLY source code.
 const WATER_COMPRESSIBILITY: f64 = 7372.0;
 
@@ -213,7 +213,6 @@ impl Integrator for BerendsenBarostat {
     }
 }
 
-/******************************************************************************/
 /// Anisotropic Berendsen barostat integrator based on velocity-Verlet. This one
 /// neither reversible nor symplectic.
 pub struct AnisoBerendsenBarostat {
@@ -221,7 +220,7 @@ pub struct AnisoBerendsenBarostat {
     timestep: f64,
     /// Target stress matrix for the barostat
     stress: Matrix3,
-    /// Barostat time sscale, expressed in units of the timestep
+    /// Barostat time scale, expressed in units of the timestep
     tau: f64,
     /// Storing the accelerations
     accelerations: Vec<Vector3D>,
@@ -272,7 +271,7 @@ impl Integrator for AnisoBerendsenBarostat {
         let factor = self.timestep * WATER_COMPRESSIBILITY / self.tau;
         self.eta = Matrix3::one() - factor * (self.stress - system.stress());
 
-        // Make the eta matrix symetric here
+        // Make the eta matrix symmetric here
         for i in 0..3 {
             for j in 0..i {
                 self.eta[(i, j)] = 0.5 * (self.eta[(i, j)] + self.eta[(j, i)]);

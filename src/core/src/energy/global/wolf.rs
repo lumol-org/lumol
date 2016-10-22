@@ -19,7 +19,7 @@ use super::{GlobalPotential, CoulombicPotential, GlobalCache};
 /// [Wolf1999]: Wolf, D. et al. J. Chem. Phys. 110, 8254 (1999).
 #[derive(Clone)]
 pub struct Wolf {
-    /// Spliting parameter
+    /// Splitting parameter
     alpha: f64,
     /// Cutoff radius in real space
     cutoff: f64,
@@ -222,7 +222,7 @@ mod tests {
         let mut wolf = Wolf::new(8.0);
 
         let e = wolf.energy(&system);
-        // Wolf is not very good for inhomogeneous systems
+        // Wolf is not very good for heterogeneous systems
         assert_approx_eq!(e, E_BRUTE_FORCE, 1e-2);
     }
 

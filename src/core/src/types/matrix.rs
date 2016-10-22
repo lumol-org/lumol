@@ -8,7 +8,7 @@ use types::{Vector3D, Zero, One};
 
 /// A 3x3 square matrix type.
 ///
-/// `Matrix3` implements all the usual arithmetics operations:
+/// `Matrix3` implements all the usual arithmetic operations:
 ///
 /// ```
 /// use lumol::types::{Matrix3, Vector3D, One};
@@ -111,7 +111,7 @@ impl Matrix3 {
     ///
     /// ```
     /// # use lumol::types::{Matrix3, One};
-    /// // A diagonal matrix is trivially inversible
+    /// // A diagonal matrix is trivially invertible
     /// let matrix = Matrix3::new(
     ///     4.0, 0.0, 0.0,
     ///     0.0, 1.0, 0.0,
@@ -130,7 +130,7 @@ impl Matrix3 {
     ///
     /// # Panics
     ///
-    /// If the matrix is not inversible, *i.e.* if the matrix determinant
+    /// If the matrix is not invertible, *i.e.* if the matrix determinant
     /// equals zero.
     pub fn inverse(&self) -> Matrix3 {
         let determinant = self.determinant();

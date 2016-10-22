@@ -3,14 +3,14 @@
 
 //! While running a simulation, we often want to have control over some
 //! simulation parameters: the temperature, the pressure, etc. This is the goal
-//! of the control algorithms, all implmenting of the `Control` trait.
+//! of the control algorithms, all implementing of the `Control` trait.
 use types::{Matrix3, Vector3D, Zero};
 use sys::System;
 use sys::veloc;
 
-/// Trait for controling some parameters in a system during a simulation.
+/// Trait for controlling some parameters in a system during a simulation.
 pub trait Control {
-    /// Function called once at the beggining of the simulation, which allow
+    /// Function called once at the beginning of the simulation, which allow
     /// for some setup of the control algorithm if needed.
     fn setup(&mut self, _: &System) {}
 
@@ -21,17 +21,17 @@ pub trait Control {
     fn finish(&mut self, _: &System) {}
 }
 
-/// Trait for controls usables as thermostats
+/// Trait for controls usable as thermostats
 pub trait Thermostat: Control {}
 
 /******************************************************************************/
 /// Velocity rescaling thermostat.
 ///
-/// The velocity rescale algorithm controls the temperature by rescaling all
-/// the velocities when the temperature differs exceedingly from the desired
-/// temperature. A tolerance parameter prevent this algorithm from running too
-/// often: if tolerance is 10K and the target temperature is 300K, the algorithm
-/// will only run if the instant temperature is below 290K or above 310K.
+/// This algorithm controls the temperature by rescaling all the velocities when
+/// the temperature differs exceedingly from the desired temperature. A
+/// tolerance parameter prevent this algorithm from running too often: if
+/// tolerance is 10K and the target temperature is 300K, the algorithm will only
+/// run if the instant temperature is below 290K or above 310K.
 pub struct RescaleThermostat {
     /// Target temperature
     temperature: f64,
@@ -69,7 +69,7 @@ impl Thermostat for RescaleThermostat {}
 /******************************************************************************/
 /// Berendsen thermostat.
 ///
-/// The berendsen thermostat sets the simulation temperature by exponentially
+/// The Berendsen thermostat sets the simulation temperature by exponentially
 /// relaxing to a desired temperature. A more complete description of this
 /// algorithm can be found in the original article [1].
 ///

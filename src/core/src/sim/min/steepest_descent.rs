@@ -5,18 +5,20 @@ use utils;
 use sys::System;
 use sim::{Propagator, TemperatureStrategy};
 
-/// Steepest gradient descent for energy minization.
+use std::f64;
+
+/// Steepest gradient descent for energy minimization.
 ///
 /// This algorithm is very rough, and will not converge in all the situations.
 /// However it is easy to use, and simple enough to be implemented quickly.
 pub struct SteepestDescent {
     /// Dumping factor
     gamma: f64,
-    /// Force norm convergence criterium
+    /// Force norm convergence criterion
     force_crit: f64,
-    /// Energy convergence criterium
+    /// Energy convergence criterion
     energy_crit: f64,
-    /// Has the last minization converged?
+    /// Has the last minimization converged?
     is_converged: bool
 }
 
@@ -27,19 +29,19 @@ impl Default for SteepestDescent {
 }
 
 impl SteepestDescent {
-    /// Create a GradientDescent with sensible default values for energy and
+    /// Create a `SteepestDescent` with sensible default values for energy and
     /// force convergence criteria.
     ///
-    /// The default for force criterium is `1e-5 kJ/mol/Å^2`, and `1e-5
-    /// kJ/mol/Å^2` for the energy criterium.
+    /// The default for force criterion is `1e-5 kJ/mol/Å^2`, and `1e-5
+    /// kJ/mol/Å^2` for the energy criterion.
     pub fn new() -> SteepestDescent {
         let delta_f = utils::unit_from(1e-5, "kJ/mol/A");
         let delta_e = utils::unit_from(1e-5, "kJ/mol");
         SteepestDescent::with_criteria(delta_f, delta_e)
     }
 
-    /// Create a new `GradientDescent` with the force convergence criterium of
-    /// `force`, and the energy convergence criterium of `energy`.
+    /// Create a new `SteepestDescent` with the given `force` and `energy`
+    /// convergence criterion.
     pub fn with_criteria(force: f64, energy: f64) -> SteepestDescent {
         let gamma = utils::unit_from(0.1, "fs^2/u");
         SteepestDescent{
@@ -50,7 +52,7 @@ impl SteepestDescent {
         }
     }
 
-    /// Has the minization converged so far ?
+    /// Has the minimization converged so far ?
     pub fn converged(&self) -> bool {
         self.is_converged
     }
@@ -67,9 +69,8 @@ impl Propagator for SteepestDescent {
 
     fn propagate(&mut self, system: &mut System) {
         let forces = system.forces();
-        // Get the maximal value in the vector.
-        // How can you know that fold(cte, cte) will do it ?
-        let max_force_norm2 = forces.iter().map(|&f| f.norm2()).fold(-1./0. /* -inf */, f64::max);
+        // Find the largest non-NaN in forces, or NaN otherwise
+        let max_force_norm2 = forces.iter().map(|&f| f.norm2()).fold(f64::NAN, f64::max);
         if max_force_norm2 < self.force_crit {
             self.is_converged = true;
             return;

@@ -7,11 +7,11 @@ use sim::Propagator;
 use sim::TemperatureStrategy;
 use out::Output;
 
-/// Writting an output at a given frequency
+/// Writing an output at a given frequency
 struct OutputFrequency {
     /// The output to use
     output: Box<Output>,
-    /// The frequency. `output` will be used everytime the system step matches
+    /// The frequency. `output` will be used every time the system step matches
     /// this frequency.
     frequency: u64,
 }
@@ -92,8 +92,8 @@ impl Simulation {
     }
 
     /// Add a new `Output` algorithm in the outputs list, which will be used
-    /// at the given frequency. The output will be used everytime the system
-    ///  step matches this frequency.
+    /// at the given frequency. The output will be used every time the system
+    /// step matches this frequency.
     pub fn add_output_with_frequency(&mut self, output: Box<Output>, frequency: u64) {
         self.outputs.push(OutputFrequency::with_frequency(output, frequency));
     }

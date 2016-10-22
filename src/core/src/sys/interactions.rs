@@ -50,17 +50,17 @@ impl ParticleKinds {
     }
 }
 
-/// Sort pair indexes to get a cannonical representation
+/// Sort pair indexes to get a canonical representation
 #[inline] fn sort_pair(i: Kind, j:Kind) -> (Kind, Kind) {
     if i < j { (i, j) } else { (j, i) }
 }
 
-/// Sort angle indexes to get a cannonical representation
+/// Sort angle indexes to get a canonical representation
 #[inline] fn sort_angle(i: Kind, j:Kind, k:Kind) -> (Kind, Kind, Kind) {
     if i < k { (i, j, k) } else { (k, j, i) }
 }
 
-/// Sort dihedral indexes to get a cannonical representation
+/// Sort dihedral indexes to get a canonical representation
 #[inline] fn sort_dihedral(i: Kind, j:Kind, k:Kind, m:Kind) -> (Kind, Kind, Kind, Kind) {
     if max(i, j) < max(k, m) { (i, j, k, m) } else { (m, k, j, i) }
 }
@@ -224,7 +224,8 @@ impl Interactions {
     }
 
     /// Get the coulombic interaction as a RefCell, because the
-    /// `GlobalPotential` are allowed to mutate themself when computing energy.
+    /// `GlobalPotential` are allowed to mutate themselves when computing
+    /// energy.
     pub fn coulomb(&self) -> Option<&RefCell<Box<CoulombicPotential>>> {
         self.coulomb.as_ref()
     }

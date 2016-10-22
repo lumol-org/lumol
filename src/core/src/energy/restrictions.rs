@@ -5,7 +5,7 @@
 //!
 //! In some force fields, some interactions are restricted to a subset of the
 //! possible pairs. For example, we may want to have Lennard-Jones interactions
-//! between atoms in different molecules only, or rescale the coulombic
+//! between atoms in different molecules only, or scale the coulombic
 //! interactions if the particles are at 1-4 distance.
 use sys::System;
 

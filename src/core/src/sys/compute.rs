@@ -7,7 +7,7 @@ use types::{Matrix3, Vector3D, Zero, One};
 use sys::System;
 use energy::{Potential, Virial as VirialTrait};
 
-/// The compute trait allow to compute properties of a system, whithout
+/// The compute trait allow to compute properties of a system, without
 /// modifying this system. The Output type is the type of the computed
 /// property.
 pub trait Compute {
@@ -147,7 +147,7 @@ impl Compute for TotalEnergy {
 }
 
 /******************************************************************************/
-/// Compute the instananeous temperature of the system
+/// Compute the instantaneous temperature of the system
 pub struct Temperature;
 impl Compute for Temperature {
     type Output = f64;

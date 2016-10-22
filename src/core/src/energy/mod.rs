@@ -12,7 +12,7 @@
 //! variable will be the distance for non-bonded pair interactions; the angle
 //! for covalent angles interactions, *etc.*
 //!
-//! Additional marker traits are used to specify wheter a given potential can
+//! Additional marker traits are used to specify whether a given potential can
 //! be used for a specific interaction type. These marker traits are:
 //!
 //! - [`PairPotential`][PairPotential] for bonded and non-bonded two body
@@ -72,7 +72,7 @@ pub trait Potential : Sync + Send + BoxClonePotential {
 
 impl_box_clone!(Potential, BoxClonePotential, box_clone_potential);
 
-/// Computation of virial contribution for a potential. The provided fucntion
+/// Computation of virial contribution for a potential. The provided function
 /// only apply to two-body virial contributions.
 pub trait Virial: Potential {
     /// Compute the virial contribution corresponding to the distance `r`

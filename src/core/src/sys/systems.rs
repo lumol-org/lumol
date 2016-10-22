@@ -37,7 +37,7 @@ pub type Permutations = Vec<(usize, usize)>;
 ///   - a list of interactions, associating particles kinds and potentials
 ///   - a hash map associating particles names and particles kinds.
 ///
-/// In the implementation, the particles contained in a molecule are guaranted
+/// In the implementation, the particles contained in a molecule are guaranteed
 /// to be contiguous in memory. This allow for faster access when iterating over
 /// molecules, and easier molecule removal in the system.
 #[derive(Clone)]
@@ -192,7 +192,7 @@ impl System {
     /// # Warning
     ///
     /// If the bond is between two particles which are not in the same molecule,
-    /// the two molecules are merged together by deplacing particles in the
+    /// the two molecules are merged together by moving particles in the
     /// particles list, and thus invalidate any previously stored index. In
     /// particular, any bond, angle, dihedral or molecule is invalidated.
     ///
@@ -307,8 +307,8 @@ impl System {
     /// 0 1 2 3  4 5  6 7  # New indexes
     /// ```
     ///
-    /// This functions return the deplacement of the moved molecule, i.e. in
-    /// this example `4`.
+    /// This functions return the shift of the moved molecule, i.e. in this
+    /// example `4`.
     #[allow(block_in_if_condition_stmt)]
     fn merge_molecules(&mut self, new_molid: usize, old_molid: usize) -> usize {
         assert!(new_molid < old_molid);
@@ -358,7 +358,7 @@ impl System {
         self.molecules[new_molid] = new_mol;
         let _ = self.molecules.remove(old_molid);
 
-        // Check that self.molids is sorted and only contains successives values
+        // Check that self.molids is sorted and only contains successive values
         debug_assert!(self.molids.iter().fold((true, 0), |(is_valid, previous), &i| {
             if i == previous || i == previous + 1 {
                 (is_valid, i)
@@ -512,7 +512,7 @@ use sys::compute::Volume;
 use sys::compute::{Virial, Stress, Pressure};
 use sys::compute::{StressAtTemperature, PressureAtTemperature};
 
-/// Functions to get pysical properties of a system.
+/// Functions to get physical properties of a system.
 impl System {
     /// Get the kinetic energy of the system.
     pub fn kinetic_energy(&self) -> f64 {KineticEnergy.compute(self)}
@@ -548,7 +548,7 @@ impl System {
     /// Get the tensorial virial of the system.
     pub fn virial(&self) -> Matrix3 {Virial.compute(self)}
     /// Get the pressure of the system from the virial equation, at the system
-    /// instananeous temperature.
+    /// instantaneous temperature.
     pub fn pressure(&self) -> f64 {
         match self.external_temperature {
             Some(temperature) => {

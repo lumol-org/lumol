@@ -72,7 +72,7 @@ impl MCMove for Rotate {
         }
 
         // Getting values from a 3D normal distribution gives an uniform
-        // distribution on the R3 sphere.
+        // distribution on the unit sphere.
         let axis = Vector3D::new(
             self.axis_rng.sample(rng),
             self.axis_rng.sample(rng),

@@ -25,7 +25,7 @@ pub struct InteractionsInput {
 }
 
 impl InteractionsInput {
-    /// Read interactions from the TOML formated file at `path`.
+    /// Read interactions from the TOML formatted file at `path`.
     pub fn new<P: Into<PathBuf>>(path: P) -> Result<InteractionsInput> {
         let path = path.into();
         let mut file = try_io!(File::open(&path), path);
@@ -34,7 +34,7 @@ impl InteractionsInput {
         return InteractionsInput::from_string(&buffer);
     }
 
-    /// Read the interactions from a TOML formated string.
+    /// Read the interactions from a TOML formatted string.
     pub fn from_string(string: &str) -> Result<InteractionsInput> {
         let mut parser = Parser::new(string);
         let config = try!(parser.parse().ok_or(

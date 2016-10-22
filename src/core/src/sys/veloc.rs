@@ -20,7 +20,7 @@ pub fn scale(system: &mut System, temperature: f64) {
     }
 }
 
-/// Random initializer for the velocities of a system.
+/// A method to initialize the velocities of a system.
 pub trait InitVelocities {
     /// Initialize the velocities of the system.
     fn init(&mut self, system: &mut System);
@@ -28,7 +28,7 @@ pub trait InitVelocities {
     fn seed(&mut self, seed: u64);
 }
 
-/// Initialize the velocities from a Boltzman distribution.
+/// Initialize the velocities from a Boltzmann distribution.
 pub struct BoltzmannVelocities {
     temperature: f64,
     dist: Normal,
@@ -36,8 +36,7 @@ pub struct BoltzmannVelocities {
 }
 
 impl BoltzmannVelocities {
-    /// This `BoltzmannVelocities` initializer will initialize velocities at
-    /// temperature `temperature`.
+    /// Create a new `BoltzmannVelocities` at the given `temperature`.
     pub fn new(temperature: f64) -> BoltzmannVelocities {
         BoltzmannVelocities{
             temperature: temperature,
@@ -72,8 +71,7 @@ pub struct UniformVelocities {
 }
 
 impl UniformVelocities {
-    /// This `UniformVelocities` initializer will initialize velocities at
-    /// temperature `temperature`.
+    /// Create a new `UniformVelocities` at the given `temperature`.
     pub fn new(temperature: f64) -> UniformVelocities {
         let factor = f64::sqrt(3.0*K_BOLTZMANN * temperature);
         UniformVelocities{

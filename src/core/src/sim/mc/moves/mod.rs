@@ -1,7 +1,7 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) 2015-2016 G. Fraux — BSD license
 
-//! A Monte-Carlo simulation is based on a set of applicables moves.
+//! A Monte-Carlo simulation is based on a set of applicable moves.
 //!
 //! For example, NVT Monte-Carlo will use the `Translate` move only for particles
 //! and add the `Rotate` moves for molecules. NPT Monte-Carlo will add the
@@ -28,14 +28,13 @@ pub trait MCMove {
 
     /// Get the cost of performing this move on `system`. For example in
     /// simple NVT simulations, this cost is the energetic difference over
-    /// `beta`. The cost must be dimmensionless, and will be placed in an
+    /// `beta`. The cost must be dimensionless, and will be placed in an
     /// exponential. The `cache` should be used to compute the cost, or the
     /// `cache.unused` function should be used to ensure that the cache is
     /// updated  as needed after this move.
     fn cost(&self, system: &System, beta: f64, cache: &mut EnergyCache) -> f64;
 
-    /// Effectivelly apply the move, if it has not already been done in
-    /// `prepare`.
+    /// Apply the move, if it has not already been done in `prepare`.
     fn apply(&mut self, system: &mut System);
 
     /// Restore the system to it's initial state, if it has been changed in
@@ -44,7 +43,7 @@ pub trait MCMove {
 }
 
 /// Select a random molecule in the system using `rng` as random number
-/// generator. If `moltype` is `None`, any molecule can be choosen. If `moltype`
+/// generator. If `moltype` is `None`, any molecule can be chosen. If `moltype`
 /// is `Some(molecule_type)`, then a molecule with matching type is selected.
 ///
 /// This function returns `None` if no matching molecule was found, and

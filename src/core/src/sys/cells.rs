@@ -14,7 +14,7 @@ use types::{Matrix3, Vector3D, Zero};
 pub enum CellShape {
     /// Infinite unit cell, with no boundaries
     Infinite,
-    /// Orthorombic unit cell, with cuboide shape
+    /// Orthorombic unit cell, with cuboid shape
     Orthorombic,
     /// Triclinic unit cell, with arbitrary parallelepipedic shape
     Triclinic,
@@ -23,7 +23,7 @@ pub enum CellShape {
 /// An UnitCell defines the system physical boundaries.
 ///
 /// The shape of the cell can be any of the [`CellShape`][CellShape], and will
-/// influe on how periodic boundary conditions are applied.
+/// influence how periodic boundary conditions are applied.
 ///
 /// [CellShape]: enum.CellShape.html
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -52,7 +52,7 @@ impl UnitCell {
             shape: CellShape::Infinite
         }
     }
-    /// Create an orthorombic unit cell, with side lengths `a, b, c`.
+    /// Create an orthorhombic unit cell, with side lengths `a, b, c`.
     pub fn ortho(a: f64, b: f64, c: f64) -> UnitCell {
         assert!(a > 0.0 && b > 0.0 && c > 0.0, "Cell lengths must be positive");
         let cell = Matrix3::new(a, 0.0, 0.0,
@@ -256,7 +256,7 @@ impl UnitCell {
 /// Geometric operations using periodic boundary conditions
 impl UnitCell {
     /// Wrap a vector in the unit cell, obeying the periodic boundary conditions.
-    /// For a cubic cell of side lenght `L`, this produce a vector with all
+    /// For a cubic cell of side length `L`, this produce a vector with all
     /// components in `[0, L)`.
     pub fn wrap_vector(&self, vect: &mut Vector3D) {
         match self.shape {
@@ -277,7 +277,7 @@ impl UnitCell {
     }
 
     /// Find the image of a vector in the unit cell, obeying the periodic
-    /// boundary conditions. For a cubic cell of side lenght `L`, this produce a
+    /// boundary conditions. For a cubic cell of side length `L`, this produce a
     /// vector with all components in `[-L/2, L/2)`.
     pub fn vector_image(&self, vect: &mut Vector3D) {
         match self.shape {
@@ -303,7 +303,8 @@ impl UnitCell {
         return self.inv * vect;
     }
 
-    /// Get the cartesian representation of the fractional `v` vector in this cell
+    /// Get the Cartesian representation of the fractional `v` vector in this
+    /// cell
     #[inline]
     pub fn cartesian(&self, frac: &Vector3D) -> Vector3D {
         return self.cell * frac;
@@ -578,7 +579,7 @@ mod tests {
 
     #[test]
     fn distances() {
-        // Orthorombic unit cell
+        // Orthorhombic unit cell
         let cell = UnitCell::ortho(3.0, 4.0, 5.0);
         let u = &Vector3D::zero();
         let v = &Vector3D::new(1.0, 2.0, 6.0);
@@ -601,7 +602,7 @@ mod tests {
         cell.wrap_vector(&mut v);
         assert_eq!(v, Vector3D::new(9.0, 8.0, 4.0));
 
-        // Orthorombic unit cell
+        // Orthorhombic unit cell
         let cell = UnitCell::ortho(3.0, 4.0, 5.0);
         let mut v = Vector3D::new(1.0, 1.5, 6.0);
         cell.wrap_vector(&mut v);
@@ -631,7 +632,7 @@ mod tests {
         cell.vector_image(&mut v);
         assert_eq!(v, Vector3D::new(-1.0, -2.0, 4.0));
 
-        // Orthorombic unit cell
+        // Orthorhombic unit cell
         let cell = UnitCell::ortho(3.0, 4.0, 5.0);
         let mut v = Vector3D::new(1.0, 1.5, 6.0);
         cell.vector_image(&mut v);

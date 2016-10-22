@@ -139,9 +139,9 @@ impl Error for ParseError {
 /// Possible tokens in unit strings
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 enum Token {
-    /// Left parenthese
+    /// Left parentheses
     LParen,
-    /// Right parenthese
+    /// Right parentheses
     RParen,
     /// '*' token
     Mul,
@@ -149,7 +149,7 @@ enum Token {
     Div,
     /// '^' token
     Pow,
-    /// Any other whitespace separated value
+    /// Any other whitespaces separated value
     Value(String)
 }
 

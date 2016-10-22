@@ -10,9 +10,9 @@ use sys::guess_bonds;
 
 /// Read the `content` string, assuming XYZ format, and create the corresponding
 /// system. This function is intended for testing purposes only, and will
-/// panic if the string is not well-formated.
+/// panic if the string is not well-formatted.
 ///
-/// If the comment line contains `bonds`, chemfiles will be used to guess the
+/// If the comment line contains `bonds`, Chemfiles will be used to guess the
 /// bonds in the system.
 pub fn system_from_xyz(content: &str) -> System {
     let mut system = System::new();

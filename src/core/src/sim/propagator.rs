@@ -21,7 +21,7 @@ pub enum TemperatureStrategy {
 /// which update the system. The main function here is `propagate`, which
 /// should propagate the simulation for one step.
 pub trait Propagator {
-    /// Setup code, preparing all the meta-informations needed about the
+    /// Setup code, preparing all the meta-information needed about the
     /// simulation.
     fn setup(&mut self, _: &System) {}
 
@@ -31,6 +31,6 @@ pub trait Propagator {
     /// Propagate the system for one simulation step.
     fn propagate(&mut self, system: &mut System);
 
-    /// Finish the simulation, and maybe output some informations about it
+    /// Finish the simulation, and maybe output some information about it
     fn finish(&mut self, _: &System) {}
 }

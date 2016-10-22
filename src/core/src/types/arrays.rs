@@ -1,7 +1,7 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) 2015-2016 G. Fraux — BSD license
 
-//! Multi-dimmensional arrays based on ndarray
+//! Multi-dimensional arrays based on ndarray
 use ndarray::{Array, Ix};
 
 use std::ops::{Index, IndexMut};

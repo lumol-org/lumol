@@ -4,12 +4,12 @@
 //! Logging configuration
 //!
 //! This module provides a `Logger` struct which can be used for logging
-//! messages from Lumol. One and only one of the initilialization function
+//! messages from Lumol. One and only one of the initialization function
 //! should be called, and it should only be called once. Any call to
 //! initializing function after the first one will be ignored.
 //!
-//! Other [log](https://github.com/rust-lang/log) compatible crates can be used
-//! for logging if you whant.
+//! Any [log](https://github.com/rust-lang/log) compatible crates can be used
+//! for logging instead if you prefer.
 
 use std::io;
 use std::io::prelude::*;

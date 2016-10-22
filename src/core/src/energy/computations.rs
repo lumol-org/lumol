@@ -7,7 +7,8 @@ use super::{Potential, PairPotential};
 ///
 /// A potential computation is a way of computing a potential given its
 /// expression (represented by a `Potential`). The same potential can be
-/// computed either direcly, or using a cutoff, or by a table interpolation, ...
+/// computed either directly, or using a cutoff, or by a table interpolation,
+/// *etc.*
 pub trait Computation: Sync + Send {
     /// Compute the energy value at `r`
     fn compute_energy(&self, r: f64) -> f64;

@@ -1,7 +1,7 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) 2015-2016 G. Fraux — BSD license
 
-//! 3-dimmensional vector type
+//! 3-dimensional vector type
 use std::ops::{Add, Sub, Neg, Mul, Div, BitXor, Index, IndexMut};
 use std::ops::{AddAssign, SubAssign, MulAssign, DivAssign};
 use std::cmp::PartialEq;
@@ -9,7 +9,7 @@ use types::{Matrix3, Zero};
 
 /// A 3-dimensional vector type
 ///
-/// A `Vector3D` implement all the arithmetics operations:
+/// A `Vector3D` implement all the arithmetic operations:
 ///
 /// ```
 /// # use lumol::types::Vector3D;
@@ -25,7 +25,7 @@ use types::{Matrix3, Zero};
 /// let w = u + v;
 /// assert_eq!(w, Vector3D::new(5.0, 0.0, 4.0));
 ///
-/// // Substraction
+/// // Subtraction
 /// let w = u - v;
 /// assert_eq!(w, Vector3D::new(-3.0, 4.0, 2.0));
 ///
@@ -67,7 +67,7 @@ impl Vector3D {
         Vector3D([x, y, z])
     }
 
-    /// Return the squared euclidean norm of a Vector3D
+    /// Return the squared euclidean norm of a `Vector3D`
     ///
     /// # Examples
     /// ```
@@ -79,7 +79,7 @@ impl Vector3D {
         self * self
     }
 
-    /// Return the euclidean norm of a Vector3D
+    /// Return the euclidean norm of a `Vector3D`
     /// # Examples
     /// ```
     /// # use lumol::types::Vector3D;

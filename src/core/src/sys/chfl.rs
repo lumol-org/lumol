@@ -1,7 +1,9 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) 2015-2016 G. Fraux — BSD license
 
-//! [Chemfiles](https://github.com/chemfiles/chemfiles/) adaptators for Lumol.
+//! [Chemfiles][Chemfiles] adapter for Lumol.
+//!
+//! [Chemfiles]: https://Chemfiles.github.io/
 use sys::{System, Particle, Molecule, UnitCell, CellShape};
 use types::Vector3D;
 use chemfiles;
@@ -10,7 +12,7 @@ use std::fmt;
 use std::error;
 use std::path::Path;
 
-/// Possible error when reading and wrinting to trajectories
+/// Possible error when reading and writing to trajectories
 #[derive(Debug)]
 pub struct TrajectoryError(chemfiles::Error);
 
@@ -32,7 +34,7 @@ impl error::Error for TrajectoryError {
     }
 }
 
-/// Convert chemfiles types to Lumol types
+/// Convert Chemfiles types to Lumol types
 pub trait ToLumol {
     /// Output type
     type Output;
@@ -129,7 +131,7 @@ fn apply_particle_permutation(bonds: &mut Vec<[usize; 2]>, perms: Vec<(usize, us
 
 /******************************************************************************/
 
-/// Convert Lumol types to chemfiles types
+/// Convert Lumol types to Chemfiles types
 pub trait ToChemfiles {
     /// Output type
     type Output;
@@ -219,7 +221,7 @@ impl ToChemfiles for System {
 
 /******************************************************************************/
 
-/// A Trajectory is a file containing one or more successives simulation steps
+/// A Trajectory is a file containing one or more successive simulation steps
 pub struct Trajectory(chemfiles::Trajectory);
 
 /// Result type for all Trajectory operations
@@ -261,7 +263,7 @@ impl Trajectory {
         Ok(())
     }
 
-    /// Get access to the chemfiles trajectory, and the associated features
+    /// Get access to the Chemfiles trajectory, and the associated features
     // TODO: use partial privacy for this function
     pub fn as_chemfiles(&mut self) -> &mut chemfiles::Trajectory {
         &mut self.0

@@ -13,7 +13,7 @@ use sys::Particle;
 
 /// A `Bond` between the atoms at indexes `i` and `j`
 ///
-/// This structure ensure unicity of a `Bond` representation by enforcing
+/// This structure ensure an unique representation of a `Bond` by enforcing
 /// `i < j`
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Bond {
@@ -424,7 +424,7 @@ impl Molecule {
         &self.dihedrals
     }
 
-    /// Get the connectivity betweent the particles `i` and `j`
+    /// Get the connectivity between the particles `i` and `j`
     #[inline] pub fn connectivity(&self, i: usize, j: usize) -> Connectivity {
         assert!(self.first <= i && i <= self.last);
         assert!(self.first <= j && j <= self.last);

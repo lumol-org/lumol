@@ -11,7 +11,7 @@ use super::VelocityVerlet;
 pub struct MolecularDynamics {
     /// The integrator we should use to propagate the equations of motion.
     integrator: Box<Integrator>,
-    /// Optional thermostating algorithm
+    /// Optional thermostat algorithm
     thermostat: Option<Box<Thermostat>>,
     /// Control algorithms in the simulation.
     controls: Vec<Box<Control>>,

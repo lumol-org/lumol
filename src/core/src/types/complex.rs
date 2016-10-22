@@ -10,7 +10,7 @@ use types::{Zero, One};
 #[derive(Debug, Clone, Copy, PartialEq, Default)]
 /// Complex number, with double precision real and imaginary parts.
 ///
-/// `Complex` implements all the usual arithmetics operations:
+/// `Complex` implements all the usual arithmetic operations:
 ///
 /// ```
 /// # use lumol::types::Complex;
@@ -60,7 +60,7 @@ impl Complex {
         }
     }
 
-    /// Create a complex from cartesian coordinates
+    /// Create a complex from Cartesian coordinates
     /// # Examples
     /// ```
     /// # use lumol::types::Complex;
@@ -76,7 +76,6 @@ impl Complex {
     }
 
     /// Get the real part of the complex
-    /// Create a complex from cartesian coordinates
     /// # Examples
     /// ```
     /// # use lumol::types::Complex;

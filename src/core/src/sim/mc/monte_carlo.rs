@@ -16,7 +16,7 @@ pub struct MonteCarlo {
     beta: f64,
     /// List of possible Monte-Carlo moves
     moves: Vec<Box<MCMove>>,
-    /// Cummulative frequencies of the Monte-Carlo moves
+    /// Cumulative frequencies of the Monte-Carlo moves
     frequencies: Vec<f64>,
     /// Random number generator for the simulation. All random state will be
     /// taken from this.
@@ -24,7 +24,7 @@ pub struct MonteCarlo {
     /// Cache for faster energy computation
     cache: EnergyCache,
     /// Flag checking if the moves frequencies has been converted to
-    /// cummulative frequencies or not yet.
+    /// cumulative frequencies or not yet.
     initialized: bool,
 }
 
@@ -99,7 +99,7 @@ impl MonteCarlo {
         for frequency in &mut self.frequencies {
             *frequency /= sum;
         }
-        // Make the frequencies vector contain cummulative frequencies
+        // Make the frequencies vector contain cumulative frequencies
         for i in 1..self.frequencies.len() {
             self.frequencies[i] += self.frequencies[i - 1];
         }

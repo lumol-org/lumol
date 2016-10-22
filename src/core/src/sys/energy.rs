@@ -14,7 +14,7 @@ pub struct EnergyEvaluator<'a> {
 }
 
 impl<'a> EnergyEvaluator<'a> {
-    /// Create a new energy evaluator acting on the given `system`.
+    /// Create a new `EnergyEvaluator` acting on the given `system`.
     pub fn new(system: &'a System) -> EnergyEvaluator<'a> {
         EnergyEvaluator {
             system: system,

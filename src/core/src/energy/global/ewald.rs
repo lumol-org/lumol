@@ -18,10 +18,10 @@ use super::{GlobalPotential, CoulombicPotential, GlobalCache};
 /// The Ewald summation is based on a separation of the coulombic potential `U`
 /// in two parts, using the trivial identity: $$U(x) = U(x) * (f(x) + 1)  -
 /// U(x) * f(x)$$ where `f(x)` is the `erf` function. This leads to a separation
-/// of the conditionally convergent coulombic sum into two absolutly convergent
+/// of the conditionally convergent coulombic sum into two absolutely convergent
 /// sums: one in real space, and the other in Fourier or k-space.
 ///
-/// For more informations about this algorithm see [FS2002].
+/// For more information about this algorithm see [FS2002].
 ///
 /// [FS2002] Frenkel, D. & Smit, B. Understanding molecular simulation. (Academic press, 2002).
 #[derive(Clone, Debug)]
@@ -45,7 +45,7 @@ pub struct Ewald {
     /// Fourier transform of the electrostatic density modifications, cached
     /// allocation and for updating `self.rho`
     delta_rho: Array3<Complex>,
-    /// Guard for cache invalidation of expfactors
+    /// Guard for cache invalidation of `expfactors`
     previous_cell: Option<UnitCell>,
 }
 
@@ -102,8 +102,8 @@ impl Ewald {
             warn!("The Ewald cutoff is too high for this unit cell, energy might be wrong.");
         }
 
-        // Now, we precompute the exp(-k^2/4a^2)/k^2 terms. We use the symmetry to
-        // only store (ikx >= 0 && iky >= 0  && ikz >= 0 ) terms
+        // Now, we precompute the exp(-k^2/4a^2)/k^2 terms. We use the symmetry
+        // to only store (ikx >= 0 && iky >= 0  && ikz >= 0 ) terms
         let (rec_vx, rec_vy, rec_vz) = cell.reciprocal_vectors();
         for ikx in 0..self.kmax {
             let kx = (ikx as f64) * rec_vx;
@@ -130,7 +130,7 @@ impl Ewald {
 /// Real space part of the summation
 impl Ewald {
     /// Get the real-space energy for one pair at distance `r` with charges `qi`
-    /// and `qj` ; and with restriction informations for this pair in `info`.
+    /// and `qj` ; and with restriction information for this pair in `info`.
     #[inline]
     fn real_space_energy_pair(&self, info: RestrictionInfo, qi: f64, qj: f64, r: f64) -> f64 {
         if r > self.rc || info.excluded {
@@ -141,7 +141,7 @@ impl Ewald {
     }
 
     /// Get the real-space force for one pair at distance `rij` with charges
-    /// `qi` and `qj` ; and with restriction informations for this pair in
+    /// `qi` and `qj` ; and with restriction information for this pair in
     /// `info`.
     #[inline]
     fn real_space_force_pair(&self, info: RestrictionInfo, qi: f64, qj: f64, rij: &Vector3D) -> Vector3D {
@@ -261,7 +261,7 @@ impl Ewald {
     }
 }
 
-/// Self-interaction corection
+/// Self-interaction correction
 impl Ewald {
     /// Self-interaction contribution to the energy
     fn self_energy(&self, system: &System) -> f64 {
@@ -321,7 +321,7 @@ impl Ewald {
             for iky in 0..self.kmax {
                 for ikz in 0..self.kmax {
                     // The k = 0 case and the cutoff in k-space are already
-                    // handled in expfactors
+                    // handled in `expfactors`
                     if self.expfactors[(ikx, iky, ikz)].abs() < f64::MIN {continue}
                     let density = self.rho[(ikx, iky, ikz)].norm();
                     energy += self.expfactors[(ikx, iky, ikz)] * density * density;
@@ -343,8 +343,8 @@ impl Ewald {
         for ikx in 0..self.kmax {
             for iky in 0..self.kmax {
                 for ikz in 0..self.kmax {
-                    // The k = 0 and the cutoff in k-space are already handled in
-                    // expfactors.
+                    // The k = 0 and the cutoff in k-space are already handled
+                    // in `expfactors`.
                     if self.expfactors[(ikx, iky, ikz)].abs() < f64::MIN {continue}
                     let k = (ikx as f64) * rec_kx + (iky as f64) * rec_ky + (ikz as f64) * rec_kz;
                     for i in 0..system.size() {
@@ -389,8 +389,8 @@ impl Ewald {
         for ikx in 0..self.kmax {
             for iky in 0..self.kmax {
                 for ikz in 0..self.kmax {
-                    // The k = 0 and the cutoff in k-space are already handled in
-                    // expfactors.
+                    // The k = 0 and the cutoff in k-space are already handled
+                    // in `expfactors`.
                     if self.expfactors[(ikx, iky, ikz)].abs() < f64::MIN {continue}
                     let k = (ikx as f64) * rec_kx + (iky as f64) * rec_ky + (ikz as f64) * rec_kz;
                     for i in 0..system.size() {
@@ -465,7 +465,7 @@ impl Ewald {
             for iky in 0..self.kmax {
                 for ikz in 0..self.kmax {
                     // The k = 0 case and the cutoff in k-space are already
-                    // handled in expfactors
+                    // handled in `expfactors`.
                     if self.expfactors[(ikx, iky, ikz)].abs() < f64::MIN {continue}
                     let rho = self.rho[(ikx, iky, ikz)] + self.delta_rho[(ikx, iky, ikz)];
                     let density = rho.norm();
@@ -482,7 +482,7 @@ impl Ewald {
 /// Molecular correction for Ewald summation
 impl Ewald {
     /// Get the molecular correction energy for the pair with charges `qi` and
-    /// `qj`, at distance `rij` and with restriction informations in `info`.
+    /// `qj`, at distance `rij` and with restriction information in `info`.
     #[inline]
     fn molcorrect_energy_pair(&self, info: RestrictionInfo, qi: f64, qj: f64, r: f64) -> f64 {
         assert!(info.excluded, "Can not compute molecular correction for non-excluded pair");
@@ -493,7 +493,7 @@ impl Ewald {
     }
 
     /// Get the molecular correction force for the pair with charges `qi` and
-    /// `qj`, at distance `rij` and with restriction informations in `info`.
+    /// `qj`, at distance `rij` and with restriction information in `info`.
     #[inline]
     fn molcorrect_force_pair(&self, info: RestrictionInfo, qi: f64, qj: f64, rij: &Vector3D) -> Vector3D {
         assert!(info.excluded, "Can not compute molecular correction for non-excluded pair");
