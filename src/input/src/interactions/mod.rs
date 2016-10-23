@@ -99,7 +99,7 @@ fn read_restriction(config: &Table) -> Result<Option<PairRestriction>> {
             let scale = try!(restriction["scale14"].as_float().ok_or(
                 Error::from("'scale14' parameter must be a float")
             ));
-            Ok(Some(PairRestriction::Scale14{scaling: scale}))
+            Ok(Some(PairRestriction::Scale14(scale)))
         }
         _ => Err(Error::from("Restriction must be a table or a string"))
     }

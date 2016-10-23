@@ -29,11 +29,12 @@ impl Compute for Forces {
 
         for i in 0..system.size() {
             for j in (i+1)..system.size() {
+                let distance = system.bond_distance(i, j);
                 let d = system.nearest_image(i, j);
                 let dn = d.normalized();
                 let r = d.norm();
                 for potential in system.pair_potentials(i, j) {
-                    let info = potential.restriction().informations(system, i, j);
+                    let info = potential.restriction().information(distance);
                     if !info.excluded {
                         let force = info.scaling * potential.force(r) * dn;
                         res[i] += force;
@@ -179,8 +180,9 @@ impl Compute for Virial {
         let mut res = Matrix3::zero();
         for i in 0..system.size() {
             for j in (i+1)..system.size() {
+                let distance = system.bond_distance(i, j);
                 for potential in system.pair_potentials(i, j) {
-                    let info = potential.restriction().informations(system, i, j);
+                    let info = potential.restriction().information(distance);
                     if !info.excluded {
                         let d = system.nearest_image(i, j);
                         res += info.scaling * potential.virial(&d);

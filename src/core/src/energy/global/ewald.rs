@@ -166,8 +166,10 @@ impl Ewald {
                 let qj = system[j].charge;
                 if qj == 0.0 {continue}
 
+                let distance = system.bond_distance(i, j);
+                let info = self.restriction.information(distance);
+
                 let r = system.distance(i, j);
-                let info = self.restriction.informations(system, i, j);
                 energy += self.real_space_energy_pair(info, qi, qj, r);
             }
         }
@@ -186,9 +188,10 @@ impl Ewald {
                 let qj = system[j].charge;
                 if qj == 0.0 {continue}
 
-                let rij = system.nearest_image(i, j);
-                let info = self.restriction.informations(system, i, j);
+                let distance = system.bond_distance(i, j);
+                let info = self.restriction.information(distance);
 
+                let rij = system.nearest_image(i, j);
                 let force = self.real_space_force_pair(info, qi, qj, &rij);
                 res[i] += force;
                 res[j] -= force;
@@ -207,9 +210,10 @@ impl Ewald {
                 let qj = system[j].charge;
                 if qj == 0.0 {continue}
 
-                let rij = system.nearest_image(i, j);
-                let info = self.restriction.informations(system, i, j);
+                let distance = system.bond_distance(i, j);
+                let info = self.restriction.information(distance);
 
+                let rij = system.nearest_image(i, j);
                 let force = self.real_space_force_pair(info, qi, qj, &rij);
                 res -= force.tensorial(&rij);
             }
@@ -232,7 +236,9 @@ impl Ewald {
 
                 let r_old = system.distance(i, j);
                 let r_new = system.cell().distance(&newpos[idx], &system[j].position);
-                let info = self.restriction.informations(system, i, j);
+
+                let distance = system.bond_distance(i, j);
+                let info = self.restriction.information(distance);
 
                 e_old += self.real_space_energy_pair(info, qi, qj, r_old);
                 e_new += self.real_space_energy_pair(info, qi, qj, r_new);
@@ -250,7 +256,8 @@ impl Ewald {
                 let r_old = system.distance(i, j);
                 let r_new = system.cell().distance(&newpos[idx], &newpos[jdx]);
 
-                let info = self.restriction.informations(system, i, j);
+                let distance = system.bond_distance(i, j);
+                let info = self.restriction.information(distance);
 
                 e_old += self.real_space_energy_pair(info, qi, qj, r_old);
                 e_new += self.real_space_energy_pair(info, qi, qj, r_new);
@@ -520,7 +527,8 @@ impl Ewald {
             for j in 0..natoms {
                 if i == j {continue}
                 // Only account for excluded pairs
-                let info = self.restriction.informations(system, i, j);
+                let distance = system.bond_distance(i, j);
+                let info = self.restriction.information(distance);
                 if !info.excluded {continue}
 
                 let qj = system[j].charge;
@@ -543,7 +551,8 @@ impl Ewald {
             if qi == 0.0 {continue}
             for j in 0..natoms {
                 if i == j {continue}
-                let info = self.restriction.informations(system, i, j);
+                let distance = system.bond_distance(i, j);
+                let info = self.restriction.information(distance);
                 // Only account for excluded pairs
                 if !info.excluded {continue}
 
@@ -567,7 +576,8 @@ impl Ewald {
             if qi == 0.0 {continue}
             for j in 0..natoms {
                 if i == j {continue}
-                let info = self.restriction.informations(system, i, j);
+                let distance = system.bond_distance(i, j);
+                let info = self.restriction.information(distance);
                 // Only account for excluded pairs
                 if !info.excluded {continue}
 
@@ -595,7 +605,8 @@ impl Ewald {
                 let qj = system[j].charge;
                 if qi == 0.0 {continue}
 
-                let info = self.restriction.informations(system, i, j);
+                let distance = system.bond_distance(i, j);
+                let info = self.restriction.information(distance);
                 if !info.excluded {continue}
 
                 let r_old = system.distance(i, j);
@@ -614,7 +625,8 @@ impl Ewald {
                 let qj = system[j].charge;
                 if qj == 0.0 {continue}
 
-                let info = self.restriction.informations(system, i, j);
+                let distance = system.bond_distance(i, j);
+                let info = self.restriction.information(distance);
                 if !info.excluded {continue}
 
                 let r_old = system.distance(i, j);

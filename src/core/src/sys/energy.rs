@@ -27,9 +27,10 @@ impl<'a> EnergyEvaluator<'a> {
     /// distance `r`
     #[inline]
     pub fn pair(&self, r: f64, i: usize, j: usize) -> f64 {
+        let distance = self.system.bond_distance(i, j);
         let mut energy = 0.0;
         for potential in self.system.pair_potentials(i, j) {
-            let info = potential.restriction().informations(self.system, i, j);
+            let info = potential.restriction().information(distance);
             if !info.excluded {
                 energy += info.scaling * potential.energy(r);
             }

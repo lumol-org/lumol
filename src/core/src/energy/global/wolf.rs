@@ -94,7 +94,9 @@ impl GlobalCache for Wolf {
 
                 let r_old = system.cell().distance(&system[i].position, &system[j].position);
                 let r_new = system.cell().distance(&newpos[idx], &system[j].position);
-                let info = self.restriction.informations(system, i, j);
+
+                let distance = system.bond_distance(i, j);
+                let info = self.restriction.information(distance);
 
                 e_old += self.energy_pair(info, qi, qj, r_old);
                 e_new += self.energy_pair(info, qi, qj, r_new);
@@ -111,7 +113,9 @@ impl GlobalCache for Wolf {
 
                 let r_old = system.distance(i, j);
                 let r_new = system.cell().distance(&newpos[idx], &newpos[jdx]);
-                let info = self.restriction.informations(system, i, j);
+
+                let distance = system.bond_distance(i, j);
+                let info = self.restriction.information(distance);
 
                 e_old += self.energy_pair(info, qi, qj, r_old);
                 e_new += self.energy_pair(info, qi, qj, r_new);
@@ -137,7 +141,9 @@ impl GlobalPotential for Wolf {
                 let qj = system[j].charge;
                 if qj == 0.0 {continue}
 
-                let info = self.restriction.informations(system, i, j);
+                let distance = system.bond_distance(i, j);
+                let info = self.restriction.information(distance);
+
                 let rij = system.distance(i, j);
                 res += self.energy_pair(info, qi, qj, rij);
             }
@@ -157,7 +163,9 @@ impl GlobalPotential for Wolf {
                 let qj = system[j].charge;
                 if qj == 0.0 {continue}
 
-                let info = self.restriction.informations(system, i, j);
+                let distance = system.bond_distance(i, j);
+                let info = self.restriction.information(distance);
+
                 let rij = system.nearest_image(i, j);
                 let force = self.force_pair(info, qi, qj, rij);
                 res[i] += force;
@@ -177,7 +185,9 @@ impl GlobalPotential for Wolf {
                 let qj = system[j].charge;
                 if qj == 0.0 {continue}
 
-                let info = self.restriction.informations(system, i, j);
+                let distance = system.bond_distance(i, j);
+                let info = self.restriction.information(distance);
+
                 let rij = system.nearest_image(i, j);
                 let force = self.force_pair(info, qi, qj, rij);
                 res += force.tensorial(&rij);
