@@ -5,43 +5,66 @@
 
 /// Possible restrictions on the pair interactions.
 ///
-/// In some force fields, some interactions are restricted to a subset of the
+/// In some force fields, interactions are restricted to a subset of the
 /// possible pairs. For example, we may want to have Lennard-Jones interactions
 /// between atoms in different molecules only, or scale the coulombic
 /// interactions if the particles are at 1-4 distance.
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum PairRestriction {
-    /// No pair should be excluded
+    /// No pair should be excluded.
     None,
-    /// Only apply the interaction to intra-molecular pairs
+    /// Only apply the interaction to intra-molecular pairs.
     IntraMolecular,
-    /// Only apply the interaction to inter-molecular pairs
+    /// Only apply the interaction to inter-molecular pairs.
     InterMolecular,
     /// Only apply the interaction to pairs which are not in 1-2 position
+    /// (separated by one bond).
     Exclude12,
     /// Only apply the interaction to pairs which are not in 1-2 or 1-3 position
+    /// (separated by one or two bonds).
     Exclude13,
-    /// Only apply the interaction to pairs which are not in 1-2, 1-3 or 1-4 position
+    /// Only apply the interaction to pairs which are not in 1-2, 1-3 or 1-4
+    /// position (separated by one, two or three bonds).
     Exclude14,
-    /// Only apply the interaction to pairs which are not in 1-2 or 1-3 position,
-    /// and scale the interaction for pairs in 1-4 position
+    /// Only apply the interaction to pairs which are not in 1-2 or 1-3
+    /// position, and scale the interaction for pairs in 1-4 position (separated
+    /// by three bonds).
     Scale14(f64)
 }
 
-/// Restriction information attached to a pair of Particles in a System
+/// Restriction information attached to a pair of `Particles` in a `System`.
 #[derive(Clone, Copy, Debug)]
 pub struct RestrictionInfo {
-    /// Is this pair excluded
+    /// Is this pair excluded?
     pub excluded: bool,
-    /// Scaling for this restrictions
+    /// Scaling factor for the potential. This value is contained between 0 and
+    /// 1.
     pub scaling: f64
 }
 
 impl PairRestriction {
-    /// Get the restrictions information at the given [bond
-    /// `distance`][distance].
+    /// Get the restriction at the given [bond `distance`][distance].
     ///
     /// [distance]: ../sys/struct.System.html#method.bond_distance
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use lumol::energy::PairRestriction;
+    /// let restriction = PairRestriction::None;
+    /// assert_eq!(restriction.information(3).excluded, false);
+    /// assert_eq!(restriction.information(2).scaling, 1.0);
+    ///
+    /// let restriction = PairRestriction::Exclude13;
+    /// assert_eq!(restriction.information(2).excluded, true);
+    /// assert_eq!(restriction.information(3).excluded, false);
+    ///
+    /// let restriction = PairRestriction::Scale14(0.5);
+    /// assert_eq!(restriction.information(2).excluded, true);
+    /// assert_eq!(restriction.information(3).excluded, false);
+    /// assert_eq!(restriction.information(3).scaling, 0.5);
+    /// assert_eq!(restriction.information(4).scaling, 1.0);
+    /// ```
     pub fn information(&self, distance: i8) -> RestrictionInfo {
         let are_in_same_molecule = distance >= 0;
         let excluded = match *self {
