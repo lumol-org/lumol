@@ -15,8 +15,8 @@
 /// ```
 macro_rules! impl_box_clone {
     ($Trait: ident, $BoxClone: ident, $box_clone: ident) => (
-        /// This is an internal implementation detail for cloning Box<Trait>,
-        /// where Trait is used as a trait object.
+        #[doc(hidden)]
+        /// This is an internal implementation detail for cloning `Box<Trait>`
         pub trait $BoxClone {
             /// Get a cloned of self as a boxed trait.
             fn $box_clone(&self) -> Box<$Trait>;

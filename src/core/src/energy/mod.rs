@@ -3,26 +3,24 @@
 
 //! Interaction potentials for energy and forces computations
 //!
-//! # Potential functions
+//! # Potentials
 //!
-//! A potential function is defined as a parametric function giving the energy
-//! and the force acting on a specific particle. These function are represented
-//! by the [`Potential`][Potential] trait, and allow to compute
-//! the energy or force norm corresponding to a scalar variable. This scalar
-//! variable will be the distance for non-bonded pair interactions; the angle
-//! for covalent angles interactions, *etc.*
+//! In classical simulations, the total energy of a system is separated as a
+//! sum containing terms from the non-bonded pairs, the bonds, the angles, the
+//! dihedral angles in the system; and the electrostatic interactions.
 //!
-//! Additional marker traits are used to specify whether a given potential can
-//! be used for a specific interaction type. These marker traits are:
+//! Potentials are used to compute the interaction energy in a system. They are
+//! represented by a [`Potential`][Potential] trait, used to compute the force
+//! and the energy of interaction. In order to add a new potential to lumol,
+//! one has to implement the Potential trait, and then indicate how the
+//! potential can be used. This is done by implementing one or more of the
+//! potentials marker traits:
 //!
-//! - [`PairPotential`][PairPotential] for bonded and non-bonded two body
-//!   interactions;
+//! - [`PairPotential`][PairPotential] for non-bonded two body interactions;
+//! - [`BondPotential`][BondPotential] for covalent bonds interactions;
 //! - [`AnglePotential`][AnglePotential] for covalent angles interactions;
 //! - [`DihedralPotential`][DihedralPotential] for covalent dihedral angles
 //!   interactions.
-//!
-//! To be able to use a specific potential in one of these contexts, the only
-//! thing to do is to implement the corresponding trait.
 //!
 //! ```
 //! use lumol::energy::{Potential, PairPotential, DihedralPotential};
@@ -30,39 +28,69 @@
 //! #[derive(Clone)]
 //! struct OnePotential;
 //!
-//! // OnePotential is a potential function
+//! // OnePotential is a potential
 //! impl Potential for OnePotential {
 //!     fn energy(&self, _: f64) -> f64 {1.0}
 //!     fn force(&self, _: f64) -> f64 {0.0}
 //! }
 //!
-//! // It can be used for pair and dihedral potentials, but not for angles
+//! // It can be used for pair and dihedral potentials, but not for angles or
+//! // bonds.
 //! impl PairPotential for OnePotential {}
 //! impl DihedralPotential for OnePotential {}
 //! ```
 //!
-//! # Global potentials
+//! # Global and Coulombic potentials
 //!
 //! Global potentials are potentials that have an effect on the whole system at
-//! once. They are defined by implementing the [`GlobalPotential`][GlobalPotential]
-//! trait and giving methods for energy, forces and virial contributions.
-//!
-//! [`CoulombicPotential`][CoulombicPotential] are a specific version of global
-//! potentials, that are used to compute charges-charges interactions.
+//! once. They are defined by implementing the [`GlobalPotential`]
+//! [GlobalPotential] trait. [`CoulombicPotential`][CoulombicPotential] are a
+//! specific version of global potentials used to compute electrostatic
+//! interactions.
 //!
 //! [Potential]: trait.Potential.html
 //! [PairPotential]: trait.PairPotential.html
+//! [BondPotential]: trait.BondPotential.html
 //! [AnglePotential]: trait.AnglePotential.html
 //! [DihedralPotential]: trait.DihedralPotential.html
 //! [GlobalPotential]: trait.GlobalPotential.html
 //! [CoulombicPotential]: trait.CoulombicPotential.html
 use types::{Matrix3, Vector3D};
 
-/// A set of two parametric functions which takes a single scalar variable and
-/// return the corresponding energy or norm of the force.
+/// A potential for force and energy computations.
 ///
-/// The scalar variable will be the distance for pair potentials, the angle for
+/// A potential is defined with two functions that takes a single scalar
+/// variable and return the corresponding energy or norm of the force. The
+/// scalar variable will be the distance for pair potentials, the angle for
 /// angles or dihedral angles potentials, *etc.*
+///
+/// # Example
+///
+/// ```
+/// # use std::f64;
+/// use lumol::energy::Potential;
+///
+/// /// An hard sphere potential
+/// #[derive(Clone)]
+/// struct HardSphere {
+///     /// Sphere radius
+///     pub r: f64
+/// }
+///
+/// impl Potential for HardSphere {
+///     fn energy(&self, x: f64) -> f64 {
+///         if x < self.r {
+///             f64::INFINITY
+///         } else {
+///             0.0
+///         }
+///     }
+///
+///     fn force(&self, x: f64) -> f64 {
+///         0.0
+///     }
+/// }
+/// ```
 pub trait Potential : Sync + Send {
     /// Get the energy corresponding to the variable `x`
     fn energy(&self, x: f64) -> f64;
@@ -70,10 +98,29 @@ pub trait Potential : Sync + Send {
     fn force(&self, x: f64) -> f64;
 }
 
-/// Potential that can be used for non-bonded two body interactions
+/// Marker trait for potentials that can be used for non-bonded two body
+/// interactions.
+///
+/// # Example
+///
+/// ```
+/// use lumol::energy::{Potential, PairPotential};
+///
+/// // A no-op potential
+/// #[derive(Clone)]
+/// struct Null;
+///
+/// impl Potential for Null {
+///     fn energy(&self, x: f64) -> f64 {0.0}
+///     fn force(&self, x: f64) -> f64 {0.0}
+/// }
+///
+/// // Now we can use the Null potential for pair interactions
+/// impl PairPotential for Null {}
+/// ```
 pub trait PairPotential : Potential + BoxClonePair {
     /// Compute the virial contribution corresponding to the distance `r`
-    /// between the particles
+    /// between the particles.
     fn virial(&self, r: &Vector3D) -> Matrix3 {
         let fact = self.force(r.norm());
         let rn = r.normalized();
@@ -83,10 +130,28 @@ pub trait PairPotential : Potential + BoxClonePair {
 }
 impl_box_clone!(PairPotential, BoxClonePair, box_clone_pair);
 
-/// Potential that can be used for molecular bonds
+/// Marker trait for potentials that can be used for molecular bonds.
+///
+/// # Example
+///
+/// ```
+/// use lumol::energy::{Potential, BondPotential};
+///
+/// // A no-op potential
+/// #[derive(Clone)]
+/// struct Null;
+///
+/// impl Potential for Null {
+///     fn energy(&self, x: f64) -> f64 {0.0}
+///     fn force(&self, x: f64) -> f64 {0.0}
+/// }
+///
+/// // Now we can use the Null potential for bonds
+/// impl BondPotential for Null {}
+/// ```
 pub trait BondPotential : Potential + BoxCloneBond {
     /// Compute the virial contribution corresponding to the distance `r`
-    /// between the particles
+    /// between the particles.
     fn virial(&self, r: &Vector3D) -> Matrix3 {
         let fact = self.force(r.norm());
         let rn = r.normalized();
@@ -96,11 +161,47 @@ pub trait BondPotential : Potential + BoxCloneBond {
 }
 impl_box_clone!(BondPotential, BoxCloneBond, box_clone_bond);
 
-/// Potential that can be used for molecular angles.
+/// Marker trait for potentials that can be used for molecular angles.
+///
+/// # Example
+///
+/// ```
+/// use lumol::energy::{Potential, AnglePotential};
+///
+/// // A no-op potential
+/// #[derive(Clone)]
+/// struct Null;
+///
+/// impl Potential for Null {
+///     fn energy(&self, x: f64) -> f64 {0.0}
+///     fn force(&self, x: f64) -> f64 {0.0}
+/// }
+///
+/// // Now we can use the Null potential for angles
+/// impl AnglePotential for Null {}
+/// ```
 pub trait AnglePotential : Potential + BoxCloneAngle {}
 impl_box_clone!(AnglePotential, BoxCloneAngle, box_clone_angle);
 
-/// Potential that can be used for molecular dihedral angles.
+/// Marker trait for potentials that can be used for molecular dihedral angles.
+///
+/// # Example
+///
+/// ```
+/// use lumol::energy::{Potential, DihedralPotential};
+///
+/// // A no-op potential
+/// #[derive(Clone)]
+/// struct Null;
+///
+/// impl Potential for Null {
+///     fn energy(&self, x: f64) -> f64 {0.0}
+///     fn force(&self, x: f64) -> f64 {0.0}
+/// }
+///
+/// // Now we can use the Null potential for dihedral angles
+/// impl DihedralPotential for Null {}
+/// ```
 pub trait DihedralPotential : Potential + BoxCloneDihedral {}
 impl_box_clone!(DihedralPotential, BoxCloneDihedral, box_clone_dihedral);
 
