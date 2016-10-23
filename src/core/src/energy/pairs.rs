@@ -12,12 +12,15 @@ enum PairComputation {
     Shifted(f64),
 }
 
-/// A non-bonded interaction between two particle. The potential `T` is
-/// associated with a [pair restriction][PairRestriction]. For all non-bonded
-/// pairs, the potential is computed up to a cutoff distance. An additional
-/// shifting of the potential can be used in molecular dynamics, to ensure that
-/// the energy is continuous at the cutoff distance.
+/// A non-bonded interaction between two particle.
 ///
+/// This is a thin wrapper around a [`Box<PairPotential>`][PairPotential]
+/// associated with a [pair restriction][PairRestriction]. It ensure that the
+/// potential is computed up to a cutoff distance. An additional shifting of the
+/// potential can be used in molecular dynamics, to ensure that the energy is
+/// continuous at the cutoff distance.
+///
+/// [PairPotential]: trait.PairPotential.html
 /// [PairRestriction]: enum.PairRestriction.html
 #[derive(Clone)]
 pub struct PairInteraction {
@@ -32,7 +35,22 @@ pub struct PairInteraction {
 }
 
 impl PairInteraction {
-    /// Create a new `PairInteraction` with the given cutoff
+    /// Create a new `PairInteraction` for the given `potential` and using the
+    /// given `cutoff` distance.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use lumol::energy::{Potential, PairInteraction};
+    /// use lumol::energy::Harmonic;
+    ///
+    /// let potential = Box::new(Harmonic{x0: 0.5, k: 4.2});
+    /// let interaction = PairInteraction::new(potential, 2.0);
+    ///
+    /// assert_eq!(interaction.energy(1.0), 0.525);
+    /// // energy at and after the cutoff is zero
+    /// assert_eq!(interaction.energy(2.0), 0.0);
+    /// ```
     pub fn new(potential: Box<PairPotential>, cutoff: f64) -> PairInteraction {
         PairInteraction {
             potential: potential,
@@ -42,8 +60,25 @@ impl PairInteraction {
         }
     }
 
-    /// Create a new `PairInteraction` with the given cutoff, using shifted
+    /// Create a new `PairInteraction` with the given `cutoff`, using shifted
     /// computation of the energy.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use lumol::energy::{Potential, PairInteraction};
+    /// use lumol::energy::Harmonic;
+    ///
+    /// let potential = Box::new(Harmonic{x0: 0.5, k: 4.2});
+    /// let interaction = PairInteraction::shifted(potential, 2.0);
+    ///
+    /// assert_eq!(interaction.energy(1.0), -4.2);
+    ///
+    /// // energy goes smoothly to zero at the cutoff
+    /// assert!(interaction.energy(1.999).abs() < 0.01);
+    /// // energy after the cutoff is zero
+    /// assert_eq!(interaction.energy(2.0), 0.0);
+    /// ```
     pub fn shifted(potential: Box<PairPotential>, cutoff: f64) -> PairInteraction {
         let shift = potential.energy(cutoff);
         PairInteraction {
@@ -54,12 +89,35 @@ impl PairInteraction {
         }
     }
 
-    /// Get the associated pair restriction
+    /// Get the associated pair restriction. The default is to have no pair
+    /// restriction.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use lumol::energy::PairInteraction;
+    /// use lumol::energy::{NullPotential, PairRestriction};
+    /// let interaction = PairInteraction::new(Box::new(NullPotential), 2.0);
+    ///
+    /// assert_eq!(interaction.restriction(), PairRestriction::None);
+    /// ```
     pub fn restriction(&self) -> PairRestriction {
         self.restriction
     }
 
-    /// Set the restriction associated with this potential
+    /// Set the pair restriction associated with this interaction.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use lumol::energy::PairInteraction;
+    /// use lumol::energy::{NullPotential, PairRestriction};
+    /// let mut interaction = PairInteraction::new(Box::new(NullPotential), 2.0);
+    ///
+    /// assert_eq!(interaction.restriction(), PairRestriction::None);
+    /// interaction.set_restriction(PairRestriction::Exclude12);
+    /// assert_eq!(interaction.restriction(), PairRestriction::Exclude12);
+    /// ```
     pub fn set_restriction(&mut self, restriction: PairRestriction) {
         self.restriction = restriction;
     }
