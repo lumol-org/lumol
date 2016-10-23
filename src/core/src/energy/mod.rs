@@ -63,18 +63,15 @@ use types::{Matrix3, Vector3D};
 ///
 /// The scalar variable will be the distance for pair potentials, the angle for
 /// angles or dihedral angles potentials, *etc.*
-pub trait Potential : Sync + Send + BoxClonePotential {
+pub trait Potential : Sync + Send {
     /// Get the energy corresponding to the variable `x`
     fn energy(&self, x: f64) -> f64;
     /// Get the force norm corresponding to the variable `x`
     fn force(&self, x: f64) -> f64;
 }
 
-impl_box_clone!(Potential, BoxClonePotential, box_clone_potential);
-
-/// Computation of virial contribution for a potential. The provided function
-/// only apply to two-body virial contributions.
-pub trait Virial: Potential {
+/// Potential that can be used for non-bonded two body interactions
+pub trait PairPotential : Potential + BoxClonePair {
     /// Compute the virial contribution corresponding to the distance `r`
     /// between the particles
     fn virial(&self, r: &Vector3D) -> Matrix3 {
@@ -84,15 +81,19 @@ pub trait Virial: Potential {
         force.tensorial(r)
     }
 }
-
-impl<T: Potential> Virial for T {}
-
-/// Potential that can be used for non-bonded two body interactions
-pub trait PairPotential : Virial + BoxClonePair {}
 impl_box_clone!(PairPotential, BoxClonePair, box_clone_pair);
 
 /// Potential that can be used for molecular bonds
-pub trait BondPotential : Virial + BoxCloneBond {}
+pub trait BondPotential : Potential + BoxCloneBond {
+    /// Compute the virial contribution corresponding to the distance `r`
+    /// between the particles
+    fn virial(&self, r: &Vector3D) -> Matrix3 {
+        let fact = self.force(r.norm());
+        let rn = r.normalized();
+        let force = fact * rn;
+        force.tensorial(r)
+    }
+}
 impl_box_clone!(BondPotential, BoxCloneBond, box_clone_bond);
 
 /// Potential that can be used for molecular angles.

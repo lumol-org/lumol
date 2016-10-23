@@ -5,7 +5,7 @@
 use consts::K_BOLTZMANN;
 use types::{Matrix3, Vector3D, Zero, One};
 use sys::System;
-use energy::{Potential, Virial as VirialTrait};
+use energy::{Potential, PairPotential};
 
 /// The compute trait allow to compute properties of a system, without
 /// modifying this system. The Output type is the type of the computed

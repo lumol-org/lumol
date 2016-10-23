@@ -87,6 +87,8 @@ impl Potential for PairInteraction {
     }
 }
 
+impl PairPotential for PairInteraction {}
+
 #[cfg(test)]
 mod tests {
     use super::*;
