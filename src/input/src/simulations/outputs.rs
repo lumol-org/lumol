@@ -1,6 +1,7 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) 2015-2016 G. Fraux — BSD license
 use toml::Table;
+use std::path::PathBuf;
 
 use lumol::simulation::Output;
 use lumol::simulation::{TrajectoryOutput, CellOutput, EnergyOutput, PropertiesOutput};
@@ -78,7 +79,7 @@ impl FromToml for TrajectoryOutput {
 impl FromToml for CellOutput {
     fn from_toml(config: &Table) -> Result<CellOutput> {
         let path = try!(get_file(config));
-        let output = try!(CellOutput::new(path));
+        let output = try_io!(CellOutput::new(path), PathBuf::from(path));
         Ok(output)
     }
 }
@@ -86,7 +87,7 @@ impl FromToml for CellOutput {
 impl FromToml for EnergyOutput {
     fn from_toml(config: &Table) -> Result<EnergyOutput> {
         let path = try!(get_file(config));
-        let output = try!(EnergyOutput::new(path));
+        let output = try_io!(EnergyOutput::new(path), PathBuf::from(path));
         Ok(output)
     }
 }
@@ -94,7 +95,7 @@ impl FromToml for EnergyOutput {
 impl FromToml for PropertiesOutput {
     fn from_toml(config: &Table) -> Result<PropertiesOutput> {
         let path = try!(get_file(config));
-        let output = try!(PropertiesOutput::new(path));
+        let output = try_io!(PropertiesOutput::new(path), PathBuf::from(path));
         Ok(output)
     }
 }

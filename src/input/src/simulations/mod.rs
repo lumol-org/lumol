@@ -42,10 +42,11 @@ pub struct Input {
 
 impl Input {
     /// Read the file at `Path` and create a new `Input` from it.
-    pub fn new<P: AsRef<Path>>(path: P) -> Result<Input> {
-        let mut file = try!(File::open(&path));
+    pub fn new<P: Into<PathBuf>>(path: P) -> Result<Input> {
+        let path = path.into();
+        let mut file = try_io!(File::open(&path), path);
         let mut buffer = String::new();
-        let _ = try!(file.read_to_string(&mut buffer));
+        let _ = try_io!(file.read_to_string(&mut buffer), path);
 
         let mut parser = Parser::new(&buffer);
         let config = try!(parser.parse().ok_or(
@@ -55,7 +56,7 @@ impl Input {
         try!(validate(&config));
 
         Ok(Input {
-            path: path.as_ref().to_path_buf(),
+            path: path,
             config: config,
         })
     }

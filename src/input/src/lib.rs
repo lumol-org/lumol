@@ -26,7 +26,7 @@
 //!
 //! This crate also provide an `InteractionsInput` for reading interactions
 //! from a TOML file. It can be used to set the interactions in a system:
-//! 
+//!
 //! ```no_run
 //! extern crate lumol;
 //! extern crate lumol_input;
@@ -68,6 +68,17 @@ extern crate chemfiles;
 extern crate lumol;
 
 use toml::Table;
+
+macro_rules! try_io {
+    ($expr: expr, $path: expr) => (
+        match $expr {
+            Ok(val) => val,
+            Err(err) => {
+                return Err(Error::from((err, $path)));
+            }
+        }
+    );
+}
 
 mod extract;
 mod error;

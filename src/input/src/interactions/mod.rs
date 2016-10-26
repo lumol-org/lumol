@@ -4,7 +4,7 @@ use toml::{Parser, Table, Value};
 
 use std::io::prelude::*;
 use std::fs::File;
-use std::path::Path;
+use std::path::PathBuf;
 
 use lumol::system::System;
 use lumol::potentials::PairRestriction;
@@ -26,10 +26,11 @@ pub struct InteractionsInput {
 
 impl InteractionsInput {
     /// Read interactions from the TOML formated file at `path`.
-    pub fn new<P: AsRef<Path>>(path: P) -> Result<InteractionsInput> {
-        let mut file = try!(File::open(&path));
+    pub fn new<P: Into<PathBuf>>(path: P) -> Result<InteractionsInput> {
+        let path = path.into();
+        let mut file = try_io!(File::open(&path), path);
         let mut buffer = String::new();
-        let _ = try!(file.read_to_string(&mut buffer));
+        let _ = try_io!(file.read_to_string(&mut buffer), path);
         return InteractionsInput::from_string(&buffer);
     }
 
