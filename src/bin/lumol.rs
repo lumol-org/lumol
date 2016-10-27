@@ -1,8 +1,13 @@
+extern crate lumol;
 extern crate lumol_input;
+
+#[macro_use]
+extern crate log;
 extern crate clap;
 
-use clap::{App, ArgMatches};
+use lumol::Logger;
 use lumol_input::Input;
+use clap::{App, ArgMatches};
 
 use std::process::exit;
 
@@ -16,11 +21,13 @@ fn parse_args<'a>() -> ArgMatches<'a> {
 
 fn main() {
     let args = parse_args();
+    // TODO: add logger specification to the input file
+    Logger::stdout();
     let input = args.value_of("input.toml").unwrap();
     let mut config = match Input::new(input).and_then(|input| input.read()) {
         Ok(config) => config,
         Err(err) => {
-            println!("Error in input file: {}", err);
+            error!("bad input file: {}", err);
             exit(2);
         }
     };

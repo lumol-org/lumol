@@ -21,5 +21,5 @@ doc = false
 [dependencies]
 lumol-input = {path = "src/input"}
 lumol-core = {path = "src/core"}
-
+log = "0.3"
 clap = "2"
