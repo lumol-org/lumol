@@ -7,17 +7,19 @@ repository = "https://github.com/lumol-org/lumol"
 readme = "README.md"
 license = "BSD"
 
-[dependencies]
-lumol-core = {path = "src/core"}
-lumol-input = {path = "src/input"}
+[workspace]
+members = [
+	"src/core",
+    "src/input"
+]
 
 [[bin]]
 name = "lumol"
 path = "src/bin/lumol.rs"
 doc = false
 
-[workspace]
-members = [
-	"src/core",
-    "src/input"
-]
+[dependencies]
+lumol-input = {path = "src/input"}
+lumol-core = {path = "src/core"}
+
+clap = "2"
