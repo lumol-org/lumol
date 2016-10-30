@@ -4,10 +4,25 @@
 use energy::Potential;
 use energy::{PairPotential, BondPotential, AnglePotential, DihedralPotential};
 
-/// The `NullPotential` always returns 0 as energy and force.
+/// No-op potential.
 ///
-/// It should be used to indicate that there is no potential interaction between
-/// two particles kinds.
+/// The `NullPotential` always returns 0 as energy and force. It should be used
+/// to indicate that there is no potential interaction for a given set of
+/// particles.
+///
+/// # Examples
+///
+/// ```
+/// use lumol::energy::Potential;
+/// use lumol::energy::NullPotential;
+///
+/// let potential = NullPotential;
+/// assert_eq!(potential.energy(0.1), 0.0);
+/// assert_eq!(potential.energy(100000.0), 0.0);
+///
+/// assert_eq!(potential.force(0.1), 0.0);
+/// assert_eq!(potential.force(100000.0), 0.0);
+/// ```
 #[derive(Clone, Copy)]
 pub struct NullPotential;
 impl Potential for NullPotential {
@@ -20,12 +35,24 @@ impl BondPotential for NullPotential {}
 impl AnglePotential for NullPotential {}
 impl DihedralPotential for NullPotential {}
 
-/******************************************************************************/
 /// Lennard-Jones potential.
 ///
-/// The following expression is used:
-/// $$ V(r) = 4 \epsilon \left[ (\sigma/r)^{12} - (\sigma/r)^{6} \right] $$
-/// where $\sigma$ is a distance constant, and $\epsilon$ an energetic constant.
+/// The following expression of Lennard-Jones potential is used: `V(r) = 4 *
+/// epsilon * ((sigma/r)^12 - (sigma/r)^6)` where `sigma` is the Lennard-Jones
+/// distance constant, and `epsilon` the Lennard-Jones energetic constant.
+///
+/// # Examples
+///
+/// ```
+/// use lumol::energy::Potential;
+/// use lumol::energy::LennardJones;
+///
+/// let potential = LennardJones{sigma: 2.0, epsilon: 10.0};
+/// assert_eq!(potential.energy(2.0), 0.0);
+/// assert_eq!(potential.energy(3.0), -3.203365942785746);
+///
+/// assert_eq!(potential.force(2.0), 120.0);
+/// ```
 #[derive(Clone, Copy)]
 pub struct LennardJones {
     /// Distance constant of the Lennard-Jones potential
@@ -50,12 +77,24 @@ impl Potential for LennardJones {
 
 impl PairPotential for LennardJones {}
 
-/******************************************************************************/
 /// Harmonic potential.
 ///
-/// The following expression is used:
-/// $$ V(x) = \frac 12 k (x - x_0)^2 $$
-/// where $x_0$ is the distance equilibrium, and $k$ the elastic constant.
+/// The following energy expression is used: `V(x) = 1/2 * k * (x - x0)^2` where
+/// `x0` is the distance equilibrium, and `k` the elastic constant.
+///
+/// # Examples
+///
+/// ```
+/// use lumol::energy::Potential;
+/// use lumol::energy::Harmonic;
+///
+/// let potential = Harmonic{x0: 2.0, k: 100.0};
+/// assert_eq!(potential.energy(2.0), 0.0);
+/// assert_eq!(potential.energy(3.0), 50.0);
+///
+/// assert_eq!(potential.force(2.0), 0.0);
+/// assert_eq!(potential.force(1.5), 50.0);
+/// ```
 #[derive(Clone, Copy)]
 pub struct Harmonic {
     /// Spring constant
@@ -82,12 +121,24 @@ impl BondPotential for Harmonic {}
 impl AnglePotential for Harmonic {}
 impl DihedralPotential for Harmonic {}
 
-/******************************************************************************/
 /// Cosine harmonic potential.
 ///
-/// The following expression is used:
-/// $$ V(r) = \frac 12 k (\cos r - \cos x_0)^2 $$
-/// where $x_0$ is the distance equilibrium, and $k$ the elastic constant.
+/// The following potential expression is used: `V(x) = 1/2 * k * (cos(x) -
+/// cos(x0))^2` where `x0` is the distance equilibrium, and `k` the elastic
+/// constant.
+///
+/// # Examples
+///
+/// ```
+/// use lumol::energy::Potential;
+/// use lumol::energy::CosineHarmonic;
+///
+/// let potential = CosineHarmonic::new(/* k */ 100.0, /* x0 */ 2.0);
+/// assert_eq!(potential.energy(2.0), 0.0);
+/// assert_eq!(potential.energy(3.0), 16.464942078100552);
+///
+/// assert_eq!(potential.force(2.0), 0.0);
+/// ```
 #[derive(Clone, Copy)]
 pub struct CosineHarmonic {
     /// Spring constant
@@ -120,13 +171,28 @@ impl Potential for CosineHarmonic {
 impl AnglePotential for CosineHarmonic {}
 impl DihedralPotential for CosineHarmonic {}
 
-/******************************************************************************/
 /// Torsion potential.
 ///
-/// The following expression is used:
-/// $$ V(r) = k(1 + \cos(n\phi_0 - \delta)) $$
-/// where $k$ is the force constant, `n` the periodicity of the potential, and
-/// $\delta$ the equilibrium angle.
+/// This potential is intended for use with dihedral angles, using a
+/// customisable periodicity and multiple minima.
+///
+/// The following potential expression is used: `V(x) = k * (1 + cos(n * x -
+/// delta))` where `k` is the force constant, `n` the periodicity of the
+/// potential, and `delta` the equilibrium angle.
+///
+/// # Examples
+///
+/// ```
+/// use lumol::energy::Potential;
+/// use lumol::energy::Torsion;
+/// use std::f64::consts::PI;
+///
+/// let potential = Torsion{delta: PI / 2.0, k: 10.0, n: 3};
+/// assert_eq!(potential.energy(PI / 2.0), 0.0);
+/// assert_eq!(potential.energy(PI / 3.0), 10.0);
+///
+/// assert!(potential.force(PI / 2.0).abs() < 1e-12);
+/// ```
 #[derive(Clone, Copy)]
 pub struct Torsion {
     /// Force constant
@@ -155,7 +221,6 @@ impl Potential for Torsion {
 
 impl DihedralPotential for Torsion {}
 
-/******************************************************************************/
 
 #[cfg(test)]
 mod tests {
