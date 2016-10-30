@@ -168,10 +168,10 @@ fn table_computation() {
     let mut system = get_system();
 
     let potential = Box::new(TableComputation::new(
-        Box::new(LennardJones{
+        &LennardJones {
             sigma: units::from(2.0, "A").unwrap(),
             epsilon: units::from(0.2, "kJ/mol").unwrap()
-        }),
+        },
         1000,
         units::from(7.0, "A").unwrap()
     ));
