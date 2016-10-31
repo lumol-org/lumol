@@ -7,7 +7,38 @@ use energy::{Potential, PairPotential};
 ///
 /// The `Computation` trait represent an alternative way to compute a given
 /// potential. For example using interpolation on a table or on a grid, from a
-/// Fourrier deecompostion, *etc.*
+/// Fourrier decompostion, *etc.*
+///
+/// # Examples
+///
+/// ```
+/// # use lumol::energy::Potential;
+/// use lumol::energy::Computation;
+/// use lumol::energy::Harmonic;
+///
+/// /// This is just a thin wrapper logging everytime the `energy/force`
+/// /// methods are called.
+/// #[derive(Clone)]
+/// struct LoggingComputation<T: Potential>(T);
+///
+/// impl<T: Potential> Computation for LoggingComputation<T> {
+///     fn compute_energy(&self, r: f64) -> f64 {
+///         println!("Called energy");
+///         self.0.energy(r)
+///     }
+///
+///     fn compute_force(&self, r: f64) -> f64 {
+///         println!("Called force");
+///         self.0.force(r)
+///     }
+/// }
+///
+/// let potential = Harmonic{x0: 0.5, k: 4.2};
+/// let computation = LoggingComputation(potential.clone());
+///
+/// assert_eq!(computation.energy(1.0), potential.energy(1.0));
+/// assert_eq!(computation.force(2.0), potential.force(2.0));
+/// ```
 pub trait Computation: Sync + Send {
     /// Compute the energy value at `r`
     fn compute_energy(&self, r: f64) -> f64;
@@ -47,6 +78,20 @@ pub struct TableComputation {
 impl TableComputation {
     /// Create a new `TableComputation` for `potential`, with `size` points and
     /// a maximum value of `max`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use lumol::energy::Potential;
+    /// use lumol::energy::TableComputation;
+    /// use lumol::energy::Harmonic;
+    ///
+    /// let potential = Harmonic{x0: 0.5, k: 4.2};
+    /// let table = TableComputation::new(&potential, 1000, 2.0);
+    ///
+    /// assert_eq!(table.energy(1.0), -4.2);
+    /// assert_eq!(table.energy(3.0), 0.0);
+    /// ```
     pub fn new(potential: &PairPotential, size: usize, max:f64) -> TableComputation {
         let delta = max / (size as f64);
         let energy_shift = potential.energy(max);
