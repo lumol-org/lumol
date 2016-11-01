@@ -15,9 +15,12 @@ pub struct MonteCarlo {
     /// Boltzmann factor: beta = 1/(kB * T)
     beta: f64,
     /// List of possible Monte-Carlo moves
-    moves: Vec<Box<MCMove>>,
-    /// Cumulative frequencies of the Monte-Carlo moves
+    moves: Vec<(Box<MCMove>, MoveCounter)>,
+    /// Cummulative frequencies of the Monte-Carlo moves
     frequencies: Vec<f64>,
+    /// Specifies the number of moves after which an update of a move's
+    /// amplitude is performed.
+    update_frequency: u64,
     /// Random number generator for the simulation. All random state will be
     /// taken from this.
     rng: Box<rand::Rng>,
@@ -44,13 +47,14 @@ impl MonteCarlo {
             beta: 1.0 / (K_BOLTZMANN * temperature),
             moves: Vec::new(),
             frequencies: Vec::new(),
+            update_frequency: 0,
             rng: rng,
             cache: EnergyCache::new(),
             initialized: false,
         }
     }
 
-    /// Add a the `mcmove` Monte-Carlo move to this propagator, with frequency
+    /// Add the `mcmove` Monte-Carlo move to this propagator, with frequency
     /// `frequency`. All calls to this function should happen before any
     /// simulation run.
     ///
@@ -64,8 +68,39 @@ impl MonteCarlo {
                 we can not add new moves."
             );
         }
-        self.moves.push(mcmove);
+        self.moves.push((mcmove, MoveCounter::new(None)));
         self.frequencies.push(frequency);
+    }
+
+    /// Add the `mcmove` Monte-Carlo move to the propagator.
+    /// `frequency` describes how frequent a move is called, `target_acceptance`
+    /// is the desired acceptance ratio of the move.
+    ///
+    /// # Panics
+    ///
+    /// If called after a simulation run.
+    /// If `target_acceptance` is either negative or larger than one.
+    pub fn add_move_with_acceptance(&mut self, mcmove: Box<MCMove>, frequency: f64, target_acceptance: f64) {
+        if self.initialized {
+            fatal_error!(
+                "Monte-Carlo simulation has already been initialized, \
+                we can not add new moves."
+            );
+        }
+        if target_acceptance >= 1.0 || target_acceptance < 0.0 {
+            fatal_error!(
+                "The target acceptance ratio of the move has to be a positive \
+                value smaller equal than 1."
+            );
+        }
+        self.moves.push((mcmove, MoveCounter::new(Some(target_acceptance))));
+        self.frequencies.push(frequency);
+    }
+
+    /// Set the number of times a move has to be called before its amplitude
+    /// is updated. This value is applied to all moves.
+    pub fn set_amplitude_update_frequency(&mut self, frequency: u64) {
+        self.update_frequency = frequency;
     }
 
     /// Get the temperature of the simulation
@@ -128,27 +163,98 @@ impl Propagator for MonteCarlo {
                                          .expect("Could not find a move in MonteCarlo moves list");
             &mut self.moves[i]
         };
-        trace!("Selected move is '{}'", mcmove.describe());
+        trace!("Selected move is '{}'", mcmove.0.describe());
 
-        if !mcmove.prepare(system, &mut self.rng) {
+        if !mcmove.0.prepare(system, &mut self.rng) {
             trace!("    --> Can not perform the move");
             return;
         }
 
-        let cost = mcmove.cost(system, self.beta, &mut self.cache);
+        // attempt the move: increase counter
+        mcmove.1.ncalled += 1;
+        mcmove.1.nattempted += 1;
+
+        // compute cost
+        let cost = mcmove.0.cost(system, self.beta, &mut self.cache);
         trace!("    --> Move cost is {}", cost);
 
+        // apply metropolis criterion
         let accepted = cost <= 0.0 || self.rng.next_f64() < f64::exp(-cost);
 
         if accepted {
             trace!("    --> Move was accepted");
-            mcmove.apply(system);
+            mcmove.0.apply(system);
             self.cache.update(system);
+            mcmove.1.naccepted += 1
         } else {
             trace!("    --> Move was rejected");
-            mcmove.restore(system);
+            mcmove.0.restore(system);
+        }
+
+        // Do the adjustments for the selected move as needed
+        if mcmove.1.nattempted == self.update_frequency {
+            mcmove.0.update_amplitude(mcmove.1.compute_scaling_factor());
+            // Set `nattempted` and `naccepted` to zero.
+            // This way, only the running acceptance since the last update is considered.
+            mcmove.1.naccepted = 0;
+            mcmove.1.nattempted = 0;
         }
     }
+}
+
+
+/// This struct keeps track of the number of times a move was called
+/// and how often it was accepted.
+pub struct MoveCounter {
+    /// Count the total number of times the move was called.
+    pub ncalled: u64,
+    /// Count the number of times the move was accepted since the last update.
+    pub naccepted: u64,
+    /// Count the number of times the move was called since the last update.
+    pub nattempted: u64,
+    /// The target fraction of accepted over attempted moves.
+    /// The acceptance can be used to increase the efficiency of a move set.
+    target_acceptance: Option<f64>,
+}
+
+impl MoveCounter {
+    /// Create a new counter for the move, initializing all counts to zero and
+    /// setting the `target_acceptance`.
+    pub fn new(target_acceptance: Option<f64>) -> MoveCounter {
+        MoveCounter{
+            ncalled: 0,
+            naccepted: 0,
+            nattempted: 0,
+            target_acceptance: target_acceptance,
+        }
+    }
+
+    /// Set the target acceptance for the move counter.
+    pub fn set_acceptance(&mut self, target_acceptance: f64) {
+        self.target_acceptance = Some(target_acceptance);
+    }
+
+    /// Compute a scaling factor according to the desired acceptance.
+    pub fn compute_scaling_factor(&self) -> Option<f64> {
+        // Check if there exists an target_acceptance
+        if let Some(ta) = self.target_acceptance {
+            // Capture division by zero
+            if self.nattempted == 0 { return Some(1.0) };
+            let quotient = self.naccepted as f64 / self.nattempted as f64 / ta;
+            // Limit the change
+            match quotient {
+                _ if quotient > 1.2 => Some(1.2),
+                _ if quotient < 0.8 => Some(0.8),
+                _ => Some(quotient),
+            }
+        } else {
+            None
+        }
+    }
+}
+
+impl Default for MoveCounter {
+    fn default() -> MoveCounter { MoveCounter::new(None) }
 }
 
 #[cfg(test)]

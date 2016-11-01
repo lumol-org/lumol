@@ -9,7 +9,7 @@ use std::usize;
 use super::MCMove;
 use super::select_molecule;
 
-use types::{Vector3D, Zero};
+use types::Vector3D;
 use sys::{System, EnergyCache};
 
 /// Monte-Carlo move for translating a molecule
@@ -20,21 +20,21 @@ pub struct Translate {
     molid: usize,
     /// New positions of the atom in the translated molecule
     newpos: Vec<Vector3D>,
-    /// Translation vector
-    delta: Vector3D,
+    /// Maximum displacement value
+    dr: f64,
     /// Translation range for random number generation
-    delta_range: Range<f64>,
+    range: Range<f64>,
 }
 
 impl Translate {
-    /// Create a new `Translate` move, with maximum displacement of `dr`,
-    /// translating all the molecules in the system.
+    /// Create a new `Translate` move, with maximum displacement of `dr`.
+    /// Translating all the molecules in the system.
     pub fn new(dr: f64) -> Translate {
         Translate::create(dr, None)
     }
 
-    /// Create a new `Translate` move, with maximum displacement of `dr`,
-    /// translating only molecules with `moltype` type.
+    /// Create a new `Translate` move, with maximum displacement of `dr`.
+    /// Translating only molecules with `moltype` type.
     pub fn with_moltype(dr: f64, moltype: u64) -> Translate {
         Translate::create(dr, Some(moltype))
     }
@@ -47,8 +47,8 @@ impl Translate {
             moltype: moltype,
             molid: usize::MAX,
             newpos: Vec::new(),
-            delta: Vector3D::zero(),
-            delta_range: Range::new(-dr, dr),
+            dr: dr,
+            range: Range::new(-dr, dr),
         }
     }
 }
@@ -72,15 +72,15 @@ impl MCMove for Translate {
             return false;
         }
 
-        self.delta = Vector3D::new(
-            self.delta_range.sample(rng),
-            self.delta_range.sample(rng),
-            self.delta_range.sample(rng)
+        let delta = Vector3D::new(
+            self.range.sample(rng),
+            self.range.sample(rng),
+            self.range.sample(rng)
         );
 
         self.newpos.clear();
         for i in system.molecule(self.molid) {
-            self.newpos.push(system[i].position + self.delta);
+            self.newpos.push(system[i].position + delta);
         }
         return true;
     }
@@ -98,6 +98,13 @@ impl MCMove for Translate {
     }
 
     fn restore(&mut self, _: &mut System) {
-        // Nothing to do
+        // Nothing to do.
+    }
+
+    fn update_amplitude(&mut self, scaling_factor: Option<f64>) {
+        if let Some(s) = scaling_factor {
+            self.dr *= s;
+            self.range = Range::new(-self.dr, self.dr);
+        }
     }
 }

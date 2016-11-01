@@ -22,8 +22,10 @@ pub struct Rotate {
     newpos: Vec<Vector3D>,
     /// Normal distribution, for generation of the axis
     axis_rng: Normal,
+    /// Maximum values for the range of the range distribution of the angle
+    theta: f64,
     /// Range distribution, for generation of the angle
-    angle_rng: Range<f64>,
+    range: Range<f64>,
 }
 
 impl Rotate {
@@ -47,7 +49,8 @@ impl Rotate {
             molid: usize::MAX,
             newpos: Vec::new(),
             axis_rng: Normal::new(0.0, 1.0),
-            angle_rng: Range::new(-theta, theta),
+            theta: theta,
+            range: Range::new(-theta, theta),
         }
     }
 }
@@ -78,10 +81,11 @@ impl MCMove for Rotate {
             self.axis_rng.sample(rng),
             self.axis_rng.sample(rng)
         ).normalized();
-        let theta = self.angle_rng.sample(rng);
-
+        let theta = self.range.sample(rng);
         self.newpos.clear();
+
         let molecule = system.molecule(self.molid);
+
         let mut masses = vec![0.0; molecule.size()];
         for (i, pi) in molecule.iter().enumerate() {
             masses[i] = system[pi].mass;
@@ -106,6 +110,13 @@ impl MCMove for Rotate {
 
     fn restore(&mut self, _: &mut System) {
         // Nothing to do
+    }
+
+    fn update_amplitude(&mut self, scaling_factor: Option<f64>) {
+        if let Some(s) = scaling_factor {
+            self.theta *= s;
+            self.range = Range::new(-self.theta, self.theta);
+        }
     }
 }
 
