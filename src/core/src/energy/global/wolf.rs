@@ -1,7 +1,6 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) 2015-2016 G. Fraux — BSD license
 
-//! Wolf summation of coulombic potential
 use special::Error;
 use std::f64::consts::PI;
 
@@ -14,7 +13,43 @@ use super::{GlobalPotential, CoulombicPotential, GlobalCache};
 
 /// Wolf summation for coulombic interactions.
 ///
-/// This is a fast, direct, pairwise summation for coulombic potential [Wolf1999].
+/// This is a fast, direct, pairwise summation for coulombic potential
+/// [Wolf1999].
+///
+/// # Examples
+///
+/// ```
+/// use lumol::energy::Wolf;
+/// use lumol::units;
+///
+/// // A relatively large cutoff is needed for Wolf summation
+/// let wolf = Wolf::new(12.0);
+///
+/// use lumol::sys::System;
+/// use lumol::sys::Particle;
+/// use lumol::sys::UnitCell;
+/// use lumol::types::Vector3D;
+///
+/// // Setup a system containing a NaCl pair
+/// let mut system = System::new();
+/// system.set_cell(UnitCell::cubic(10.0));
+///
+/// let mut na = Particle::new("Na");
+/// na.charge = 1.0;
+/// na.position = Vector3D::new(0.0, 0.0, 0.0);
+///
+/// let mut cl = Particle::new("Cl");
+/// cl.charge = -1.0;
+/// cl.position = Vector3D::new(2.0, 0.0, 0.0);
+///
+/// system.add_particle(na);
+/// system.add_particle(cl);
+///
+/// // Use Wolf summation for electrostatic interactions
+/// system.interactions_mut().set_coulomb(Box::new(wolf));
+///
+/// assert_eq!(system.potential_energy(), -0.07292902695393541);
+/// ```
 ///
 /// [Wolf1999]: Wolf, D. et al. J. Chem. Phys. 110, 8254 (1999).
 #[derive(Clone)]

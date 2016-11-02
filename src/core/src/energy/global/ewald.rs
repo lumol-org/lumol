@@ -1,7 +1,6 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) 2015-2016 G. Fraux — BSD license
 
-//! Ewald summation of coulombic potential
 use special::Error;
 use std::f64::consts::{PI, FRAC_2_SQRT_PI};
 use std::f64;
@@ -13,17 +12,50 @@ use energy::{PairRestriction, RestrictionInfo};
 
 use super::{GlobalPotential, CoulombicPotential, GlobalCache};
 
-/// Ewald summation of the coulombic interactions.
+/// Ewald summation for coulombic interactions.
 ///
 /// The Ewald summation is based on a separation of the coulombic potential `U`
-/// in two parts, using the trivial identity: $$U(x) = U(x) * (f(x) + 1)  -
-/// U(x) * f(x)$$ where `f(x)` is the `erf` function. This leads to a separation
-/// of the conditionally convergent coulombic sum into two absolutely convergent
-/// sums: one in real space, and the other in Fourier or k-space.
+/// in two parts, using the trivial identity: `U(x) = U(x) * (f(x) + 1) - U(x) *
+/// f(x)` where `f` is the `erf` function. This leads to a separation of the
+/// conditionally convergent coulombic sum into two absolutely convergent sums:
+/// one in real space, and the other in Fourier or k-space. For more information
+/// about this algorithm see [FS2002].
 ///
-/// For more information about this algorithm see [FS2002].
+/// # Examples
 ///
-/// [FS2002] Frenkel, D. & Smit, B. Understanding molecular simulation. (Academic press, 2002).
+/// ```
+/// use lumol::energy::Ewald;
+/// use lumol::units;
+///
+/// let ewald = Ewald::new(/* cutoff */ 12.0, /* kmax */ 7);
+///
+/// use lumol::sys::System;
+/// use lumol::sys::Particle;
+/// use lumol::sys::UnitCell;
+/// use lumol::types::Vector3D;
+///
+/// // Setup a system containing a NaCl pair
+/// let mut system = System::new();
+/// system.set_cell(UnitCell::cubic(10.0));
+///
+/// let mut na = Particle::new("Na");
+/// na.charge = 1.0;
+/// na.position = Vector3D::new(0.0, 0.0, 0.0);
+///
+/// let mut cl = Particle::new("Cl");
+/// cl.charge = -1.0;
+/// cl.position = Vector3D::new(2.0, 0.0, 0.0);
+///
+/// system.add_particle(na);
+/// system.add_particle(cl);
+///
+/// // Use Wolf summation for electrostatic interactions
+/// system.interactions_mut().set_coulomb(Box::new(ewald));
+///
+/// assert_eq!(system.potential_energy(), -0.07042996180522723);
+/// ```
+///
+/// [FS2002] Frenkel, D. & Smith, B. Understanding molecular simulation. (Academic press, 2002).
 #[derive(Clone, Debug)]
 pub struct Ewald {
     /// Splitting parameter between k-space and real space
@@ -50,15 +82,14 @@ pub struct Ewald {
 }
 
 impl Ewald {
-    /// Create an Ewald summation using the `rc` cutoff radius in real space,
-    /// and `kmax` points in k-space (Fourier space).
-    pub fn new(rc: f64, kmax: usize) -> Ewald {
-        let kmax = kmax + 1;
+    /// Create an Ewald summation using the given `cutoff` radius in real
+    /// space, and `kmax` points in k-space (Fourier space).
+    pub fn new(cutoff: f64, kmax: usize) -> Ewald {
         let expfactors = Array3::zeros((kmax, kmax, kmax));
         let rho = Array3::zeros((kmax, kmax, kmax));
         Ewald {
-            alpha: 3.0 * PI / (rc * 4.0),
-            rc: rc,
+            alpha: 3.0 * PI / (cutoff * 4.0),
+            rc: cutoff,
             kmax: kmax,
             kmax2: 0.0,
             restriction: PairRestriction::None,
@@ -102,8 +133,8 @@ impl Ewald {
             warn!("The Ewald cutoff is too high for this unit cell, energy might be wrong.");
         }
 
-        // Now, we precompute the exp(-k^2/4a^2)/k^2 terms. We use the symmetry
-        // to only store (ikx >= 0 && iky >= 0  && ikz >= 0 ) terms
+        // Now, we precompute the exp(-k^2 / (4 a^2)) / k^2 terms. We use the
+        // symmetry to only store (ikx >= 0 && iky >= 0  && ikz >= 0 ) terms
         let (rec_vx, rec_vy, rec_vz) = cell.reciprocal_vectors();
         for ikx in 0..self.kmax {
             let kx = (ikx as f64) * rec_vx;

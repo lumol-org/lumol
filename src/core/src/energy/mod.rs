@@ -216,7 +216,7 @@ mod restrictions;
 pub use self::restrictions::{PairRestriction, RestrictionInfo};
 
 mod global;
-pub use self::global::{GlobalPotential, CoulombicPotential};
+pub use self::global::{GlobalPotential, GlobalCache, CoulombicPotential};
 pub use self::global::{Wolf, Ewald};
 
 mod pairs;
