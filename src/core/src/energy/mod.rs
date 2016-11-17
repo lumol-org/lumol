@@ -36,7 +36,11 @@
 //!
 //! // It can be used for pair and dihedral potentials, but not for angles or
 //! // bonds.
-//! impl PairPotential for OnePotential {}
+//! impl PairPotential for OnePotential {
+//!     /* some code omitted */
+//!     # fn tail_energy(&self, cutoff: f64) -> f64 {0.0}
+//!     # fn tail_virial(&self, cutoff: f64) -> f64 {0.0}
+//! }
 //! impl DihedralPotential for OnePotential {}
 //! ```
 //!
@@ -104,6 +108,7 @@ pub trait Potential : Sync + Send {
 /// # Example
 ///
 /// ```
+/// # use lumol::types::{Zero, Matrix3};
 /// use lumol::energy::{Potential, PairPotential};
 ///
 /// // A no-op potential
@@ -115,8 +120,17 @@ pub trait Potential : Sync + Send {
 ///     fn force(&self, x: f64) -> f64 {0.0}
 /// }
 ///
-/// // Now we can use the Null potential for pair interactions
-/// impl PairPotential for Null {}
+/// // By implementing this trait, we can use the Null potential for pair
+/// // interactions
+/// impl PairPotential for Null {
+///     fn tail_energy(&self, cutoff: f64) -> f64 {
+///         return 0.0;
+///     }
+///
+///     fn tail_virial(&self, cutoff: f64) -> f64 {
+///         return 0.0;
+///     }
+/// }
 /// ```
 pub trait PairPotential : Potential + BoxClonePair {
     /// Compute the virial contribution corresponding to the distance `r`
@@ -127,6 +141,26 @@ pub trait PairPotential : Potential + BoxClonePair {
         let force = fact * rn;
         force.tensorial(r)
     }
+
+    /// Compute the tail correction to the energy for the given cutoff.
+    ///
+    /// Calling `V(r)` the `Potential::energy(r)` function corresponding to this
+    /// potential, this function should return the integral from `cutoff` to
+    /// infinity of `r^2 V(r)`: `\int_{cutoff}^\infty r^2 V(r) dr`.
+    ///
+    /// If this integral does not converge for the current potential, this
+    /// function should then return 0 to disable tail corrections.
+    fn tail_energy(&self, cutoff: f64) -> f64;
+
+    /// Compute the tail correction to the virial for the given cutoff.
+    ///
+    /// Calling `f(r)` the `Potential::force(r)` function corresponding to this
+    /// potential, this function should return the integral from `cutoff` to
+    /// infinity of `f(r) r^3`: `\int_{cutoff}^\infty r^3 f(r) dr`.
+    ///
+    /// If this integral does not converge for the current potential, this
+    /// function should then return 0.0 to disable tail corrections.
+    fn tail_virial(&self, cutoff: f64) -> f64;
 }
 impl_box_clone!(PairPotential, BoxClonePair, box_clone_pair);
 

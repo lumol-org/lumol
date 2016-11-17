@@ -30,7 +30,10 @@ impl Potential for NullPotential {
     #[inline] fn force(&self, _: f64) -> f64 {0.0}
 }
 
-impl PairPotential for NullPotential {}
+impl PairPotential for NullPotential {
+    fn tail_energy(&self, _: f64) -> f64 {0.0}
+    fn tail_virial(&self, _: f64) -> f64 {0.0}
+}
 impl BondPotential for NullPotential {}
 impl AnglePotential for NullPotential {}
 impl DihedralPotential for NullPotential {}
@@ -75,7 +78,23 @@ impl Potential for LennardJones {
     }
 }
 
-impl PairPotential for LennardJones {}
+impl PairPotential for LennardJones {
+    fn tail_energy(&self, cutoff: f64) -> f64 {
+        let s3 = self.sigma * self.sigma * self.sigma;
+        let rc3 = cutoff * cutoff * cutoff;
+        let s9 = s3 * s3 * s3;
+        let rc9 = rc3 * rc3 * rc3;
+        return 4.0 / 3.0 * self.epsilon * s3 * (1.0 / 3.0 * s9 / rc9 - s3 / rc3);
+    }
+
+    fn tail_virial(&self, cutoff: f64) -> f64 {
+        let s3 = self.sigma * self.sigma * self.sigma;
+        let rc3 = cutoff * cutoff * cutoff;
+        let s9 = s3 * s3 * s3;
+        let rc9 = rc3 * rc3 * rc3;
+        return 8.0 * self.epsilon * s3 * (2.0 / 3.0 * s9 / rc9 - s3 / rc3);
+    }
+}
 
 /// Harmonic potential.
 ///
@@ -116,7 +135,14 @@ impl Potential for Harmonic {
     }
 }
 
-impl PairPotential for Harmonic {}
+impl PairPotential for Harmonic {
+    // These two functions should return infinity, as the Harmonic potential
+    // does not goes to zero at infinity. We use 0 instead to ignore the tail
+    // contribution to the energy/virial.
+    fn tail_energy(&self, _: f64) -> f64 {0.0}
+    fn tail_virial(&self, _: f64) -> f64 {0.0}
+}
+
 impl BondPotential for Harmonic {}
 impl AnglePotential for Harmonic {}
 impl DihedralPotential for Harmonic {}
@@ -173,8 +199,8 @@ impl DihedralPotential for CosineHarmonic {}
 
 /// Torsion potential.
 ///
-/// This potential is intended for use with dihedral angles, using a
-/// customisable periodicity and multiple minima.
+/// This potential is intended for use with dihedral angles, using a custom
+/// periodicity and multiple minima.
 ///
 /// The following potential expression is used: `V(x) = k * (1 + cos(n * x -
 /// delta))` where `k` is the force constant, `n` the periodicity of the
@@ -225,7 +251,7 @@ impl DihedralPotential for Torsion {}
 #[cfg(test)]
 mod tests {
     use super::*;
-    use energy::Potential;
+    use energy::{Potential, PairPotential};
     const EPS: f64 = 1e-9;
 
     #[test]
@@ -237,6 +263,9 @@ mod tests {
         assert_eq!(null.force(2.0), 0.0);
         assert_eq!(null.force(2.5), 0.0);
 
+        assert_eq!(null.tail_energy(1.0), 0.0);
+        assert_eq!(null.tail_virial(1.0), 0.0);
+
         let e0 = null.energy(2.0);
         let e1 = null.energy(2.0 + EPS);
         assert_approx_eq!((e0 - e1)/EPS, null.force(2.0), EPS);
@@ -247,6 +276,14 @@ mod tests {
         let lj = LennardJones{epsilon: 0.8, sigma: 2.0};
         assert_eq!(lj.energy(2.0), 0.0);
         assert_eq!(lj.energy(2.5), -0.6189584744448002);
+
+        assert_eq!(lj.tail_energy(1.0), 1388.0888888888887);
+        assert_eq!(lj.tail_energy(2.0), -5.688888888888889);
+        assert_eq!(lj.tail_energy(14.42), -0.022767318648783084);
+
+        assert_eq!(lj.tail_virial(1.0), 17066.666666666668);
+        assert_eq!(lj.tail_virial(2.0), -17.06666666666667);
+        assert_eq!(lj.tail_virial(14.42), -0.1366035877536718);
 
         assert_approx_eq!(lj.force(f64::powf(2.0, 1.0/6.0) * 2.0), 0.0);
         assert_approx_eq!(lj.force(2.5), -0.95773475733504);
@@ -264,6 +301,9 @@ mod tests {
 
         assert_eq!(harm.force(2.0), 0.0);
         assert_eq!(harm.force(2.5), -25.0);
+
+        assert_eq!(harm.tail_energy(1.0), 0.0);
+        assert_eq!(harm.tail_virial(1.0), 0.0);
 
         let e0 = harm.energy(2.1);
         let e1 = harm.energy(2.1 + EPS);

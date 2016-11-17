@@ -1,7 +1,7 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) 2015-2016 G. Fraux — BSD license
 
-//! Testing physical properties of a Lennard-Jones gaz of Helium using Molecular
+//! Testing physical properties of a Lennard-Jones gas of Helium using Molecular
 //! dynamics
 extern crate lumol;
 
@@ -168,10 +168,10 @@ fn table_computation() {
     let mut system = get_system();
 
     let potential = Box::new(TableComputation::new(
-        &LennardJones {
+        Box::new(LennardJones {
             sigma: units::from(2.0, "A").unwrap(),
             epsilon: units::from(0.2, "kJ/mol").unwrap()
-        },
+        }),
         1000,
         units::from(7.0, "A").unwrap()
     ));

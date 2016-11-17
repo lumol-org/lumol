@@ -6,7 +6,7 @@
 //! This module provides simple function to compute separated components of the
 //! potential energy of an `System`.
 use sys::System;
-use energy::Potential;
+use std::f64::consts::PI;
 
 /// An helper struct to evaluate energy components of a system.
 pub struct EnergyEvaluator<'a> {
@@ -45,6 +45,25 @@ impl<'a> EnergyEvaluator<'a> {
             for j in (i+1)..self.system.size() {
                 let r = self.system.nearest_image(i, j).norm();
                 energy += self.pair(r, i, j);
+            }
+        }
+        return energy;
+    }
+
+    /// Compute the energy due to long range corrections for the pairs
+    #[inline]
+    pub fn pairs_tail(&self) -> f64 {
+        let mut energy = 0.0;
+        let volume = self.system.volume();
+        let composition = self.system.composition();
+        for i in self.system.particle_kinds() {
+            let ni = composition[&i] as f64;
+            for j in self.system.particle_kinds() {
+                let nj = composition[&j] as f64;
+                let potentials = self.system.interactions().pairs(i, j);
+                for potential in potentials {
+                    energy += 2.0 * PI * ni * nj * potential.tail_energy() / volume;
+                }
             }
         }
         return energy;
@@ -165,11 +184,13 @@ mod tests {
         assert!(system.add_bond(1, 2).is_empty());
         assert!(system.add_bond(2, 3).is_empty());
 
-        let lj = Box::new(LennardJones {
+        let mut pair = PairInteraction::new(Box::new(LennardJones {
             epsilon: unit_from(100.0, "kJ/mol/A^2"),
             sigma: unit_from(0.8, "A")
-        });
-        system.interactions_mut().add_pair("F", "F", PairInteraction::new(lj, 5.0));
+        }), 5.0);
+        pair.enable_tail_corrections();
+
+        system.interactions_mut().add_pair("F", "F", pair);
 
         system.interactions_mut().add_bond("F", "F",
             Box::new(Harmonic{
@@ -197,6 +218,7 @@ mod tests {
         let system = testing_system();
         let evaluator = EnergyEvaluator::new(&system);
         assert_approx_eq!(evaluator.pairs(), unit_from(-258.3019360389957, "kJ/mol"));
+        assert_approx_eq!(evaluator.pairs_tail(), -0.0000028110338032153973);
     }
 
     #[test]

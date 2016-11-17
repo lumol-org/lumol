@@ -1,7 +1,8 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) 2015-2016 G. Fraux — BSD license
 
-use energy::{Potential, PairPotential, PairRestriction};
+use energy::{PairPotential, PairRestriction};
+use types::{Vector3D, Matrix3, One, Zero};
 
 /// The different way to compute non-bonded pair interactions
 #[derive(Clone, Copy, Debug)]
@@ -30,6 +31,8 @@ pub struct PairInteraction {
     restriction: PairRestriction,
     /// The cutoff distance
     cutoff: f64,
+    /// Should we use tail corrections
+    tail: bool,
     /// The computation mode
     computation: PairComputation,
 }
@@ -41,7 +44,7 @@ impl PairInteraction {
     /// # Examples
     ///
     /// ```
-    /// # use lumol::energy::{Potential, PairInteraction};
+    /// use lumol::energy::PairInteraction;
     /// use lumol::energy::Harmonic;
     ///
     /// let potential = Box::new(Harmonic{x0: 0.5, k: 4.2});
@@ -57,6 +60,7 @@ impl PairInteraction {
             cutoff: cutoff,
             restriction: PairRestriction::None,
             computation: PairComputation::Cutoff,
+            tail: false,
         }
     }
 
@@ -66,7 +70,7 @@ impl PairInteraction {
     /// # Examples
     ///
     /// ```
-    /// # use lumol::energy::{Potential, PairInteraction};
+    /// use lumol::energy::PairInteraction;
     /// use lumol::energy::Harmonic;
     ///
     /// let potential = Box::new(Harmonic{x0: 0.5, k: 4.2});
@@ -86,7 +90,29 @@ impl PairInteraction {
             cutoff: cutoff,
             restriction: PairRestriction::None,
             computation: PairComputation::Shifted(shift),
+            tail: false,
         }
+    }
+
+    /// Enable the use of tail corrections for energy and virial contribution
+    /// of this pair interaction.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use lumol::energy::PairInteraction;
+    /// use lumol::energy::LennardJones;
+    ///
+    /// let potential = Box::new(LennardJones{sigma: 0.5, epsilon: 4.2});
+    /// let mut interaction = PairInteraction::new(potential, 2.0);
+    ///
+    /// assert_eq!(interaction.tail_energy(), 0.0);
+    ///
+    /// interaction.enable_tail_corrections();
+    /// assert!(interaction.tail_energy() < 0.0);
+    /// ```
+    pub fn enable_tail_corrections(&mut self) {
+        self.tail = true;
     }
 
     /// Get the associated pair restriction. The default is to have no pair
@@ -95,7 +121,7 @@ impl PairInteraction {
     /// # Examples
     ///
     /// ```
-    /// # use lumol::energy::PairInteraction;
+    /// use lumol::energy::PairInteraction;
     /// use lumol::energy::{NullPotential, PairRestriction};
     /// let interaction = PairInteraction::new(Box::new(NullPotential), 2.0);
     ///
@@ -110,7 +136,7 @@ impl PairInteraction {
     /// # Examples
     ///
     /// ```
-    /// # use lumol::energy::PairInteraction;
+    /// use lumol::energy::PairInteraction;
     /// use lumol::energy::{NullPotential, PairRestriction};
     /// let mut interaction = PairInteraction::new(Box::new(NullPotential), 2.0);
     ///
@@ -123,8 +149,23 @@ impl PairInteraction {
     }
 }
 
-impl Potential for PairInteraction {
-    fn energy(&self, r: f64) -> f64 {
+impl PairInteraction {
+    /// Get the energy for this pair interaction at the distance `r`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use lumol::energy::PairInteraction;
+    /// use lumol::energy::Harmonic;
+    ///
+    /// let potential = Box::new(Harmonic{x0: 0.5, k: 4.2});
+    /// let interaction = PairInteraction::new(potential, 2.0);
+    ///
+    /// assert_eq!(interaction.energy(1.0), 0.525);
+    /// // energy at and after the cutoff is zero
+    /// assert_eq!(interaction.energy(2.0), 0.0);
+    /// ```
+    pub fn energy(&self, r: f64) -> f64 {
         if r >= self.cutoff {
             0.0
         } else {
@@ -136,16 +177,58 @@ impl Potential for PairInteraction {
         }
     }
 
-    fn force(&self, r: f64) -> f64 {
+    /// Get the norm of the force for this pair interaction at the distance `r`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use lumol::energy::PairInteraction;
+    /// use lumol::energy::Harmonic;
+    ///
+    /// let potential = Box::new(Harmonic{x0: 0.5, k: 4.2});
+    /// let interaction = PairInteraction::new(potential, 2.0);
+    ///
+    /// assert_eq!(interaction.force(1.0), -2.1);
+    /// // force at and after the cutoff is zero
+    /// assert_eq!(interaction.force(2.0), 0.0);
+    /// ```
+    pub fn force(&self, r: f64) -> f64 {
         if r >= self.cutoff {
             0.0
         } else {
             self.potential.force(r)
         }
     }
-}
 
-impl PairPotential for PairInteraction {}
+    /// Get the virial contribution for this pair interaction at the distance
+    /// `r`
+    pub fn virial(&self, r: &Vector3D) -> Matrix3 {
+        if r.norm() >= self.cutoff {
+            Matrix3::zero()
+        } else {
+            self.potential.virial(r)
+        }
+    }
+
+    /// Get the tail correction to the energy for this pair interaction
+    pub fn tail_energy(&self) -> f64 {
+        if self.tail {
+            self.potential.tail_energy(self.cutoff)
+        } else {
+            0.0
+        }
+    }
+
+    /// Get the tail correction to the virial for this pair interaction
+    pub fn tail_virial(&self) -> Matrix3 {
+        if self.tail {
+            let tensor = Matrix3::one() / 3.0;
+            return self.potential.tail_virial(self.cutoff) * tensor;
+        } else {
+            return Matrix3::zero();
+        }
+    }
+}
 
 #[cfg(test)]
 mod tests {
@@ -184,5 +267,15 @@ mod tests {
 
         assert_eq!(pairs.force(4.1), 0.0);
         assert_eq!(pairs.energy(4.1), 0.0);
+    }
+
+    #[test]
+    fn tail_corrections() {
+        let lj = LennardJones{sigma: 1.0, epsilon: 2.0};
+        let mut pairs = PairInteraction::shifted(Box::new(lj), 4.0);
+        pairs.enable_tail_corrections();
+
+        assert_eq!(pairs.tail_energy(), -0.041663275824652776);
+        assert_approx_eq!(pairs.tail_virial().trace(), -0.24995930989583334);
     }
 }
