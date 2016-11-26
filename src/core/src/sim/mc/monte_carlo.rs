@@ -271,6 +271,7 @@ mod tests {
         fn cost(&self, _: &System, _: f64, _: &mut EnergyCache) -> f64 {0.0}
         fn apply(&mut self, _: &mut System) {}
         fn restore(&mut self, _: &mut System) {}
+        fn update_amplitude(&mut self, _:Option<f64>) {}
     }
 
     #[test]
