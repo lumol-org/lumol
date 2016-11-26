@@ -201,7 +201,22 @@ impl PairInteraction {
     }
 
     /// Get the virial contribution for this pair interaction at the distance
-    /// `r`
+    /// `r`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use lumol::energy::PairInteraction;
+    /// use lumol::energy::Harmonic;
+    /// # use lumol::types::Vector3D;
+    ///
+    /// let potential = Box::new(Harmonic{x0: 0.5, k: 4.2});
+    /// let interaction = PairInteraction::shifted(potential, 2.0);
+    ///
+    /// let r = Vector3D::new(1.0, 0.0, 0.3);
+    /// let force = interaction.force(r.norm()) * r / r.norm();
+    /// assert_eq!(interaction.virial(&r), r.tensorial(&force));
+    /// ```
     pub fn virial(&self, r: &Vector3D) -> Matrix3 {
         if r.norm() >= self.cutoff {
             Matrix3::zero()
@@ -211,6 +226,19 @@ impl PairInteraction {
     }
 
     /// Get the tail correction to the energy for this pair interaction
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use lumol::energy::PairInteraction;
+    /// use lumol::energy::LennardJones;
+    ///
+    /// let potential = Box::new(LennardJones{sigma: 0.5, epsilon: 4.2});
+    /// let mut interaction = PairInteraction::new(potential, 2.0);
+    /// interaction.enable_tail_corrections();
+    ///
+    /// assert_eq!(interaction.tail_energy(), -0.010936609903971353);
+    /// ```
     pub fn tail_energy(&self) -> f64 {
         if self.tail {
             self.potential.tail_energy(self.cutoff)
@@ -220,6 +248,27 @@ impl PairInteraction {
     }
 
     /// Get the tail correction to the virial for this pair interaction
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use lumol::energy::PairInteraction;
+    /// use lumol::energy::LennardJones;
+    /// # use lumol::types::Matrix3;
+    ///
+    /// let potential = Box::new(LennardJones{sigma: 0.5, epsilon: 4.2});
+    /// let mut interaction = PairInteraction::new(potential, 2.0);
+    /// interaction.enable_tail_corrections();
+    ///
+    /// let w = -0.02187143961588542;
+    /// let virial = Matrix3::new(
+    ///      w , 0.0, 0.0,
+    ///     0.0,  w , 0.0,
+    ///     0.0, 0.0,  w
+    /// );
+    ///
+    /// assert_eq!(interaction.tail_virial(), virial);
+    /// ```
     pub fn tail_virial(&self) -> Matrix3 {
         if self.tail {
             let tensor = Matrix3::one() / 3.0;
