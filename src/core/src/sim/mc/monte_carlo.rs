@@ -87,12 +87,6 @@ impl MonteCarlo {
                 we can not add new moves."
             );
         }
-        if target_acceptance >= 1.0 || target_acceptance < 0.0 {
-            fatal_error!(
-                "The target acceptance ratio of the move has to be a positive \
-                value smaller equal than 1."
-            );
-        }
         self.moves.push((mcmove, MoveCounter::new(Some(target_acceptance))));
         self.frequencies.push(frequency);
     }
@@ -221,25 +215,36 @@ impl MoveCounter {
     /// Create a new counter for the move, initializing all counts to zero and
     /// setting the `target_acceptance`.
     pub fn new(target_acceptance: Option<f64>) -> MoveCounter {
-        MoveCounter{
+        let mut counter = MoveCounter{
             ncalled: 0,
             naccepted: 0,
             nattempted: 0,
-            target_acceptance: target_acceptance,
-        }
+            target_acceptance: None,
+        };
+        counter.set_acceptance(target_acceptance);
+        counter
     }
 
     /// Set the target acceptance for the move counter.
-    pub fn set_acceptance(&mut self, target_acceptance: f64) {
-        self.target_acceptance = Some(target_acceptance);
+    pub fn set_acceptance(&mut self, target_acceptance: Option<f64>) {
+        // Check if `target_acceptance` has a valid value.
+        if target_acceptance.is_some() {
+            let ta = target_acceptance.unwrap();
+            if ta >= 1.0 || ta < 0.0 {
+                fatal_error!(
+                    "The target acceptance ratio of the move has to be a positive value smaller equal than 1."
+                )
+            }
+        }
+        self.target_acceptance = target_acceptance;
     }
-
+    
     /// Compute a scaling factor according to the desired acceptance.
     pub fn compute_scaling_factor(&self) -> Option<f64> {
         // Check if there exists an target_acceptance
         if let Some(ta) = self.target_acceptance {
             // Capture division by zero
-            if self.nattempted == 0 { return Some(1.0) };
+            if self.nattempted == 0 { return None };
             let quotient = self.naccepted as f64 / self.nattempted as f64 / ta;
             // Limit the change
             match quotient {
@@ -259,7 +264,7 @@ impl Default for MoveCounter {
 
 #[cfg(test)]
 mod tests {
-    use sim::mc::{MonteCarlo, MCMove};
+    use sim::mc::{MonteCarlo, MCMove, MoveCounter};
     use sim::Propagator;
     use sys::{System, EnergyCache};
     use rand::Rng;
@@ -302,5 +307,33 @@ mod tests {
         mc.add(Box::new(DummyMove), 1.0);
         mc.setup(&System::new());
         mc.add(Box::new(DummyMove), 1.0);
+    }
+
+    #[test]
+    #[should_panic]
+    fn invalid_acceptance() {
+        let mut mc = MonteCarlo::new(100.0);
+        mc.add_move_with_acceptance(Box::new(DummyMove), 1.0, 0.5);
+        mc.moves[0].1.set_acceptance(Some(1.1));
+    }
+
+    #[test]
+    fn valid_acceptance() {
+        let mut mc = MonteCarlo::new(100.0);
+        mc.add_move_with_acceptance(Box::new(DummyMove), 1.0, 0.5);
+        assert_eq!(mc.moves[0].1.target_acceptance, Some(0.5));
+        mc.moves[0].1.set_acceptance(None);
+        assert_eq!(mc.moves[0].1.target_acceptance, None);     
+    }
+
+    #[test]
+    fn scaling_factor() {
+        let mut counter = MoveCounter::new(Some(0.5));
+        assert_eq!(counter.compute_scaling_factor(), None);
+        counter.nattempted = 10;
+        counter.naccepted = 10;
+        assert_eq!(counter.compute_scaling_factor(), Some(1.2));
+        counter.naccepted = 0;
+        assert_eq!(counter.compute_scaling_factor(), Some(0.8));
     }
 }
