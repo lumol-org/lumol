@@ -6,7 +6,8 @@ use std::cmp::{min, max};
 use std::collections::HashSet;
 use std::iter::IntoIterator;
 use std::ops::Range;
-use std::hash::{Hash, SipHasher, Hasher};
+use std::hash::{Hash, Hasher};
+use std::collections::hash_map::DefaultHasher;
 
 use types::Array2;
 use sys::Particle;
@@ -39,7 +40,7 @@ impl Bond {
 
 /// An `Angle` formed by the atoms at indexes `i`, `j` and `k`
 ///
-/// This structure ensure unicity of the `Angle` representation by enforcing
+/// This structure ensure uniqueness of the `Angle` representation by enforcing
 /// `i < k`
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct Angle {
@@ -80,7 +81,8 @@ pub struct Dihedral {
 }
 
 impl Dihedral {
-    /// Create a new Dihedral between the atoms at indexes `first`, `second`, `third` and `fourth`
+    /// Create a new Dihedral between the atoms at indexes `first`, `second`,
+    /// `third` and `fourth`
     pub fn new(first: usize, second: usize, third: usize, fourth: usize) -> Dihedral {
         assert!(first != second);
         assert!(second != third);
@@ -108,7 +110,6 @@ impl Dihedral {
 
 /******************************************************************************/
 mod connect {
-    // #![cfg_attr(feature="clippy", allow(if_not_else))]
     bitflags! {
         /// The `Connectivity` bitflag encode the topological distance between
         /// two particles in the molecule, i.e. the number of bonds between the
@@ -203,7 +204,7 @@ impl Molecule {
 
     /// Cache the hash of the bonds
     fn rehash(&mut self) {
-        let mut hasher = SipHasher::new();
+        let mut hasher = DefaultHasher::new();
         (self.last - self.first).hash(&mut hasher);
 
         let mut bonds = self.bonds.iter()
@@ -442,7 +443,7 @@ impl Molecule {
 /// bonds and particles (see `System::molecule_type` for more information).
 pub fn molecule_type(molecule: &Molecule, particles: &[Particle]) -> u64 {
     assert!(particles.len() == molecule.size());
-    let mut hasher = SipHasher::new();
+    let mut hasher = DefaultHasher::new();
     molecule.cached_hash.hash(&mut hasher);
     for particle in particles {
         particle.name().hash(&mut hasher);

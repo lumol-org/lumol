@@ -48,6 +48,11 @@ impl ParticleKinds {
         assert!(self.names.len() == self.kinds.len());
         self.names.get(&kind).cloned()
     }
+
+    /// Get a list of all the known particles kinds.
+    fn all_kinds(&self) -> Vec<Kind> {
+        self.kinds.iter().map(|(_, v)| v.clone()).collect()
+    }
 }
 
 /// Sort pair indexes to get a canonical representation
@@ -92,6 +97,7 @@ impl Default for Interactions {
 }
 
 impl Interactions {
+    /// Create a new empty `Interactions`
     pub fn new() -> Interactions {
         Interactions{
             pairs: BTreeMap::new(),
@@ -104,8 +110,14 @@ impl Interactions {
         }
     }
 
+    /// Get the kind corresponding to the a given particle `name`.
     pub fn get_kind(&mut self, name: &str) -> Kind {
         self.kinds.kind(name)
+    }
+
+    /// Get a list of all the known particles kinds.
+    pub fn all_kinds(&self) -> Vec<Kind> {
+        self.kinds.all_kinds()
     }
 
     /// Add the `potential` pair interaction for the pair `(i, j)`
@@ -223,7 +235,7 @@ impl Interactions {
         }
     }
 
-    /// Get the coulombic interaction as a RefCell, because the
+    /// Get the coulombic interaction as a `RefCell`, because the
     /// `GlobalPotential` are allowed to mutate themselves when computing
     /// energy.
     pub fn coulomb(&self) -> Option<&RefCell<Box<CoulombicPotential>>> {

@@ -112,7 +112,7 @@ impl FromTomlWithData for TableComputation {
         let max = try_extract_parameter!(table, "max", "table computation");
         if let (Some(n), Some(max)) = (n.as_integer(), max.as_str()) {
             let max = try!(::lumol::units::from_str(max));
-            Ok(TableComputation::new(&*potential, n as usize, max))
+            Ok(TableComputation::new(potential, n as usize, max))
         } else {
             Err(Error::from(
                 "'max' must be a string and 'n' and integere in table computation"

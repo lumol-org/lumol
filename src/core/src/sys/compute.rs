@@ -5,7 +5,7 @@
 use consts::K_BOLTZMANN;
 use types::{Matrix3, Vector3D, Zero, One};
 use sys::System;
-use energy::{Potential, PairPotential};
+use std::f64::consts::PI;
 
 /// The compute trait allow to compute properties of a system, without
 /// modifying this system. The Output type is the type of the computed
@@ -109,6 +109,7 @@ impl Compute for PotentialEnergy {
         let evaluator = system.energy_evaluator();
 
         let mut energy = evaluator.pairs();
+        energy += evaluator.pairs_tail();
         energy += evaluator.bonds();
         energy += evaluator.angles();
         energy += evaluator.dihedrals();
@@ -177,7 +178,7 @@ pub struct Virial;
 impl Compute for Virial {
     type Output = Matrix3;
     fn compute(&self, system: &System) -> Matrix3 {
-        let mut res = Matrix3::zero();
+        let mut virial = Matrix3::zero();
         for i in 0..system.size() {
             for j in (i+1)..system.size() {
                 let distance = system.bond_distance(i, j);
@@ -185,24 +186,38 @@ impl Compute for Virial {
                     let info = potential.restriction().information(distance);
                     if !info.excluded {
                         let d = system.nearest_image(i, j);
-                        res += info.scaling * potential.virial(&d);
+                        virial += info.scaling * potential.virial(&d);
                     }
                 }
             }
         }
 
-        // FIXME: implement virial computations for molecular potentials
+
+        let volume = system.volume();
+        let composition = system.composition();
+        for i in system.particle_kinds() {
+            let ni = composition[&i] as f64;
+            for j in system.particle_kinds() {
+                let nj = composition[&j] as f64;
+                let potentials = system.interactions().pairs(i, j);
+                for potential in potentials {
+                    virial -= 2.0 * PI * ni * nj * potential.tail_virial() / volume;
+                }
+            }
+        }
+
+        // TODO: implement virial computations for molecular potentials
         // (angles & dihedrals)
 
         if let Some(coulomb) = system.interactions().coulomb() {
-            res += coulomb.borrow_mut().virial(system);
+            virial += coulomb.borrow_mut().virial(system);
         }
 
         for global in system.interactions().globals() {
-            res += global.borrow_mut().virial(system);
+            virial += global.borrow_mut().virial(system);
         }
 
-        return res;
+        return virial;
     }
 }
 
@@ -291,8 +306,6 @@ mod test {
     use consts::K_BOLTZMANN;
     use utils::unit_from;
 
-    const EPS : f64 = 1e-8;
-
     fn test_pairs_system() -> System {
         let mut system = System::from_cell(UnitCell::cubic(10.0));;
         system.add_particle(Particle::new("F"));
@@ -300,13 +313,12 @@ mod test {
         system.add_particle(Particle::new("F"));
         system[1].position = Vector3D::new(1.3, 0.0, 0.0);
 
-        let lj = Box::new(Harmonic{
+        let mut interaction = PairInteraction::new(Box::new(Harmonic{
             k: unit_from(300.0, "kJ/mol/A^2"),
             x0: unit_from(1.2, "A")
-        });
-        system.interactions_mut().add_pair("F", "F",
-            PairInteraction::new(lj, 5.0)
-        );
+        }), 5.0);
+        interaction.enable_tail_corrections();
+        system.interactions_mut().add_pair("F", "F", interaction);
 
         let mut velocities = BoltzmannVelocities::new(unit_from(300.0, "K"));
         velocities.init(&mut system);
@@ -362,13 +374,13 @@ mod test {
         assert_eq!(forces_tot, Vector3D::zero());
 
         let force = unit_from(30.0, "kJ/mol/A");
-        assert_approx_eq!(res[0][0], force, EPS);
-        assert_approx_eq!(res[0][1], 0.0, EPS);
-        assert_approx_eq!(res[0][1], 0.0, EPS);
+        assert_approx_eq!(res[0][0], force, 1e-9);
+        assert_approx_eq!(res[0][1], 0.0);
+        assert_approx_eq!(res[0][1], 0.0);
 
-        assert_approx_eq!(res[1][0], -force, EPS);
-        assert_approx_eq!(res[1][1], 0.0, EPS);
-        assert_approx_eq!(res[1][1], 0.0, EPS);
+        assert_approx_eq!(res[1][0], -force, 1e-9);
+        assert_approx_eq!(res[1][1], 0.0);
+        assert_approx_eq!(res[1][1], 0.0);
     }
 
     #[test]
@@ -388,7 +400,6 @@ mod test {
 
         assert_eq!(kinetic + potential, total);
         assert_eq!(kinetic, 0.0007483016557453699);
-        assert_approx_eq!(potential, 1.5e-4, EPS);
 
         assert_eq!(kinetic, system.kinetic_energy());
         assert_eq!(potential, system.potential_energy());
@@ -483,6 +494,7 @@ mod test {
         let stress = StressAtTemperature{temperature: temperature}.compute(system);
         let pressure = PressureAtTemperature{temperature: temperature}.compute(system);
 
+        // tail corrections are smaller than 1e-9
         let trace = (stress[(0, 0)] + stress[(1, 1)] + stress[(2, 2)]) / 3.0;
         assert_approx_eq!(trace, pressure, 1e-9);
 
@@ -496,6 +508,7 @@ mod test {
         let stress = Stress.compute(system);
         let pressure = Pressure.compute(system);
 
+        // tail corrections are smaller than 1e-9
         let trace = stress.trace() / 3.0;
         assert_approx_eq!(trace, pressure, 1e-9);
         assert_eq!(stress, system.stress());
@@ -513,6 +526,7 @@ mod test {
         let volume = 1000.0;
         let expected = natoms * K_BOLTZMANN * temperature / volume + virial / (3.0 * volume);
 
+        // tail corrections are smaller than 1e-9
         assert_approx_eq!(pressure, expected, 1e-9);
         assert_eq!(pressure, system.pressure());
     }

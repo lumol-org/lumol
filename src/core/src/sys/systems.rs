@@ -11,6 +11,7 @@ use std::slice;
 use std::cmp::{min, max};
 use std::iter::IntoIterator;
 use std::i8;
+use std::collections::BTreeMap;
 
 use energy::PairInteraction;
 use energy::{BondPotential, AnglePotential, DihedralPotential};
@@ -307,8 +308,8 @@ impl System {
     /// 0 1 2 3  4 5  6 7  # New indexes
     /// ```
     ///
-    /// This functions return the shift of the moved molecule, i.e. in this
-    /// example `4`.
+    /// This functions return the change in index of the first particle of the
+    /// moved molecule, i.e. in this example `4`.
     #[allow(block_in_if_condition_stmt)]
     fn merge_molecules(&mut self, new_molid: usize, old_molid: usize) -> usize {
         assert!(new_molid < old_molid);
@@ -368,6 +369,20 @@ impl System {
         }).0, "Unsorted molecule ids {:?}", self.molids);
 
         return delta;
+    }
+
+    /// Get the number of particles of each kind in the system
+    pub fn composition(&self) -> BTreeMap<ParticleKind, usize> {
+        let mut map = BTreeMap::new();
+        for particle in &self.particles {
+            *map.entry(particle.kind).or_insert(0) += 1;
+        }
+        return map;
+    }
+
+    /// Get a list of all the particles kinds in the system.
+    pub fn particle_kinds(&self) -> Vec<ParticleKind> {
+        self.interactions.all_kinds()
     }
 }
 
@@ -545,7 +560,7 @@ impl System {
     /// Get the volume of the system.
     pub fn volume(&self) -> f64 {Volume.compute(self)}
 
-    /// Get the tensorial virial of the system.
+    /// Get the virial of the system as a tensor
     pub fn virial(&self) -> Matrix3 {Virial.compute(self)}
     /// Get the pressure of the system from the virial equation, at the system
     /// instantaneous temperature.
@@ -712,6 +727,44 @@ mod tests {
         assert_eq!(system[0].name(), "O");
         assert_eq!(system[1].name(), "H");
         assert_eq!(system[2].name(), "H");
+    }
+
+    #[test]
+    fn particle_kinds() {
+        let mut system = System::new();
+        system.add_particle(Particle::new("H"));
+        system.add_particle(Particle::new("O"));
+        system.add_particle(Particle::new("O"));
+        system.add_particle(Particle::new("H"));
+        system.add_particle(Particle::new("C"));
+        system.add_particle(Particle::new("U"));
+
+        let kinds = system.particle_kinds();
+        assert_eq!(kinds.len(), 4);
+
+        assert!(kinds.contains(&ParticleKind(0)));
+        assert!(kinds.contains(&ParticleKind(1)));
+        assert!(kinds.contains(&ParticleKind(2)));
+        assert!(kinds.contains(&ParticleKind(3)));
+    }
+
+    #[test]
+    fn composition() {
+        let mut system = System::new();
+        system.add_particle(Particle::new("H"));
+        system.add_particle(Particle::new("O"));
+        system.add_particle(Particle::new("O"));
+        system.add_particle(Particle::new("H"));
+        system.add_particle(Particle::new("C"));
+        system.add_particle(Particle::new("U"));
+        system.add_particle(Particle::new("H"));
+
+        let compo = system.composition();
+        assert_eq!(compo.len(), 4);
+        assert_eq!(compo[&ParticleKind(0)], 3);
+        assert_eq!(compo[&ParticleKind(1)], 2);
+        assert_eq!(compo[&ParticleKind(2)], 1);
+        assert_eq!(compo[&ParticleKind(3)], 1);
     }
 
     #[test]

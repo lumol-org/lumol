@@ -1,7 +1,7 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) 2015-2016 G. Fraux — BSD license
 
-//! [Chemfiles][Chemfiles] adapter for Lumol.
+//! [Chemfiles][Chemfiles] conversion for Lumol.
 //!
 //! [Chemfiles]: https://Chemfiles.github.io/
 use sys::{System, Particle, Molecule, UnitCell, CellShape};
@@ -336,6 +336,6 @@ H 0.0 1.0 0.0
 
         // This is only a simple regression test on the moltype function. Feel
         // free to change the value if the molecule type algorithm change.
-        assert_eq!(molecule_type(&molecule, &atoms), 4144180246440175497);
+        assert_eq!(molecule_type(&molecule, &atoms), 10531116511729139659);
     }
 }

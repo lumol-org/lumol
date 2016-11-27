@@ -7,7 +7,7 @@ use energy::{Potential, PairPotential};
 ///
 /// The `Computation` trait represent an alternative way to compute a given
 /// potential. For example using interpolation on a table or on a grid, from a
-/// Fourrier decompostion, *etc.*
+/// Fourier decomposition, *etc.*
 ///
 /// # Examples
 ///
@@ -16,7 +16,7 @@ use energy::{Potential, PairPotential};
 /// use lumol::energy::Computation;
 /// use lumol::energy::Harmonic;
 ///
-/// /// This is just a thin wrapper logging everytime the `energy/force`
+/// /// This is just a thin wrapper logging every time the `energy/force`
 /// /// methods are called.
 /// #[derive(Clone)]
 /// struct LoggingComputation<T: Potential>(T);
@@ -62,16 +62,19 @@ impl<P: Computation + Clone + 'static> Potential for P {
 /// This can be faster than direct computation for smooth potentials, but will
 /// uses more memory and be less precise than direct computation. Values are
 /// tabulated in the `[0, max)` range, and a cutoff is applied after `max`.
-/// Energy is shifted to ensure `E(max) = 0`
 #[derive(Clone)]
 pub struct TableComputation {
     /// Step for tabulated value. `energy_table[i]`/`force_table[i]` contains
     /// energy/force at `r = i * delta`
     delta: f64,
+    /// Cutoff distance
+    cutoff: f64,
     /// Tabulated potential
     energy_table: Vec<f64>,
     /// Tabulated compute_force
     force_table: Vec<f64>,
+    /// Initial potential, kept around for tail corrections
+    potential: Box<PairPotential>,
 }
 
 
@@ -86,26 +89,28 @@ impl TableComputation {
     /// use lumol::energy::TableComputation;
     /// use lumol::energy::Harmonic;
     ///
-    /// let potential = Harmonic{x0: 0.5, k: 4.2};
-    /// let table = TableComputation::new(&potential, 1000, 2.0);
+    /// let potential = Box::new(Harmonic{x0: 0.5, k: 4.2});
+    /// let table = TableComputation::new(potential, 1000, 2.0);
     ///
-    /// assert_eq!(table.energy(1.0), -4.2);
+    /// assert_eq!(table.energy(1.0), 0.525);
     /// assert_eq!(table.energy(3.0), 0.0);
     /// ```
-    pub fn new(potential: &PairPotential, size: usize, max:f64) -> TableComputation {
+    pub fn new(potential: Box<PairPotential>, size: usize, max: f64) -> TableComputation {
         let delta = max / (size as f64);
-        let energy_shift = potential.energy(max);
         let mut energy_table = Vec::with_capacity(size);
         let mut force_table = Vec::with_capacity(size);
         for i in 0..size {
-            let pos = i as f64 * delta;
-            energy_table.push(potential.energy(pos) - energy_shift);
-            force_table.push(potential.force(pos));
+            let r = i as f64 * delta;
+            energy_table.push(potential.energy(r));
+            force_table.push(potential.force(r));
         }
+
         TableComputation {
             delta: delta,
+            cutoff: max,
             energy_table: energy_table,
-            force_table: force_table
+            force_table: force_table,
+            potential: potential,
         }
     }
 }
@@ -136,23 +141,44 @@ impl Computation for TableComputation {
     }
 }
 
-impl PairPotential for TableComputation {}
+impl PairPotential for TableComputation {
+    fn tail_energy(&self, cutoff: f64) -> f64 {
+        if cutoff > self.cutoff {
+            warn_once!("Cutoff in table computation ({}) is smaller than the \
+            pair interaction cutoff ({}) when computing tail correction. This \
+            may lead to wrong values for energy.", cutoff, self.cutoff);
+        }
+        return self.potential.tail_energy(cutoff);
+    }
+
+    fn tail_virial(&self, cutoff: f64) -> f64 {
+        if cutoff > self.cutoff {
+            warn_once!("Cutoff in table computation ({}) is smaller than the \
+            pair interaction cutoff ({}) when computing tail correction. This \
+            may lead to wrong values for pressure.", cutoff, self.cutoff);
+        }
+        return self.potential.tail_virial(cutoff);
+    }
+}
 
 #[cfg(test)]
 mod test {
     use super::*;
-    use energy::Harmonic;
+    use energy::{Harmonic, LennardJones};
+    use energy::PairPotential;
 
     #[test]
     fn table() {
-        let table = TableComputation::new(&Harmonic{k: 50.0, x0: 2.0}, 1000, 4.0);
+        let table = TableComputation::new(
+            Box::new(Harmonic{k: 50.0, x0: 2.0}), 1000, 4.0
+        );
 
-        assert_eq!(table.compute_energy(2.5), -93.75);
+        assert_eq!(table.compute_energy(2.5), 6.25);
         assert_eq!(table.compute_force(2.5), -25.0);
 
         // Check that the table is defined up to the cutoff value
         let delta = 4.0 / 1000.0;
-        assert_eq!(table.compute_energy(4.0 - 2.0 * delta), -0.7984000000000009);
+        assert_eq!(table.compute_energy(4.0 - 2.0 * delta), 99.2016);
         assert_eq!(table.compute_force(4.0 - 2.0 * delta), -99.6);
 
         assert_eq!(table.compute_energy(4.0 - delta), 0.0);
@@ -163,5 +189,11 @@ mod test {
 
         assert_eq!(table.compute_energy(4.1), 0.0);
         assert_eq!(table.compute_force(4.1), 0.0);
+
+
+        let lj = LennardJones{epsilon: 50.0, sigma: 2.0};
+        let table = TableComputation::new(Box::new(lj.clone()), 1000, 4.0);
+        assert_eq!(table.tail_energy(5.0), lj.tail_energy(5.0));
+        assert_eq!(table.tail_virial(5.0), lj.tail_virial(5.0));
     }
 }
