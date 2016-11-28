@@ -22,8 +22,8 @@ pub struct Resize {
     old_system: System,
     /// target pressure
     pressure: f64,
-    /// smallest cut off diameter, twice the smallest cut off distance
-    d_min: f64,
+    /// largest cut off diameter of `PairPotentials`
+    rc_max: f64,
 }
 
 impl Resize {
@@ -31,13 +31,13 @@ impl Resize {
     /// displacement of `delta`.
     pub fn new(pressure: f64, delta: f64) -> Resize {
         assert!(delta > 0.0, "delta must be positive in Resize move");
-        // TODO: set d_min from the smallest cut off in PairPotentials
+        // TODO: set rc_max from the largest cut off in PairPotentials
         Resize {
             delta: 0.,
             range: Range::new(-delta, delta),
             old_system: System::new(),
             pressure: pressure,
-            d_min: 100.0, // arbitrarily large value
+            rc_max: 100.0, // arbitrarily large value
         }
     }
 }
@@ -56,9 +56,10 @@ impl MCMove for Resize {
         // change the simulation cell
         system.cell_mut().scale_mut(Matrix3::one() * scaling_factor);
         let new_cell = system.cell().clone();
-        // check the radius of the smallest inscribed sphere and compare to the // cut off distance.
+        // check the radius of the smallest inscribed sphere and compare to the 
+        // cut off distance.
         // abort simulation when box gets too small
-        if new_cell.lengths_as_vec().iter().any(|&d| d > self.d_min) {
+        if new_cell.lengths_as_vec().iter().any(|&d| 0.5 * d < self.rc_max) {
             fatal_error!(
                 "Tried to decrease the cell size but \
                 new size conflicts with the cut off radius. \
