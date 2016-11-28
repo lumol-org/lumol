@@ -174,6 +174,23 @@ impl UnitCell {
         return (x, y, z);
     }
 
+    /// Get a vector of the distances between faces of the unit cell
+    pub fn lengths_as_vec(&self) -> Vec<f64> {
+        assert!(self.shape != CellShape::Infinite);
+
+        let (a, b, c) = (self.vect_a(), self.vect_b(), self.vect_c());
+        // Plans normal vectors
+        let na = (b ^ c).normalized();
+        let nb = (c ^ a).normalized();
+        let nc = (a ^ b).normalized();
+
+        let x = f64::abs(na[0]*a[0] + na[1]*a[1] + na[2]*a[2]);
+        let y = f64::abs(nb[0]*b[0] + nb[1]*b[1] + nb[2]*b[2]);
+        let z = f64::abs(nc[0]*c[0] + nc[1]*c[1] + nc[2]*c[2]);
+
+        vec![x, y, z]
+    }
+
     /// Get the first angle of the cell
     pub fn alpha(&self) -> f64 {
         match self.shape {

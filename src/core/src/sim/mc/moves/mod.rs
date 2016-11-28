@@ -80,3 +80,6 @@ pub use self::translate::Translate;
 
 mod rotate;
 pub use self::rotate::Rotate;
+
+mod resize;
+pub use self::resize::Resize;
