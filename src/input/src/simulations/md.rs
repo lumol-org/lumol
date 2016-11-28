@@ -179,27 +179,3 @@ impl FromToml for RemoveRotation {
         Ok(RemoveRotation)
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use std::path::Path;
-    use Input;
-    use testing::{cleanup, bad_inputs};
-
-    #[test]
-    fn md() {
-        let path = Path::new(file!()).parent().unwrap()
-                                     .join("data")
-                                     .join("md.toml");
-        let input = Input::new(&path).unwrap();
-        assert!(input.read().is_ok());
-        cleanup(&path);
-    }
-
-    #[test]
-    fn bad_md() {
-        for path in bad_inputs("simulations", "md") {
-            assert!(Input::new(path).and_then(|input| input.read()).is_err());
-        }
-    }
-}

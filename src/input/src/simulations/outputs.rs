@@ -100,29 +100,3 @@ impl FromToml for PropertiesOutput {
         Ok(output)
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use Input;
-    use testing::{bad_inputs, cleanup};
-    use std::path::Path;
-
-    #[test]
-    fn outputs() {
-        let path = Path::new(file!()).parent().unwrap()
-                                     .join("data")
-                                     .join("md.toml");
-        let input = Input::new(&path).unwrap();
-        assert!(input.read().is_ok());
-        // TODO: add this test without breaking encapsulation
-        // assert_eq!(config.simulation.outputs().len(), 2);
-        cleanup(&path);
-    }
-
-    #[test]
-    fn bad_outputs() {
-        for path in bad_inputs("simulations", "outputs") {
-            assert!(Input::new(path).and_then(|input| input.read()).is_err());
-        }
-    }
-}

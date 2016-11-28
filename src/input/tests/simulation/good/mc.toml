@@ -2,7 +2,7 @@
 version = 1
 
 [[systems]]
-file = "CO2.xyz"
+file = "../CO2.xyz"
 cell = []
 
 [[simulations]]
@@ -15,5 +15,5 @@ moves = [
     {type = "Translate", delta = "1 A", frequency = 2},
     # The path for molecule is very long here, because we need to get the file
     # from a `cargo test` invocation
-    {type = "Rotate", delta = "20 deg", molecule = "CO2.xyz"},
+    {type = "Rotate", delta = "20 deg", molecule = "../CO2.xyz"},
 ]

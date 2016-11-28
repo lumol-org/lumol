@@ -85,9 +85,6 @@ mod error;
 mod interactions;
 mod simulations;
 
-#[cfg(test)]
-pub mod testing;
-
 pub use self::error::{Error, Result};
 pub use self::interactions::InteractionsInput;
 pub use self::simulations::Input;

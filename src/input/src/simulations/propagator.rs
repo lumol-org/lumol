@@ -28,17 +28,3 @@ impl Input {
         }
     }
 }
-
-
-#[cfg(test)]
-mod tests {
-    use Input;
-    use testing::bad_inputs;
-
-    #[test]
-    fn bad_propagators() {
-        for path in bad_inputs("simulations", "propagator") {
-            assert!(Input::new(path).and_then(|input| input.read()).is_err());
-        }
-    }
-}

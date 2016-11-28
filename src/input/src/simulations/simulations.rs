@@ -58,28 +58,3 @@ impl Input {
         return Ok(simulation);
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use Input;
-    use testing::{bad_inputs, cleanup};
-    use std::path::Path;
-
-    #[test]
-    fn nsteps() {
-        let path = Path::new(file!()).parent().unwrap()
-                                     .join("data")
-                                     .join("md.toml");
-        let input = Input::new(&path).unwrap();
-        let config = input.read().unwrap();
-        assert_eq!(config.nsteps, 1000000);
-        cleanup(&path);
-    }
-
-    #[test]
-    fn bad_nsteps() {
-        for path in bad_inputs("simulations", "nsteps") {
-            assert!(Input::new(path).and_then(|input| input.read()).is_err());
-        }
-    }
-}

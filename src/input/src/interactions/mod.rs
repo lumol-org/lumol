@@ -107,22 +107,3 @@ fn read_restriction(config: &Table) -> Result<Option<PairRestriction>> {
         _ => Err(Error::from("Restriction must be a table or a string"))
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use lumol::sys::System;
-    use InteractionsInput;
-    use testing::bad_inputs;
-
-    #[test]
-    fn bad_input() {
-        let mut system = System::new();
-        for path in bad_inputs("interactions", "generic") {
-            assert!(
-                InteractionsInput::new(path)
-                .and_then(|input| input.read(&mut system))
-                .is_err()
-            );
-        }
-    }
-}

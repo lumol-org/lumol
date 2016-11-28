@@ -86,16 +86,3 @@ fn get_input_path<P1: AsRef<Path>, P2: AsRef<Path>>(root: P1, path: P2) -> PathB
         parent.join(path)
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use Input;
-    use testing::bad_inputs;
-
-    #[test]
-    fn bad_input() {
-        for path in bad_inputs("simulations", "generic") {
-            assert!(Input::new(path).and_then(|input| input.read()).is_err());
-        }
-    }
-}
