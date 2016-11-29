@@ -124,8 +124,8 @@ impl Ewald {
         // Because we do a spherical truncation in k space, we have to transform
         // kmax into a spherical cutoff 'radius'
         let lenghts = cell.lengths();
-        let max_lenght = f64::max(f64::max(lenghts.0, lenghts.1), lenghts.2);
-        let min_lenght = f64::min(f64::min(lenghts.0, lenghts.1), lenghts.2);
+        let max_lenght = f64::max(f64::max(lenghts[0], lenghts[1]), lenghts[2]);
+        let min_lenght = f64::min(f64::min(lenghts[0], lenghts[1]), lenghts[2]);
         let k_rc = self.kmax as f64 * (2.0 * PI / max_lenght);
         self.kmax2 = k_rc * k_rc;
 

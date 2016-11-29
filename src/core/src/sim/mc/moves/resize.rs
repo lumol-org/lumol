@@ -31,13 +31,16 @@ impl Resize {
     /// displacement of `delta`.
     pub fn new(pressure: f64, delta: f64) -> Resize {
         assert!(delta > 0.0, "delta must be positive in Resize move");
-        // TODO: set rc_max from the largest cut off in PairPotentials
+        // TODO: set rc_max from the largest cut off in PairPotentials.
+        // For the time being, we set rc_max to zero.
+        // That way, the simulation cell can get smaller than 2*rc_max
+        // which can lead to wrong energies.
         Resize {
             delta: 0.,
             range: Range::new(-delta, delta),
             old_system: System::new(),
             pressure: pressure,
-            rc_max: 100.0, // arbitrarily large value
+            rc_max: 0.0,
         }
     }
 }
@@ -58,8 +61,8 @@ impl MCMove for Resize {
         let new_cell = system.cell().clone();
         // check the radius of the smallest inscribed sphere and compare to the 
         // cut off distance.
-        // abort simulation when box gets too small
-        if new_cell.lengths_as_vec().iter().any(|&d| 0.5 * d < self.rc_max) {
+        // abort simulation when box gets smaller than twice the cutoff radius
+        if new_cell.lengths().iter().any(|&d| 0.5 * d <= self.rc_max) {
             fatal_error!(
                 "Tried to decrease the cell size but \
                 new size conflicts with the cut off radius. \
@@ -82,7 +85,7 @@ impl MCMove for Resize {
         cache.unused();
         // get system energy before change: this is stored in `self.old_system`
         let old_energy = self.old_system.potential_energy();
-        // get
+        // get system energy after preparation
         let new_energy = system.potential_energy();
         let delta_energy = new_energy - old_energy;
 
