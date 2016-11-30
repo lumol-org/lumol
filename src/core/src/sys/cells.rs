@@ -80,9 +80,9 @@ impl UnitCell {
     /// `alpha, beta, gamma`.
     pub fn triclinic(a: f64, b: f64, c: f64, alpha: f64, beta: f64, gamma: f64) -> UnitCell {
         assert!(a > 0.0 && b > 0.0 && c > 0.0, "Cell lengths must be positive");
-        let cos_alpha = deg2rad(alpha).cos();
-        let cos_beta = deg2rad(beta).cos();
-        let (sin_gamma, cos_gamma) = deg2rad(gamma).sin_cos();
+        let cos_alpha = alpha.to_radians().cos();
+        let cos_beta = beta.to_radians().cos();
+        let (sin_gamma, cos_gamma) = gamma.to_radians().sin_cos();
 
         let b_x = b * cos_gamma;
         let b_y = b * sin_gamma;
@@ -180,7 +180,7 @@ impl UnitCell {
             CellShape::Triclinic => {
                 let b = self.vect_b();
                 let c = self.vect_c();
-                rad2deg(angle(b, c))
+                angle(b, c).to_degrees()
             },
             CellShape::Orthorombic | CellShape::Infinite => 90.0,
         }
@@ -192,7 +192,7 @@ impl UnitCell {
             CellShape::Triclinic => {
                 let a = self.vect_a();
                 let c = self.vect_c();
-                rad2deg(angle(a, c))
+                angle(a, c).to_degrees()
             },
             CellShape::Orthorombic | CellShape::Infinite => 90.0,
         }
@@ -204,7 +204,7 @@ impl UnitCell {
             CellShape::Triclinic => {
                 let a = self.vect_a();
                 let b = self.vect_b();
-                rad2deg(angle(a, b))
+                angle(a, b).to_degrees()
             },
             CellShape::Orthorombic | CellShape::Infinite => 90.0,
         }
@@ -399,15 +399,6 @@ impl UnitCell {
         let phi = f64::atan2(r23.norm() * y * r12, x * y);
         return (phi, d1, d2, d3, d4)
     }
-}
-
-/// Convert `x` from degrees to radians
-#[inline] fn deg2rad(x: f64) -> f64 {
-    x * PI / 180.0
-}
-/// Convert `x` from radians to degrees
-#[inline] fn rad2deg(x: f64) -> f64 {
-    x * 180.0 / PI
 }
 
 /// Get the angles between the vectors `u` and `v`.
