@@ -36,7 +36,7 @@ impl Resize {
         // That way, the simulation cell can get smaller than 2*rc_max
         // which can lead to wrong energies.
         Resize {
-            delta: 0.,
+            delta: delta,
             range: Range::new(-delta, delta),
             old_system: System::new(),
             pressure: pressure,
@@ -51,11 +51,11 @@ impl MCMove for Resize {
     }
 
     fn prepare(&mut self, system: &mut System, rng: &mut Box<Rng>) -> bool {
-        self.delta = self.range.sample(rng);
+        let delta = self.range.sample(rng);
         // clone the current (old) system
         self.old_system = system.clone();
         let volume = system.volume();
-        let scaling_factor = f64::cbrt((volume + self.delta) / volume);
+        let scaling_factor = f64::cbrt((volume + delta) / volume);
         // change the simulation cell
         system.cell_mut().scale_mut(Matrix3::one() * scaling_factor);
         let new_cell = system.cell().clone();
