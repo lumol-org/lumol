@@ -90,6 +90,7 @@ Fraux](https://github.com/Luthaf). Contributors to the code include, in
 alphabetic order:
 - [Gernot Bauer](https://github.com/g-bauer)
 - [Guillaume Fraux](https://github.com/Luthaf)
+- [Oscar David Arbeláez E.](https://github.com/odarbelaeze)
 
 ## License
 
