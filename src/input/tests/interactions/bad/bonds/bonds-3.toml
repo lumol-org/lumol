@@ -2,5 +2,5 @@
 version = 1
 
 [[bonds]]
-# atoms is not a vector
 atoms = {A=true, B=true}
+#^ 'atoms' must be an array in bond potential

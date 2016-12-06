@@ -1,10 +1,13 @@
 [input]
 version = 1
 
+[[systems]]
+file = "../../CO2.xyz"
+
 [[simulations]]
 nsteps = 1
 
 [simulations.propagator]
 type = "MonteCarlo"
-# temperature is not a string
 temperature = true
+#^ 'temperature' must be a string in Monte-Carlo propagator

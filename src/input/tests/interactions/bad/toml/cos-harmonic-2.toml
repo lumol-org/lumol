@@ -3,5 +3,5 @@ version = 1
 
 [[angles]]
 atoms = ["A", "A", "A"]
-# Missing k
 cosine-harmonic = {x0 = "3 A"}
+#^ Missing 'k' in cosine harmonic potential

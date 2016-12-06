@@ -3,8 +3,8 @@ version = 1
 
 [[systems]]
 file = "../../CO2.xyz"
-# velocities is not a table
 velocities = "300 K"
+#^ 'velocities' must be a table in system
 
 [[simulations]]
 nsteps = 1

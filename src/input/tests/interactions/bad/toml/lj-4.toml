@@ -3,5 +3,5 @@ version = 1
 
 [[pairs]]
 atoms = ["A", "A"]
-# Sigma is not a string
 lj = {sigma = 3.0, epsilon = "133 K"}
+#^ 'epsilon' and 'sigma' must be strings in Lennard-Jones potential

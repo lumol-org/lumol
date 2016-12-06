@@ -3,4 +3,4 @@ version = 1
 
 [[bonds]]
 atoms = ["A", "A"]
-# No potential
+#^ Missing potential type in bond potential

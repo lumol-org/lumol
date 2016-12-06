@@ -1,7 +1,0 @@
-[input]
-version = 1
-
-[[simulations]]
-nsteps = 1
-# propagator is not a table
-propagator = 3

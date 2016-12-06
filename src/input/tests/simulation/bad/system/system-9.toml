@@ -3,8 +3,8 @@ version = 1
 
 [[systems]]
 file = "../../CO2.xyz"
-# guess_bonds is not a boolean
 guess_bonds = 1
+#^ 'guess_bonds' should be a boolean value in system
 
 [[simulations]]
 nsteps = 1

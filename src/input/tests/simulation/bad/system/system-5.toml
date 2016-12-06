@@ -2,8 +2,8 @@
 version = 1
 
 [[systems]]
-# 'file' is not a string
 file = false
+#^ 'file' must be a string in system
 
 [[simulations]]
 nsteps = 1

@@ -3,4 +3,4 @@ version = 1
 
 [[dihedrals]]
 atoms = ["A", "A", "A", "A"]
-# No potential
+#^ Missing potential type in dihedral potential

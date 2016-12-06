@@ -1,8 +1,8 @@
+systems = ["true"]
+#^ 'systems' should be an array of tables in input file
+
 [input]
 version = 1
-
-# systems is not an array of tables
-systems = ["true"]
 
 [[simulations]]
 nsteps = 1

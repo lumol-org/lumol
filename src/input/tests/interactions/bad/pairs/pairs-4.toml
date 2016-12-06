@@ -3,4 +3,4 @@ version = 1
 
 [[pairs]]
 atoms = ["A", "A"]
-# No potential
+#^ Missing potential type in pair potential

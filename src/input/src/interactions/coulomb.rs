@@ -31,7 +31,7 @@ impl InteractionsInput {
 
         if solvers.len() != 1 {
             return Err(Error::from(
-                format!("Got more than one coulombic solver: {}", solvers.join(" - "))
+                format!("Got more than one coulombic solver: {}", solvers.join(" and "))
             ));
         }
 

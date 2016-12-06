@@ -1,9 +1,7 @@
 [input]
 version = 1
-[input.potentials]
-version = 1
 
-# Missing systems entry
+#^ Missing 'systems' key in input file
 
 [[simulations]]
 nsteps = 1

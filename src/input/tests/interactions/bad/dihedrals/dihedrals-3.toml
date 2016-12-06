@@ -2,5 +2,5 @@
 version = 1
 
 [[dihedrals]]
-# atoms is not a vector
 atoms = {A=true, B=true, C="C"}
+#^ 'atoms' must be an array in dihedral potential

@@ -3,5 +3,5 @@ version = 1
 
 [[pairs]]
 atoms = ["A", "A"]
-# lj is not a table
 lj = true
+#^ 'lj' potential must be a table

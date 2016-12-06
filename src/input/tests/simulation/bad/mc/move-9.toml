@@ -1,6 +1,9 @@
 [input]
 version = 1
 
+[[systems]]
+file = "../../CO2.xyz"
+
 [[simulations]]
 nsteps = 1
 
@@ -8,6 +11,6 @@ nsteps = 1
 type = "MonteCarlo"
 temperature = "300 K"
 moves = [
-    # delta is not a string
     {type = "Translate", delta = 6}
+    #^ 'delta' must be a string in Translate move
 ]

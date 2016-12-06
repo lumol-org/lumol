@@ -67,14 +67,14 @@ impl FromToml for MolecularDynamics {
         }
 
         if let Some(controls) = config.get("controls") {
-            let controls = try!(controls.as_slice().ok_or(
-                Error::from("'controls' must be an array in molecular dynamics")
-            ));
+            let controls = try!(controls.as_slice().ok_or(Error::from(
+                "'controls' must be an array of tables in molecular dynamics"
+            )));
 
             for control in controls {
-                let control = try!(control.as_table().ok_or(
-                    Error::from("All controls must be tables in molecular dynamics")
-                ));
+                let control = try!(control.as_table().ok_or(Error::from(
+                    "'controls' must be an array of tables in molecular dynamics"
+                )));
 
                 let control: Box<Control> = match try!(extract::typ(control, "control")) {
                     "RemoveTranslation" => Box::new(try!(

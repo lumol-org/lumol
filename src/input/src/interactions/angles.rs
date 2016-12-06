@@ -34,7 +34,7 @@ impl InteractionsInput {
             let atoms = try!(extract::slice("atoms", angle, "angle potential"));
             if atoms.len() != 3 {
                 return Err(Error::from(
-                    format!("Wrong size for 'atoms' section in angle potentials. Should be 3, is {}", atoms.len())
+                    format!("Wrong size for 'atoms' array in angle potential. Should be 3, is {}", atoms.len())
                 ));
             }
 
@@ -64,20 +64,20 @@ impl InteractionsInput {
 
         for dihedral in dihedrals {
             let dihedral = try!(dihedral.as_table().ok_or(
-                Error::from("Dihedral angle potential entry must be a table")
+                Error::from("dihedral potential entry must be a table")
             ));
 
-            let atoms = try!(extract::slice("atoms", dihedral, "dihedral angle potential"));
+            let atoms = try!(extract::slice("atoms", dihedral, "dihedral potential"));
             if atoms.len() != 4 {
                 return Err(Error::from(
-                    format!("Wrong size for 'atoms' section in dihedral angle potentials. Should be 4, is {}", atoms.len())
+                    format!("Wrong size for 'atoms' array in dihedral potential. Should be 4, is {}", atoms.len())
                 ));
             }
 
-            let a = try!(atoms[0].as_str().ok_or(Error::from("The first atom name is not a string in dihedral angle potential")));
-            let b = try!(atoms[1].as_str().ok_or(Error::from("The second atom name is not a string in dihedral angle potential")));
-            let c = try!(atoms[2].as_str().ok_or(Error::from("The third atom name is not a string in dihedral angle potential")));
-            let d = try!(atoms[3].as_str().ok_or(Error::from("The fourth atom name is not a string in dihedral angle potential")));
+            let a = try!(atoms[0].as_str().ok_or(Error::from("The first atom name is not a string in dihedral potential")));
+            let b = try!(atoms[1].as_str().ok_or(Error::from("The second atom name is not a string in dihedral potential")));
+            let c = try!(atoms[2].as_str().ok_or(Error::from("The third atom name is not a string in dihedral potential")));
+            let d = try!(atoms[3].as_str().ok_or(Error::from("The fourth atom name is not a string in dihedral potential")));
 
             let potential = try!(read_dihedral_potential(dihedral));
             system.interactions_mut().add_dihedral(a, b, c, d, potential);
@@ -91,9 +91,15 @@ fn read_angle_potential(angle: &Table) -> Result<Box<AnglePotential>> {
                     .filter(|key| key != "atoms")
                     .collect::<Vec<_>>();
 
-    if potentials.len() != 1 {
+    if potentials.is_empty() {
         return Err(Error::from(
-            format!("Got more than one potential type: {}", potentials.join(" - "))
+            "Missing potential type in angle potential"
+        ));
+    }
+
+    if potentials.len() > 1 {
+        return Err(Error::from(
+            format!("Got more than one potential type in angle potential: {}", potentials.join(" and "))
         ));
     }
 
@@ -109,7 +115,7 @@ fn read_angle_potential(angle: &Table) -> Result<Box<AnglePotential>> {
         }
     } else {
         Err(
-            Error::from(format!("potential '{}' must be a table", key))
+            Error::from(format!("'{}' potential must be a table", key))
         )
     }
 }
@@ -119,9 +125,15 @@ fn read_dihedral_potential(dihedral: &Table) -> Result<Box<DihedralPotential>> {
                     .filter(|key| key != "atoms")
                     .collect::<Vec<_>>();
 
-    if potentials.len() != 1 {
+    if potentials.is_empty() {
         return Err(Error::from(
-            format!("Got more than one potential type: {}", potentials.join(" - "))
+            "Missing potential type in dihedral potential"
+        ));
+    }
+
+    if potentials.len() > 1 {
+        return Err(Error::from(
+            format!("Got more than one potential type in dihedral potential: {}", potentials.join(" and "))
         ));
     }
 
@@ -138,7 +150,7 @@ fn read_dihedral_potential(dihedral: &Table) -> Result<Box<DihedralPotential>> {
         }
     } else {
         Err(
-            Error::from(format!("potential '{}' must be a table", key))
+            Error::from(format!("'{}' potential must be a table", key))
         )
     }
 }

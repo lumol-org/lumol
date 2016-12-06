@@ -118,7 +118,7 @@ fn validate(config: &Table) -> Result<()> {
 
     if version != 1 {
         return Err(Error::from(
-            format!("Only version 1 of input can be read, got {}", version)
+            format!("Can only read version 1 of input, got version {}", version)
         ))
     }
     Ok(())

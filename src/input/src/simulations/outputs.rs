@@ -20,19 +20,19 @@ impl Input {
         let config = try!(self.simulation_table());
         if let Some(outputs) = config.get("outputs") {
             let outputs = try!(outputs.as_slice().ok_or(
-                Error::from("'outputs' must be an array")
+                Error::from("'outputs' must be an array of tables in simulation")
             ));
 
             let mut result = Vec::new();
             for output in outputs {
                 let output = try!(output.as_table().ok_or(
-                    Error::from("All values in outputs should be tables")
+                    Error::from("'outputs' must be an array of tables in simulation")
                 ));
 
                 let frequency = match output.get("frequency") {
                     Some(frequency) => {
                         try!(frequency.as_integer().ok_or(
-                            Error::from("'frequency' must be an integer")
+                            Error::from("'frequency' must be an integer in output")
                         )) as u64
                     },
                     None => 1u64
@@ -61,7 +61,7 @@ impl Input {
 
 fn get_file(config: &Table) -> Result<&str> {
     let file = try!(config.get("file").ok_or(
-        Error::from("Missing 'file' in output")
+        Error::from("Missing 'file' key in output")
     ));
 
     file.as_str().ok_or(

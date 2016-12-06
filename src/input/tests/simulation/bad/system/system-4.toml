@@ -2,8 +2,8 @@
 version = 1
 
 [[systems]]
-# Missing 'file' entry
 fil = false
+#^ Missing 'file' key in system
 
 [[simulations]]
 nsteps = 1

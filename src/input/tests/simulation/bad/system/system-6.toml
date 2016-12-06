@@ -3,8 +3,8 @@ version = 1
 
 [[systems]]
 file = "../../CO2.xyz"
-# cell is not a number or an array of numbers
 cell = true
+#^ 'cell' must be a number or an array in system
 
 [[simulations]]
 nsteps = 1

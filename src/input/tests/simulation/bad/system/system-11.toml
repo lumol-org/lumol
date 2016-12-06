@@ -3,8 +3,8 @@ version = 1
 
 [[systems]]
 file = "../../CO2.xyz"
-# topology is not a string
 topology = 34
+#^ 'topology' must be a string in system
 
 [[simulations]]
 nsteps = 1

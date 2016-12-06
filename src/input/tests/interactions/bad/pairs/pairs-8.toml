@@ -2,7 +2,7 @@
 version = 1
 
 [global]
-# cutoff value is not a string
+#^ 'cutoff' must be a string or a table
 cutoff = 2
 
 [[pairs]]

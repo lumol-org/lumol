@@ -1,11 +1,14 @@
 [input]
 version = 1
 
+[[systems]]
+file = "../../CO2.xyz"
+
 [[simulations]]
 nsteps = 1
 
 [simulations.propagator]
 type = "MonteCarlo"
 temperature = "300 K"
-# moves is not an array
 moves = false
+#^ 'moves' must be an array in Monte-Carlo propagator

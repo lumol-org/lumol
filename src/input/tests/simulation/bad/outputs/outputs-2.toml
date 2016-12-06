@@ -1,7 +1,14 @@
 [input]
 version = 1
 
+[[systems]]
+file = "../../CO2.xyz"
+
 [[simulations]]
 nsteps = 0
-# outputs is not an array of tables
 outputs = [1, 2, 3]
+#^ 'outputs' must be an array of tables in simulation
+
+[simulations.propagator]
+type = "MolecularDynamics"
+timestep = "1 fs"

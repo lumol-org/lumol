@@ -1,10 +1,13 @@
 [input]
 version = 1
 
+[[systems]]
+file = "../../CO2.xyz"
+
 [[simulations]]
 nsteps = 1
 
 [simulations.propagator]
 type = "MolecularDynamics"
-# Missing timestep key
 step = "1 fs"
+#^ Missing 'timestep' key in molecular dynamics propagator

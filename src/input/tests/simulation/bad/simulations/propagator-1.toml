@@ -1,0 +1,9 @@
+[input]
+version = 1
+
+[[systems]]
+file = "../../CO2.xyz"
+
+[[simulations]]
+nsteps = 1
+#^ Missing 'propagator' key in simulation

@@ -3,8 +3,8 @@ version = 1
 
 [[systems]]
 file = "../../CO2.xyz"
-# 'init' in velocities is not a string
 velocities = {init = true}
+#^ 'init' must be a string in velocities initializer
 
 [[simulations]]
 nsteps = 1

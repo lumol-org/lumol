@@ -1,2 +1,2 @@
 [input]
-# Missing version key
+#^ Missing 'version' key in 'input' table

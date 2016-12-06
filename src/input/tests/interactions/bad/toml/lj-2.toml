@@ -3,5 +3,5 @@ version = 1
 
 [[pairs]]
 atoms = ["A", "A"]
-# Missing sigma
 lj = {epsilon = "300 kJ/mol"}
+#^ Missing 'sigma' in Lennard-Jones potential

@@ -2,8 +2,8 @@
 version = 1
 
 [global]
-# cutoff table does not contains 'shifted'
 cutoff = {foo = 6}
+#^ 'cutoff' table can only contain 'shifted' key
 
 [[pairs]]
 atoms = ["A", "A"]

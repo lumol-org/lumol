@@ -3,4 +3,4 @@ version = 1
 
 [[angles]]
 atoms = ["A", "A", "A"]
-# No potential
+#^ Missing potential type in angle potential

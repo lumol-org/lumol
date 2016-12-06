@@ -1,6 +1,0 @@
-[input]
-version = 1
-
-# simulations is not an array
-[simulations]
-nsteps = 56

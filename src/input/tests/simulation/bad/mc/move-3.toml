@@ -1,6 +1,9 @@
 [input]
 version = 1
 
+[[systems]]
+file = "../../CO2.xyz"
+
 [[simulations]]
 nsteps = 1
 
@@ -8,6 +11,6 @@ nsteps = 1
 type = "MonteCarlo"
 temperature = "300 K"
 moves = [
-    # Unknown move type
     {type = "true"}
+    #^ Unknown Monte-Carlo move 'true'
 ]

@@ -2,5 +2,5 @@
 version = 1
 
 [[angles]]
-# Not 3 values in atoms
 atoms = ["A", "B", "A", "B"]
+#^ Wrong size for 'atoms' array in angle potential. Should be 3, is 4

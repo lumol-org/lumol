@@ -1,11 +1,14 @@
 [input]
 version = 1
 
+[[systems]]
+file = "../../CO2.xyz"
+
 [[simulations]]
 nsteps = 1
 
 [simulations.propagator]
 type = "MolecularDynamics"
 timestep = "1.0 fs"
-# Missing timestep key
 integrator = {type = "AnisoBerendsenBarostat", pressure = "10 bar", tau = 100}
+#^ Missing 'timestep' key in anisotropic Berendsen barostat

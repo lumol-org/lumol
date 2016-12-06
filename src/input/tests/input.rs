@@ -5,14 +5,17 @@ extern crate lumol;
 extern crate lumol_input;
 
 use std::{env, fs, io};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
+use std::fs::File;
+use std::io::prelude::*;
+
 use walkdir::WalkDir;
 
 use test::{TestDesc, TestDescAndFn, DynTestName, DynTestFn};
 use test::ShouldPanic::No;
 
 use lumol::sys::System;
-use lumol_input::{InteractionsInput, Input};
+use lumol_input::{InteractionsInput, Input, Error};
 
 fn main() {
     let mut tests = Vec::new();
@@ -26,7 +29,14 @@ fn main() {
 
     tests.extend(generate_tests("simulation/bad", |path| {
         Box::new(move || {
-            assert!(Input::new(path.clone()).and_then(|input| input.read()).is_err());
+            let message = get_error_message(&path);
+            let result = Input::new(path.clone())
+                               .and_then(|input| input.read());
+
+            match result {
+                Err(Error::Config(reason)) => assert_eq!(reason, message),
+                _ => panic!("This test should fail with a Config error")
+            }
         })
     }).expect("Could not generate the tests"));
 
@@ -40,8 +50,16 @@ fn main() {
 
     tests.extend(generate_tests("interactions/bad", |path| {
         Box::new(move || {
+            let message = get_error_message(&path);
+
             let mut system = System::new();
-            assert!(InteractionsInput::new(path.clone()).and_then(|input| input.read(&mut system)).is_err());
+            let result = InteractionsInput::new(path.clone())
+                                           .and_then(|input| input.read(&mut system));
+
+            match result {
+                Err(Error::Config(reason)) => assert_eq!(reason, message),
+                _ => panic!("This test should fail with a Config error")
+            }
         })
     }).expect("Could not generate the tests"));
 
@@ -106,4 +124,20 @@ fn cleanup() {
             }
         }
     }
+}
+
+fn get_error_message(path: &Path) -> String {
+    let mut buffer = String::new();
+    File::open(path)
+          .and_then(|mut file| file.read_to_string(&mut buffer))
+          .expect("Could not read the input file");
+
+    for line in buffer.lines() {
+        let line = line.trim();
+        if line.starts_with("#^ ") {
+            return String::from(&line[3..])
+        }
+    }
+
+    panic!("No error message found in {}. Please add one with the '#^ <message>' syntax.", path.display());
 }

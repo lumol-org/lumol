@@ -47,7 +47,7 @@ impl InteractionsInput {
             let atoms = try!(extract::slice("atoms", pair, "pair potential"));
             if atoms.len() != 2 {
                 return Err(Error::from(
-                    format!("Wrong size for 'atoms' section in pair potential. Should be 2, is {}", atoms.len())
+                    format!("Wrong size for 'atoms' array in pair potential. Should be 2, is {}", atoms.len())
                 ));
             }
 
@@ -91,7 +91,7 @@ impl InteractionsInput {
                     PairInteraction::shifted(potential, cutoff)
                 }
                 _ => return Err(Error::from(
-                    "'cutoff' must be a string or a table in pair potential"
+                    "'cutoff' must be a string or a table"
                 ))
             };
 
@@ -126,7 +126,7 @@ impl InteractionsInput {
             let atoms = try!(extract::slice("atoms", bond, "bond potential"));
             if atoms.len() != 2 {
                 return Err(Error::from(
-                    format!("Wrong size for 'atoms' section in bond potential. Should be 2, is {}", atoms.len())
+                    format!("Wrong size for 'atoms' array in bond potential. Should be 2, is {}", atoms.len())
                 ));
             }
 
@@ -147,9 +147,15 @@ fn read_pair_potential(pair: &Table) -> Result<Box<PairPotential>> {
                     .filter(|key| !KEYWORDS.contains(&key.as_ref()))
                     .collect::<Vec<_>>();
 
-    if potentials.len() != 1 {
+    if potentials.is_empty() {
         return Err(Error::from(
-            format!("Got more than one potential type: {}", potentials.join(" - "))
+            "Missing potential type in pair potential"
+        ));
+    }
+
+    if potentials.len() > 1 {
+        return Err(Error::from(
+            format!("Got more than one potential type in pair potential: {}", potentials.join(" and "))
         ));
     }
 
@@ -165,7 +171,7 @@ fn read_pair_potential(pair: &Table) -> Result<Box<PairPotential>> {
         }
     } else {
         Err(
-            Error::from(format!("potential '{}' must be a table", key))
+            Error::from(format!("'{}' potential must be a table", key))
         )
     }
 }
@@ -175,9 +181,15 @@ fn read_bond_potential(pair: &Table) -> Result<Box<BondPotential>> {
                     .filter(|k| k != "atoms")
                     .collect::<Vec<_>>();
 
-    if potentials.len() != 1 {
+    if potentials.is_empty() {
         return Err(Error::from(
-            format!("Got more than one potential type: {}", potentials.join(" - "))
+            "Missing potential type in bond potential"
+        ));
+    }
+
+    if potentials.len() > 1 {
+        return Err(Error::from(
+            format!("Got more than one potential type in bond potential: {}", potentials.join(" and "))
         ));
     }
 
@@ -192,7 +204,7 @@ fn read_bond_potential(pair: &Table) -> Result<Box<BondPotential>> {
         }
     } else {
         Err(
-            Error::from(format!("potential '{}' must be a table", key))
+            Error::from(format!("'{}' potential must be a table", key))
         )
     }
 }

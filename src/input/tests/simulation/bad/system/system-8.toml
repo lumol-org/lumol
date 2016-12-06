@@ -3,8 +3,8 @@ version = 1
 
 [[systems]]
 file = "../../CO2.xyz"
-# cell array have wrong size
 cell = [3, 4, 5, 78]
+#^ 'cell' array must have a size of 3 or 6
 
 [[simulations]]
 nsteps = 1

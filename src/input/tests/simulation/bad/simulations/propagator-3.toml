@@ -1,9 +1,12 @@
 [input]
 version = 1
 
+[[systems]]
+file = "../../CO2.xyz"
+
 [[simulations]]
 nsteps = 1
 
 [simulations.propagator]
-# Missing 'type' key
 bla = 4
+#^ Missing 'type' key in propagator

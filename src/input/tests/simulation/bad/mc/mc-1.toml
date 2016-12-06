@@ -1,10 +1,12 @@
 [input]
 version = 1
 
+[[systems]]
+file = "../../CO2.xyz"
+
 [[simulations]]
 nsteps = 1
 
 [simulations.propagator]
 type = "MonteCarlo"
-# Missing temperature
-timestep = "1.0 fs"
+#^ Missing 'temperature' key in Monte-Carlo propagator

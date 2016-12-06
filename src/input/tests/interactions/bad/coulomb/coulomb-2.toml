@@ -2,5 +2,5 @@
 version = 1
 
 [coulomb]
-# Cutoff is not a string
 wolf = {cutoff = 6}
+#^ 'cutoff' parameter must be a string in Wolf potential

@@ -2,5 +2,5 @@
 version = 1
 
 [[dihedrals]]
-# Not 4 values in atoms
 atoms = ["A", "A", "A"]
+#^ Wrong size for 'atoms' array in dihedral potential. Should be 4, is 3

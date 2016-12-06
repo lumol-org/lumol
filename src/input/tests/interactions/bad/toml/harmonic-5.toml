@@ -3,5 +3,5 @@ version = 1
 
 [[pairs]]
 atoms = ["A", "A"]
-# k is not a string
 harmonic = {k = 2.2, x0 = "7 A"}
+#^ 'k' and 'x0' must be strings in harmonic potential

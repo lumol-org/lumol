@@ -2,8 +2,8 @@
 version = 1
 
 [global]
-# cutoff.shifted value is not a string
 cutoff = {shifted = 6}
+#^ 'cutoff.shifted' value must be a string
 
 [[pairs]]
 atoms = ["A", "A"]

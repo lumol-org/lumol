@@ -1,10 +1,16 @@
 [input]
 version = 1
 
+[[systems]]
+file = "../../CO2.xyz"
+
 [[simulations]]
 nsteps = 0
-# outputs is not an array of tables
 outputs = [
-    # 'type' is not a string
     {type = 4}
+    #^ 'type' key must be a string in output
 ]
+
+[simulations.propagator]
+type = "MolecularDynamics"
+timestep = "1 fs"
