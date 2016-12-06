@@ -47,18 +47,19 @@ impl Input {
         let mut file = try_io!(File::open(&path), path);
         let mut buffer = String::new();
         let _ = try_io!(file.read_to_string(&mut buffer), path);
+        return Input::from_str(path, &buffer);
+    }
 
-        let mut parser = Parser::new(&buffer);
+    /// Read the `Input` from a TOML formatted string.
+    // TODO: use restricted privacy here
+    pub fn from_str(path: PathBuf, buffer: &str) -> Result<Input> {
+        let mut parser = Parser::new(buffer);
         let config = try!(parser.parse().ok_or(
             Error::TOML(toml_error_to_string(&parser))
         ));
 
         try!(validate(&config));
-
-        Ok(Input {
-            path: path,
-            config: config,
-        })
+        Ok(Input{path: path, config: config})
     }
 
     /// Read input file and get the corresponding `Config`
