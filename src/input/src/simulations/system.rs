@@ -15,6 +15,7 @@ impl Input {
     /// Get the the simulated system. This is an internal function, public
     /// because of the code organization.
     // TODO: use restricted privacy here
+    #[doc(hidden)]
     pub fn read_system(&self) -> Result<System> {
         let config = try!(self.system_table());
 

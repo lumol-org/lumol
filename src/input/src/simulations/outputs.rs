@@ -15,6 +15,7 @@ impl Input {
     /// Get the the simulation outputs. This is an internal function, public
     /// because of the code organization.
     // TODO: use restricted privacy here
+    #[doc(hidden)]
     pub fn read_outputs(&self) -> Result<Vec<(Box<Output>, u64)>> {
         let config = try!(self.simulation_table());
         if let Some(outputs) = config.get("outputs") {

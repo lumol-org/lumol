@@ -52,6 +52,7 @@ impl Input {
 
     /// Read the `Input` from a TOML formatted string.
     // TODO: use restricted privacy here
+    #[doc(hidden)]
     pub fn from_str(path: PathBuf, buffer: &str) -> Result<Input> {
         let mut parser = Parser::new(buffer);
         let config = try!(parser.parse().ok_or(

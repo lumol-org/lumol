@@ -19,6 +19,7 @@ impl InteractionsInput {
     /// Read the "pairs" section from the potential configuration. This is an
     /// internal function, public because of the code organization.
     // TODO: use restricted privacy here
+    #[doc(hidden)]
     pub fn read_pairs(&self, system: &mut System) -> Result<()> {
         let pairs = match self.config.get("pairs") {
             Some(pairs) => pairs,
@@ -106,6 +107,7 @@ impl InteractionsInput {
     /// Read the "bonds" section from the potential configuration. This is an
     /// internal function, public because of the code organization.
     // TODO: use restricted privacy here
+    #[doc(hidden)]
     pub fn read_bonds(&self, system: &mut System) -> Result<()> {
         let bonds = match self.config.get("bonds") {
             Some(bonds) => bonds,

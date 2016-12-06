@@ -35,6 +35,8 @@ impl InteractionsInput {
     }
 
     /// Read the interactions from a TOML formatted string.
+    // TODO: use restricted privacy here
+    #[doc(hidden)]
     pub fn from_str(string: &str) -> Result<InteractionsInput> {
         let mut parser = Parser::new(string);
         let config = try!(parser.parse().ok_or(
@@ -48,6 +50,7 @@ impl InteractionsInput {
     /// Read the interactions from a TOML table. This is an internal function,
     /// public because of the code organization.
     // TODO: use restricted privacy here
+    #[doc(hidden)]
     pub fn from_toml(config: Table) -> Result<InteractionsInput> {
         Ok(InteractionsInput{
             config: config

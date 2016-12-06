@@ -15,6 +15,7 @@ impl InteractionsInput {
     /// Read the "angles" section from the potential configuration. This is an
     /// internal function, public because of the code organization.
     // TODO: use restricted privacy here
+    #[doc(hidden)]
     pub fn read_angles(&self, system: &mut System) -> Result<()> {
         let angles = match self.config.get("angles") {
             Some(angles) => angles,
@@ -50,6 +51,7 @@ impl InteractionsInput {
     /// Read the "dihedrals" section from the potential configuration. This is
     /// an internal function, public because of the code organization.
     // TODO: use restricted privacy here
+    #[doc(hidden)]
     pub fn read_dihedrals(&self, system: &mut System) -> Result<()> {
         let dihedrals = match self.config.get("dihedrals") {
             Some(dihedrals) => dihedrals,

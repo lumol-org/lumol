@@ -11,6 +11,7 @@ impl Input {
     /// Get the the simulation. This is an internal function, public because of
     /// the code organization.
     // TODO: use restricted privacy here
+    #[doc(hidden)]
     pub fn read_simulation(&self) -> Result<Simulation> {
         let propagator = try!(self.read_propagator());
         let mut simulation = Simulation::new(propagator);
@@ -24,6 +25,7 @@ impl Input {
     /// Get the number of steps in the simulation. This is an internal function,
     /// public because of the code organization.
     // TODO: use restricted privacy here
+    #[doc(hidden)]
     pub fn read_nsteps(&self) -> Result<usize> {
         let simulation = try!(self.simulation_table());
         let nsteps = try!(simulation.get("nsteps").ok_or(
@@ -40,6 +42,7 @@ impl Input {
     /// Get the simulation TOML table. This is an internal function, public
     /// because of the code organization.
     // TODO: use restricted privacy here
+    #[doc(hidden)]
     pub fn simulation_table(&self) -> Result<&Table> {
         let simulations = try!(extract::slice("simulations", &self.config, "input file"));
         if simulations.len() != 1 {

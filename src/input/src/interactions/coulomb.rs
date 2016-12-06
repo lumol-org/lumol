@@ -14,6 +14,7 @@ impl InteractionsInput {
     /// Read the "coulomb" section from the potential configuration. This is an
     /// internal function, public because of the code organization.
     // TODO: use restricted privacy here
+    #[doc(hidden)]
     pub fn read_coulomb(&self, system: &mut System) -> Result<()> {
         let coulomb = match self.config.get("coulomb") {
             Some(coulomb) => coulomb,
@@ -60,6 +61,7 @@ impl InteractionsInput {
     /// Read the "charges" from the potential configuration. This is an internal
     /// function, public because of the code organization.
     // TODO: use restricted privacy here
+    #[doc(hidden)]
     pub fn read_charges(&self, system: &mut System) -> Result<()> {
         let charges = match self.config.get("charges") {
             Some(charges) => charges,
