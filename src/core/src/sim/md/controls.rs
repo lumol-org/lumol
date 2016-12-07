@@ -128,13 +128,8 @@ pub struct RemoveRotation;
 
 impl Control for RemoveRotation {
     fn control(&mut self, system: &mut System) {
-        let total_mass = system.iter().fold(0.0, |total_mass, particle| total_mass + particle.mass);
-        let com = system.iter().fold(
-            Vector3D::zero(),
-            |com, particle| {
-                com + particle.position * particle.mass / total_mass
-            }
-        );
+        // Center-of-mass
+        let com = system.com();
 
         // Angular momentum
         let moment = system.iter().fold(

@@ -284,15 +284,30 @@ impl System {
 
     /// Return the center-of-mass of a molecule
     pub fn molecule_com(&self, molid: usize) -> Vector3D {
+        // iterate over all particles of molecule(molid)
         let total_mass = self.molecule(molid)
             .iter()
-            .map(|i| self[i].mass)
-            .sum();
+            .fold(0.0, |total_mass, pi| total_mass + self[pi].mass);
         let com = self.molecule(molid)
             .iter()
-            .map(|i| self[i].mass * self[i].position)
-            .fold(Vector3D::zero(), |com , p| com + p);
+            .fold(Vector3D::zero(), |com , pi| { 
+                com + self[pi].mass * self[pi].position
+            });
         com / total_mass
+    }
+
+    /// Return the center-of-mass of the system
+    pub fn com(&self) -> Vector3D {
+        // iterate over all particles in the system
+        let total_mass = self
+            .iter()
+            .fold(0.0, |total_mass, particle| total_mass + particle.mass);
+        let com: Vector3D = self
+            .iter()
+            .fold(Vector3D::zero(), |com, particle| {
+                com + particle.position * particle.mass
+            });
+        com / total_mass    
     }
 
     /// Get an iterator over the `Particle` in this system
@@ -803,6 +818,7 @@ mod tests {
         system[0].position = Vector3D::new(9.0, 0.0, 0.0);
         system[1].position = Vector3D::zero();
         assert_eq!(system.molecule_com(0), Vector3D::new(4.5, 0.0, 0.0));
+        assert_eq!(system.com(), Vector3D::new(4.5, 0.0, 0.0));
     }
 
     #[test]
