@@ -18,6 +18,7 @@ install:
     - export PATH=$HOME/.local/bin:$PATH:$HOME/local/bin:$HOME/.cargo/bin
     - export CC=gcc-4.9
     - export CXX=g++-4.9
+    - export RUSTFLAGS="-C link-dead-code"
     # Build and cache kcov
     - |
       if [ -f $HOME/local/bin/kcov ]; then
