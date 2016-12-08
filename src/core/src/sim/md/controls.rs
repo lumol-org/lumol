@@ -129,7 +129,7 @@ pub struct RemoveRotation;
 impl Control for RemoveRotation {
     fn control(&mut self, system: &mut System) {
         // Center-of-mass
-        let com = system.com();
+        let com = system.center_of_mass();
 
         // Angular momentum
         let moment = system.iter().fold(

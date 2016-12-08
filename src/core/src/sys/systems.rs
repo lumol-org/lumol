@@ -297,7 +297,7 @@ impl System {
     }
 
     /// Return the center-of-mass of the system
-    pub fn com(&self) -> Vector3D {
+    pub fn center_of_mass(&self) -> Vector3D {
         // iterate over all particles in the system
         let total_mass = self
             .iter()
@@ -818,7 +818,7 @@ mod tests {
         system[0].position = Vector3D::new(9.0, 0.0, 0.0);
         system[1].position = Vector3D::zero();
         assert_eq!(system.molecule_com(0), Vector3D::new(4.5, 0.0, 0.0));
-        assert_eq!(system.com(), Vector3D::new(4.5, 0.0, 0.0));
+        assert_eq!(system.center_of_mass(), Vector3D::new(4.5, 0.0, 0.0));
     }
 
     #[test]
