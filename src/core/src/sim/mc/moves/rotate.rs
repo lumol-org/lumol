@@ -9,7 +9,7 @@ use std::f64;
 use super::MCMove;
 use super::select_molecule;
 
-use types::{Matrix3, Vector3D, Zero};
+use types::{Matrix3, Vector3D};
 use sys::{System, EnergyCache};
 
 /// Monte-Carlo move for rotating a rigid molecule
@@ -82,18 +82,18 @@ impl MCMove for Rotate {
             self.axis_rng.sample(rng)
         ).normalized();
         let theta = self.range.sample(rng);
-        self.newpos.clear();
-
+       
+        // get indices of particles of selected molecule
         let molecule = system.molecule(self.molid);
-
-        let mut masses = vec![0.0; molecule.size()];
-        for (i, pi) in molecule.iter().enumerate() {
-            masses[i] = system[pi].mass;
+        // store positions of selected molecule
+        self.newpos.clear();
+        for pi in molecule.iter() {
             self.newpos.push(system[pi].position);
         }
-
-        rotate_around_axis(&mut self.newpos, &masses, axis, theta);
-        return true;
+        // get center-of-mass of molecule
+        let com = system.molecule_com(self.molid);
+        rotate_around_axis(&mut self.newpos, com, axis, theta);
+        true
     }
 
     fn cost(&self, system: &System, beta: f64, cache: &mut EnergyCache) -> f64 {
@@ -120,17 +120,10 @@ impl MCMove for Rotate {
     }
 }
 
-/// Rotate the particles at `positions` with the masses in `masses` around the
-/// `axis` axis by `angle`. The `positions` array is overwritten with the new
-/// positions.
-fn rotate_around_axis(positions: &mut [Vector3D], masses: &[f64], axis: Vector3D, angle: f64) {
-    debug_assert!(positions.len() == masses.len());
-    // Get center of mass (com) of the molecule
-    let total_mass = masses.iter().fold(0.0, |total, m| total + m);
-    let com = positions.iter().zip(masses).fold(Vector3D::zero(),
-        |com, (&position, &mass)| com + position * mass / total_mass
-    );
-
+/// Rotate the particles at `positions` with the center-of-mass position 
+/// `com` around the `axis` axis by `angle`. The `positions` array is 
+/// overwritten with the new positions.
+fn rotate_around_axis(positions: &mut [Vector3D], com: Vector3D, axis: Vector3D, angle: f64) {
     let rotation = rotation_matrix(&axis, angle);
     for position in positions {
         let oldpos = *position - com;

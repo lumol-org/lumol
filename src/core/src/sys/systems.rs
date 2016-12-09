@@ -15,7 +15,7 @@ use std::collections::BTreeMap;
 
 use energy::PairInteraction;
 use energy::{BondPotential, AnglePotential, DihedralPotential};
-use types::{Vector3D, Matrix3};
+use types::{Vector3D, Matrix3, Zero};
 
 use super::{Particle, ParticleKind};
 use super::Molecule;
@@ -281,6 +281,34 @@ impl System {
 
     /// Get the number of particles in this system
     #[inline] pub fn size(&self) -> usize {self.particles.len()}
+
+    /// Return the center-of-mass of a molecule
+    pub fn molecule_com(&self, molid: usize) -> Vector3D {
+        // iterate over all particles of molecule(molid)
+        let total_mass = self.molecule(molid)
+            .iter()
+            .fold(0.0, |total_mass, pi| total_mass + self[pi].mass);
+        let com = self.molecule(molid)
+            .iter()
+            .fold(Vector3D::zero(), |com , pi| { 
+                com + self[pi].mass * self[pi].position
+            });
+        com / total_mass
+    }
+
+    /// Return the center-of-mass of the system
+    pub fn center_of_mass(&self) -> Vector3D {
+        // iterate over all particles in the system
+        let total_mass = self
+            .iter()
+            .fold(0.0, |total_mass, particle| total_mass + particle.mass);
+        let com: Vector3D = self
+            .iter()
+            .fold(Vector3D::zero(), |com, particle| {
+                com + particle.position * particle.mass
+            });
+        com / total_mass    
+    }
 
     /// Get an iterator over the `Particle` in this system
     #[inline] pub fn iter(&self) -> slice::Iter<Particle> {
@@ -779,6 +807,18 @@ mod tests {
 
         system.set_cell(UnitCell::new());
         assert_eq!(system.distance(0, 1), 9.0);
+    }
+
+    #[test]
+    fn center_of_mass() {
+        let mut system = System::from_cell(UnitCell::cubic(5.0));
+        system.add_particle(Particle::new("O"));
+        system.add_particle(Particle::new("O"));
+        let _ = system.add_bond(0, 1);
+        system[0].position = Vector3D::new(9.0, 0.0, 0.0);
+        system[1].position = Vector3D::zero();
+        assert_eq!(system.molecule_com(0), Vector3D::new(4.5, 0.0, 0.0));
+        assert_eq!(system.center_of_mass(), Vector3D::new(4.5, 0.0, 0.0));
     }
 
     #[test]
