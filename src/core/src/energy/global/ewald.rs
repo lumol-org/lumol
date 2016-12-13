@@ -765,7 +765,7 @@ mod tests {
     #[should_panic]
     fn triclinic_cell() {
         let mut system = testing_system();
-        system.set_cell(UnitCell::triclinic(0.0, 0.0, 0.0, 0.0, 0.0, 0.0));
+        system.set_cell(UnitCell::triclinic(10.0, 10.0, 10.0, 90.0, 90.0, 90.0));
         let mut ewald = Ewald::new(8.0, 10);
         let _ = ewald.energy(&system);
     }
