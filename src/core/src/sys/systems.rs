@@ -170,7 +170,7 @@ impl System {
     /// Remove the molecule at index `i`
     pub fn remove_molecule(&mut self, molid: usize) {
         let molecule = self.molecules.remove(molid);
-        let first = molecule.first();
+        let first = molecule.start();
         let size = molecule.size();
 
         for _ in 0..size {
@@ -221,10 +221,10 @@ impl System {
         let mut permutations = Permutations::new();
         // If new_mol.last() + 1 == old_mol.first(), no one moved. Else,
         // we generate the permutations
-        if !self.are_in_same_molecule(particle_i, particle_j) && new_mol.last() + 1 != old_mol.first() {
+        if !self.are_in_same_molecule(particle_i, particle_j) && new_mol.end() != old_mol.start() {
             let size = old_mol.size();
-            let first = old_mol.first();
-            let second = new_mol.last() + 1;
+            let first = old_mol.start();
+            let second = new_mol.end();
             // Add permutation for the molecule we just moved around
             for i in 0..size {
                 permutations.push((first + i, second + i));
@@ -289,7 +289,7 @@ impl System {
             .fold(0.0, |total_mass, pi| total_mass + self[pi].mass);
         let com = self.molecule(molid)
             .iter()
-            .fold(Vector3D::zero(), |com , pi| { 
+            .fold(Vector3D::zero(), |com , pi| {
                 com + self[pi].mass * self[pi].position
             });
         com / total_mass
@@ -306,7 +306,7 @@ impl System {
             .fold(Vector3D::zero(), |com, particle| {
                 com + particle.position * particle.mass
             });
-        com / total_mass    
+        com / total_mass
     }
 
     /// Get an iterator over the `Particle` in this system
@@ -343,14 +343,14 @@ impl System {
         let mut new_mol = self.molecules[new_molid].clone();
         let old_mol = self.molecules[old_molid].clone();
 
-        if new_mol.last() + 1 == old_mol.first() {
+        if new_mol.end() == old_mol.start() {
             // Just update the molecules ids
             for i in old_mol {
                 self.molids[i] = new_molid;
             }
         } else {
             // Move the particles close together
-            let mut new_index = new_mol.last() + 1;
+            let mut new_index = new_mol.end();
             for i in old_mol {
                 // Remove particles from the old position, and insert it to the
                 // new one. The indexes are valid during the movement, because
@@ -375,11 +375,11 @@ impl System {
         }
 
         // Update molid for all particles after the old molecule
-        for molid in self.molids.iter_mut().skip(old_mol.last() + 1) {
+        for molid in self.molids.iter_mut().skip(old_mol.end()) {
             *molid -= 1;
         }
 
-        let delta = old_mol.first() - new_mol.last() - 1;
+        let delta = old_mol.start() - new_mol.end();
         old_mol.translate_by(- (delta as isize));
 
         new_mol.merge_with(old_mol);

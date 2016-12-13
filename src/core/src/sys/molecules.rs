@@ -28,10 +28,8 @@ pub struct Molecule {
     /// the connectivity between the particles `i + self.first` and
     /// `j + self.first`
     connections: Array2<Connectivity>,
-    /// Index of the first atom in this molecule.
-    first: usize,
-    /// Index of the last (included) atom in this molecule.
-    last: usize,
+    /// Range of atomic indexes in this molecule.
+    range: Range<usize>,
     /// Hashed value of the set of bonds in the system
     cached_hash: u64
 }
@@ -50,39 +48,39 @@ impl Molecule {
             angles: HashSet::new(),
             dihedrals: HashSet::new(),
             connections: Array2::default((1, 1)),
-            first: i,
-            last: i,
+            range: i..i+1,
             cached_hash: 0
         }
     }
 
     /// Get the number of atoms in the molecule
     pub fn size(&self) -> usize {
-        self.last - self.first + 1
+        self.range.len()
     }
 
     /// Get the first atom of this molecule
-    pub fn first(&self) -> usize {
-        self.first
+    pub fn start(&self) -> usize {
+        self.range.start
     }
 
-    /// Get the last atom of this molecule
-    pub fn last(&self) -> usize {
-        self.last
+    /// Get the index of the first atom after this molecule
+    pub fn end(&self) -> usize {
+        self.range.end
     }
 
     /// Does this molecule contains the particle `i`
     pub fn contains(&self, i: usize) -> bool {
-        self.first <= i && i <= self.last
+        // TODO: use Range::contains when stable
+        self.range.start <= i && i < self.range.end
     }
 
     /// Cache the hash of the bonds
     fn rehash(&mut self) {
         let mut hasher = DefaultHasher::new();
-        (self.last - self.first).hash(&mut hasher);
+        self.range.len().hash(&mut hasher);
 
         let mut bonds = self.bonds.iter()
-                              .map(|bond| Bond::new(bond.i() - self.first, bond.j() - self.first))
+                              .map(|bond| Bond::new(bond.i() - self.start(), bond.j() - self.start()))
                               .collect::<Vec<_>>();
         bonds.sort();
         for bond in &bonds {
@@ -156,7 +154,7 @@ impl Molecule {
         self.connections = Array2::default((n, n));
 
         // Getting needed variables for the `add_connect_term` closure
-        let first = self.first;
+        let first = self.start();
         let connections = &mut self.connections;
         let mut add_connect_term = |i, j, term| {
             let old_connect = connections[(i - first, j - first)];
@@ -182,8 +180,8 @@ impl Molecule {
     /// Merge this molecule with `other`. The first particle in `other` should
     /// be the particle just after the last one in `self`.
     pub fn merge_with(&mut self, other: Molecule) {
-        assert!(self.last + 1 == other.first);
-        self.last = other.last;
+        assert!(self.range.end == other.range.start);
+        self.range.end = other.range.end;
         for bond in other.bonds() {
             self.bonds.insert(*bond);
         }
@@ -206,14 +204,14 @@ impl Molecule {
     pub fn translate_by(&mut self, delta: isize) {
         if delta < 0 {
             // We should not create negative indexes
-            assert!((delta.abs() as usize) < self.first);
+            assert!((delta.abs() as usize) < self.start());
         }
 
         // The wrapping_add are necessary here, and produce the right result,
         // thanks to integer overflow and the conversion below.
         let delta = delta as usize;
-        self.first = self.first.wrapping_add(delta);
-        self.last = self.last.wrapping_add(delta);
+        self.range.start = self.range.start.wrapping_add(delta);
+        self.range.end = self.range.end.wrapping_add(delta);
 
         let mut new_bonds = HashSet::new();
         for bond in &self.bonds {
@@ -260,7 +258,7 @@ impl Molecule {
     /// dihedral. This function also update the indexes for the
     /// bonds/angles/dihedral by remove 1 to all the values `> i`
     pub fn remove_particle(&mut self, i: usize) {
-        assert!(self.first <= i && i <= self.last);
+        assert!(self.contains(i));
         // Remove bonds containing the particle `i`
         let mut new_bonds = HashSet::new();
         for bond in self.bonds() {
@@ -280,7 +278,7 @@ impl Molecule {
         }
 
         self.bonds = new_bonds;
-        self.last -= 1;
+        self.range.end -= 1;
         self.rebuild();
     }
 
@@ -301,9 +299,8 @@ impl Molecule {
 
     /// Get the connectivity between the particles `i` and `j`
     #[inline] pub fn connectivity(&self, i: usize, j: usize) -> Connectivity {
-        assert!(self.first <= i && i <= self.last);
-        assert!(self.first <= j && j <= self.last);
-        return self.connections[(i - self.first, j - self.first)];
+        assert!(self.contains(i) && self.contains(j));
+        return self.connections[(i - self.start(), j - self.start())];
     }
 
     /// Get an iterator over the particles in the molecule
@@ -330,10 +327,7 @@ impl IntoIterator for Molecule {
     type IntoIter = Range<usize>;
 
     fn into_iter(self) -> Range<usize> {
-        Range{
-            start: self.first,
-            end: self.last + 1,
-        }
+        self.range
     }
 }
 
@@ -342,10 +336,7 @@ impl<'a> IntoIterator for &'a Molecule {
     type IntoIter = Range<usize>;
 
     fn into_iter(self) -> Range<usize> {
-        Range{
-            start: self.first,
-            end: self.last + 1,
-        }
+        self.range.clone()
     }
 }
 
@@ -365,22 +356,22 @@ mod test {
         molecule.add_bond(1, 2);
         molecule.add_bond(2, 3);
 
-        assert_eq!(molecule.first(), 0);
-        assert_eq!(molecule.last(), 3);
+        assert_eq!(molecule.start(), 0);
+        assert_eq!(molecule.end(), 4);
         assert!(molecule.bonds().contains(&Bond::new(2, 3)));
         assert!(molecule.angles().contains(&Angle::new(1, 2, 3)));
         assert!(molecule.dihedrals().contains(&Dihedral::new(0, 1, 2, 3)));
 
         molecule.translate_by(5);
-        assert_eq!(molecule.first(), 5);
-        assert_eq!(molecule.last(), 8);
+        assert_eq!(molecule.start(), 5);
+        assert_eq!(molecule.end(), 9);
         assert!(molecule.bonds().contains(&Bond::new(7, 8)));
         assert!(molecule.angles().contains(&Angle::new(6, 7, 8)));
         assert!(molecule.dihedrals().contains(&Dihedral::new(5, 6, 7, 8)));
 
         molecule.translate_by(-3);
-        assert_eq!(molecule.first(), 2);
-        assert_eq!(molecule.last(), 5);
+        assert_eq!(molecule.start(), 2);
+        assert_eq!(molecule.end(), 6);
         assert!(molecule.bonds().contains(&Bond::new(4, 5)));
         assert!(molecule.angles().contains(&Angle::new(3, 4, 5)));
         assert!(molecule.dihedrals().contains(&Dihedral::new(2, 3, 4, 5)));
@@ -408,8 +399,8 @@ mod test {
         molecule.add_bond(1, 6);
         molecule.add_bond(1, 7);
 
-        assert_eq!(molecule.first(), 0);
-        assert_eq!(molecule.last(), 7);
+        assert_eq!(molecule.start(), 0);
+        assert_eq!(molecule.end(), 8);
 
         assert_eq!(molecule.size(), 8);
 
