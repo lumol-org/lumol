@@ -14,10 +14,12 @@ pub use self::particles::{Particle, ParticleKind};
 mod cells;
 pub use self::cells::{UnitCell, CellShape};
 
+mod connect;
+pub use self::connect::{Bond, Angle, Dihedral};
+pub use self::connect::Connectivity;
+pub use self::connect::{CONNECT_12, CONNECT_13, CONNECT_14, CONNECT_FAR};
+
 mod molecules;
-pub use self::molecules::{Bond, Angle, Dihedral};
-pub use self::molecules::Connectivity;
-pub use self::molecules::{CONNECT_12, CONNECT_13, CONNECT_14, CONNECT_FAR};
 pub use self::molecules::Molecule;
 pub use self::molecules::molecule_type;
 
