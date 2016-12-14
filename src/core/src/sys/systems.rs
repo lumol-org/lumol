@@ -265,7 +265,6 @@ impl System {
         let _ = self.molids.remove(i);
     }
 
-
     /// Insert a particle at the end of the internal list
     pub fn add_particle(&mut self, p: Particle) {
         let mut part = p;
@@ -465,6 +464,19 @@ impl System {
         let mkind = self.particles[m].kind;
         self.interactions.dihedrals(ikind, jkind, kkind, mkind)
     }
+
+    /// Return the largest cutoff radius from pair interactions
+    /// excluding electrostatic interactions.
+    pub fn largest_cutoff(&self) -> f64 {
+        let mut largest_rc = 0f64;
+        // iterate over all (intermolecular) pair interactions to extract rc
+        for rc in self.interactions.all_pairs().iter().map(|i| i.get_cutoff()) {
+            if rc > largest_rc {
+                largest_rc = rc
+            };
+        } 
+        largest_rc
+    }
 }
 
 impl<'a> IntoIterator for &'a System {
@@ -637,6 +649,7 @@ impl IndexMut<usize> for System {
 mod tests {
     use sys::*;
     use types::*;
+    use energy::*;
 
     #[test]
     fn step() {
@@ -829,6 +842,21 @@ mod tests {
         assert_eq!(system.bond_potentials(0, 0).len(), 0);
         assert_eq!(system.angle_potentials(0, 0, 0).len(), 0);
         assert_eq!(system.dihedral_potentials(0, 0, 0, 0).len(), 0);
+    }
+
+    #[test]
+    fn largest_cutoff() {
+        let mut system = System::new();
+        let small_rc = PairInteraction::new(
+            Box::new(LennardJones{sigma: 3.0, epsilon: 1.0}), 10.0
+        );
+        let large_rc = PairInteraction::new(
+            Box::new(LennardJones{sigma: 2.0, epsilon: 1.0}), 14.0
+        );
+        system.interactions.add_pair("A", "B", small_rc);
+        assert_eq!(system.largest_cutoff(), 10.0);
+        system.interactions.add_pair("A", "C", large_rc);
+        assert_eq!(system.largest_cutoff(), 14.0);
     }
 
     #[test]

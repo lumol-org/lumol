@@ -147,6 +147,11 @@ impl PairInteraction {
     pub fn set_restriction(&mut self, restriction: PairRestriction) {
         self.restriction = restriction;
     }
+
+    /// Return the cutoff radius
+    pub fn get_cutoff(&self) -> f64 {
+        self.cutoff
+    }
 }
 
 impl PairInteraction {
@@ -304,6 +309,8 @@ mod tests {
 
         assert_eq!(pairs.force(4.1), 0.0);
         assert_eq!(pairs.energy(4.1), 0.0);
+
+        assert_eq!(pairs.get_cutoff(), 4.0);
     }
 
     #[test]
