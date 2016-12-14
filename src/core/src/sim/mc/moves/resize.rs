@@ -50,6 +50,22 @@ impl MCMove for Resize {
         "resizing of the cell"
     }
 
+    fn setup(&mut self, system: &System) {
+        // get the largest cutoff of all intermolecular interactions in the
+        // system.
+        // TODO: include elecetrostatic interactions
+        self.rc_max = 0f64;
+        // iterate over all (intermolecular) pair interactions to extract rc
+        for rc in system.interactions()
+            .all_pairs()
+            .iter()
+            .map(|i| i.get_cutoff()) {
+            if rc > self.rc_max {
+                self.rc_max = rc
+            }
+        }
+    }
+
     fn prepare(&mut self, system: &mut System, rng: &mut Box<Rng>) -> bool {
         let delta = self.range.sample(rng);
         // clone the current (old) system
@@ -59,43 +75,49 @@ impl MCMove for Resize {
         // change the simulation cell
         system.cell_mut().scale_mut(Matrix3::one() * scaling_factor);
         let new_cell = system.cell().clone();
-        // check the radius of the smallest inscribed sphere and compare to the 
+        // check the radius of the smallest inscribed sphere and compare to the
         // cut off distance.
         // abort simulation when box gets smaller than twice the cutoff radius
         if new_cell.lengths().iter().any(|&d| 0.5 * d <= self.rc_max) {
-            fatal_error!(
-                "Tried to decrease the cell size but \
-                new size conflicts with the cut off radius. \
-                You could try to increase the number of particles to get rid \
-                of this problem."
-            )
+            fatal_error!("Tried to decrease the cell size but new size 
+                conflicts with the cut off radius. \
+                Increase the number of particles to get rid of this problem.")
         }
-        for particle in system.iter_mut() {
-            // when changing the size (or shape) of the cell, fractional
-            // coordinates do not change.
-            // compute fractional coordinates using the old cell
-            let fractional = self.old_system.cell().fractional(&particle.position);
-            // compute coordinates after resizing the cell
-            particle.position = new_cell.cartesian(&fractional);
+        // loop over all molecules in the system
+        // we don't want to change the intramolecular distances
+        // so we compute the translation vector of the center of mass
+        // of a molecule and apply it to all particles
+        
+        // TODO: check if system.size == system.molecules().len
+        // if that is the case, skip com computation since it is a
+        // system without molecules
+        for (mi, molecule) in self.old_system
+            .molecules()
+            .iter()
+            .enumerate() {
+            let com_old = self.old_system.molecule_com(mi);
+            let com_frac = self.old_system
+                .cell()
+                .fractional(&com_old);
+            // compute translation vector
+            let delta_com = new_cell.cartesian(&com_frac) - com_old;
+            // loop over all particles (indices) in the molecule
+            for pi in molecule.iter() {
+                system[pi].position += delta_com;
+            }
         }
         true
     }
 
     fn cost(&self, system: &System, beta: f64, cache: &mut EnergyCache) -> f64 {
-        cache.unused();
-        // get system energy before change: this is stored in `self.old_system`
-        let old_energy = self.old_system.potential_energy();
-        // get system energy after preparation
-        let new_energy = system.potential_energy();
-        let delta_energy = new_energy - old_energy;
-
+        let delta_energy = cache.resize_cell_cost(system);
         let new_volume = system.volume();
         let old_volume = self.old_system.volume();
         let delta_volume = new_volume - old_volume;
 
         // return the cost function
-        beta * (delta_energy + self.pressure * delta_volume)
-            - (system.size() as f64) * f64::ln(new_volume / old_volume)
+        beta * (delta_energy + self.pressure * delta_volume) -
+        (system.size() as f64) * f64::ln(new_volume / old_volume)
     }
 
     fn apply(&mut self, _: &mut System) {

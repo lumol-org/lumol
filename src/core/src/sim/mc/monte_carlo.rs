@@ -335,6 +335,7 @@ mod tests {
         let mut mc = MonteCarlo::new(100.0);
         mc.add_move_with_acceptance(Box::new(DummyMove), 1.0, -0.1);
     }
+
     #[test]
     fn valid_acceptance() {
         let mut mc = MonteCarlo::new(100.0);

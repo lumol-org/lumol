@@ -6,7 +6,7 @@
 //! An `System` consists of a list of `Particle`; a list of `Molecule`
 //! specifying how the particles are bonded together; an unit cell for boundary
 //! conditions; and the interactions between these particles.
-use std::ops::{Index, IndexMut};
+use std::ops::{Index, IndexMut, Range};
 use std::slice;
 use std::cmp::{min, max};
 use std::iter::IntoIterator;
@@ -131,6 +131,11 @@ impl System {
         &self.molecules
     }
 
+    /// Get the list of molecules in the system.
+    #[inline] pub fn molecules_mut(&mut self) -> &[Molecule] {
+        &self.molecules
+    }
+
     /// Get the molecule at index `id`
     #[inline] pub fn molecule(&self, id: usize) -> &Molecule {
         &self.molecules[id]
@@ -139,6 +144,19 @@ impl System {
     /// Get the index of the molecule containing the particle `i`
     #[inline] pub fn molid(&self, i: usize) -> usize {
         self.molids[i]
+    }
+
+    /// Get the particles of the molecule
+    #[inline] pub fn particles_of_molecule(&self, id: usize) -> &[Particle] {
+        let range = self.molecules[id].first() .. self.molecules[id].size();
+        &self.particles[range]
+    }
+
+        /// Get the particles of the molecule
+    #[inline] pub fn particles_of_molecule2(&self, molecule: &Molecule) 
+        -> &[Particle] {
+        let range = molecule.first() .. molecule.size();
+        &self.particles[range]
     }
 
     /// Get the length of the shortest bond path to go from the particle `i` to
@@ -638,6 +656,15 @@ impl IndexMut<usize> for System {
     }
 }
 
+impl Index<Range<usize>> for System {
+    type Output = [Particle];
+    #[inline]
+    fn index(&self, index: Range<usize>) -> &[Particle] {
+        // Index::index(&self.particles, index)
+        &self.particles[index]
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use sys::*;
@@ -773,6 +800,33 @@ mod tests {
         assert_eq!(system[0].name(), "O");
         assert_eq!(system[1].name(), "H");
         assert_eq!(system[2].name(), "H");
+    }
+
+    #[test]
+    fn particles_from_range() {
+        let mut system = System::new();
+        let particles = [Particle::new("O"),
+                         Particle::new("H"),
+                         Particle::new("C")];
+
+        system.add_particle(particles[0].clone());
+        system.add_particle(particles[1].clone());
+        system.add_particle(particles[2].clone());
+        {
+            let particles_range = &system[0..2];
+            assert_eq!(particles_range[0].name(), particles[0].name());
+            assert_eq!(particles_range[1].name(), particles[1].name());    
+        }
+        {
+            let particles_range = &system[1..3];
+            assert_eq!(particles_range[0].name(), particles[1].name());
+            assert_eq!(particles_range[1].name(), particles[2].name());    
+        }
+        {
+            let particles_range = &system[1..3];
+            assert_eq!(particles_range[0].name(), particles[1].name());
+            assert_eq!(particles_range[1].name(), particles[2].name());
+        }
     }
 
     #[test]
