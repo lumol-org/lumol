@@ -145,6 +145,9 @@ impl Propagator for MonteCarlo {
     fn setup(&mut self, system: &System) {
         self.normalize_frequencies();
         self.cache.init(system);
+        for mc_move in self.moves.iter_mut() {
+            mc_move.0.setup(system)
+        } 
     }
 
     fn propagate(&mut self, system: &mut System) {
@@ -194,6 +197,17 @@ impl Propagator for MonteCarlo {
             mcmove.1.nattempted = 0;
         }
     }
+
+    /// Print some informations about moves to screen
+    fn finish(&mut self, _: &System) {
+        println!("Monte Carlo simulation summary");
+        for mc_move in self.moves.iter() {
+            println!("Statistics for move: {}", mc_move.0.describe());
+            println!("  Calls     : {}", mc_move.1.ncalled);
+            println!("  Acceptance: {} %", mc_move.1.naccepted as f64 /
+             mc_move.1.nattempted as f64 * 100.0);
+        }
+    }
 }
 
 
@@ -230,9 +244,9 @@ impl MoveCounter {
         // Check if `target_acceptance` has a valid value.
         if target_acceptance.is_some() {
             let ta = target_acceptance.unwrap();
-            if ta >= 1.0 || ta < 0.0 {
+            if ta >= 1.0 || ta <= 0.0 {
                 fatal_error!(
-                    "The target acceptance ratio of the move has to be a positive value smaller equal than 1."
+                    "The target acceptance ratio of the move has to be a positive value 0.0 <= ta < 1.0"
                 )
             }
         }
@@ -272,6 +286,7 @@ mod tests {
     struct DummyMove;
     impl MCMove for DummyMove {
         fn describe(&self) -> &str {"dummy"}
+        fn setup(&mut self, _: &System) {}
         fn prepare(&mut self, _: &mut System, _: &mut Box<Rng>) -> bool {true}
         fn cost(&self, _: &System, _: f64, _: &mut EnergyCache) -> f64 {0.0}
         fn apply(&mut self, _: &mut System) {}
@@ -315,6 +330,7 @@ mod tests {
         let mut mc = MonteCarlo::new(100.0);
         mc.add_move_with_acceptance(Box::new(DummyMove), 1.0, 0.5);
         mc.moves[0].1.set_acceptance(Some(1.1));
+        mc.moves[0].1.set_acceptance(Some(0.0));
     }
 
     #[test]
