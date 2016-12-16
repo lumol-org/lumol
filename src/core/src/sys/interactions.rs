@@ -190,13 +190,9 @@ impl Interactions {
     /// Using this function, you lose information
     /// about which interaction belongs to which pair of particles.
     pub fn all_pairs(&self) -> Vec<&PairInteraction> {
-        let res: Vec<&PairInteraction> = self.pairs
-            .values() // value is a Vec<&PairInteraction>
-            // flatten the vector -> return an iterator over
-            // Vec<&PairInteraction>
-            .flat_map(|i| i)
-            .collect();
-        res
+        self.pairs.values()        // get an iterator over map values
+                  .flat_map(|i| i) // flatten nested vectors
+                  .collect()       // collect into Vec<&PairInteraction>
     }
 
     /// Get all bonded interactions corresponding to the pair `(i, j)`
