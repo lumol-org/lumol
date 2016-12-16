@@ -162,21 +162,6 @@ impl EnergyCache {
             }
         }
 
-        // Interactions withing the sub-system being moved
-        for (i, &part_i) in idxes.iter().enumerate() {
-            for (j, &part_j) in idxes.iter().enumerate().skip(i + 1) {
-                let r = system.cell().distance(&newpos[i], &newpos[j]);
-                let energy = evaluator.pair(r, part_i, part_j);
-
-                pairs_delta += energy;
-                new_pairs[(part_i, part_j)] += energy;
-                new_pairs[(part_j, part_i)] += energy;
-
-                pairs_delta -= self.pairs_cache[(part_i, part_j)];
-            }
-        }
-
-
         // Recompute everything here. One day we could store some terms and do
         // the same thing than for pair interactions.
         let mut bonds = 0.0;
@@ -240,11 +225,12 @@ impl EnergyCache {
             let (n, m) = new_pairs.shape();
             debug_assert!(n == m);
             debug_assert!((n, m) == cache.pairs_cache.shape());
-            for i in 0..n {
+            // only loop over the indices that actually changed
+            for i in idxes.iter() {
                 for j in 0..n {
-                    if new_pairs[(i, j)] != 0.0 {
-                        cache.pairs_cache[(i, j)] = new_pairs[(i, j)];
-                    }
+                    if idxes.contains(&j) {continue}
+                    cache.pairs_cache[(*i, j)] = new_pairs[(*i, j)];
+                    cache.pairs_cache[(j, *i)] = new_pairs[(*i, j)];
                 }
             }
             // Update the cache for the global potentials
