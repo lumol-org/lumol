@@ -26,6 +26,8 @@ pub struct EnergyCache {
     pairs_cache: Array2<f64>,
     /// Energy of all the pairs in the system
     pairs: f64,
+    /// Contribution of long range corrections 
+    pairs_tail: f64,
     /// Energy of all the bonds in the system
     bonds: f64,
     /// Energy of all the angles in the system
@@ -52,6 +54,7 @@ impl EnergyCache {
         EnergyCache {
             pairs_cache: Array2::zeros((0, 0)),
             pairs: 0.0,
+            pairs_tail: 0.0,
             bonds: 0.0,
             angles: 0.0,
             dihedrals: 0.0,
@@ -65,6 +68,7 @@ impl EnergyCache {
     fn clear(&mut self) {
         self.pairs_cache.assign(0.0);
         self.pairs = 0.0;
+        self.pairs_tail = 0.0;
         self.bonds = 0.0;
         self.angles = 0.0;
         self.dihedrals = 0.0;
@@ -91,6 +95,7 @@ impl EnergyCache {
             }
         }
 
+        self.pairs_tail = evaluator.pairs_tail();
         self.bonds = evaluator.bonds();
         self.angles = evaluator.angles();
         self.dihedrals = evaluator.dihedrals();
@@ -102,6 +107,7 @@ impl EnergyCache {
     pub fn energy(&self) -> f64 {
         let mut energy = 0.0;
         energy += self.pairs;
+        energy += self.pairs_tail;
 
         energy += self.bonds;
         energy += self.angles;
@@ -222,12 +228,16 @@ impl EnergyCache {
             global_delta += potential.borrow_mut().move_particles_cost(system, &idxes, newpos);
         }
 
-        let cost = pairs_delta + (bonds - self.bonds)
+        let pairs_tail = evaluator.pairs_tail();
+
+        let cost = pairs_delta + (pairs_tail - self.pairs_tail)
+                               + (bonds - self.bonds)
                                + (angles - self.angles)
                                + (dihedrals - self.dihedrals)
                                + coulomb_delta + global_delta;
 
         self.updater = Some(Box::new(move |cache, system| {
+            cache.pairs_tail = pairs_tail;
             cache.bonds = bonds;
             cache.angles = angles;
             cache.dihedrals = dihedrals;
