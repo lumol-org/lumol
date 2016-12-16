@@ -265,7 +265,6 @@ impl System {
         let _ = self.molids.remove(i);
     }
 
-
     /// Insert a particle at the end of the internal list
     pub fn add_particle(&mut self, p: Particle) {
         let mut part = p;

@@ -147,6 +147,23 @@ impl PairInteraction {
     pub fn set_restriction(&mut self, restriction: PairRestriction) {
         self.restriction = restriction;
     }
+
+    /// Return the cutoff radius
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use lumol::energy::PairInteraction;
+    /// use lumol::energy::LennardJones;
+    ///
+    /// let ar = LennardJones{sigma: 3.405, epsilon: 1.0};
+    /// let interaction = PairInteraction::new(Box::new(ar), 9.1935);
+    /// let rc = interaction.get_cutoff();
+    /// assert_eq!(rc, 2.7f64 * 3.405);
+    /// ```
+    pub fn get_cutoff(&self) -> f64 {
+        self.cutoff
+    }
 }
 
 impl PairInteraction {
@@ -304,6 +321,8 @@ mod tests {
 
         assert_eq!(pairs.force(4.1), 0.0);
         assert_eq!(pairs.energy(4.1), 0.0);
+
+        assert_eq!(pairs.get_cutoff(), 4.0);
     }
 
     #[test]

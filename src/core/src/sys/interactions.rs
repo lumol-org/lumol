@@ -185,6 +185,16 @@ impl Interactions {
         }
     }
 
+    /// Get all pair interactions
+    ///
+    /// Using this function, you lose information
+    /// about which interaction belongs to which pair of particles.
+    pub fn all_pairs(&self) -> Vec<&PairInteraction> {
+        self.pairs.values()        // get an iterator over map values
+                  .flat_map(|i| i) // flatten nested vectors
+                  .collect()       // collect into Vec<&PairInteraction>
+    }
+
     /// Get all bonded interactions corresponding to the pair `(i, j)`
     pub fn bonds(&self, i: Kind, j: Kind) -> &[Box<BondPotential>] {
         let (i, j) = sort_pair(i, j);
@@ -278,6 +288,7 @@ mod test {
         assert_eq!(interactions.pairs(Kind(0), Kind(0)).len(), 0);
         interactions.add_pair("H", "H", pair.clone());
         assert_eq!(interactions.pairs(Kind(0), Kind(0)).len(), 1);
+        assert_eq!(interactions.all_pairs().len(), 2);
     }
 
     #[test]
