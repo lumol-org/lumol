@@ -64,6 +64,12 @@ impl MCMove for Translate {
         "molecular translation"
     }
 
+    fn setup(&mut self, _: &System) { 
+        // TODO: introduce a limitation for dr, dr_max, such that it can not 
+        // be larger than the largest cutoff in the system? We would initialize
+        // the value here.
+    }
+
     fn prepare(&mut self, system: &mut System, rng: &mut Box<Rng>) -> bool {
         if let Some(id) = select_molecule(system, self.moltype, rng) {
             self.molid = id;

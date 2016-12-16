@@ -65,6 +65,8 @@ impl MCMove for Rotate {
     fn describe(&self) -> &str {
         "molecular rotation"
     }
+    
+    fn setup(&mut self, _: &System) { }
 
     fn prepare(&mut self, system: &mut System, rng: &mut Box<Rng>) -> bool {
         if let Some(id) = select_molecule(system, self.moltype, rng) {
@@ -114,8 +116,12 @@ impl MCMove for Rotate {
 
     fn update_amplitude(&mut self, scaling_factor: Option<f64>) {
         if let Some(s) = scaling_factor {
-            self.theta *= s;
-            self.range = Range::new(-self.theta, self.theta);
+            if (s * self.theta).abs().to_degrees() <= 180.0 {
+                self.theta *= s;
+                self.range = Range::new(-self.theta, self.theta);
+            } else {
+                warn_once!("Tried to increase the maximum amplitude for rotations to more than 180°! Limiting amplitude to 180°!");
+            }
         }
     }
 }
