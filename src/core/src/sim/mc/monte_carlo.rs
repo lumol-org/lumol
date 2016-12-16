@@ -145,7 +145,7 @@ impl Propagator for MonteCarlo {
     fn setup(&mut self, system: &System) {
         self.normalize_frequencies();
         self.cache.init(system);
-        for mc_move in self.moves.iter_mut() {
+        for mc_move in &mut self.moves {
             mc_move.0.setup(system)
         } 
     }
@@ -200,12 +200,12 @@ impl Propagator for MonteCarlo {
 
     /// Print some informations about moves to screen
     fn finish(&mut self, _: &System) {
-        println!("Monte Carlo simulation summary");
+        info!("Monte Carlo simulation summary");
         for mc_move in self.moves.iter() {
-            println!("Statistics for move: {}", mc_move.0.describe());
-            println!("  Calls     : {}", mc_move.1.ncalled);
-            println!("  Acceptance: {} %", mc_move.1.naccepted as f64 /
-             mc_move.1.nattempted as f64 * 100.0);
+            info!("Statistics for move: {}", mc_move.0.describe());
+            info!("  Calls     : {}", mc_move.1.ncalled);
+            info!("  Acceptance: {} %", mc_move.1.naccepted as f64 /
+                mc_move.1.nattempted as f64 * 100.0);
         }
     }
 }
@@ -246,7 +246,7 @@ impl MoveCounter {
             let ta = target_acceptance.unwrap();
             if ta >= 1.0 || ta <= 0.0 {
                 fatal_error!(
-                    "The target acceptance ratio of the move has to be a positive value 0.0 <= ta < 1.0"
+                    "The target acceptance ratio of the move has to be a positive value 0.0 < ta < 1.0"
                 )
             }
         }
@@ -326,13 +326,18 @@ mod tests {
 
     #[test]
     #[should_panic]
-    fn invalid_acceptance() {
+    fn too_large_acceptance() {
         let mut mc = MonteCarlo::new(100.0);
         mc.add_move_with_acceptance(Box::new(DummyMove), 1.0, 0.5);
         mc.moves[0].1.set_acceptance(Some(1.1));
-        mc.moves[0].1.set_acceptance(Some(0.0));
     }
 
+    #[test]
+    #[should_panic]
+    fn negative_acceptance() {
+        let mut mc = MonteCarlo::new(100.0);
+        mc.add_move_with_acceptance(Box::new(DummyMove), 1.0, -0.1);
+    }
     #[test]
     fn valid_acceptance() {
         let mut mc = MonteCarlo::new(100.0);

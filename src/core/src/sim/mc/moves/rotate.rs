@@ -116,10 +116,12 @@ impl MCMove for Rotate {
 
     fn update_amplitude(&mut self, scaling_factor: Option<f64>) {
         if let Some(s) = scaling_factor {
-            if (s * self.theta).to_degrees() <= 180.0 {
+            if (s * self.theta).abs().to_degrees() <= 180.0 {
                 self.theta *= s;
+                self.range = Range::new(-self.theta, self.theta);
+            } else {
+                warn_once!("Tried to increase the maximum amplitude for rotations to more than 180°! Limiting amplitude to 180°!");
             }
-            self.range = Range::new(-self.theta, self.theta);
         }
     }
 }

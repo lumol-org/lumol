@@ -65,7 +65,7 @@ impl MCMove for Translate {
     }
 
     fn setup(&mut self, _: &System) { 
-        // Maybe introduce a limitation for dr, dr_max, such that it can not 
+        // TODO: introduce a limitation for dr, dr_max, such that it can not 
         // be larger than the largest cutoff in the system? We would initialize
         // the value here.
     }
