@@ -1,6 +1,6 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) 2015-2016 G. Fraux — BSD license
-use lumol::sim::{Propagator, MolecularDynamics, MonteCarlo};
+use lumol::sim::{Propagator, MolecularDynamics, MonteCarlo, Minimization};
 
 use error::{Error, Result};
 use {FromToml, FromTomlWithData};
@@ -21,6 +21,9 @@ impl Input {
             ))),
             "MonteCarlo" => Ok(Box::new(try!(
                 MonteCarlo::from_toml(propagator, self.path.clone())
+            ))),
+            "Minimization" => Ok(Box::new(try!(
+                Minimization::from_toml(propagator)
             ))),
             other => Err(Error::from(
                 format!("Unknown propagator type '{}'", other)
