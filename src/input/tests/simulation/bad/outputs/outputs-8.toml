@@ -1,0 +1,16 @@
+[input]
+version = 1
+
+[[systems]]
+file = "../../CO2.xyz"
+
+[[simulations]]
+nsteps = 0
+outputs = [
+    {type = "Energy", file = "energy.dat", frequency = true}
+    #^ 'frequency' must be an integer in output
+]
+
+[simulations.propagator]
+type = "MolecularDynamics"
+timestep = "1 fs"

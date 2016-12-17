@@ -14,6 +14,7 @@ impl InteractionsInput {
     /// Read the "coulomb" section from the potential configuration. This is an
     /// internal function, public because of the code organization.
     // TODO: use restricted privacy here
+    #[doc(hidden)]
     pub fn read_coulomb(&self, system: &mut System) -> Result<()> {
         let coulomb = match self.config.get("coulomb") {
             Some(coulomb) => coulomb,
@@ -30,7 +31,7 @@ impl InteractionsInput {
 
         if solvers.len() != 1 {
             return Err(Error::from(
-                format!("Got more than one coulombic solver: {}", solvers.join(" - "))
+                format!("Got more than one coulombic solver: {}", solvers.join(" and "))
             ));
         }
 
@@ -60,6 +61,7 @@ impl InteractionsInput {
     /// Read the "charges" from the potential configuration. This is an internal
     /// function, public because of the code organization.
     // TODO: use restricted privacy here
+    #[doc(hidden)]
     pub fn read_charges(&self, system: &mut System) -> Result<()> {
         let charges = match self.config.get("charges") {
             Some(charges) => charges,
@@ -100,55 +102,5 @@ impl InteractionsInput {
             warn!("System is not neutral and have a net charge of {:+}", total_charge);
         }
         Ok(())
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use InteractionsInput;
-    use testing::bad_inputs;
-    use lumol::sys::{Particle, System};
-    use std::path::Path;
-
-    #[test]
-    fn ewald() {
-        let path = Path::new(file!()).parent().unwrap().join("data").join("ewald.toml");
-        let mut system = System::new();
-        system.add_particle(Particle::new("A"));
-        system.add_particle(Particle::new("B"));
-
-        let input = InteractionsInput::new(path).unwrap();
-        input.read(&mut system).unwrap();
-
-        assert!(system.interactions().coulomb().is_some());
-        assert_eq!(system[0].charge, -8.0);
-        assert_eq!(system[1].charge, 3.0);
-    }
-
-    #[test]
-    fn wolf() {
-        let mut system = System::new();
-        system.add_particle(Particle::new("A"));
-        system.add_particle(Particle::new("B"));
-
-        let path = Path::new(file!()).parent().unwrap().join("data").join("wolf.toml");
-        let input = InteractionsInput::new(path).unwrap();
-        input.read(&mut system).unwrap();
-
-        assert!(system.interactions().coulomb().is_some());
-        assert_eq!(system[0].charge, -2.0);
-        assert_eq!(system[1].charge, 2.0);
-    }
-
-    #[test]
-    fn bad_coulomb() {
-        let mut system = System::new();
-        for path in bad_inputs("interactions", "coulomb") {
-            assert!(
-                InteractionsInput::new(path)
-                .and_then(|input| input.read(&mut system))
-                .is_err()
-            );
-        }
     }
 }

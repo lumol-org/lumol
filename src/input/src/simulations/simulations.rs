@@ -11,6 +11,7 @@ impl Input {
     /// Get the the simulation. This is an internal function, public because of
     /// the code organization.
     // TODO: use restricted privacy here
+    #[doc(hidden)]
     pub fn read_simulation(&self) -> Result<Simulation> {
         let propagator = try!(self.read_propagator());
         let mut simulation = Simulation::new(propagator);
@@ -24,6 +25,7 @@ impl Input {
     /// Get the number of steps in the simulation. This is an internal function,
     /// public because of the code organization.
     // TODO: use restricted privacy here
+    #[doc(hidden)]
     pub fn read_nsteps(&self) -> Result<usize> {
         let simulation = try!(self.simulation_table());
         let nsteps = try!(simulation.get("nsteps").ok_or(
@@ -40,6 +42,7 @@ impl Input {
     /// Get the simulation TOML table. This is an internal function, public
     /// because of the code organization.
     // TODO: use restricted privacy here
+    #[doc(hidden)]
     pub fn simulation_table(&self) -> Result<&Table> {
         let simulations = try!(extract::slice("simulations", &self.config, "input file"));
         if simulations.len() != 1 {
@@ -53,30 +56,5 @@ impl Input {
         ));
 
         return Ok(simulation);
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use Input;
-    use testing::{bad_inputs, cleanup};
-    use std::path::Path;
-
-    #[test]
-    fn nsteps() {
-        let path = Path::new(file!()).parent().unwrap()
-                                     .join("data")
-                                     .join("md.toml");
-        let input = Input::new(&path).unwrap();
-        let config = input.read().unwrap();
-        assert_eq!(config.nsteps, 1000000);
-        cleanup(&path);
-    }
-
-    #[test]
-    fn bad_nsteps() {
-        for path in bad_inputs("simulations", "nsteps") {
-            assert!(Input::new(path).and_then(|input| input.read()).is_err());
-        }
     }
 }

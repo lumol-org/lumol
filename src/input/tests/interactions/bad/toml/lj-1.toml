@@ -1,0 +1,7 @@
+[input]
+version = 1
+
+[[pairs]]
+atoms = ["A", "A"]
+lj = {sigma = "3 A"}
+#^ Missing 'epsilon' in Lennard-Jones potential

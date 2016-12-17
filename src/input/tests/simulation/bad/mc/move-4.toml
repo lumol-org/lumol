@@ -1,0 +1,16 @@
+[input]
+version = 1
+
+[[systems]]
+file = "../../CO2.xyz"
+
+[[simulations]]
+nsteps = 1
+
+[simulations.propagator]
+type = "MonteCarlo"
+temperature = "300 K"
+moves = [
+    {type = "Rotate"}
+    #^ Missing 'delta' key in Rotate move
+]

@@ -1,0 +1,3 @@
+[input]
+version = 0
+#^ Can only read version 1 of input, got version 0

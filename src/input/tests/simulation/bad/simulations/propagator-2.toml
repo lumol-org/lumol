@@ -1,0 +1,10 @@
+[input]
+version = 1
+
+[[systems]]
+file = "../../CO2.xyz"
+
+[[simulations]]
+nsteps = 1
+propagator = 3
+#^ 'propagator' must be a table in simulation

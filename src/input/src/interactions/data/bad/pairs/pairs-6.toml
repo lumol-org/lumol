@@ -1,7 +1,0 @@
-[input]
-version = 1
-
-[[pairs]]
-atoms = ["A", "A"]
-# No cutoff value
-lj = {sigma = "3 A", epsilon = "5.9 kJ/mol"}

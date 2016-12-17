@@ -1,0 +1,6 @@
+[input]
+version = 1
+
+[[bonds]]
+atoms = ["A", "A"]
+#^ Missing potential type in bond potential

@@ -1,0 +1,15 @@
+[input]
+version = 1
+
+[[systems]]
+file = "../../CO2.xyz"
+
+[[systems]]
+file = "../../CO2.xyz"
+#^ Only one system is supported in input file
+
+[[simulations]]
+nsteps = 1
+[simulations.propagator]
+type = "MolecularDynamics"
+timestep = "1 fs"

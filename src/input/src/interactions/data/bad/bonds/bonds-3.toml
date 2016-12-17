@@ -1,6 +1,0 @@
-[input]
-version = 1
-
-[[bonds]]
-# atoms is not a vector
-atoms = {A=true, B=true}

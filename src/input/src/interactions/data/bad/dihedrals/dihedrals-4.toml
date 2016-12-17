@@ -1,6 +1,0 @@
-[input]
-version = 1
-
-[[dihedrals]]
-atoms = ["A", "A", "A", "A"]
-# No potential

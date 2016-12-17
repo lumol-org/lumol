@@ -1,0 +1,7 @@
+[input]
+version = 1
+
+[[dihedrals]]
+atoms = ["A", "B", "C", "D"]
+torsion = {n = 4, k = 6, delta = "80 deg"}
+#^ 'k' and 'delta' must be strings in torsion potential, and 'n' must be an integer

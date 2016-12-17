@@ -1,0 +1,11 @@
+systems = []
+#^ 'systems' array should contain a system
+
+[input]
+version = 1
+
+[[simulations]]
+nsteps = 1
+[simulations.propagator]
+type = "MolecularDynamics"
+timestep = "1 fs"

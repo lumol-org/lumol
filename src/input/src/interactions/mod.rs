@@ -31,11 +31,13 @@ impl InteractionsInput {
         let mut file = try_io!(File::open(&path), path);
         let mut buffer = String::new();
         let _ = try_io!(file.read_to_string(&mut buffer), path);
-        return InteractionsInput::from_string(&buffer);
+        return InteractionsInput::from_str(&buffer);
     }
 
     /// Read the interactions from a TOML formatted string.
-    pub fn from_string(string: &str) -> Result<InteractionsInput> {
+    // TODO: use restricted privacy here
+    #[doc(hidden)]
+    pub fn from_str(string: &str) -> Result<InteractionsInput> {
         let mut parser = Parser::new(string);
         let config = try!(parser.parse().ok_or(
             Error::TOML(toml_error_to_string(&parser))
@@ -48,6 +50,7 @@ impl InteractionsInput {
     /// Read the interactions from a TOML table. This is an internal function,
     /// public because of the code organization.
     // TODO: use restricted privacy here
+    #[doc(hidden)]
     pub fn from_toml(config: Table) -> Result<InteractionsInput> {
         Ok(InteractionsInput{
             config: config
@@ -102,24 +105,5 @@ fn read_restriction(config: &Table) -> Result<Option<PairRestriction>> {
             Ok(Some(PairRestriction::Scale14(scale)))
         }
         _ => Err(Error::from("Restriction must be a table or a string"))
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use lumol::sys::System;
-    use InteractionsInput;
-    use testing::bad_inputs;
-
-    #[test]
-    fn bad_input() {
-        let mut system = System::new();
-        for path in bad_inputs("interactions", "generic") {
-            assert!(
-                InteractionsInput::new(path)
-                .and_then(|input| input.read(&mut system))
-                .is_err()
-            );
-        }
     }
 }

@@ -1,0 +1,6 @@
+[input]
+version = 1
+
+[coulomb]
+ewald = {cutoff = "6 A", kmax = "67"}
+#^ 'cutoff' must be a string and 'kmax' an integer in Ewald potential

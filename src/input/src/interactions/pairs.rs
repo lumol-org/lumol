@@ -19,6 +19,7 @@ impl InteractionsInput {
     /// Read the "pairs" section from the potential configuration. This is an
     /// internal function, public because of the code organization.
     // TODO: use restricted privacy here
+    #[doc(hidden)]
     pub fn read_pairs(&self, system: &mut System) -> Result<()> {
         let pairs = match self.config.get("pairs") {
             Some(pairs) => pairs,
@@ -46,7 +47,7 @@ impl InteractionsInput {
             let atoms = try!(extract::slice("atoms", pair, "pair potential"));
             if atoms.len() != 2 {
                 return Err(Error::from(
-                    format!("Wrong size for 'atoms' section in pair potential. Should be 2, is {}", atoms.len())
+                    format!("Wrong size for 'atoms' array in pair potential. Should be 2, is {}", atoms.len())
                 ));
             }
 
@@ -90,7 +91,7 @@ impl InteractionsInput {
                     PairInteraction::shifted(potential, cutoff)
                 }
                 _ => return Err(Error::from(
-                    "'cutoff' must be a string or a table in pair potential"
+                    "'cutoff' must be a string or a table"
                 ))
             };
 
@@ -106,6 +107,7 @@ impl InteractionsInput {
     /// Read the "bonds" section from the potential configuration. This is an
     /// internal function, public because of the code organization.
     // TODO: use restricted privacy here
+    #[doc(hidden)]
     pub fn read_bonds(&self, system: &mut System) -> Result<()> {
         let bonds = match self.config.get("bonds") {
             Some(bonds) => bonds,
@@ -124,7 +126,7 @@ impl InteractionsInput {
             let atoms = try!(extract::slice("atoms", bond, "bond potential"));
             if atoms.len() != 2 {
                 return Err(Error::from(
-                    format!("Wrong size for 'atoms' section in bond potential. Should be 2, is {}", atoms.len())
+                    format!("Wrong size for 'atoms' array in bond potential. Should be 2, is {}", atoms.len())
                 ));
             }
 
@@ -145,9 +147,15 @@ fn read_pair_potential(pair: &Table) -> Result<Box<PairPotential>> {
                     .filter(|key| !KEYWORDS.contains(&key.as_ref()))
                     .collect::<Vec<_>>();
 
-    if potentials.len() != 1 {
+    if potentials.is_empty() {
         return Err(Error::from(
-            format!("Got more than one potential type: {}", potentials.join(" - "))
+            "Missing potential type in pair potential"
+        ));
+    }
+
+    if potentials.len() > 1 {
+        return Err(Error::from(
+            format!("Got more than one potential type in pair potential: {}", potentials.join(" and "))
         ));
     }
 
@@ -163,7 +171,7 @@ fn read_pair_potential(pair: &Table) -> Result<Box<PairPotential>> {
         }
     } else {
         Err(
-            Error::from(format!("potential '{}' must be a table", key))
+            Error::from(format!("'{}' potential must be a table", key))
         )
     }
 }
@@ -173,9 +181,15 @@ fn read_bond_potential(pair: &Table) -> Result<Box<BondPotential>> {
                     .filter(|k| k != "atoms")
                     .collect::<Vec<_>>();
 
-    if potentials.len() != 1 {
+    if potentials.is_empty() {
         return Err(Error::from(
-            format!("Got more than one potential type: {}", potentials.join(" - "))
+            "Missing potential type in bond potential"
+        ));
+    }
+
+    if potentials.len() > 1 {
+        return Err(Error::from(
+            format!("Got more than one potential type in bond potential: {}", potentials.join(" and "))
         ));
     }
 
@@ -190,7 +204,7 @@ fn read_bond_potential(pair: &Table) -> Result<Box<BondPotential>> {
         }
     } else {
         Err(
-            Error::from(format!("potential '{}' must be a table", key))
+            Error::from(format!("'{}' potential must be a table", key))
         )
     }
 }
@@ -210,64 +224,5 @@ fn read_pair_computation(computation: &Table, potential: Box<PairPotential>) -> 
             Error::from(format!("Unknown computation type '{}'", other))
         ),
         None => unreachable!()
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use InteractionsInput;
-    use testing::bad_inputs;
-    use lumol::sys::{Particle, System};
-    use std::path::Path;
-
-    #[test]
-    fn pairs() {
-        let mut system = System::new();
-        system.add_particle(Particle::new("A"));
-        system.add_particle(Particle::new("B"));
-
-        let path = Path::new(file!()).parent().unwrap().join("data").join("pairs.toml");
-        let input = InteractionsInput::new(path).unwrap();
-        input.read(&mut system).unwrap();
-
-        assert_eq!(system.pair_potentials(0, 1).len(), 11);
-    }
-
-    #[test]
-    fn bonds() {
-        let mut system = System::new();
-        system.add_particle(Particle::new("A"));
-        system.add_particle(Particle::new("B"));
-        let _ = system.add_bond(0, 1);
-
-        let path = Path::new(file!()).parent().unwrap().join("data").join("bonds.toml");
-        let input = InteractionsInput::new(path).unwrap();
-        input.read(&mut system).unwrap();
-
-        assert_eq!(system.bond_potentials(0, 1).len(), 2);
-    }
-
-    #[test]
-    fn bad_pairs() {
-        let mut system = System::new();
-        for path in bad_inputs("interactions", "pairs") {
-            assert!(
-                InteractionsInput::new(path)
-                .and_then(|input| input.read(&mut system))
-                .is_err()
-            );
-        }
-    }
-
-    #[test]
-    fn bad_bonds() {
-        let mut system = System::new();
-        for path in bad_inputs("interactions", "bonds") {
-            assert!(
-                InteractionsInput::new(path)
-                .and_then(|input| input.read(&mut system))
-                .is_err()
-            );
-        }
     }
 }

@@ -39,6 +39,8 @@ install:
       else
           cargo install mdbook
       fi
+    # Clean any cached test executable
+    - rm -f target/debug/*-*
 script:
     # Run all tests in release mode
     - cargo test --release
@@ -53,10 +55,9 @@ after_script:
           cd $TRAVIS_BUILD_DIR
           mkdir target/kcov
           KCOV_ARGS="--include-pattern=$(pwd) --exclude-pattern=target"
-          kcov $KCOV_ARGS target/kcov target/debug/deps/lumol-*
-          cd src/input
-          kcov $KCOV_ARGS ../../target/kcov ../../target/debug/deps/lumol_input-*
-          cd ../..
+          for test in target/debug/*-*; do
+              kcov $KCOV_ARGS target/kcov $test
+          done
           bash <(curl -s https://codecov.io/bash) -s target/kcov
       fi
     - |

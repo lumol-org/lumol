@@ -1,0 +1,3 @@
+[input]
+version = "bla"
+#^ 'input.version' must be an integer

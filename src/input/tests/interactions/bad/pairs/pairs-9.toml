@@ -1,0 +1,10 @@
+[input]
+version = 1
+
+[global]
+cutoff = {foo = 6}
+#^ 'cutoff' table can only contain 'shifted' key
+
+[[pairs]]
+atoms = ["A", "A"]
+lj = {sigma = "3 A", epsilon = "5.9 kJ/mol"}

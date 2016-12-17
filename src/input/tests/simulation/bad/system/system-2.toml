@@ -1,0 +1,11 @@
+systems = "true"
+#^ 'systems' must be an array in input file
+
+[input]
+version = 1
+
+[[simulations]]
+nsteps = 1
+[simulations.propagator]
+type = "MolecularDynamics"
+timestep = "1 fs"

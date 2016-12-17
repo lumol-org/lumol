@@ -11,6 +11,7 @@ impl Input {
     /// Get the the simulation propagator. This is an internal function, public
     /// because of the code organization.
     // TODO: use restricted privacy here
+    #[doc(hidden)]
     pub fn read_propagator(&self) -> Result<Box<Propagator>> {
         let config = try!(self.simulation_table());
         let propagator = try!(extract::table("propagator", config, "simulation"));
@@ -24,20 +25,6 @@ impl Input {
             other => Err(Error::from(
                 format!("Unknown propagator type '{}'", other)
             ))
-        }
-    }
-}
-
-
-#[cfg(test)]
-mod tests {
-    use Input;
-    use testing::bad_inputs;
-
-    #[test]
-    fn bad_propagators() {
-        for path in bad_inputs("simulations", "propagator") {
-            assert!(Input::new(path).and_then(|input| input.read()).is_err());
         }
     }
 }

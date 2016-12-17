@@ -1,9 +1,0 @@
-[input]
-version = 1
-
-[[simulations]]
-nsteps = 1
-
-[simulations.propagator]
-# 'type' key is not a string
-type = 4

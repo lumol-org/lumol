@@ -1,0 +1,10 @@
+[input]
+version = 1
+
+#^ Missing 'systems' key in input file
+
+[[simulations]]
+nsteps = 1
+[simulations.propagator]
+type = "MolecularDynamics"
+timestep = "1 fs"

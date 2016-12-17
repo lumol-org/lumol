@@ -15,6 +15,7 @@ impl InteractionsInput {
     /// Read the "angles" section from the potential configuration. This is an
     /// internal function, public because of the code organization.
     // TODO: use restricted privacy here
+    #[doc(hidden)]
     pub fn read_angles(&self, system: &mut System) -> Result<()> {
         let angles = match self.config.get("angles") {
             Some(angles) => angles,
@@ -33,7 +34,7 @@ impl InteractionsInput {
             let atoms = try!(extract::slice("atoms", angle, "angle potential"));
             if atoms.len() != 3 {
                 return Err(Error::from(
-                    format!("Wrong size for 'atoms' section in angle potentials. Should be 3, is {}", atoms.len())
+                    format!("Wrong size for 'atoms' array in angle potential. Should be 3, is {}", atoms.len())
                 ));
             }
 
@@ -50,6 +51,7 @@ impl InteractionsInput {
     /// Read the "dihedrals" section from the potential configuration. This is
     /// an internal function, public because of the code organization.
     // TODO: use restricted privacy here
+    #[doc(hidden)]
     pub fn read_dihedrals(&self, system: &mut System) -> Result<()> {
         let dihedrals = match self.config.get("dihedrals") {
             Some(dihedrals) => dihedrals,
@@ -62,20 +64,20 @@ impl InteractionsInput {
 
         for dihedral in dihedrals {
             let dihedral = try!(dihedral.as_table().ok_or(
-                Error::from("Dihedral angle potential entry must be a table")
+                Error::from("dihedral potential entry must be a table")
             ));
 
-            let atoms = try!(extract::slice("atoms", dihedral, "dihedral angle potential"));
+            let atoms = try!(extract::slice("atoms", dihedral, "dihedral potential"));
             if atoms.len() != 4 {
                 return Err(Error::from(
-                    format!("Wrong size for 'atoms' section in dihedral angle potentials. Should be 4, is {}", atoms.len())
+                    format!("Wrong size for 'atoms' array in dihedral potential. Should be 4, is {}", atoms.len())
                 ));
             }
 
-            let a = try!(atoms[0].as_str().ok_or(Error::from("The first atom name is not a string in dihedral angle potential")));
-            let b = try!(atoms[1].as_str().ok_or(Error::from("The second atom name is not a string in dihedral angle potential")));
-            let c = try!(atoms[2].as_str().ok_or(Error::from("The third atom name is not a string in dihedral angle potential")));
-            let d = try!(atoms[3].as_str().ok_or(Error::from("The fourth atom name is not a string in dihedral angle potential")));
+            let a = try!(atoms[0].as_str().ok_or(Error::from("The first atom name is not a string in dihedral potential")));
+            let b = try!(atoms[1].as_str().ok_or(Error::from("The second atom name is not a string in dihedral potential")));
+            let c = try!(atoms[2].as_str().ok_or(Error::from("The third atom name is not a string in dihedral potential")));
+            let d = try!(atoms[3].as_str().ok_or(Error::from("The fourth atom name is not a string in dihedral potential")));
 
             let potential = try!(read_dihedral_potential(dihedral));
             system.interactions_mut().add_dihedral(a, b, c, d, potential);
@@ -89,9 +91,15 @@ fn read_angle_potential(angle: &Table) -> Result<Box<AnglePotential>> {
                     .filter(|key| key != "atoms")
                     .collect::<Vec<_>>();
 
-    if potentials.len() != 1 {
+    if potentials.is_empty() {
         return Err(Error::from(
-            format!("Got more than one potential type: {}", potentials.join(" - "))
+            "Missing potential type in angle potential"
+        ));
+    }
+
+    if potentials.len() > 1 {
+        return Err(Error::from(
+            format!("Got more than one potential type in angle potential: {}", potentials.join(" and "))
         ));
     }
 
@@ -107,7 +115,7 @@ fn read_angle_potential(angle: &Table) -> Result<Box<AnglePotential>> {
         }
     } else {
         Err(
-            Error::from(format!("potential '{}' must be a table", key))
+            Error::from(format!("'{}' potential must be a table", key))
         )
     }
 }
@@ -117,9 +125,15 @@ fn read_dihedral_potential(dihedral: &Table) -> Result<Box<DihedralPotential>> {
                     .filter(|key| key != "atoms")
                     .collect::<Vec<_>>();
 
-    if potentials.len() != 1 {
+    if potentials.is_empty() {
         return Err(Error::from(
-            format!("Got more than one potential type: {}", potentials.join(" - "))
+            "Missing potential type in dihedral potential"
+        ));
+    }
+
+    if potentials.len() > 1 {
+        return Err(Error::from(
+            format!("Got more than one potential type in dihedral potential: {}", potentials.join(" and "))
         ));
     }
 
@@ -136,70 +150,7 @@ fn read_dihedral_potential(dihedral: &Table) -> Result<Box<DihedralPotential>> {
         }
     } else {
         Err(
-            Error::from(format!("potential '{}' must be a table", key))
+            Error::from(format!("'{}' potential must be a table", key))
         )
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use InteractionsInput;
-    use testing::bad_inputs;
-    use lumol::sys::{Particle, System};
-    use std::path::Path;
-
-    #[test]
-    fn angles() {
-        let mut system = System::new();
-        system.add_particle(Particle::new("A"));
-        system.add_particle(Particle::new("B"));
-        system.add_particle(Particle::new("C"));
-        let _ = system.add_bond(0, 1);
-        let _ = system.add_bond(1, 2);
-
-        let path = Path::new(file!()).parent().unwrap().join("data").join("angles.toml");
-        let input = InteractionsInput::new(path).unwrap();
-        input.read(&mut system).unwrap();
-
-        assert_eq!(system.angle_potentials(0, 1, 2).len(), 3);
-    }
-
-    #[test]
-    fn bad_angles() {
-        let mut system = System::new();
-        for path in bad_inputs("interactions", "angles") {
-            let input = InteractionsInput::new(path).unwrap();
-            assert!(input.read(&mut system).is_err());
-        }
-    }
-
-    #[test]
-    fn dihedrals() {
-        let mut system = System::new();
-        system.add_particle(Particle::new("A"));
-        system.add_particle(Particle::new("B"));
-        system.add_particle(Particle::new("C"));
-        system.add_particle(Particle::new("D"));
-        let _ = system.add_bond(0, 1);
-        let _ = system.add_bond(1, 2);
-        let _ = system.add_bond(2, 3);
-
-        let path = Path::new(file!()).parent().unwrap().join("data").join("dihedrals.toml");
-        let input = InteractionsInput::new(path).unwrap();
-        input.read(&mut system).unwrap();
-
-        assert_eq!(system.dihedral_potentials(0, 1, 2, 3).len(), 4);
-    }
-
-    #[test]
-    fn bad_dihedrals() {
-        let mut system = System::new();
-        for path in bad_inputs("interactions", "dihedrals") {
-            assert!(
-                InteractionsInput::new(path)
-                .and_then(|input| input.read(&mut system))
-                .is_err()
-            );
-        }
     }
 }

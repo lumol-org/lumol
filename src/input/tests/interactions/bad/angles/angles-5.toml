@@ -1,0 +1,8 @@
+[input]
+version = 1
+
+[[angles]]
+atoms = ["A", "A", "A"]
+null = true
+harmonic = {k = "3 A", x0 = "5.9 kJ/mol"}
+#^ Got more than one potential type in angle potential: harmonic and null

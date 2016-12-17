@@ -1,0 +1,7 @@
+[input]
+version = 1
+
+[[dihedrals]]
+atoms = ["A", "B", "C", "D"]
+torsion = "foo"
+#^ 'torsion' potential must be a table

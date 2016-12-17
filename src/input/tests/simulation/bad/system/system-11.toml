@@ -1,0 +1,13 @@
+[input]
+version = 1
+
+[[systems]]
+file = "../../CO2.xyz"
+topology = 34
+#^ 'topology' must be a string in system
+
+[[simulations]]
+nsteps = 1
+[simulations.propagator]
+type = "MolecularDynamics"
+timestep = "1 fs"

@@ -1,7 +1,0 @@
-[input]
-version = 1
-
-[[pairs]]
-atoms = ["A", "A"]
-# x0 is not a string
-harmonic = {k = "22 kJ/mol", x0 = false}

@@ -1,0 +1,3 @@
+[input]
+#^ Missing 'version' key in 'input' table
+bla = 4

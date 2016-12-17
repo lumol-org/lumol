@@ -1,6 +1,0 @@
-[input]
-version = 1
-
-[[bonds]]
-# Not 2 values in atoms
-atoms = ["A", "B", "A"]

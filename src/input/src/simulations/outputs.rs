@@ -15,23 +15,24 @@ impl Input {
     /// Get the the simulation outputs. This is an internal function, public
     /// because of the code organization.
     // TODO: use restricted privacy here
+    #[doc(hidden)]
     pub fn read_outputs(&self) -> Result<Vec<(Box<Output>, u64)>> {
         let config = try!(self.simulation_table());
         if let Some(outputs) = config.get("outputs") {
             let outputs = try!(outputs.as_slice().ok_or(
-                Error::from("'outputs' must be an array")
+                Error::from("'outputs' must be an array of tables in simulation")
             ));
 
             let mut result = Vec::new();
             for output in outputs {
                 let output = try!(output.as_table().ok_or(
-                    Error::from("All values in outputs should be tables")
+                    Error::from("'outputs' must be an array of tables in simulation")
                 ));
 
                 let frequency = match output.get("frequency") {
                     Some(frequency) => {
                         try!(frequency.as_integer().ok_or(
-                            Error::from("'frequency' must be an integer")
+                            Error::from("'frequency' must be an integer in output")
                         )) as u64
                     },
                     None => 1u64
@@ -60,7 +61,7 @@ impl Input {
 
 fn get_file(config: &Table) -> Result<&str> {
     let file = try!(config.get("file").ok_or(
-        Error::from("Missing 'file' in output")
+        Error::from("Missing 'file' key in output")
     ));
 
     file.as_str().ok_or(
@@ -97,31 +98,5 @@ impl FromToml for PropertiesOutput {
         let path = try!(get_file(config));
         let output = try_io!(PropertiesOutput::new(path), PathBuf::from(path));
         Ok(output)
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use Input;
-    use testing::{bad_inputs, cleanup};
-    use std::path::Path;
-
-    #[test]
-    fn outputs() {
-        let path = Path::new(file!()).parent().unwrap()
-                                     .join("data")
-                                     .join("md.toml");
-        let input = Input::new(&path).unwrap();
-        assert!(input.read().is_ok());
-        // TODO: add this test without breaking encapsulation
-        // assert_eq!(config.simulation.outputs().len(), 2);
-        cleanup(&path);
-    }
-
-    #[test]
-    fn bad_outputs() {
-        for path in bad_inputs("simulations", "outputs") {
-            assert!(Input::new(path).and_then(|input| input.read()).is_err());
-        }
     }
 }

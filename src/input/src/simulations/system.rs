@@ -15,10 +15,11 @@ impl Input {
     /// Get the the simulated system. This is an internal function, public
     /// because of the code organization.
     // TODO: use restricted privacy here
+    #[doc(hidden)]
     pub fn read_system(&self) -> Result<System> {
         let config = try!(self.system_table());
 
-        let file = try!(extract::str("file", config, "system input"));
+        let file = try!(extract::str("file", config, "system"));
         let file = get_input_path(&self.path, file);
         let mut trajectory = try!(Trajectory::open(file));
 
@@ -30,7 +31,7 @@ impl Input {
         }
 
         if config.get("topology").is_some() {
-            let topology = try!(extract::str("topology", config, "system input"));
+            let topology = try!(extract::str("topology", config, "system"));
             try!(trajectory.as_chemfiles().set_topology_file(topology));
         }
 
@@ -60,14 +61,17 @@ impl Input {
 
     fn system_table(&self) -> Result<&Table> {
         let systems = try!(extract::slice("systems", &self.config, "input file"));
-        if systems.len() != 1 {
-            return Err(Error::from(
-                "Only one system is supported in the input"
-            ));
+
+        if systems.is_empty() {
+            return Err(Error::from("'systems' array should contain a system"));
+        }
+
+        if systems.len() > 1 {
+            return Err(Error::from("Only one system is supported in input file"));
         }
 
         let system = try!(systems[0].as_table().ok_or(
-            Error::from("Systems should be tables")
+            Error::from("'systems' should be an array of tables in input file")
         ));
 
         return Ok(system);
@@ -106,7 +110,7 @@ impl Input {
                 Value::Float(lenght) => {
                     Ok(Some(UnitCell::cubic(lenght)))
                 },
-                _ => Err(Error::from("'cell' must be a number or an array"))
+                _ => Err(Error::from("'cell' must be a number or an array in system"))
             }
         } else {
             Ok(None)
@@ -118,7 +122,7 @@ impl Input {
 
         if let Some(velocities) = config.get("velocities") {
             let velocities = try!(velocities.as_table().ok_or(
-                Error::from("'velocities' must be a table in system input")
+                Error::from("'velocities' must be a table in system")
             ));
 
             if velocities.get("init").is_some() {
@@ -145,7 +149,7 @@ impl Input {
                 let input = try!(InteractionsInput::from_toml(potentials.clone()));
                 try!(input.read(system));
             } else {
-                return Err(Error::from("'potentials' must be a string or a table"))
+                return Err(Error::from("'potentials' must be a string or a table in system"))
             }
         } else {
             warn!("No potentials found in input file");
@@ -160,51 +164,6 @@ fn get_cell_number(value: &Value) -> Result<f64> {
     } else if let Some(value) = value.as_float() {
         Ok(value)
     } else {
-        Err(Error::from("values must be numbers in 'cell' array"))
-    }
-}
-
-
-#[cfg(test)]
-mod tests {
-    use std::path::Path;
-    use Input;
-    use testing::bad_inputs;
-    use lumol::sys::{Particle, UnitCell};
-
-    #[test]
-    fn system() {
-        let path = Path::new(file!()).parent().unwrap()
-                                     .join("data")
-                                     .join("system.toml");
-        let input = Input::new(path).unwrap();
-        let config = input.read().unwrap();
-        assert_eq!(*config.system.cell(), UnitCell::cubic(20.0));
-        assert!(f64::abs(config.system.temperature() - 300.0) < 1e-12);
-
-        let mut system = config.system;
-        let last = system.size();
-        system.add_particle(Particle::new("A"));
-        system.add_particle(Particle::new("B"));
-        assert_eq!(system.pair_potentials(last, last + 1).len(), 11);
-    }
-
-    #[test]
-    fn inline_potentials() {
-        let path = Path::new(file!()).parent().unwrap()
-                                     .join("data")
-                                     .join("potentials.toml");
-        let input = Input::new(path).unwrap();
-        let config = input.read().unwrap();
-        assert_eq!(*config.system.cell(), UnitCell::cubic(20.0));
-        assert!(f64::abs(config.system.temperature() - 300.0) < 1e-12);
-        assert_eq!(config.system.pair_potentials(0, 1).len(), 2);
-    }
-
-    #[test]
-    fn bad_systems() {
-        for path in bad_inputs("simulations", "system") {
-            assert!(Input::new(path).and_then(|input| input.read()).is_err());
-        }
+        Err(Error::from("Values must be numbers in 'cell' array"))
     }
 }

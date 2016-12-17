@@ -1,0 +1,7 @@
+[input]
+version = 1
+
+[[pairs]]
+atoms = ["A", "A"]
+lj = {sigma = "3 A", epsilon = "5.9 kJ/mol"}
+#^ Missing 'cutoff' value for pair potential

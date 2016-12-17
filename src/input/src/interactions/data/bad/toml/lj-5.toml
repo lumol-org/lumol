@@ -1,7 +1,0 @@
-[input]
-version = 1
-
-[[pairs]]
-atoms = ["A", "A"]
-# lj is not a table
-lj = true

@@ -1,7 +1,0 @@
-[input]
-version = 1
-
-[[pairs]]
-atoms = ["A", "A"]
-# Missing x0
-harmonic = {k = "22 kJ/mol"}

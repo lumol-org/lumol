@@ -1,6 +1,0 @@
-[input]
-version = 1
-
-[charges]
-# Charge is not a number
-Cn = "he"

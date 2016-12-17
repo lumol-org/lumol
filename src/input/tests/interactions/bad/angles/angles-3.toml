@@ -1,0 +1,6 @@
+[input]
+version = 1
+
+[[angles]]
+atoms = {A=true, B=true, C="C"}
+#^ 'atoms' must be an array in angle potential

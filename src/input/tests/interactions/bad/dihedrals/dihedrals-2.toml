@@ -1,0 +1,6 @@
+[input]
+version = 1
+
+[[dihedrals]]
+atoms = ["A", "B", "A", "B", "B"]
+#^ Wrong size for 'atoms' array in dihedral potential. Should be 4, is 5

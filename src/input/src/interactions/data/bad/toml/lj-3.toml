@@ -1,7 +1,0 @@
-[input]
-version = 1
-
-[[pairs]]
-atoms = ["A", "A"]
-# Epsilon is not a string
-lj = {sigma = "3 A", epsilon = 1.3}

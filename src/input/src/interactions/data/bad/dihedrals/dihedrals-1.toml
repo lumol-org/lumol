@@ -1,6 +1,0 @@
-[input]
-version = 1
-
-[[dihedrals]]
-# Not 4 values in atoms
-atoms = ["A", "A", "A"]

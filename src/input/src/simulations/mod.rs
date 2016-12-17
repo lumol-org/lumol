@@ -47,18 +47,20 @@ impl Input {
         let mut file = try_io!(File::open(&path), path);
         let mut buffer = String::new();
         let _ = try_io!(file.read_to_string(&mut buffer), path);
+        return Input::from_str(path, &buffer);
+    }
 
-        let mut parser = Parser::new(&buffer);
+    /// Read the `Input` from a TOML formatted string.
+    // TODO: use restricted privacy here
+    #[doc(hidden)]
+    pub fn from_str(path: PathBuf, buffer: &str) -> Result<Input> {
+        let mut parser = Parser::new(buffer);
         let config = try!(parser.parse().ok_or(
             Error::TOML(toml_error_to_string(&parser))
         ));
 
         try!(validate(&config));
-
-        Ok(Input {
-            path: path,
-            config: config,
-        })
+        Ok(Input{path: path, config: config})
     }
 
     /// Read input file and get the corresponding `Config`
@@ -82,18 +84,5 @@ fn get_input_path<P1: AsRef<Path>, P2: AsRef<Path>>(root: P1, path: P2) -> PathB
     } else {
         let parent = root.as_ref().parent().expect("Could not get parent path");
         parent.join(path)
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use Input;
-    use testing::bad_inputs;
-
-    #[test]
-    fn bad_input() {
-        for path in bad_inputs("simulations", "generic") {
-            assert!(Input::new(path).and_then(|input| input.read()).is_err());
-        }
     }
 }

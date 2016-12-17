@@ -1,0 +1,7 @@
+[input]
+version = 1
+
+[[pairs]]
+atoms = ["A", "A"]
+harmonic = 4.0
+#^ 'harmonic' potential must be a table
