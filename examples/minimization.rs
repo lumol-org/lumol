@@ -5,7 +5,8 @@ use lumol::Logger;
 use lumol::sys::{System, Particle};
 use lumol::types::{Vector3D, Zero};
 use lumol::energy::{PairInteraction, NullPotential, Harmonic};
-use lumol::sim::{Simulation, SteepestDescent};
+use lumol::sim::{Simulation, Minimization};
+use lumol::sim::min::SteepestDescent;
 use lumol::out::EnergyOutput;
 use lumol::units;
 
@@ -43,7 +44,11 @@ fn main() {
     }
 
 
-    let mut simulation = Simulation::new(Box::new(SteepestDescent::new()));
+    let mut simulation = Simulation::new(
+        Box::new(Minimization::new(
+            Box::new(SteepestDescent::new()))
+        )
+    );
     simulation.add_output(Box::new(EnergyOutput::new("energy.dat").unwrap()));
     simulation.run(&mut system, 500);
 }
