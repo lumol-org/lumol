@@ -51,7 +51,7 @@ impl ParticleKinds {
 
     /// Get a list of all the known particles kinds.
     fn all_kinds(&self) -> Vec<Kind> {
-        self.kinds.iter().map(|(_, v)| v.clone()).collect()
+        self.kinds.values().cloned().collect()
     }
 }
 

@@ -65,7 +65,7 @@ impl MCMove for Rotate {
     fn describe(&self) -> &str {
         "molecular rotation"
     }
-    
+
     fn setup(&mut self, _: &System) { }
 
     fn prepare(&mut self, system: &mut System, rng: &mut Box<Rng>) -> bool {
@@ -84,7 +84,7 @@ impl MCMove for Rotate {
             self.axis_rng.sample(rng)
         ).normalized();
         let theta = self.range.sample(rng);
-       
+
         // get indices of particles of selected molecule
         let molecule = system.molecule(self.molid);
         // store positions of selected molecule
@@ -120,14 +120,19 @@ impl MCMove for Rotate {
                 self.theta *= s;
                 self.range = Range::new(-self.theta, self.theta);
             } else {
-                warn_once!("Tried to increase the maximum amplitude for rotations to more than 180°! Limiting amplitude to 180°!");
+                // FIXME: fix the warn_once macro formatting usage
+                #[allow(useless_format)] {
+                    warn_once!(
+                        "Tried to increase the maximum amplitude for rotations to more than 180°."
+                    );
+                }
             }
         }
     }
 }
 
-/// Rotate the particles at `positions` with the center-of-mass position 
-/// `com` around the `axis` axis by `angle`. The `positions` array is 
+/// Rotate the particles at `positions` with the center-of-mass position
+/// `com` around the `axis` axis by `angle`. The `positions` array is
 /// overwritten with the new positions.
 fn rotate_around_axis(positions: &mut [Vector3D], com: Vector3D, axis: Vector3D, angle: f64) {
     let rotation = rotation_matrix(&axis, angle);

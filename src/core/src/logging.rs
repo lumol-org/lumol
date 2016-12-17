@@ -106,7 +106,7 @@ impl Logger{
             Box::new(logger)
         });
 
-        if let Err(_) = res {
+        if res.is_err() {
             warn!("Logger was initialized more than once! This call is ignored.");
         }
     }

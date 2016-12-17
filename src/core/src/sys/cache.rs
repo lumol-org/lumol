@@ -26,7 +26,7 @@ pub struct EnergyCache {
     pairs_cache: Array2<f64>,
     /// Energy of all the pairs in the system
     pairs: f64,
-    /// Contribution of long range corrections 
+    /// Contribution of long range corrections
     pairs_tail: f64,
     /// Energy of all the bonds in the system
     bonds: f64,
@@ -250,7 +250,7 @@ impl EnergyCache {
             debug_assert!(n == m);
             debug_assert!((n, m) == cache.pairs_cache.shape());
             // only loop over the indices that actually changed
-            for &i in idxes.iter() {
+            for &i in &idxes {
                 for j in 0..n {
                     if idxes.contains(&j) {continue}
                     cache.pairs_cache[(i, j)] = new_pairs[(i, j)];

@@ -147,7 +147,7 @@ impl Propagator for MonteCarlo {
         self.cache.init(system);
         for mc_move in &mut self.moves {
             mc_move.0.setup(system)
-        } 
+        }
     }
 
     fn propagate(&mut self, system: &mut System) {
@@ -201,7 +201,7 @@ impl Propagator for MonteCarlo {
     /// Print some informations about moves to screen
     fn finish(&mut self, _: &System) {
         info!("Monte Carlo simulation summary");
-        for mc_move in self.moves.iter() {
+        for mc_move in &self.moves {
             info!("Statistics for move: {}", mc_move.0.describe());
             info!("  Calls     : {}", mc_move.1.ncalled);
             info!("  Acceptance: {} %", mc_move.1.naccepted as f64 /
@@ -242,17 +242,14 @@ impl MoveCounter {
     /// Set the target acceptance for the move counter.
     pub fn set_acceptance(&mut self, target_acceptance: Option<f64>) {
         // Check if `target_acceptance` has a valid value.
-        if target_acceptance.is_some() {
-            let ta = target_acceptance.unwrap();
-            if ta >= 1.0 || ta <= 0.0 {
-                fatal_error!(
-                    "The target acceptance ratio of the move has to be a positive value 0.0 < ta < 1.0"
-                )
-            }
+        if let Some(acceptance) = target_acceptance {
+            assert!(0.0 < acceptance && acceptance < 1.0,
+                "The target acceptance ratio has to be a value between 0 and 1"
+            )
         }
         self.target_acceptance = target_acceptance;
     }
-    
+
     /// Compute a scaling factor according to the desired acceptance.
     pub fn compute_scaling_factor(&self) -> Option<f64> {
         // Check if there exists an target_acceptance
@@ -344,7 +341,7 @@ mod tests {
         mc.add_move_with_acceptance(Box::new(DummyMove), 1.0, 0.5);
         assert_eq!(mc.moves[0].1.target_acceptance, Some(0.5));
         mc.moves[0].1.set_acceptance(None);
-        assert_eq!(mc.moves[0].1.target_acceptance, None);     
+        assert_eq!(mc.moves[0].1.target_acceptance, None);
     }
 
     #[test]
