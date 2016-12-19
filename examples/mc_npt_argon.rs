@@ -33,8 +33,8 @@ fn get_system() -> System {
         sigma: units::from(3.405, "A").unwrap(),
         epsilon: units::from(1.0, "kJ/mol").unwrap()
     });
-    // cut off: rc = 4.0 * sigma
-    let mut pairs = PairInteraction::new(lj, 13.62);
+
+    let mut pairs = PairInteraction::new(lj, 10.215);
     pairs.enable_tail_corrections();
     system.interactions_mut().add_pair("Ar", "Ar", pairs);
     return system;
@@ -50,13 +50,15 @@ fn main() {
     //rng.reseed([2015u32, 42u32, 3u32, 12u32]);
 
     // set thermodynamic state (T,p) 
-    // in LJ units, this is:
-    // T* = 1.0
-    // p* = 0.03
-    // We use this state to compare to [1]
+    // rc = 10.215 A
+    // T  = 108.24463287 K
+    // V  = 21932.030625 A^3
+    // p  = 1087.26359088 bar
+    // L  = 27.9915070437 A
+    // We use this state to compare to NIST NVT data
     
-    let temperature = units::from(120.0, "K").unwrap();
-    let pressure = units::from(12.6, "bar").unwrap();
+    let temperature = units::from(108.0, "K").unwrap();
+    let pressure = units::from(1087.0, "bar").unwrap();
     //let mut mc = MonteCarlo::from_rng(temperature, rng); // This is not working, why?
     let mut mc = MonteCarlo::new(temperature);
 
@@ -68,27 +70,18 @@ fn main() {
         Box::new(Translate::new(delta_trans)), 500.0, 0.3);
     mc.add_move_with_acceptance(
         Box::new(Resize::new(pressure, delta_vol)), 2.0, 0.3);
-    mc.set_amplitude_update_frequency(1000);
+    mc.set_amplitude_update_frequency(200);
         
     let mut simulation = Simulation::new(Box::new(mc));
     simulation.add_output_with_frequency(
-        Box::new(PropertiesOutput::new("out.dat").unwrap()), 500);
+        Box::new(PropertiesOutput::new("npt_prp.dat").unwrap()), 500);
     simulation.add_output_with_frequency(
-        Box::new(EnergyOutput::new("ener.dat").unwrap()), 500);
+        Box::new(EnergyOutput::new("npt_ener.dat").unwrap()), 500);
 
     println!("initial U/N = {:8.2} kJ/mol", units::to(system.total_energy(),"kJ/mol").unwrap() / system.size() as f64);
     
     // run simulation
-    simulation.run(&mut system, 2000);
+    simulation.run(&mut system, 2_000_000);
     
     println!("final   U/N = {:8.2} kJ/mol", units::to(system.total_energy(),"kJ/mol").unwrap() / system.size() as f64);
-
-    // [1] Lotfi et al.: 
-    // rho* = N/V*sigma^3 = 0.70179(37)
-    // u*   = U/N/epsilon = -4.9018(25)
-    // from NPT MD simulations with:
-    // N = 1372
-    // rc = 5.7*sigma (lower for higher densities) + tail corrections
-    // 5000 timesteps equilibration
-    // 55_000 timesteps production   
 }

@@ -273,85 +273,80 @@ impl EnergyCache {
         }));
         return cost;
     }
+}
 
     /// Return the cost of resizing the cell.
-    pub fn resize_cell_cost(&mut self, system: &System) -> f64 {
-        let evaluator = system.energy_evaluator();
+//     pub fn resize_cell_cost(&mut self, system: &System, new_pos: &[Vector3D], new_cell: UnitCell) -> f64 {
+//         let evaluator = system.energy_evaluator();
 
-        // The old energy is the currently cached one
-        let old_energy = self.energy();
-
-        // We first consider intermolecular pair interactions
-        let mut new_pairs = Array2::<f64>::zeros((system.size(), system.size()));
-        let mut pairs_delta = 0.0;
+//         let mut new_pairs = Array2::<f64>::zeros((system.size(), system.size()));
+//         let mut pairs_delta = 0.0;
         
-        // Loop over all molecule pairs
-        for (i, mi) in system.molecules().iter().enumerate() {
-            for mj in system.molecules().iter().skip(i + 1) {
-                // Loop over all particles in the molecules
-                for pi in mi.iter() {
-                    for pj in mj.iter() {
-                        let r = system.cell().distance(
-                            &system[pi].position, 
-                            &system[pi].position);
-                        let energy = evaluator.pair(r, pi, pj);
-                        pairs_delta += energy;
-                        new_pairs[(pi, pj)] += energy;
-                        new_pairs[(pj, pi)] += energy;
-                        pairs_delta -= self.pairs_cache[(pi, pj)];
-                    }
-                }
-            }
-        }
+//         // Loop over all molecule pairs
+//         for (i, mi) in system.molecules().iter().enumerate() {
+//             for mj in system.molecules().iter().skip(i + 1) {
+//                 // Loop over all particles in the molecules
+//                 for pi in mi.iter() {
+//                     for pj in mj.iter() {
+//                         let r = system.new_cell().distance(
+//                             &system[pi].position, 
+//                             &system[pi].position);
+//                         let energy = evaluator.pair(r, pi, pj);
+//                         pairs_delta += energy;
+//                         new_pairs[(pi, pj)] += energy;
+//                         new_pairs[(pj, pi)] += energy;
+//                         pairs_delta -= self.pairs_cache[(pi, pj)];
+//                     }
+//                 }
+//             }
+//         }
 
-        // Let's first test this for non polar systems
-        // we can easily reuse the cache by making system.positions -> newpos
+//         let idxes: Vec<usize> = (0..system.size()).iter().collect();
+//         let coulomb_delta = if let Some(coulomb) = system.interactions().coulomb() {
+//             coulomb.borrow_mut().move_particles_cost(system, &idxes, newpos)
+//         } else {
+//             0.0
+//         };
 
-        // let coulomb_delta = if let Some(coulomb) = system.interactions().coulomb() {
-        //     coulomb.borrow_mut().move_particles_cost(system, &idxes, newpos)
-        // } else {
-        //     0.0
-        // };
+//         let mut global_delta = 0.0;
+//         for potential in system.interactions().globals() {
+//             global_delta += potential.borrow_mut().move_particles_cost(system, &idxes, newpos);
+//         }
 
-        // let mut global_delta = 0.0;
-        // for potential in system.interactions().globals() {
-        //     global_delta += potential.borrow_mut().move_particles_cost(system, &idxes, newpos);
-        // }
+//         // compute the new tail correction
+//         let pairs_tail = evaluator.pairs_tail();
 
-        // compute the new tail correction
-        let pairs_tail = evaluator.pairs_tail();
+//         let cost = pairs_delta + (pairs_tail - self.pairs_tail)
+//                                + coulomb_delta + global_delta;
 
-        let cost = pairs_delta + (pairs_tail - self.pairs_tail);
-                            //    + coulomb_delta + global_delta;
+//         self.updater = Some(Box::new(move |cache, system| {
+//             cache.pairs_tail = pairs_tail;
 
-        self.updater = Some(Box::new(move |cache, system| {
-            cache.pairs_tail = pairs_tail;
+//             cache.pairs += pairs_delta;
+//             cache.coulomb += coulomb_delta;
+//             cache.global += global_delta;
 
-            cache.pairs += pairs_delta;
-            //cache.coulomb += coulomb_delta;
-            //cache.global += global_delta;
-
-            let (n, m) = new_pairs.shape();
-            debug_assert!(n == m);
-            debug_assert!((n, m) == cache.pairs_cache.shape());
-            for i in 0..n {
-                for j in 0..n {
-                    if new_pairs[(i, j)] != 0.0 {
-                        cache.pairs_cache[(i, j)] = new_pairs[(i, j)];
-                    }
-                }
-            }
-            // Update the cache for the global potentials
-            // if let Some(coulomb) = system.interactions().coulomb() {
-            //     coulomb.borrow_mut().update();
-            // }
-            // for potential in system.interactions().globals() {
-            //     potential.borrow_mut().update();
-            // }
-        }));
-        cost
-    }
-}
+//             let (n, m) = new_pairs.shape();
+//             debug_assert!(n == m);
+//             debug_assert!((n, m) == cache.pairs_cache.shape());
+//             for i in 0..n {
+//                 for j in 0..n {
+//                     if new_pairs[(i, j)] != 0.0 {
+//                         cache.pairs_cache[(i, j)] = new_pairs[(i, j)];
+//                     }
+//                 }
+//             }
+//             // Update the cache for the global potentials
+//             if let Some(coulomb) = system.interactions().coulomb() {
+//                 coulomb.borrow_mut().update();
+//             }
+//             for potential in system.interactions().globals() {
+//                 potential.borrow_mut().update();
+//             }
+//         }));
+//         cost
+//     }
+// }
 
 
 /// Return either the new position of a particle (from `newpos`) if its index
