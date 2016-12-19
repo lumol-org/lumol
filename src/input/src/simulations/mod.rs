@@ -17,6 +17,7 @@ mod system;
 mod outputs;
 mod propagator;
 mod simulations;
+mod min;
 mod md;
 mod mc;
 

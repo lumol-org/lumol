@@ -23,6 +23,7 @@
     - [Simulations](input/simulations.md)
     - [Molecular dynamics](input/md.md)
     - [Monte-Carlo](input/mc.md)
+    - [Minimization](input/min.md)
 
 - [Advanced tutorials]()
     - [Adding potentials]()

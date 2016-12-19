@@ -1,0 +1,14 @@
+[input]
+version = 1
+
+[[systems]]
+file = "../../CO2.xyz"
+
+[[simulations]]
+nsteps = 1
+
+[simulations.propagator]
+type = "Minimization"
+minimizer = {type = "SteepestDescent"}
+tolerance = {energy = "1e-5 kJ^2/mol^2/A^2", force2 = 1e-5}
+#^ 'force2' must be a string in minimization tolerance

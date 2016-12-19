@@ -1,0 +1,13 @@
+[input]
+version = 1
+
+[[systems]]
+file = "../../CO2.xyz"
+
+[[simulations]]
+nsteps = 1
+
+[simulations.propagator]
+type = "Minimization"
+minimizer = {type = false}
+#^ 'type' key must be a string in minimizer
