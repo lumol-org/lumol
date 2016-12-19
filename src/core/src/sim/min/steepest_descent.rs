@@ -3,14 +3,14 @@
 
 use utils;
 use sys::System;
-use super::{Minimizer, EnergyCriteria};
+use super::{Minimizer, Tolerance};
 
 use std::f64;
 
-/// Steepest gradient descent for energy minimization.
+/// Steepest descent minimization algorithm.
 ///
-/// This algorithm is very rough, and will not converge in all the situations.
-/// However it is easy to use, and simple enough to be implemented quickly.
+/// This method propagates the system along the gradient of energy to find a
+/// minimum. Although easy to use, it will not converge in all situations.
 pub struct SteepestDescent {
     /// Damping factor
     gamma: f64,
@@ -32,7 +32,7 @@ impl SteepestDescent {
 }
 
 impl Minimizer for SteepestDescent {
-    fn minimize(&mut self, system: &mut System) -> EnergyCriteria {
+    fn minimize(&mut self, system: &mut System) -> Tolerance {
         // Store the current coordinates
         let positions = system.iter()
                               .map(|particle| particle.position)
@@ -62,7 +62,7 @@ impl Minimizer for SteepestDescent {
             self.gamma *= 1.1;
         }
 
-        return EnergyCriteria {
+        return Tolerance {
             energy: energy,
             force2: forces.iter().map(|&f| f.norm2()).fold(f64::NAN, f64::max)
         }

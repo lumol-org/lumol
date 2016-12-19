@@ -8,8 +8,8 @@ use sim::{Propagator, TemperatureStrategy};
 
 use std::f64;
 
-/// Criteria used for energy minimization
-pub struct EnergyCriteria {
+/// Tolerance criteria used for energy minimization
+pub struct Tolerance {
     /// Potential energy of the system
     pub energy: f64,
     /// Maximal squared norm of the force acting on an atom
@@ -25,8 +25,8 @@ pub trait Minimizer {
     /// every simulation run.
     fn setup(&mut self, _: &System) {}
     /// Find a new configuration of lower energy, and return the corresponding
-    /// energy criteria.
-    fn minimize(&mut self, system: &mut System) -> EnergyCriteria;
+    /// values for energy and forces.
+    fn minimize(&mut self, system: &mut System) -> Tolerance;
 }
 
 /// Minimization propagator for simulations.
@@ -38,27 +38,27 @@ pub struct Minimization {
     minimizer: Box<Minimizer>,
     is_converged: bool,
     last_energy: f64,
-    criteria: EnergyCriteria
+    tolerance: Tolerance
 }
 
 impl Minimization {
     /// Create a new `Minimization` using the given `minimizer`.
     pub fn new(minimizer: Box<Minimizer>) -> Minimization {
-        let critera = EnergyCriteria {
+        let tolerance = Tolerance {
             energy: utils::unit_from(1e-5, "kJ/mol"),
             force2: utils::unit_from(1e-5, "kJ^2/mol^2/A^2"),
         };
-        return Minimization::with_criteria(minimizer, critera);
+        return Minimization::with_tolerance(minimizer, tolerance);
     }
 
     /// Create a new `Minimization` using the given `minimizer` and specific
-    /// energy and force `criteria`.
-    pub fn with_criteria(minimizer: Box<Minimizer>, criteria: EnergyCriteria) -> Minimization {
+    /// energy and force `tolerance`.
+    pub fn with_tolerance(minimizer: Box<Minimizer>, tolerance: Tolerance) -> Minimization {
         Minimization {
             minimizer: minimizer,
             is_converged: false,
             last_energy: 0.0,
-            criteria: criteria
+            tolerance: tolerance
         }
     }
 
@@ -86,12 +86,12 @@ impl Propagator for Minimization {
 
         let result = self.minimizer.minimize(system);
 
-        if result.force2 < self.criteria.force2 {
+        if result.force2 < self.tolerance.force2 {
             self.is_converged = true;
             info!("Minimization converged on force tolerance");
         }
 
-        if (self.last_energy - result.energy).abs() < self.criteria.energy {
+        if (self.last_energy - result.energy).abs() < self.tolerance.energy {
             self.is_converged = true;
             info!("Minimization converged on energy tolerance");
         }

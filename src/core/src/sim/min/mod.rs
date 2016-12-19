@@ -6,7 +6,7 @@
 mod minimization;
 pub use self::minimization::Minimizer;
 pub use self::minimization::Minimization;
-pub use self::minimization::EnergyCriteria;
+pub use self::minimization::Tolerance;
 
 mod steepest_descent;
 pub use self::steepest_descent::SteepestDescent;

@@ -10,5 +10,5 @@ nsteps = 1
 [simulations.propagator]
 type = "Minimization"
 minimizer = {type = "SteepestDescent"}
-criteria = {energy = "1e-5 kJ^2/mol^2/A^2", force2 = 1e-5}
-#^ 'force2' must be a string in minimization criteria
+tolerance = {energy = 1e-5, force2 = "1e-5 kJ^2/mol^2/A^2"}
+#^ 'energy' must be a string in minimization tolerance
