@@ -67,9 +67,9 @@ fn main() {
     let delta_vol = units::from(0.05 * system.volume(), "A^3").unwrap();
 
     mc.add_move_with_acceptance(
-        Box::new(Translate::new(delta_trans)), 500.0, 0.3);
+        Box::new(Translate::new(delta_trans)), 500.0, 0.5);
     mc.add_move_with_acceptance(
-        Box::new(Resize::new(pressure, delta_vol)), 2.0, 0.3);
+        Box::new(Resize::new(pressure, delta_vol)), 2.0, 0.5);
     mc.set_amplitude_update_frequency(200);
         
     let mut simulation = Simulation::new(Box::new(mc));
@@ -83,5 +83,5 @@ fn main() {
     // run simulation
     simulation.run(&mut system, 2_000_000);
     
-    println!("final   U/N = {:8.2} kJ/mol", units::to(system.total_energy(),"kJ/mol").unwrap() / system.size() as f64);
+    println!("final U/N = {:8.2} kJ/mol", units::to(system.total_energy(),"kJ/mol").unwrap() / system.size() as f64);
 }
