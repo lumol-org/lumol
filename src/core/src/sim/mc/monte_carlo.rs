@@ -182,7 +182,7 @@ impl Propagator for MonteCarlo {
             trace!("    --> Move was accepted");
             mcmove.0.apply(system);
             self.cache.update(system);
-            mcmove.1.naccepted += 1
+            mcmove.1.naccepted += 1;
         } else {
             trace!("    --> Move was rejected");
             mcmove.0.restore(system);
@@ -209,7 +209,6 @@ impl Propagator for MonteCarlo {
         }
     }
 }
-
 
 /// This struct keeps track of the number of times a move was called
 /// and how often it was accepted.

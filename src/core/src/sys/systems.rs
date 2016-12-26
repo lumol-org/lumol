@@ -131,11 +131,6 @@ impl System {
         &self.molecules
     }
 
-    /// Get the list of molecules in the system.
-    #[inline] pub fn molecules_mut(&mut self) -> &[Molecule] {
-        &self.molecules
-    }
-
     /// Get the molecule at index `id`
     #[inline] pub fn molecule(&self, id: usize) -> &Molecule {
         &self.molecules[id]
@@ -144,19 +139,6 @@ impl System {
     /// Get the index of the molecule containing the particle `i`
     #[inline] pub fn molid(&self, i: usize) -> usize {
         self.molids[i]
-    }
-
-    /// Get the particles of the molecule
-    #[inline] pub fn particles_of_molecule(&self, id: usize) -> &[Particle] {
-        let range = self.molecules[id].first() .. self.molecules[id].size();
-        &self.particles[range]
-    }
-
-        /// Get the particles of the molecule
-    #[inline] pub fn particles_of_molecule2(&self, molecule: &Molecule) 
-        -> &[Particle] {
-        let range = molecule.first() .. molecule.size();
-        &self.particles[range]
     }
 
     /// Get the length of the shortest bond path to go from the particle `i` to

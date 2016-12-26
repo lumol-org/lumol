@@ -31,10 +31,6 @@ impl Resize {
     /// displacement of `delta`.
     pub fn new(pressure: f64, delta: f64) -> Resize {
         assert!(delta > 0.0, "delta must be positive in Resize move");
-        // TODO: set rc_max from the largest cut off in PairPotentials.
-        // For the time being, we set rc_max to zero.
-        // That way, the simulation cell can get smaller than 2*rc_max
-        // which can lead to wrong energies.
         Resize {
             delta: delta,
             range: Range::new(-delta, delta),
@@ -53,16 +49,20 @@ impl MCMove for Resize {
     fn setup(&mut self, system: &System) {
         // get the largest cutoff of all intermolecular interactions in the
         // system.
-        // TODO: include elecetrostatic interactions
+        // TODO: include electrostatic interactions
         self.rc_max = system.interactions()
-            .all_pairs()
-            .iter()
-            .map(|i| i.get_cutoff())
-            .fold(f64::NAN, f64::max)
+                            .all_pairs()
+                            .iter()
+                            .map(|i| i.get_cutoff())
+                            .fold(f64::NAN, f64::max)
     }
 
     fn prepare(&mut self, system: &mut System, rng: &mut Box<Rng>) -> bool {
         let delta = self.range.sample(rng);
+
+        // copy the system: the proposed state will be stored here
+        // TODO: we only need to store positions and the cell; all
+        // other information stays the same.  
         self.new_system = system.clone();
 
         let volume = system.volume();
@@ -83,7 +83,7 @@ impl MCMove for Resize {
         // loop over all molecules in the system
         // we don't want to change the intramolecular distances
         // so we compute the translation vector of the center of mass
-        // of a molecule and apply it to all particles
+        // of a molecule and apply it to all its particles
         
         // TODO: check if system.size == system.molecules().len
         // if that is the case, skip com computation since it is a
@@ -105,22 +105,17 @@ impl MCMove for Resize {
     }
 
     fn cost(&self, system: &System, beta: f64, cache: &mut EnergyCache) -> f64 {
-        let old_energy = cache.energy();
-        cache.unused();
-        // recompute from scratch
-        let new_energy = self.new_system.potential_energy();
-        let delta_energy = new_energy - old_energy;
-        
-        let new_volume = self.new_system.cell().volume();
+        let delta_energy = cache.move_rigid_molecules_cost(&self.new_system);
+        let new_volume = self.new_system.volume();
         let old_volume = system.volume();
         let delta_volume = new_volume - old_volume;
-
-        // return the cost function
+        // Build and return the cost function
         beta * (delta_energy + self.pressure * delta_volume) -
         (system.molecules().len() as f64) * f64::ln(new_volume / old_volume)
     }
 
     fn apply(&mut self, system: &mut System) {
+        // Exchange systems.
         mem::swap(system, &mut self.new_system)
     }
 
