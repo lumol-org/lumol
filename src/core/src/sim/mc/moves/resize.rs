@@ -10,7 +10,7 @@ use std::mem;
 use super::MCMove;
 
 use types::{Matrix3, One};
-use sys::{System, EnergyCache};
+use sys::{System, EnergyCache, CellShape};
 
 /// Monte-Carlo move that changes the size of the simulation cell
 pub struct Resize {
@@ -47,6 +47,11 @@ impl MCMove for Resize {
     }
 
     fn setup(&mut self, system: &System) {
+        // check if the cell is infinite
+        if system.cell().shape() == CellShape::Infinite {
+            fatal_error!("Cannot use `Resize` move with infinite simulation cell.")
+        }
+
         // get the largest cutoff of all intermolecular interactions in the
         // system.
         // TODO: include electrostatic interactions
