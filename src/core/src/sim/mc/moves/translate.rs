@@ -5,6 +5,7 @@ use rand::distributions::{Sample, Range};
 use rand::Rng;
 
 use std::usize;
+use std::f64;
 
 use super::MCMove;
 use super::select_molecule;
@@ -22,6 +23,8 @@ pub struct Translate {
     newpos: Vec<Vector3D>,
     /// Maximum displacement value
     dr: f64,
+    /// The maximum value must not exceed this value
+    dr_max: f64,
     /// Translation range for random number generation
     range: Range<f64>,
 }
@@ -48,6 +51,7 @@ impl Translate {
             molid: usize::MAX,
             newpos: Vec::new(),
             dr: dr,
+            dr_max: 0.0,
             range: Range::new(-dr, dr),
         }
     }
@@ -64,10 +68,16 @@ impl MCMove for Translate {
         "molecular translation"
     }
 
-    fn setup(&mut self, _: &System) { 
-        // TODO: introduce a limitation for dr, dr_max, such that it can not 
-        // be larger than the largest cutoff in the system? We would initialize
-        // the value here.
+    fn setup(&mut self, system: &System) { 
+        // Limit the displacement range to the maximum cutoff
+        self.dr_max = system.interactions()
+                            .all_pairs()
+                            .iter()
+                            .map(|i| i.get_cutoff())
+                            .fold(f64::NAN, f64::max);
+        if self.dr > self.dr_max {
+            self.dr = self.dr_max
+        }
     }
 
     fn prepare(&mut self, system: &mut System, rng: &mut Box<Rng>) -> bool {
@@ -121,8 +131,18 @@ impl MCMove for Translate {
 
     fn update_amplitude(&mut self, scaling_factor: Option<f64>) {
         if let Some(s) = scaling_factor {
-            self.dr *= s;
-            self.range = Range::new(-self.dr, self.dr);
-        }
+            if (self.dr * s) < self.dr_max {
+                self.dr *= s;
+                self.range = Range::new(-self.dr, self.dr);
+            } else {
+                // FIXME: fix the warn_once macro formatting usage
+                #[allow(useless_format)] {
+                    warn_once!(
+                        "Tried to increase the maximum amplitude for translations to more than the set maximum."
+                    );
+                }
+            }
+            
+        };
     }
 }
