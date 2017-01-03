@@ -276,6 +276,30 @@ impl UnitCell {
         }
     }
 
+    /// Return a new vector that lies inside the simulation cell.
+    ///
+    /// If `vect` is already in the cell or the `CellShape` is
+    /// `Infinite`, the resulting vector is identical to `vect`.
+    pub fn get_wrapped_vector(&self, vect: &Vector3D) -> Vector3D {
+        let mut res = vect.clone();
+        match self.shape {
+            CellShape::Infinite => (),
+            CellShape::Orthorombic => {
+                res[0] = vect[0] - f64::floor(vect[0] / self.a()) * self.a();
+                res[1] = vect[1] - f64::floor(vect[1] / self.b()) * self.b();
+                res[2] = vect[2] - f64::floor(vect[2] / self.c()) * self.c();
+            },
+            CellShape::Triclinic => {
+                let mut fractional = self.fractional(vect);
+                fractional[0] -= f64::floor(fractional[0]);
+                fractional[1] -= f64::floor(fractional[1]);
+                fractional[2] -= f64::floor(fractional[2]);
+                res = self.cartesian(&fractional);
+            },
+        }
+        res
+    }
+
     /// Find the image of a vector in the unit cell, obeying the periodic
     /// boundary conditions. For a cubic cell of side length `L`, this produce a
     /// vector with all components in `[-L/2, L/2)`.
@@ -613,6 +637,36 @@ mod tests {
         assert_approx_eq!(v[0], res[0]);
         assert_approx_eq!(v[1], res[1]);
         assert_approx_eq!(v[2], res[2]);
+    }
+
+    #[test]
+    fn test_get_wrapped_vector() {
+        // Cubic unit cell
+        let cell = UnitCell::cubic(10.0);
+        let v = Vector3D::new(9.0, 18.0, -6.0);
+        let wv = cell.get_wrapped_vector(&v);
+        assert_eq!(wv, Vector3D::new(9.0, 8.0, 4.0));
+
+        // Orthorhombic unit cell
+        let cell = UnitCell::ortho(3.0, 4.0, 5.0);
+        let v = Vector3D::new(1.0, 1.5, 6.0);
+        let wv = cell.get_wrapped_vector(&v);
+        assert_eq!(wv, Vector3D::new(1.0, 1.5, 1.0));
+
+        // Infinite unit cell
+        let cell = UnitCell::new();
+        let v = Vector3D::new(1.0, 1.5, 6.0);
+        let wv = cell.get_wrapped_vector(&v);
+        assert_eq!(wv, Vector3D::new(1.0, 1.5, 6.0));
+
+        // Triclinic unit cell
+        let cell = UnitCell::triclinic(3.0, 4.0, 5.0, 90.0, 90.0, 90.0);
+        let v = Vector3D::new(1.0, 1.5, 6.0);
+        let wv = cell.get_wrapped_vector(&v);
+        let res = Vector3D::new(1.0, 1.5, 1.0);
+        assert_approx_eq!(wv[0], res[0]);
+        assert_approx_eq!(wv[1], res[1]);
+        assert_approx_eq!(wv[2], res[2]);
     }
 
     #[test]
