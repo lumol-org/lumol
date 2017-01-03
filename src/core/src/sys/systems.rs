@@ -20,7 +20,7 @@ use types::{Vector3D, Matrix3, Zero};
 use super::{Particle, ParticleKind};
 use super::Molecule;
 use super::{CONNECT_12, CONNECT_13, CONNECT_14, CONNECT_FAR};
-use super::UnitCell;
+use super::{UnitCell, CellShape};
 use super::interactions::Interactions;
 use super::EnergyEvaluator;
 use super::molecules::molecule_type;
@@ -282,6 +282,12 @@ impl System {
     #[inline] pub fn size(&self) -> usize {self.particles.len()}
 
     /// Return the center-of-mass of a molecule
+    ///
+    /// # Warning
+    ///
+    /// This function does not check for the particles' positions'
+    /// nearest images. To use this function properly, make sure
+    /// that all particles of the molecule are adjacent.  
     pub fn molecule_com(&self, molid: usize) -> Vector3D {
         // iterate over all particles of molecule(molid)
         let total_mass = self.molecule(molid)
@@ -296,6 +302,12 @@ impl System {
     }
 
     /// Return the center-of-mass of the system
+    ///
+    /// # Warning
+    ///
+    /// This function does not check for the particles' positions'
+    /// nearest images. To use this function properly, make sure
+    /// that all particles of a molecule are adjacent.
     pub fn center_of_mass(&self) -> Vector3D {
         // iterate over all particles in the system
         let total_mass = self
@@ -307,6 +319,32 @@ impl System {
                 com + particle.position * particle.mass
             });
         com / total_mass
+    }
+
+    /// Move all particles of a molecule such that the
+    /// molecules center-of-mass position resides
+    /// inside the simulation cell.
+    ///
+    /// # Note
+    ///
+    /// If the `CellShape` is `Infinite` there are no changes
+    /// to the positions.
+    pub fn wrap_molecule(&mut self, molid: usize) {
+        // This catch is not necessary, since for `Infinite`
+        // cells, a wrap will return just the same vector and
+        // hence `delta` will be zero; but it is faster.
+        match self.cell().shape() {
+            CellShape::Infinite => (),
+            _ => {
+                let com = self.molecule_com(molid);
+                let com_wrapped = self.cell().get_wrapped_vector(&com);
+                let delta = com_wrapped - com;
+                // iterate over all positions and move them accordingly
+                for pi in self.molecule(molid) {
+                    self[pi].position += delta
+                }
+            },
+        }
     }
 
     /// Get an iterator over the `Particle` in this system
@@ -869,10 +907,24 @@ mod tests {
         system.add_particle(Particle::new("O"));
         system.add_particle(Particle::new("O"));
         let _ = system.add_bond(0, 1);
-        system[0].position = Vector3D::new(9.0, 0.0, 0.0);
+        system[0].position = Vector3D::new(1.0, 0.0, 0.0);
         system[1].position = Vector3D::zero();
-        assert_eq!(system.molecule_com(0), Vector3D::new(4.5, 0.0, 0.0));
-        assert_eq!(system.center_of_mass(), Vector3D::new(4.5, 0.0, 0.0));
+        assert_eq!(system.molecule_com(0), Vector3D::new(0.5, 0.0, 0.0));
+        assert_eq!(system.center_of_mass(), Vector3D::new(0.5, 0.0, 0.0));
+    }
+
+    #[test]
+    fn test_wrap_molecule() {
+        let mut system = System::from_cell(UnitCell::cubic(5.0));
+        system.add_particle(Particle::new("O"));
+        system.add_particle(Particle::new("O"));
+        let _ = system.add_bond(0, 1);
+        system[0].position = Vector3D::new(-2.0, 0.0, 0.0);
+        system[1].position = Vector3D::zero();
+        system.wrap_molecule(0);
+        assert_eq!(system[0].position, Vector3D::new(3.0, 0.0, 0.0));
+        assert_eq!(system[1].position, Vector3D::new(5.0, 0.0, 0.0));
+        assert_eq!(system.molecule_com(0), Vector3D::new(4.0, 0.0, 0.0))
     }
 
     #[test]
