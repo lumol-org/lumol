@@ -52,7 +52,7 @@ impl MCMove for Resize {
             fatal_error!("Cannot use `Resize` move with infinite simulation cell.")
         }
 
-        // get the largest cutoff of all intermolecular interactions in the
+        // Get the largest cutoff of all intermolecular interactions in the
         // system.
         // TODO: include electrostatic interactions
         self.rc_max = system.interactions()
@@ -65,18 +65,18 @@ impl MCMove for Resize {
     fn prepare(&mut self, system: &mut System, rng: &mut Box<Rng>) -> bool {
         let delta = self.range.sample(rng);
 
-        // copy the system: the proposed state will be stored here
+        // Copy the system: the proposed state will be stored here
         // TODO: we only need to store positions and the cell; all
         // other information stays the same.  
         self.new_system = system.clone();
 
         let volume = system.volume();
         let scaling_factor = f64::cbrt((volume + delta) / volume);
-        // change the simulation cell
+        // Change the simulation cell
         self.new_system.cell_mut().scale_mut(Matrix3::one() * scaling_factor);
-        // check the radius of the smallest inscribed sphere and compare to the
+        // Check the radius of the smallest inscribed sphere and compare to the
         // cut off distance.
-        // abort simulation when box gets smaller than twice the cutoff radius
+        // Abort simulation when box gets smaller than twice the cutoff radius.
         if self.new_system.cell()
             .lengths()
             .iter()
@@ -85,14 +85,16 @@ impl MCMove for Resize {
                 conflicts with the cut off radius. \
                 Increase the number of particles to get rid of this problem.")
         }
-        // loop over all molecules in the system
-        // we don't want to change the intramolecular distances
-        // so we compute the translation vector of the center of mass
-        // of a molecule and apply it to all its particles
+        // Loop over all molecules in the system.
+        // We don't want to change the intramolecular distances
+        // so we compute the translation vector of the center-of-mass
+        // (com) of a molecule and apply it to all its particles.
+        // Note that to do this, the com of a molecule *always* has
+        // to reside inside the simulation cell.
         
-        // TODO: check if system.size == system.molecules().len
+        // TODO: Check if system.size == system.molecules().len
         // if that is the case, skip com computation since it is a
-        // system without molecules
+        // system without molecules.
         for (mi, molecule) in system
             .molecules()
             .iter()
@@ -100,10 +102,11 @@ impl MCMove for Resize {
             let old_com = system.molecule_com(mi);
             let frac_com = system.cell().fractional(&old_com);
             // compute translation vector
-            let delta_com = self.new_system.cell().cartesian(&frac_com) - old_com;
+            let delta_com = 
+                self.new_system.cell().cartesian(&frac_com) - old_com;
             // loop over all particles (indices) in the molecule
             for pi in molecule.iter() {
-                self.new_system[pi].position += delta_com
+                self.new_system[pi].position += delta_com;
             }
         }
         true
@@ -114,13 +117,14 @@ impl MCMove for Resize {
         let new_volume = self.new_system.volume();
         let old_volume = system.volume();
         let delta_volume = new_volume - old_volume;
-        // Build and return the cost function
+        // Build and return the cost function.
         beta * (delta_energy + self.pressure * delta_volume) -
         (system.molecules().len() as f64) * f64::ln(new_volume / old_volume)
     }
 
     fn apply(&mut self, system: &mut System) {
-        // Exchange systems.
+        // Exchange systems: This will effectively update
+        // new positions and cell.
         mem::swap(system, &mut self.new_system)
     }
 
