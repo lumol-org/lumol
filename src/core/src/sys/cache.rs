@@ -469,7 +469,7 @@ mod tests {
 
         let mut new_system = system.clone();
         // translate the center of mass
-        for pi in &system.molecules()[0] {
+        for pi in system.molecule(0) {
             new_system[pi].position += delta
         }
         let cost = cache.move_rigid_molecules_cost(&new_system);
