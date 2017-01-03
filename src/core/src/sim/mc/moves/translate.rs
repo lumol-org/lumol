@@ -78,6 +78,7 @@ impl MCMove for Translate {
             return false;
         }
 
+        // Create random displacement vector.
         let delta = Vector3D::new(
             self.range.sample(rng),
             self.range.sample(rng),
@@ -85,6 +86,11 @@ impl MCMove for Translate {
         );
 
         self.newpos.clear();
+        // Create new position.
+        // Note that this may move a particles' center-
+        // of-mass (com) out of the cell.
+        // If the move is accepted, we have to wrap the
+        // com such that it lies inside the cell.
         for i in system.molecule(self.molid) {
             self.newpos.push(system[i].position + delta);
         }
@@ -98,9 +104,15 @@ impl MCMove for Translate {
     }
 
     fn apply(&mut self, system: &mut System) {
+        // Update positions.
         for (i, pi) in system.molecule(self.molid).iter().enumerate() {
             system[pi].position = self.newpos[i];
         }
+        // Move molecule such that its center-of-mass 
+        // is inside the simulation cell.
+        // Note that particles of the molecule may still be
+        // outside the cell, but that is not important.
+        system.wrap_molecule(self.molid)
     }
 
     fn restore(&mut self, _: &mut System) {
