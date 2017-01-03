@@ -236,8 +236,8 @@ impl Compute for PressureAtTemperature {
         let virial_tensor = system.virial();
         let virial = virial_tensor.trace();
         let volume = system.volume();
-        let natoms = system.size() as f64;
-        return natoms * K_BOLTZMANN * self.temperature / volume + virial / (3.0 * volume);
+        let nmols = system.molecules().len() as f64;
+        return nmols * K_BOLTZMANN * self.temperature / volume + virial / (3.0 * volume);
     }
 }
 
@@ -258,8 +258,8 @@ impl Compute for StressAtTemperature {
         assert!(self.temperature >= 0.0);
         let virial = system.virial();
         let volume = system.volume();
-        let natoms = system.size() as f64;
-        let kinetic = natoms * K_BOLTZMANN * self.temperature * Matrix3::one();
+        let nmols = system.molecules().len() as f64;
+        let kinetic = nmols * K_BOLTZMANN * self.temperature * Matrix3::one();
         return (kinetic + virial) / volume;
     }
 }
