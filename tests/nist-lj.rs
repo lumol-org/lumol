@@ -74,7 +74,7 @@ mod cutoff_3_lrc {
 
     #[test]
     fn nist1() {
-        let path = "nist1.xyz";
+        let path = "nist-lj/1.xyz";
         let mut system = get_system(path);
         set_interaction(&mut system, PairKind::None);
 
@@ -93,7 +93,7 @@ mod cutoff_3_lrc {
 
     #[test]
     fn nist2() {
-        let path = "nist2.xyz";
+        let path = "nist-lj/2.xyz";
         let mut system = get_system(path);
         set_interaction(&mut system, PairKind::None);
 
@@ -112,7 +112,7 @@ mod cutoff_3_lrc {
 
     #[test]
     fn nist3() {
-        let path = "nist3.xyz";
+        let path = "nist-lj/3.xyz";
         let mut system = get_system(path);
         set_interaction(&mut system, PairKind::None);
 
@@ -131,7 +131,7 @@ mod cutoff_3_lrc {
 
     #[test]
     fn nist4() {
-        let path = "nist4.xyz";
+        let path = "nist-lj/4.xyz";
         let mut system = get_system(path);
         set_interaction(&mut system, PairKind::None);
 
@@ -174,7 +174,7 @@ mod cutoff_4_lrc {
 
     #[test]
     fn nist1() {
-        let path = "nist1.xyz";
+        let path = "nist-lj/1.xyz";
         let mut system = get_system(path);
         set_interaction(&mut system, PairKind::None);
 
@@ -193,7 +193,7 @@ mod cutoff_4_lrc {
 
     #[test]
     fn nist2() {
-        let path = "nist2.xyz";
+        let path = "nist-lj/2.xyz";
         let mut system = get_system(path);
         set_interaction(&mut system, PairKind::None);
 
@@ -212,7 +212,7 @@ mod cutoff_4_lrc {
 
     #[test]
     fn nist3() {
-        let path = "nist3.xyz";
+        let path = "nist-lj/3.xyz";
         let mut system = get_system(path);
         set_interaction(&mut system, PairKind::None);
 
@@ -231,7 +231,7 @@ mod cutoff_4_lrc {
 
     #[test]
     fn nist4() {
-        let path = "nist4.xyz";
+        let path = "nist-lj/4.xyz";
         let mut system = get_system(path);
         set_interaction(&mut system, PairKind::None);
 
