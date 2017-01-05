@@ -208,9 +208,9 @@ impl Ewald {
     }
 
     /// Real space contribution to the forces
-    fn real_space_forces(&self, system: &System, res: &mut Vec<Vector3D>) {
+    fn real_space_forces(&self, system: &System, forces: &mut [Vector3D]) {
         let natoms = system.size();
-        assert!(res.len() == system.size());
+        assert!(forces.len() == system.size());
 
         for i in 0..natoms {
             let qi = system[i].charge;
@@ -224,8 +224,8 @@ impl Ewald {
 
                 let rij = system.nearest_image(i, j);
                 let force = self.real_space_force_pair(info, qi, qj, &rij);
-                res[i] += force;
-                res[j] -= force;
+                forces[i] += force;
+                forces[j] -= force;
             }
         }
     }
@@ -233,7 +233,7 @@ impl Ewald {
     /// Real space contribution to the virial
     fn real_space_virial(&self, system: &System) -> Matrix3 {
         let natoms = system.size();
-        let mut res = Matrix3::zero();
+        let mut virial = Matrix3::zero();
         for i in 0..natoms {
             let qi = system[i].charge;
             if qi == 0.0 {continue}
@@ -246,10 +246,10 @@ impl Ewald {
 
                 let rij = system.nearest_image(i, j);
                 let force = self.real_space_force_pair(info, qi, qj, &rij);
-                res -= force.tensorial(&rij);
+                virial -= force.tensorial(&rij);
             }
         }
-        return res;
+        return virial;
     }
 
     fn real_space_move_particles_cost(&self, system: &System, idxes: &[usize], newpos: &[Vector3D]) -> f64 {
@@ -371,8 +371,8 @@ impl Ewald {
     }
 
     /// k-space contribution to the forces
-    fn kspace_forces(&mut self, system: &System, res: &mut Vec<Vector3D>) {
-        assert!(res.len() == system.size());
+    fn kspace_forces(&mut self, system: &System, forces: &mut [Vector3D]) {
+        assert!(forces.len() == system.size());
         self.density_fft(system);
 
         let factor = 4.0 * PI / (system.cell().volume() * ELCC);
@@ -391,8 +391,8 @@ impl Ewald {
                             let qj = system[j].charge;
                             let force = factor * self.kspace_force_factor(i, j, ikx, iky, ikz, qi, qj) * k;
 
-                            res[i] -= force;
-                            res[j] += force;
+                            forces[i] -= force;
+                            forces[j] += force;
                         }
                     }
                 }
@@ -419,7 +419,7 @@ impl Ewald {
     /// k-space contribution to the virial
     fn kspace_virial(&mut self, system: &System) -> Matrix3 {
         self.density_fft(system);
-        let mut res = Matrix3::zero();
+        let mut virial = Matrix3::zero();
 
         let factor = 4.0 * PI / (system.cell().volume() * ELCC);
         let (rec_kx, rec_ky, rec_kz) = system.cell().reciprocal_vectors();
@@ -438,13 +438,13 @@ impl Ewald {
                             let force = factor * self.kspace_force_factor(i, j, ikx, iky, ikz, qi, qj) * k;
                             let rij = system.nearest_image(i, j);
 
-                            res += force.tensorial(&rij);
+                            virial += force.tensorial(&rij);
                         }
                     }
                 }
             }
         }
-        return res;
+        return virial;
     }
 
     fn compute_delta_rho_move_particles(&mut self, system: &System, idxes: &[usize], newpos: &[Vector3D]) {
@@ -573,9 +573,9 @@ impl Ewald {
     }
 
     /// Molecular correction contribution to the forces
-    fn molcorrect_forces(&self, system: &System, res: &mut Vec<Vector3D>) {
+    fn molcorrect_forces(&self, system: &System, forces: &mut [Vector3D]) {
         let natoms = system.size();
-        assert!(res.len() == natoms);
+        assert!(forces.len() == natoms);
 
         for i in 0..natoms {
             let qi = system[i].charge;
@@ -592,7 +592,7 @@ impl Ewald {
 
                 let rij = system.nearest_image(i, j);
                 let force = self.molcorrect_force_pair(info, qi, qj, &rij);
-                res[i] -= force;
+                forces[i] -= force;
             }
         }
     }
@@ -600,7 +600,7 @@ impl Ewald {
     /// Molecular correction contribution to the virial
     fn molcorrect_virial(&self, system: &System) -> Matrix3 {
         let natoms = system.size();
-        let mut res = Matrix3::zero();
+        let mut virial = Matrix3::zero();
 
         for i in 0..natoms {
             let qi = system[i].charge;
@@ -617,10 +617,10 @@ impl Ewald {
 
                 let rij = system.nearest_image(i, j);
                 let force = self.molcorrect_force_pair(info, qi, qj, &rij);
-                res += force.tensorial(&rij);
+                virial += force.tensorial(&rij);
             }
         }
-        return res;
+        return virial;
     }
 
     fn molcorrect_move_particles_cost(&mut self, system: &System, idxes: &[usize], newpos: &[Vector3D]) -> f64 {
@@ -684,12 +684,12 @@ impl GlobalPotential for Ewald {
 
     fn forces(&mut self, system: &System) -> Vec<Vector3D> {
         self.precompute(system.cell());
-        let mut res = vec![Vector3D::zero(); system.size()];
-        self.real_space_forces(system, &mut res);
+        let mut forces = vec![Vector3D::zero(); system.size()];
+        self.real_space_forces(system, &mut forces);
         /* No self force */
-        self.kspace_forces(system, &mut res);
-        self.molcorrect_forces(system, &mut res);
-        return res;
+        self.kspace_forces(system, &mut forces);
+        self.molcorrect_forces(system, &mut forces);
+        return forces;
     }
 
     fn virial(&mut self, system: &System) -> Matrix3 {
