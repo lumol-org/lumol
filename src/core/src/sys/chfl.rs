@@ -336,6 +336,6 @@ H 0.0 1.0 0.0
 
         // This is only a simple regression test on the moltype function. Feel
         // free to change the value if the molecule type algorithm change.
-        assert_eq!(molecule_type(&molecule, &atoms), 10531116511729139659);
+        assert_eq!(molecule_type(&molecule, &atoms), 2727145596042757306);
     }
 }

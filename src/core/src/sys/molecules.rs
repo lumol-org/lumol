@@ -1,8 +1,7 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) 2015-2016 G. Fraux — BSD license
 
-//! Data about bonds and angles in the system.
-use std::cmp::{min, max};
+//! Data about molecules in the system.
 use std::collections::HashSet;
 use std::iter::IntoIterator;
 use std::ops::Range;
@@ -10,133 +9,8 @@ use std::hash::{Hash, Hasher};
 use std::collections::hash_map::DefaultHasher;
 
 use types::Array2;
-use sys::Particle;
-
-/// A `Bond` between the atoms at indexes `i` and `j`
-///
-/// This structure ensure an unique representation of a `Bond` by enforcing
-/// `i < j`
-#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct Bond {
-    i: usize,
-    j: usize,
-}
-
-impl Bond {
-    /// Create a new Bond between the atoms at indexes `first` and `second`
-    pub fn new(first: usize, second: usize) -> Bond {
-        assert!(first != second);
-        let i = min(first, second);
-        let j = max(first, second);
-        Bond{i: i, j: j}
-    }
-
-    /// Get the first particle in the bond
-    #[inline] pub fn i(&self) -> usize {self.i}
-
-    /// Get the second particle in the bond
-    #[inline] pub fn j(&self) -> usize {self.j}
-}
-
-/// An `Angle` formed by the atoms at indexes `i`, `j` and `k`
-///
-/// This structure ensure uniqueness of the `Angle` representation by enforcing
-/// `i < k`
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
-pub struct Angle {
-    i: usize,
-    j: usize,
-    k: usize,
-}
-
-impl Angle {
-    /// Create a new Angle between the atoms at indexes `first`, `second` and `third`
-    pub fn new(first: usize, second: usize, third: usize) -> Angle {
-        assert!(first != second);
-        assert!(first != third);
-        assert!(second != third);
-        let i = min(first, third);
-        let k = max(first, third);
-        Angle{i: i, j: second, k: k}
-    }
-
-    /// Get the first particle in the angle
-    #[inline] pub fn i(&self) -> usize {self.i}
-
-    /// Get the second particle in the angle
-    #[inline] pub fn j(&self) -> usize {self.j}
-
-    /// Get the third particle in the angle
-    #[inline] pub fn k(&self) -> usize {self.k}
-}
-
-
-/// A `Dihedral` angle formed by the atoms at indexes `i`, `j`, `k` and `m`
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
-pub struct Dihedral {
-    i: usize,
-    j: usize,
-    k: usize,
-    m: usize,
-}
-
-impl Dihedral {
-    /// Create a new Dihedral between the atoms at indexes `first`, `second`,
-    /// `third` and `fourth`
-    pub fn new(first: usize, second: usize, third: usize, fourth: usize) -> Dihedral {
-        assert!(first != second);
-        assert!(second != third);
-        assert!(third != fourth);
-        let (i, j, k, m) = if max(first, second) < max(third, fourth) {
-            (first, second, third, fourth)
-        } else {
-            (fourth, third, second, first)
-        };
-        Dihedral{i: i, j: j, k: k, m: m}
-    }
-
-    /// Get the first particle in the dihedral angle
-    #[inline] pub fn i(&self) -> usize {self.i}
-
-    /// Get the second particle in the dihedral angle
-    #[inline] pub fn j(&self) -> usize {self.j}
-
-    /// Get the third particle in the dihedral angle
-    #[inline] pub fn k(&self) -> usize {self.k}
-
-    /// Get the fourth particle in the dihedral angle
-    #[inline] pub fn m(&self) -> usize {self.m}
-}
-
-/******************************************************************************/
-mod connect {
-    bitflags! {
-        /// The `Connectivity` bitflag encode the topological distance between
-        /// two particles in the molecule, i.e. the number of bonds between the
-        /// particles.
-        pub flags Connectivity: u8 {
-            /// The particles are separated by one bond
-            const CONNECT_12   = 0b0001,
-            /// The particles are separated by two bonds
-            const CONNECT_13   = 0b0010,
-            /// The particles are separated by three bonds
-            const CONNECT_14   = 0b0100,
-            /// The particles are separated by more than three bonds
-            const CONNECT_FAR  = 0b1000,
-        }
-    }
-
-    impl Default for Connectivity {
-        fn default() -> Connectivity {
-            CONNECT_FAR
-        }
-    }
-}
-
-pub use self::connect::Connectivity;
-pub use self::connect::{CONNECT_12, CONNECT_13, CONNECT_14, CONNECT_FAR};
-
-/******************************************************************************/
+use sys::{Particle, Bond, Angle, Dihedral};
+use sys::{Connectivity, CONNECT_12, CONNECT_13, CONNECT_14};
 
 #[derive(Debug, Clone)]
 /// A molecule is the basic building block for a topology. It contains data
@@ -154,10 +28,8 @@ pub struct Molecule {
     /// the connectivity between the particles `i + self.first` and
     /// `j + self.first`
     connections: Array2<Connectivity>,
-    /// Index of the first atom in this molecule.
-    first: usize,
-    /// Index of the last (included) atom in this molecule.
-    last: usize,
+    /// Range of atomic indexes in this molecule.
+    range: Range<usize>,
     /// Hashed value of the set of bonds in the system
     cached_hash: u64
 }
@@ -176,39 +48,39 @@ impl Molecule {
             angles: HashSet::new(),
             dihedrals: HashSet::new(),
             connections: Array2::default((1, 1)),
-            first: i,
-            last: i,
+            range: i..i+1,
             cached_hash: 0
         }
     }
 
     /// Get the number of atoms in the molecule
     pub fn size(&self) -> usize {
-        self.last - self.first + 1
+        self.range.len()
     }
 
     /// Get the first atom of this molecule
-    pub fn first(&self) -> usize {
-        self.first
+    pub fn start(&self) -> usize {
+        self.range.start
     }
 
-    /// Get the last atom of this molecule
-    pub fn last(&self) -> usize {
-        self.last
+    /// Get the index of the first atom after this molecule
+    pub fn end(&self) -> usize {
+        self.range.end
     }
 
     /// Does this molecule contains the particle `i`
     pub fn contains(&self, i: usize) -> bool {
-        self.first <= i && i <= self.last
+        // TODO: use Range::contains when stable
+        self.range.start <= i && i < self.range.end
     }
 
     /// Cache the hash of the bonds
     fn rehash(&mut self) {
         let mut hasher = DefaultHasher::new();
-        (self.last - self.first).hash(&mut hasher);
+        self.range.len().hash(&mut hasher);
 
         let mut bonds = self.bonds.iter()
-                              .map(|bond| Bond::new(bond.i() - self.first, bond.j() - self.first))
+                              .map(|bond| Bond::new(bond.i() - self.start(), bond.j() - self.start()))
                               .collect::<Vec<_>>();
         bonds.sort();
         for bond in &bonds {
@@ -234,14 +106,14 @@ impl Molecule {
                     continue;
                 }
 
-                let angle = if bond1.i == bond2.j {
-                    Angle::new(bond2.i, bond2.j, bond1.j)
-                } else if bond1.j == bond2.i {
-                    Angle::new(bond1.i, bond1.j, bond2.j)
-                } else if bond1.j == bond2.j {
-                    Angle::new(bond1.i, bond1.j, bond2.i)
-                } else if bond1.i == bond2.i {
-                    Angle::new(bond1.j, bond1.i, bond2.j)
+                let angle = if bond1.i() == bond2.j() {
+                    Angle::new(bond2.i(), bond2.j(), bond1.j())
+                } else if bond1.j() == bond2.i() {
+                    Angle::new(bond1.i(), bond1.j(), bond2.j())
+                } else if bond1.j() == bond2.j() {
+                    Angle::new(bond1.i(), bond1.j(), bond2.i())
+                } else if bond1.i() == bond2.i() {
+                    Angle::new(bond1.j(), bond1.i(), bond2.j())
                 } else {
                     // We will not find any dihedral angle from these bonds
                     continue;
@@ -254,14 +126,14 @@ impl Molecule {
                         continue;
                     }
 
-                    let dihedral = if angle.k == bond3.i && angle.j != bond3.j {
-                        Dihedral::new(angle.i, angle.j, angle.k, bond3.j)
-                    } else if angle.k == bond3.j && angle.j != bond3.i {
-                        Dihedral::new(angle.i, angle.j, angle.k, bond3.i)
-                    } else if angle.i == bond3.j && angle.j != bond3.i {
-                        Dihedral::new(bond3.i, angle.i, angle.j, angle.k)
-                    } else if angle.i == bond3.i && angle.j != bond3.j {
-                        Dihedral::new(bond3.j, angle.i, angle.j, angle.k)
+                    let dihedral = if angle.k() == bond3.i() && angle.j() != bond3.j() {
+                        Dihedral::new(angle.i(), angle.j(), angle.k(), bond3.j())
+                    } else if angle.k() == bond3.j() && angle.j() != bond3.i() {
+                        Dihedral::new(angle.i(), angle.j(), angle.k(), bond3.i())
+                    } else if angle.i() == bond3.j() && angle.j() != bond3.i() {
+                        Dihedral::new(bond3.i(), angle.i(), angle.j(), angle.k())
+                    } else if angle.i() == bond3.i() && angle.j() != bond3.j() {
+                        Dihedral::new(bond3.j(), angle.i(), angle.j(), angle.k())
                     } else {
                         // TODO: (angle.k == bond3.i || angle.k == bond3.j)
                         // is an improper dihedral.
@@ -282,7 +154,7 @@ impl Molecule {
         self.connections = Array2::default((n, n));
 
         // Getting needed variables for the `add_connect_term` closure
-        let first = self.first;
+        let first = self.start();
         let connections = &mut self.connections;
         let mut add_connect_term = |i, j, term| {
             let old_connect = connections[(i - first, j - first)];
@@ -290,26 +162,26 @@ impl Molecule {
         };
 
         for bond in &self.bonds {
-            add_connect_term(bond.i, bond.j, CONNECT_12);
-            add_connect_term(bond.j, bond.i, CONNECT_12);
+            add_connect_term(bond.i(), bond.j(), CONNECT_12);
+            add_connect_term(bond.j(), bond.i(), CONNECT_12);
         }
 
         for angle in &self.angles {
-            add_connect_term(angle.i, angle.k, CONNECT_13);
-            add_connect_term(angle.k, angle.i, CONNECT_13);
+            add_connect_term(angle.i(), angle.k(), CONNECT_13);
+            add_connect_term(angle.k(), angle.i(), CONNECT_13);
         }
 
         for dihedral in &self.dihedrals {
-            add_connect_term(dihedral.i, dihedral.m, CONNECT_14);
-            add_connect_term(dihedral.m, dihedral.i, CONNECT_14);
+            add_connect_term(dihedral.i(), dihedral.m(), CONNECT_14);
+            add_connect_term(dihedral.m(), dihedral.i(), CONNECT_14);
         }
     }
 
     /// Merge this molecule with `other`. The first particle in `other` should
     /// be the particle just after the last one in `self`.
     pub fn merge_with(&mut self, other: Molecule) {
-        assert!(self.last + 1 == other.first);
-        self.last = other.last;
+        assert!(self.range.end == other.range.start);
+        self.range.end = other.range.end;
         for bond in other.bonds() {
             self.bonds.insert(*bond);
         }
@@ -332,14 +204,14 @@ impl Molecule {
     pub fn translate_by(&mut self, delta: isize) {
         if delta < 0 {
             // We should not create negative indexes
-            assert!((delta.abs() as usize) < self.first);
+            assert!((delta.abs() as usize) < self.start());
         }
 
         // The wrapping_add are necessary here, and produce the right result,
         // thanks to integer overflow and the conversion below.
         let delta = delta as usize;
-        self.first = self.first.wrapping_add(delta);
-        self.last = self.last.wrapping_add(delta);
+        self.range.start = self.range.start.wrapping_add(delta);
+        self.range.end = self.range.end.wrapping_add(delta);
 
         let mut new_bonds = HashSet::new();
         for bond in &self.bonds {
@@ -386,27 +258,27 @@ impl Molecule {
     /// dihedral. This function also update the indexes for the
     /// bonds/angles/dihedral by remove 1 to all the values `> i`
     pub fn remove_particle(&mut self, i: usize) {
-        assert!(self.first <= i && i <= self.last);
+        assert!(self.contains(i));
         // Remove bonds containing the particle `i`
         let mut new_bonds = HashSet::new();
         for bond in self.bonds() {
-            if bond.i == i || bond.j == i {
+            if bond.i() == i || bond.j() == i {
                 continue;
             }
 
-            let mut new_bond = *bond;
-            if new_bond.i > i {
-                new_bond.i -= 1;
+            let (mut bond_i, mut bond_j) = (bond.i(), bond.j());
+            if bond_i > i {
+                bond_i -= 1;
             }
-            if new_bond.j > i {
-                new_bond.j -= 1;
+            if bond_j > i {
+                bond_j -= 1;
             }
 
-            new_bonds.insert(new_bond);
+            new_bonds.insert(Bond::new(bond_i, bond_j));
         }
 
         self.bonds = new_bonds;
-        self.last -= 1;
+        self.range.end -= 1;
         self.rebuild();
     }
 
@@ -427,9 +299,8 @@ impl Molecule {
 
     /// Get the connectivity between the particles `i` and `j`
     #[inline] pub fn connectivity(&self, i: usize, j: usize) -> Connectivity {
-        assert!(self.first <= i && i <= self.last);
-        assert!(self.first <= j && j <= self.last);
-        return self.connections[(i - self.first, j - self.first)];
+        assert!(self.contains(i) && self.contains(j));
+        return self.connections[(i - self.start(), j - self.start())];
     }
 
     /// Get an iterator over the particles in the molecule
@@ -456,10 +327,7 @@ impl IntoIterator for Molecule {
     type IntoIter = Range<usize>;
 
     fn into_iter(self) -> Range<usize> {
-        Range{
-            start: self.first,
-            end: self.last + 1,
-        }
+        self.range
     }
 }
 
@@ -468,41 +336,15 @@ impl<'a> IntoIterator for &'a Molecule {
     type IntoIter = Range<usize>;
 
     fn into_iter(self) -> Range<usize> {
-        Range{
-            start: self.first,
-            end: self.last + 1,
-        }
+        self.range.clone()
     }
 }
 
-/******************************************************************************/
 #[cfg(test)]
 mod test {
     use super::*;
-
-    #[test]
-    fn unicity() {
-        let bond = Bond::new(2, 1);
-        assert_eq!(bond.i, 1);
-        assert_eq!(bond.j, 2);
-
-        let angle = Angle::new(8, 7, 6);
-        assert_eq!(angle.i, 6);
-        assert_eq!(angle.j, 7);
-        assert_eq!(angle.k, 8);
-
-        let dihedral = Dihedral::new(8, 7, 6, 0);
-        assert_eq!(dihedral.i, 0);
-        assert_eq!(dihedral.j, 6);
-        assert_eq!(dihedral.k, 7);
-        assert_eq!(dihedral.m, 8);
-
-        let dihedral = Dihedral::new(0, 7, 6, 8);
-        assert_eq!(dihedral.i, 0);
-        assert_eq!(dihedral.j, 7);
-        assert_eq!(dihedral.k, 6);
-        assert_eq!(dihedral.m, 8);
-    }
+    use sys::{Bond, Angle, Dihedral};
+    use sys::{CONNECT_12, CONNECT_13, CONNECT_14};
 
     #[test]
     fn translate() {
@@ -514,22 +356,22 @@ mod test {
         molecule.add_bond(1, 2);
         molecule.add_bond(2, 3);
 
-        assert_eq!(molecule.first(), 0);
-        assert_eq!(molecule.last(), 3);
+        assert_eq!(molecule.start(), 0);
+        assert_eq!(molecule.end(), 4);
         assert!(molecule.bonds().contains(&Bond::new(2, 3)));
         assert!(molecule.angles().contains(&Angle::new(1, 2, 3)));
         assert!(molecule.dihedrals().contains(&Dihedral::new(0, 1, 2, 3)));
 
         molecule.translate_by(5);
-        assert_eq!(molecule.first(), 5);
-        assert_eq!(molecule.last(), 8);
+        assert_eq!(molecule.start(), 5);
+        assert_eq!(molecule.end(), 9);
         assert!(molecule.bonds().contains(&Bond::new(7, 8)));
         assert!(molecule.angles().contains(&Angle::new(6, 7, 8)));
         assert!(molecule.dihedrals().contains(&Dihedral::new(5, 6, 7, 8)));
 
         molecule.translate_by(-3);
-        assert_eq!(molecule.first(), 2);
-        assert_eq!(molecule.last(), 5);
+        assert_eq!(molecule.start(), 2);
+        assert_eq!(molecule.end(), 6);
         assert!(molecule.bonds().contains(&Bond::new(4, 5)));
         assert!(molecule.angles().contains(&Angle::new(3, 4, 5)));
         assert!(molecule.dihedrals().contains(&Dihedral::new(2, 3, 4, 5)));
@@ -557,8 +399,8 @@ mod test {
         molecule.add_bond(1, 6);
         molecule.add_bond(1, 7);
 
-        assert_eq!(molecule.first(), 0);
-        assert_eq!(molecule.last(), 7);
+        assert_eq!(molecule.start(), 0);
+        assert_eq!(molecule.end(), 8);
 
         assert_eq!(molecule.size(), 8);
 
