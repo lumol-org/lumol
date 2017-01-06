@@ -31,7 +31,7 @@
     - [Adding potentials]()
     - [Adding outputs]()
     - [Extending Molecular dynamics]()
-    - [Extending Monte-Carlo]()
+    - [Adding a Monte-Carlo move](advanced_tutorial/mc.md)
     - [Adding propagators]()
 
 - [FAQ](faq.md)
