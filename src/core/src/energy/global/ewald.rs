@@ -541,7 +541,7 @@ impl Ewald {
 
         let qiqj = qi * qj / (ELCC * r * r);
         let factor = qiqj * (2.0 * self.alpha / f64::sqrt(PI) * f64::exp(-self.alpha * self.alpha * r * r) - f64::erf(self.alpha * r) / r);
-        return -factor * rij;
+        return factor * rij;
     }
 
     /// Molecular correction contribution to the energy
@@ -555,8 +555,7 @@ impl Ewald {
             // I can not manage to get this work with a loop from (i+1) to N. The finite
             // difference test (testing that the force is the same that the finite difference
             // of the energy) always fail. So let's use it that way for now.
-            for j in 0..natoms {
-                if i == j {continue}
+            for j in i+1..natoms {
                 // Only account for excluded pairs
                 let distance = system.bond_distance(i, j);
                 let info = self.restriction.information(distance);
@@ -566,7 +565,7 @@ impl Ewald {
                 if qj == 0.0 {continue}
 
                 let r = system.distance(i, j);
-                energy += self.molcorrect_energy_pair(info, qi, qj, r);
+                energy += 2.0 * self.molcorrect_energy_pair(info, qi, qj, r);
             }
         }
         return energy;
@@ -580,19 +579,19 @@ impl Ewald {
         for i in 0..natoms {
             let qi = system[i].charge;
             if qi == 0.0 {continue}
-            for j in 0..natoms {
-                if i == j {continue}
+            for j in i+1..natoms {
                 let distance = system.bond_distance(i, j);
                 let info = self.restriction.information(distance);
                 // Only account for excluded pairs
                 if !info.excluded {continue}
 
                 let qj = system[j].charge;
-                if qi == 0.0 {continue}
+                if qj == 0.0 {continue}
 
                 let rij = system.nearest_image(i, j);
                 let force = self.molcorrect_force_pair(info, qi, qj, &rij);
-                forces[i] -= force;
+                forces[i] += force;
+                forces[j] -= force;
             }
         }
     }
@@ -605,19 +604,18 @@ impl Ewald {
         for i in 0..natoms {
             let qi = system[i].charge;
             if qi == 0.0 {continue}
-            for j in 0..natoms {
-                if i == j {continue}
+            for j in i+1..natoms {
                 let distance = system.bond_distance(i, j);
                 let info = self.restriction.information(distance);
                 // Only account for excluded pairs
                 if !info.excluded {continue}
 
                 let qj = system[j].charge;
-                if qi == 0.0 {continue}
+                if qj == 0.0 {continue}
 
                 let rij = system.nearest_image(i, j);
                 let force = self.molcorrect_force_pair(info, qi, qj, &rij);
-                virial += force.tensorial(&rij);
+                virial -= force.tensorial(&rij);
             }
         }
         return virial;
@@ -762,8 +760,8 @@ mod tests {
         system[1].position = Vector3D::new(-0.7, -0.7, 0.3);
 
         system.add_particle(Particle::new("H"));
-        system[1].charge = 0.4238;
-        system[1].position = Vector3D::new(0.3, -0.3, -0.8);
+        system[2].charge = 0.4238;
+        system[2].position = Vector3D::new(0.3, -0.3, -0.8);
 
         let _ = system.add_bond(0, 1);
         let _ = system.add_bond(1, 2);
@@ -839,6 +837,7 @@ mod tests {
 
     mod molecules {
         use super::*;
+        use types::{Vector3D, Zero};
         use energy::{GlobalPotential, PairRestriction, CoulombicPotential};
 
         #[test]
@@ -848,11 +847,11 @@ mod tests {
             ewald.set_restriction(PairRestriction::InterMolecular);
 
             let energy = ewald.energy(&system);
-            let expected = -1.764807411904292e-3;
+            let expected = 0.0002257554843856993;
             assert_approx_eq!(energy, expected, 1e-12);
 
             let molcorrect = ewald.molcorrect_energy(&system);
-            let expected = 1.6200970409469367e-2;
+            let expected = 0.02452968743897957;
             assert_approx_eq!(molcorrect, expected, 1e-12);
         }
 
@@ -860,27 +859,62 @@ mod tests {
         fn forces() {
             let mut system = water();
             let mut ewald = Ewald::new(8.0, 10);
+            ewald.set_restriction(PairRestriction::InterMolecular);
 
             let forces = ewald.forces(&system);
             let norm = (forces[0] + forces[1]).norm();
             // Total force should be null
-            assert_approx_eq!(norm, 0.0, 1e-9);
+            assert_approx_eq!(norm, 0.0, 1e-3);
 
-            // Finite difference computation of the force
-            let e = ewald.energy(&system);
+            // Finite difference computation of all the force components
+            let energy = ewald.energy(&system);
+            let real_energy = ewald.real_space_energy(&system);
+            let kspace_energy = ewald.kspace_energy(&system);
+            let molcorrect_energy = ewald.molcorrect_energy(&system);
+
             let eps = 1e-9;
             system[0].position[0] += eps;
 
-            let e1 = ewald.energy(&system);
+            let energy_1 = ewald.energy(&system);
+            let real_energy_1 = ewald.real_space_energy(&system);
+            let kspace_energy_1 = ewald.kspace_energy(&system);
+            let molcorrect_energy_1 = ewald.molcorrect_energy(&system);
+
             let force = ewald.forces(&system)[0][0];
-            assert_approx_eq!((e - e1)/eps, force, 1e-6);
+
+            let mut forces_buffer = vec![Vector3D::zero(); system.size()];
+            ewald.real_space_forces(&system, &mut forces_buffer);
+            let real_force = forces_buffer[0][0];
+
+            let mut forces_buffer = vec![Vector3D::zero(); system.size()];
+            ewald.kspace_forces(&system, &mut forces_buffer);
+            let kspace_force = forces_buffer[0][0];
+
+            let mut forces_buffer = vec![Vector3D::zero(); system.size()];
+            ewald.molcorrect_forces(&system, &mut forces_buffer);
+            let molcorrect_force = forces_buffer[0][0];
+
+            let force_fda = (energy - energy_1) / eps;
+            assert!(f64::abs((force_fda - force) / force) < 1e-4);
+
+            // No real space energetic contribution here, we only have one
+            // molecule.
+            assert_approx_eq!(real_energy , 0.0, 1e-9);
+            assert_approx_eq!(real_energy_1 , 0.0, 1e-9);
+            assert_approx_eq!(real_force , 0.0, 1e-9);
+
+            let kspace_force_fda = (kspace_energy - kspace_energy_1) / eps;
+            assert!(f64::abs((kspace_force_fda - kspace_force) / kspace_force) < 1e-4);
+
+            let molcorrect_force_fda = (molcorrect_energy - molcorrect_energy_1) / eps;
+            assert!(f64::abs((molcorrect_force_fda - molcorrect_force) / molcorrect_force) < 1e-4);
         }
     }
 
     mod virial {
         use super::*;
         use types::{Vector3D, Zero};
-        use energy::GlobalPotential;
+        use energy::{GlobalPotential, PairRestriction, CoulombicPotential};
 
         #[test]
         fn real_space() {
@@ -919,11 +953,14 @@ mod tests {
 
         #[test]
         fn molcorrect() {
-            let system = water();
-            let ewald = Ewald::new(8.0, 10);
+            let mut system = nacl_pair();
+            let _ = system.add_bond(0, 1);
+
+            let mut ewald = Ewald::new(8.0, 10);
+            ewald.set_restriction(PairRestriction::InterMolecular);
 
             let virial = ewald.molcorrect_virial(&system);
-            let mut forces = vec![Vector3D::zero(); 3];
+            let mut forces = vec![Vector3D::zero(); 2];
             ewald.molcorrect_forces(&system, &mut forces);
             let w = forces[0].tensorial(&Vector3D::new(1.5, 0.0, 0.0));
 
