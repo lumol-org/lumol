@@ -319,16 +319,17 @@ impl System {
         self.particles.iter_mut()
     }
 
-    /// Merge the molecules at indexes `new_molid` and `old_molid` into one
-    /// molecule. The molecule are merged into `new_molid`, which should be the
-    /// lower molecule index.
+    /// Merge the molecules at indexes `first` and `second` into one
+    /// molecule. The molecule are merged into the one with the lower molecule
+    /// index.
     ///
     /// For example, if we have
     /// ```
+    ///  0    1    2    3   # Molecules indexes
     /// H-H  H-H  H-H  H-H
-    /// 0 1  2 3  4 5  6 7
+    /// 0 1  2 3  4 5  6 7  # Particles indexes
     /// ```
-    /// and call `merge_molecules(0, 2)` the result will be
+    /// and call `merge_molecules(0, 3)` the result will be
     /// ```
     /// 0 1 6 7  2 3  4 5  # Old indexes
     /// H-H-H-H  H-H  H-H
@@ -338,8 +339,13 @@ impl System {
     /// This functions return the change in index of the first particle of the
     /// moved molecule, i.e. in this example `4`.
     #[allow(block_in_if_condition_stmt)]
-    fn merge_molecules(&mut self, new_molid: usize, old_molid: usize) -> usize {
-        assert!(new_molid < old_molid);
+    fn merge_molecules(&mut self, first: usize, second: usize) -> usize {
+        let (new_molid, old_molid) = if first < second {
+            (first, second)
+        } else {
+            (second, first)
+        };
+
         let mut new_mol = self.molecules[new_molid].clone();
         let old_mol = self.molecules[old_molid].clone();
 
@@ -696,6 +702,19 @@ mod tests {
         system.remove_molecule(molid);
         assert_eq!(system.molecules().len(), 0);
         assert_eq!(system.size(), 0);
+    }
+
+    #[test]
+    fn add_bonds() {
+        // This is a regression test for issue #76
+        let mut system = System::new();
+        system.add_particle(Particle::new("H"));
+        system.add_particle(Particle::new("H"));
+        system.add_particle(Particle::new("O"));
+
+        assert_eq!(system.add_bond(0, 2), vec![(2, 1), (1, 2)]);
+        assert_eq!(system.add_bond(2, 1), vec![]);
+        assert_eq!(system.molecules().len(), 1);
     }
 
     #[test]
