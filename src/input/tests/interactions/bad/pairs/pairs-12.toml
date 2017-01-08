@@ -1,0 +1,11 @@
+[input]
+version = 1
+
+[global]
+cutoff = "67 A"
+
+[[pairs]]
+atoms = ["A", "A"]
+lj = {sigma = "3 A", epsilon = "5.9 kJ/mol"}
+tail_correction = "true"
+#^ The 'tail_correction' section must be a boolean value

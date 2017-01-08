@@ -3,6 +3,7 @@ version = 1
 
 [global]
 cutoff = "3 A"
+tail_correction = true
 
 [[pairs]]
 atoms = ["A", "B"]
@@ -10,6 +11,7 @@ lj = {sigma = "3 A", epsilon = "5.9 kJ/mol"}
 
 [[pairs]]
 atoms = ["A", "B"]
+tail_correction = false
 harmonic = {x0 = "3 A", k = "5.9 kJ/mol/A^2"}
 
 [[pairs]]
