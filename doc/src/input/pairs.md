@@ -78,6 +78,32 @@ lj = {x0 = "3 A", k = "5.9 kJ/mol/A^2"}
 cutoff = {shifted = "10 A"}
 ```
 
+### Tail correction
+
+Tail corrections (also called long range corrections) are a way to add back the
+missing energy from using a cutoff distance. If the simulated system is
+homogeneous and isotropic after the cutoff (if the pair distribution function
+$g(r)$ is 1 after the cutoff), the missing energy for a potential $V(r)$ can be
+expressed using the density $\rho$:
+
+$$ U_\text{tail} = 2 \pi \rho \int_{rc}^{+\infty} r^2 V(r) \ dr $$
+
+In the input, this additional energetic term is controlled by the
+`tail_correction` keyword, which can be placed either in the `[global]` section,
+or in any specific `[[pairs]]` section.
+
+```toml
+# Use tail corrections for every pair interaction
+[global]
+tail_correction = true
+
+# Except for this one.
+[[pairs]]
+atoms = ["O", "O"]
+lj = {x0 = "3 A", k = "5.9 kJ/mol/A^2"}
+tail_correction = false
+```
+
 ## Pairs restrictions
 
 Some force fields define additional restrictions concerning which particles
