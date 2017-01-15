@@ -337,7 +337,8 @@ impl System {
             CellShape::Infinite => (),
             _ => {
                 let com = self.molecule_com(molid);
-                let com_wrapped = self.cell().get_wrapped_vector(&com);
+                let mut com_wrapped = com.clone();
+                self.cell.wrap_vector(&mut com_wrapped); 
                 let delta = com_wrapped - com;
                 // iterate over all positions and move them accordingly
                 for pi in self.molecule(molid) {

@@ -616,36 +616,6 @@ mod tests {
     }
 
     #[test]
-    fn test_get_wrapped_vector() {
-        // Cubic unit cell
-        let cell = UnitCell::cubic(10.0);
-        let v = Vector3D::new(9.0, 18.0, -6.0);
-        let wv = cell.get_wrapped_vector(&v);
-        assert_eq!(wv, Vector3D::new(9.0, 8.0, 4.0));
-
-        // Orthorhombic unit cell
-        let cell = UnitCell::ortho(3.0, 4.0, 5.0);
-        let v = Vector3D::new(1.0, 1.5, 6.0);
-        let wv = cell.get_wrapped_vector(&v);
-        assert_eq!(wv, Vector3D::new(1.0, 1.5, 1.0));
-
-        // Infinite unit cell
-        let cell = UnitCell::new();
-        let v = Vector3D::new(1.0, 1.5, 6.0);
-        let wv = cell.get_wrapped_vector(&v);
-        assert_eq!(wv, Vector3D::new(1.0, 1.5, 6.0));
-
-        // Triclinic unit cell
-        let cell = UnitCell::triclinic(3.0, 4.0, 5.0, 90.0, 90.0, 90.0);
-        let v = Vector3D::new(1.0, 1.5, 6.0);
-        let wv = cell.get_wrapped_vector(&v);
-        let res = Vector3D::new(1.0, 1.5, 1.0);
-        assert_approx_eq!(wv[0], res[0]);
-        assert_approx_eq!(wv[1], res[1]);
-        assert_approx_eq!(wv[2], res[2]);
-    }
-
-    #[test]
     fn vector_image() {
         // Cubic unit cell
         let cell = UnitCell::cubic(10.0);
