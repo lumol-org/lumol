@@ -17,7 +17,7 @@ To be more specific, we distinguish between the following contributions:
   twisting of bonded atoms;
   - `coulomb` and `charges` describe long-range contributions due to
   electrostatic interactions;
-  - the `global` section  describe additional parameter that apply to all the
+  - the `global` section describes additional parameter that apply to all the
   energy contributions.
 
 Information about interactions for `pairs`, `bonds`, `angles` and `dihedrals`
