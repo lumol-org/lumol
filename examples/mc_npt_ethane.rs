@@ -24,7 +24,7 @@ fn get_system() -> System {
     system.set_cell(UnitCell::cubic(100.0));
 
     // Add intermolecular interactions
-    // TraPPE parameters for CH3 - note that masses are not correct.
+    // TraPPE parameters for CH3
     let lj = Box::new(LennardJones{
         sigma: units::from(3.750, "A").unwrap(),
         epsilon: units::from(0.814821, "kJ/mol").unwrap()

@@ -276,30 +276,6 @@ impl UnitCell {
         }
     }
 
-    /// Return a new vector that lies inside the simulation cell.
-    ///
-    /// If `vect` is already in the cell or the `CellShape` is
-    /// `Infinite`, the resulting vector is identical to `vect`.
-    pub fn get_wrapped_vector(&self, vect: &Vector3D) -> Vector3D {
-        let mut res = vect.clone();
-        match self.shape {
-            CellShape::Infinite => (),
-            CellShape::Orthorombic => {
-                res[0] = vect[0] - f64::floor(vect[0] / self.a()) * self.a();
-                res[1] = vect[1] - f64::floor(vect[1] / self.b()) * self.b();
-                res[2] = vect[2] - f64::floor(vect[2] / self.c()) * self.c();
-            },
-            CellShape::Triclinic => {
-                let mut fractional = self.fractional(vect);
-                fractional[0] -= f64::floor(fractional[0]);
-                fractional[1] -= f64::floor(fractional[1]);
-                fractional[2] -= f64::floor(fractional[2]);
-                res = self.cartesian(&fractional);
-            },
-        }
-        res
-    }
-
     /// Find the image of a vector in the unit cell, obeying the periodic
     /// boundary conditions. For a cubic cell of side length `L`, this produce a
     /// vector with all components in `[-L/2, L/2)`.
