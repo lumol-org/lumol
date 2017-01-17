@@ -19,6 +19,8 @@
     - [TOML syntax]()
     - [Systems](input/systems.md)
     - [Interactions](input/interactions.md)
+    - [Pair interactions](input/pairs.md)
+    - [Electrostatics](input/electrostatic.md)
     - [Potentials](input/potentials.md)
     - [Simulations](input/simulations.md)
     - [Molecular dynamics](input/md.md)

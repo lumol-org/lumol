@@ -15,6 +15,41 @@ use extract;
 use super::read_restriction;
 use super::InteractionsInput;
 
+/// Global settings for the pair interactions
+struct GlobalInformation<'a> {
+    cutoff: Option<&'a Value>,
+    tail: Option<bool>,
+}
+
+impl<'a> GlobalInformation<'a> {
+    fn read(config: &Table) -> Result<GlobalInformation> {
+        match config.get("global") {
+            Some(global) => {
+                let global = try!(global.as_table().ok_or(Error::from(
+                    "'global' section must be a table"
+                )));
+                let cutoff = global.get("cutoff");
+                let tail = if let Some(tail) = global.get("tail_correction") {
+                    let tail = try!(tail.as_bool().ok_or(Error::from(
+                        "The 'tail_correction' section must be a boolean value"
+                    )));
+                    Some(tail)
+                } else {
+                    None
+                };
+                Ok(GlobalInformation {
+                    cutoff: cutoff,
+                    tail: tail,
+                })
+            }
+            None => Ok(GlobalInformation {
+                cutoff: None,
+                tail: None,
+            })
+        }
+    }
+}
+
 impl InteractionsInput {
     /// Read the "pairs" section from the potential configuration. This is an
     /// internal function, public because of the code organization.
@@ -29,15 +64,6 @@ impl InteractionsInput {
         let pairs = try!(pairs.as_slice().ok_or(
             Error::from("The 'pairs' section must be an array")
         ));
-
-        let global_cutoff = if let Some(global) = self.config.get("global") {
-            let global = try!(global.as_table().ok_or(Error::from(
-                "'global' section must be a table"
-            )));
-            global.get("cutoff")
-        } else {
-            None
-        };
 
         for pair in pairs {
             let pair = try!(pair.as_table().ok_or(
@@ -68,9 +94,10 @@ impl InteractionsInput {
                 potential
             };
 
+            let global = try!(GlobalInformation::read(&self.config));
             let cutoff = match pair.get("cutoff") {
                 Some(cutoff) => cutoff,
-                None => try!(global_cutoff.ok_or(Error::from(
+                None => try!(global.cutoff.as_ref().ok_or(Error::from(
                     "Missing 'cutoff' value for pair potential"
                 )))
             };
@@ -94,6 +121,21 @@ impl InteractionsInput {
                     "'cutoff' must be a string or a table"
                 ))
             };
+
+            let tail = match pair.get("tail_correction") {
+                Some(tail) => {
+                    Some(try!(tail.as_bool().ok_or(Error::from(
+                        "The 'tail_correction' section must be a boolean value"
+                    ))))
+                }
+                None => global.tail
+            };
+
+            if let Some(use_tail) = tail {
+                if use_tail {
+                    interaction.enable_tail_corrections()
+                }
+            }
 
             if let Some(restriction) = try!(read_restriction(pair)) {
                 interaction.set_restriction(restriction);
@@ -141,7 +183,9 @@ impl InteractionsInput {
 }
 
 fn read_pair_potential(pair: &Table) -> Result<Box<PairPotential>> {
-    const KEYWORDS: &'static[&'static str] = &["restriction", "computation", "atoms", "cutoff"];
+    const KEYWORDS: &'static[&'static str] = &[
+        "restriction", "computation", "atoms", "cutoff", "tail_correction"
+    ];
 
     let potentials = pair.keys().cloned()
                     .filter(|key| !KEYWORDS.contains(&key.as_ref()))
