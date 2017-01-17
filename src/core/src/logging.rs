@@ -36,26 +36,6 @@ macro_rules! internal_error {
 }
 
 
-macro_rules! warn_once {
-    ($($args:tt)*) => {{
-        use ::std::collections::BTreeSet;
-        use ::std::sync::RwLock;
-        lazy_static!{
-            static ref WARNINGS: RwLock<BTreeSet<String>> = RwLock::new(BTreeSet::new());
-        }
-        let message = format!($($args)*);
-        let already_logged = WARNINGS.read()
-                                     .expect("RwLock was poisonned")
-                                     .contains(&message);
-        if !already_logged {
-            WARNINGS.write()
-                    .expect("RwLock was poisonned")
-                    .insert(message.clone());
-            warn!("{}", message);
-        }
-    }};
-}
-
 /// Target for the logging output
 #[derive(Clone, Debug)]
 pub enum Target {
