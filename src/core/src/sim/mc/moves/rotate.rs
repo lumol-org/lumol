@@ -120,12 +120,9 @@ impl MCMove for Rotate {
                 self.theta *= s;
                 self.range = Range::new(-self.theta, self.theta);
             } else {
-                // FIXME: fix the warn_once macro formatting usage
-                #[allow(useless_format)] {
-                    warn_once!(
-                        "Tried to increase the maximum amplitude for rotations to more than 180°."
-                    );
-                }
+                warn_once!(
+                    "Tried to increase the maximum amplitude for rotations to more than 180°."
+                );
             }
         }
     }
