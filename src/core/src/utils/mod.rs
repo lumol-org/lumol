@@ -5,10 +5,13 @@
 #[macro_use]
 mod macros;
 
+mod alternator;
 #[cfg(test)]
 mod xyz;
 #[cfg(test)]
 pub use self::xyz::system_from_xyz;
+
+pub use self::alternator::Alternator;
 
 /// Internal version of `units::from`, where the unit is assumed to be correct
 pub fn unit_from(value: f64, unit: &str) -> f64 {

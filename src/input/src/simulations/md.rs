@@ -175,7 +175,12 @@ impl FromToml for RemoveTranslation {
 }
 
 impl FromToml for RemoveRotation {
-    fn from_toml(_: &Table) -> Result<RemoveRotation> {
-        Ok(RemoveRotation)
+    fn from_toml(config: &Table) -> Result<RemoveRotation> {
+        let frequency = if config.contains_key("frequency") {
+            try!(extract::number("frequency", config, "RemoveRotation control"))}
+        else {
+           1.0
+        };
+        Ok(RemoveRotation::from_frequency(frequency))
     }
 }

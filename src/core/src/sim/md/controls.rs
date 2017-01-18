@@ -7,6 +7,7 @@
 use types::{Matrix3, Vector3D, Zero};
 use sys::System;
 use sys::veloc;
+use utils::Alternator;
 
 /// Trait for controlling some parameters in a system during a simulation.
 pub trait Control {
@@ -124,10 +125,22 @@ impl Control for RemoveTranslation {
 
 /******************************************************************************/
 /// Remove global rotation from the system
-pub struct RemoveRotation;
+pub struct RemoveRotation{
+    alternator: Alternator
+}
+
+impl RemoveRotation {
+    pub fn from_frequency(frequency: f64) -> RemoveRotation {
+        RemoveRotation{ alternator: Alternator::from_frequency(frequency) }
+    }
+}
 
 impl Control for RemoveRotation {
     fn control(&mut self, system: &mut System) {
+        if !self.alternator.can_run(){
+            return
+        }
+
         // Center-of-mass
         let com = system.center_of_mass();
 
@@ -259,10 +272,23 @@ mod tests {
         system[0].velocity = Vector3D::new(0.0, 1.0, 0.0);
         system[1].velocity = Vector3D::new(0.0, -1.0, 2.0);
 
-        RemoveRotation.control(&mut system);
+        let mut control = RemoveRotation::from_frequency(1.0 / 4.0);
 
+        // The three first controls do nothing
+        let vel_0 = system[0].velocity;
+        let vel_1 = system[1].velocity;
+        for _ in 0..3 {
+            control.control(&mut system);
+            for i in 0..3 {
+                assert_approx_eq!(system[0].velocity[i], vel_0[i]);
+                assert_approx_eq!(system[1].velocity[i], vel_1[i]);
+            }
+        }
+
+        // The fourth one removes global rotation
         let vel_0 = Vector3D::new(0.0, 0.0, 1.0);
         let vel_1 = Vector3D::new(0.0, 0.0, 1.0);
+        control.control(&mut system);
         for i in 0..3 {
             assert_approx_eq!(system[0].velocity[i], vel_0[i]);
             assert_approx_eq!(system[1].velocity[i], vel_1[i]);
