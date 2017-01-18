@@ -527,7 +527,7 @@ impl Ewald {
         assert!(info.scaling  == 1.0, "Scaling restriction scheme using Ewald are not implemented");
         assert!(r < self.rc, "Atoms in molecule are separated by more than the cutoff radius of Ewald sum.");
 
-        return -0.5 * qi * qj / ELCC * f64::erf(self.alpha * r)/r;
+        return - qi * qj / ELCC * f64::erf(self.alpha * r)/r;
     }
 
     /// Get the molecular correction force for the pair with charges `qi` and
@@ -565,7 +565,7 @@ impl Ewald {
                 if qj == 0.0 {continue}
 
                 let r = system.distance(i, j);
-                energy += 2.0 * self.molcorrect_energy_pair(info, qi, qj, r);
+                energy += self.molcorrect_energy_pair(info, qi, qj, r);
             }
         }
         return energy;
@@ -985,6 +985,107 @@ mod tests {
                     assert_approx_eq!(virial[(i, j)], w[(i, j)]);
                 }
             }
+        }
+    }
+
+    mod cache {
+        use super::*;
+        use sys::System;
+        use types::Vector3D;
+        use energy::{GlobalPotential, PairRestriction, CoulombicPotential, GlobalCache};
+
+        pub fn testing_system() -> System {
+            let mut system = water();
+            let mut copy = system.clone();
+            for mut particle in &mut system {
+                particle.position += Vector3D::new(2.0, 2.0, 0.0);
+                copy.add_particle(particle.clone());
+            }
+
+            let _ = copy.add_bond(2, 3);
+            let _ = copy.add_bond(3, 4);
+
+            return copy;
+        }
+
+        #[test]
+        fn move_atoms() {
+            let mut system = testing_system();
+            let mut ewald = Ewald::new(8.0, 10);
+            ewald.set_restriction(PairRestriction::InterMolecular);
+
+            let mut ewald_check = ewald.clone();
+
+            let old_e = ewald_check.energy(&system);
+            let idxes = &[0, 1];
+            let newpos = &[Vector3D::new(0.0, 0.0, 0.5), Vector3D::new(-0.7, 0.2, 1.5)];
+
+            let cost = ewald.move_particles_cost(&system, idxes, newpos);
+
+            system[0].position = newpos[0];
+            system[1].position = newpos[1];
+            let new_e = ewald_check.energy(&system);
+            assert_approx_eq!(cost, new_e - old_e, 1e-14);
+        }
+
+        #[test]
+        fn move_atoms_real_space() {
+            let mut system = testing_system();
+            let mut ewald = Ewald::new(8.0, 10);
+            ewald.set_restriction(PairRestriction::InterMolecular);
+
+            let ewald_check = ewald.clone();
+
+            let old_e = ewald_check.real_space_energy(&system);
+            let idxes = &[0, 1];
+            let newpos = &[Vector3D::new(0.0, 0.0, 0.5), Vector3D::new(-0.7, 0.2, 1.5)];
+
+            let cost = ewald.real_space_move_particles_cost(&system, idxes, newpos);
+
+            system[0].position = newpos[0];
+            system[1].position = newpos[1];
+            let new_e = ewald_check.real_space_energy(&system);
+            assert_approx_eq!(cost, new_e - old_e, 1e-14);
+        }
+
+        #[test]
+        fn move_atoms_kspace() {
+            let mut system = testing_system();
+            let mut ewald = Ewald::new(8.0, 10);
+            ewald.set_restriction(PairRestriction::InterMolecular);
+
+            let mut ewald_check = ewald.clone();
+
+            let old_e = ewald_check.kspace_energy(&system);
+            let idxes = &[0, 1];
+            let newpos = &[Vector3D::new(0.0, 0.0, 0.5), Vector3D::new(-0.7, 0.2, 1.5)];
+
+            let cost = ewald.kspace_move_particles_cost(&system, idxes, newpos);
+
+            system[0].position = newpos[0];
+            system[1].position = newpos[1];
+            let new_e = ewald_check.kspace_energy(&system);
+            assert_approx_eq!(cost, new_e - old_e, 1e-14);
+        }
+
+        #[test]
+        fn move_atoms_molcorrect() {
+            let mut system = testing_system();
+            let mut ewald = Ewald::new(8.0, 10);
+            ewald.set_restriction(PairRestriction::InterMolecular);
+
+            let ewald_check = ewald.clone();
+
+            let old_e = ewald_check.molcorrect_energy(&system);
+            let idxes = &[0, 1];
+            let newpos = &[Vector3D::new(0.0, 0.0, 0.5), Vector3D::new(-0.7, 0.2, 1.5)];
+
+            let cost = ewald.molcorrect_move_particles_cost(&system, idxes, newpos);
+
+            system[0].position = newpos[0];
+            system[1].position = newpos[1];
+            let new_e = ewald_check.molcorrect_energy(&system);
+            assert_approx_eq!(cost, new_e - old_e, 1e-14);
         }
     }
 }
