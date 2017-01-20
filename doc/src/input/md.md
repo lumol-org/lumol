@@ -169,16 +169,17 @@ thermostat = {type = "Rescale", temperature = "250 K", tolerance = "10 K"}
 
 Control algorithm are supplementary steps that modify the system to ensure some
 invariant, or apply some constraint. They are specified in the `controls` array,
-by giving a control `type`.
+by giving a control `type`. The `every` key specifies that the algorithm should
+only be run every `n` step of the simulation (optional, defaults to 1).
 
 ```toml
 [simulations.propagator]
 type = "MolecularDynamics"
 timestep = "1 fs"
 controls = [
-    {type = "RemoveRotation"}
+    {type = "RemoveRotation", every = 4}
 ]
 ```
 
-- The `RemoveTranslation` control remove the global system rotation;
-- The `RemoveRotation` control remove the global system translation.
+- The `RemoveTranslation` control removes the global system rotation;
+- The `RemoveRotation` control removes the global system translation.

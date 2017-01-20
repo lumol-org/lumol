@@ -111,6 +111,8 @@ pub struct RemoveTranslation {
 }
 
 impl RemoveTranslation {
+    /// Create a new `RemoveTranslation"` control, that will
+    /// run every `every` step of the simulation.
     pub fn new(every: usize) -> RemoveTranslation {
         RemoveTranslation { alternator: Alternator::new(every) }
     }
@@ -141,6 +143,8 @@ pub struct RemoveRotation {
 }
 
 impl RemoveRotation {
+    /// Create a new `RemoveRotation` control, that will
+    /// run every `every` step of the simulation.
     pub fn new(every: usize) -> RemoveRotation {
         RemoveRotation { alternator: Alternator::new(every) }
     }
