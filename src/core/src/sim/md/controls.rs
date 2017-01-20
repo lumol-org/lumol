@@ -106,10 +106,21 @@ impl Thermostat for BerendsenThermostat {}
 
 /******************************************************************************/
 /// Remove global translation from the system
-pub struct RemoveTranslation;
+pub struct RemoveTranslation {
+    alternator: Alternator
+}
+
+impl RemoveTranslation {
+    pub fn new(every: usize) -> RemoveTranslation {
+        RemoveTranslation { alternator: Alternator::new(every) }
+    }
+}
 
 impl Control for RemoveTranslation {
     fn control(&mut self, system: &mut System) {
+        if !self.alternator.can_run() {
+            return
+        }
         let total_mass = system.iter().fold(0.0, |total_mass, particle| total_mass + particle.mass);
 
         let total_velocity = system.iter().fold(
@@ -256,8 +267,21 @@ mod tests {
         system[0].velocity = Vector3D::new(1.0, 2.0, 0.0);
         system[1].velocity = Vector3D::new(1.0, 0.0, 0.0);
 
-        RemoveTranslation.control(&mut system);
+        let mut control = RemoveTranslation::new(4);
 
+        // The three first controls do nothing
+        let vel_0 = system[0].velocity;
+        let vel_1 = system[1].velocity;
+        for _ in 0..3 {
+            control.control(&mut system);
+            for i in 0..3 {
+                assert_approx_eq!(system[0].velocity[i], vel_0[i]);
+                assert_approx_eq!(system[1].velocity[i], vel_1[i]);
+            }
+        }
+
+        // The fourth one removes global translation
+        control.control(&mut system);
         assert_eq!(system[0].velocity, Vector3D::new(0.0, 1.0, 0.0));
         assert_eq!(system[1].velocity, Vector3D::new(0.0, -1.0, 0.0));
     }

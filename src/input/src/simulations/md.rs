@@ -169,8 +169,13 @@ impl FromToml for RescaleThermostat {
 }
 
 impl FromToml for RemoveTranslation {
-    fn from_toml(_: &Table) -> Result<RemoveTranslation> {
-        Ok(RemoveTranslation)
+    fn from_toml(config: &Table) -> Result<RemoveTranslation> {
+        let every = if config.contains_key("every") {
+            try!(extract::number("every", config, "RemoveTranslation control")) as usize
+        } else {
+           1
+        };
+        Ok(RemoveTranslation::new(every))
     }
 }
 
