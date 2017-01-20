@@ -4,11 +4,8 @@ pub struct Alternator {
 }
 
 impl Alternator {
-    pub fn from_frequency(frequency: f64) -> Alternator {
-        if frequency <= 0.0 && frequency > 1.0 {
-            panic!("Frequency must be between 0 and 1.")
-        }
-        Alternator { step_count: 0, period: (1.0 / frequency) as usize }
+    pub fn new(period: usize) -> Alternator {
+        Alternator { step_count: 0, period: period }
     }
 
     pub fn can_run(&mut self) -> bool {
@@ -18,5 +15,18 @@ impl Alternator {
         }
         self.step_count = 0;
         true
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn alternator() {
+        let mut alternator = Alternator::new(8);
+        for i in 1..100 {
+            assert_eq!(alternator.can_run(), i % 8 == 0);
+        }
     }
 }

@@ -176,11 +176,11 @@ impl FromToml for RemoveTranslation {
 
 impl FromToml for RemoveRotation {
     fn from_toml(config: &Table) -> Result<RemoveRotation> {
-        let frequency = if config.contains_key("frequency") {
-            try!(extract::number("frequency", config, "RemoveRotation control"))}
-        else {
-           1.0
+        let every = if config.contains_key("every") {
+            try!(extract::number("every", config, "RemoveRotation control")) as usize
+        } else {
+           1
         };
-        Ok(RemoveRotation::from_frequency(frequency))
+        Ok(RemoveRotation::new(every))
     }
 }

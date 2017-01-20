@@ -125,19 +125,19 @@ impl Control for RemoveTranslation {
 
 /******************************************************************************/
 /// Remove global rotation from the system
-pub struct RemoveRotation{
+pub struct RemoveRotation {
     alternator: Alternator
 }
 
 impl RemoveRotation {
-    pub fn from_frequency(frequency: f64) -> RemoveRotation {
-        RemoveRotation{ alternator: Alternator::from_frequency(frequency) }
+    pub fn new(every: usize) -> RemoveRotation {
+        RemoveRotation { alternator: Alternator::new(every) }
     }
 }
 
 impl Control for RemoveRotation {
     fn control(&mut self, system: &mut System) {
-        if !self.alternator.can_run(){
+        if !self.alternator.can_run() {
             return
         }
 
@@ -272,7 +272,7 @@ mod tests {
         system[0].velocity = Vector3D::new(0.0, 1.0, 0.0);
         system[1].velocity = Vector3D::new(0.0, -1.0, 2.0);
 
-        let mut control = RemoveRotation::from_frequency(1.0 / 4.0);
+        let mut control = RemoveRotation::new(4);
 
         // The three first controls do nothing
         let vel_0 = system[0].velocity;
