@@ -177,6 +177,7 @@ only be run every `n` step of the simulation (optional, defaults to 1).
 type = "MolecularDynamics"
 timestep = "1 fs"
 controls = [
+    # Remove global rotation of the system every 4 timestep
     {type = "RemoveRotation", every = 4}
 ]
 ```
