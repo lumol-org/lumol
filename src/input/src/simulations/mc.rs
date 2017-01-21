@@ -85,7 +85,7 @@ impl FromTomlWithData for Rotate {
 
 impl FromTomlWithData for Resize {
     type Data = PathBuf;
-    fn from_toml(config: &Table, root: PathBuf) -> Result<Resize> {
+    fn from_toml(config: &Table, _: PathBuf) -> Result<Resize> {
         let pressure = try!(extract::str("pressure", config, "Resize move"));
         let pressure = try!(units::from_str(pressure));
 
