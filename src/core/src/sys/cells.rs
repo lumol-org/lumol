@@ -158,7 +158,7 @@ impl UnitCell {
     }
 
     /// Get the distances between faces of the unit cell
-    pub fn lengths(&self) -> (f64, f64, f64) {
+    pub fn lengths(&self) -> [f64; 3] {
         assert!(self.shape != CellShape::Infinite);
 
         let (a, b, c) = (self.vect_a(), self.vect_b(), self.vect_c());
@@ -171,7 +171,7 @@ impl UnitCell {
         let y = f64::abs(nb[0]*b[0] + nb[1]*b[1] + nb[2]*b[2]);
         let z = f64::abs(nc[0]*c[0] + nc[1]*c[1] + nc[2]*c[2]);
 
-        return (x, y, z);
+        [x, y, z]
     }
 
     /// Get the first angle of the cell
@@ -515,13 +515,13 @@ mod tests {
     #[test]
     fn lengths() {
         let ortho = UnitCell::ortho(3.0, 4.0, 5.0);
-        assert_eq!(ortho.lengths(), (3.0, 4.0, 5.0));
+        assert_eq!(ortho.lengths(), [3.0, 4.0, 5.0]);
 
         let triclinic = UnitCell::triclinic(3.0, 4.0, 5.0, 90.0, 90.0, 90.0);
-        assert_eq!(triclinic.lengths(), (3.0, 4.0, 5.0));
+        assert_eq!(triclinic.lengths(), [3.0, 4.0, 5.0]);
 
         let triclinic = UnitCell::triclinic(3.0, 4.0, 5.0, 90.0, 80.0, 100.0);
-        assert_eq!(triclinic.lengths(), (2.908132319388713, 3.9373265973230853, 4.921658246653857));
+        assert_eq!(triclinic.lengths(), [2.908132319388713, 3.9373265973230853, 4.921658246653857]);
     }
 
     #[test]

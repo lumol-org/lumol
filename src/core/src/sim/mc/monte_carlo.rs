@@ -182,7 +182,7 @@ impl Propagator for MonteCarlo {
             trace!("    --> Move was accepted");
             mcmove.0.apply(system);
             self.cache.update(system);
-            mcmove.1.naccepted += 1
+            mcmove.1.naccepted += 1;
         } else {
             trace!("    --> Move was rejected");
             mcmove.0.restore(system);
@@ -209,7 +209,6 @@ impl Propagator for MonteCarlo {
         }
     }
 }
-
 
 /// This struct keeps track of the number of times a move was called
 /// and how often it was accepted.
@@ -335,6 +334,7 @@ mod tests {
         let mut mc = MonteCarlo::new(100.0);
         mc.add_move_with_acceptance(Box::new(DummyMove), 1.0, -0.1);
     }
+
     #[test]
     fn valid_acceptance() {
         let mut mc = MonteCarlo::new(100.0);
