@@ -95,7 +95,7 @@ fn main() {
     // (See frequencies of moves:
     // nmols/2 translations + nmols/2 rotations + 2 resize moves)
     let moves_per_cycle = 102;
-    let cycles = 10000;
+    let cycles = 100000;
 
     // Some output and start of the simulation.
     println!("Simuation of 100 ethane molecules.");

@@ -46,11 +46,11 @@ fn get_system() -> System {
     // Set charges
     let h = 0.42380;
     let o = - 2.0 * h;
-    for p in &mut system {
-        match p.name() {
-            "H" => p.charge = h,
-            "O" => p.charge = o,
-            _ => panic!("Particle {}", p.name()),
+    for particle in &mut system {
+        match particle.name() {
+            "H" => particle.charge = h,
+            "O" => particle.charge = o,
+            _ => panic!("Unknown particle name in charge setting."),
         }
     }
 

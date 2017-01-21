@@ -6,7 +6,7 @@
 //! An `System` consists of a list of `Particle`; a list of `Molecule`
 //! specifying how the particles are bonded together; an unit cell for boundary
 //! conditions; and the interactions between these particles.
-use std::ops::{Index, IndexMut, Range};
+use std::ops::{Index, IndexMut};
 use std::slice;
 use std::cmp::{min, max};
 use std::iter::IntoIterator;
@@ -20,7 +20,7 @@ use types::{Vector3D, Matrix3, Zero};
 use super::{Particle, ParticleKind};
 use super::Molecule;
 use super::{CONNECT_12, CONNECT_13, CONNECT_14, CONNECT_FAR};
-use super::{UnitCell, CellShape};
+use super::UnitCell;
 use super::interactions::Interactions;
 use super::EnergyEvaluator;
 use super::molecules::molecule_type;
@@ -330,21 +330,13 @@ impl System {
     /// If the `CellShape` is `Infinite` there are no changes
     /// to the positions.
     pub fn wrap_molecule(&mut self, molid: usize) {
-        // This catch is not necessary, since for `Infinite`
-        // cells, a wrap will return just the same vector and
-        // hence `delta` will be zero; but it is faster.
-        match self.cell().shape() {
-            CellShape::Infinite => (),
-            _ => {
-                let com = self.molecule_com(molid);
-                let mut com_wrapped = com.clone();
-                self.cell.wrap_vector(&mut com_wrapped); 
-                let delta = com_wrapped - com;
-                // iterate over all positions and move them accordingly
-                for pi in self.molecule(molid) {
-                    self[pi].position += delta
-                }
-            },
+        let com = self.molecule_com(molid);
+        let mut com_wrapped = com.clone();
+        self.cell.wrap_vector(&mut com_wrapped); 
+        let delta = com_wrapped - com;
+        // iterate over all positions and move them accordingly
+        for pi in self.molecule(molid) {
+            self[pi].position += delta
         }
     }
 
@@ -677,15 +669,6 @@ impl IndexMut<usize> for System {
     }
 }
 
-impl Index<Range<usize>> for System {
-    type Output = [Particle];
-    #[inline]
-    fn index(&self, index: Range<usize>) -> &[Particle] {
-        // Index::index(&self.particles, index)
-        &self.particles[index]
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use sys::*;
@@ -821,33 +804,6 @@ mod tests {
         assert_eq!(system[0].name(), "O");
         assert_eq!(system[1].name(), "H");
         assert_eq!(system[2].name(), "H");
-    }
-
-    #[test]
-    fn particles_from_range() {
-        let mut system = System::new();
-        let particles = [Particle::new("O"),
-                         Particle::new("H"),
-                         Particle::new("C")];
-
-        system.add_particle(particles[0].clone());
-        system.add_particle(particles[1].clone());
-        system.add_particle(particles[2].clone());
-        {
-            let particles_range = &system[0..2];
-            assert_eq!(particles_range[0].name(), particles[0].name());
-            assert_eq!(particles_range[1].name(), particles[1].name());    
-        }
-        {
-            let particles_range = &system[1..3];
-            assert_eq!(particles_range[0].name(), particles[1].name());
-            assert_eq!(particles_range[1].name(), particles[2].name());    
-        }
-        {
-            let particles_range = &system[1..3];
-            assert_eq!(particles_range[0].name(), particles[1].name());
-            assert_eq!(particles_range[1].name(), particles[2].name());
-        }
     }
 
     #[test]
