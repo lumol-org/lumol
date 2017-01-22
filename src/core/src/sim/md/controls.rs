@@ -7,7 +7,7 @@
 use types::{Matrix3, Vector3D, Zero};
 use sys::System;
 use sys::veloc;
-use utils::Alternator;
+use sim::Alternator;
 
 /// Trait for controlling some parameters in a system during a simulation.
 pub trait Control {
@@ -105,24 +105,29 @@ impl Control for BerendsenThermostat {
 impl Thermostat for BerendsenThermostat {}
 
 /******************************************************************************/
-/// Remove global translation from the system
-pub struct RemoveTranslation {
-    alternator: Alternator
+
+impl<T> Control for Alternator<T> where T: Control {
+
+    fn control(&mut self, system: &mut System) {
+        if self.can_run() {
+            self.base_mut().control(system)
+        }
+    }
 }
+
+/// Remove global translation from the system
+pub struct RemoveTranslation;
 
 impl RemoveTranslation {
     /// Create a new `RemoveTranslation"` control, that will
     /// run every `every` step of the simulation.
-    pub fn new(every: usize) -> RemoveTranslation {
-        RemoveTranslation { alternator: Alternator::new(every) }
+    pub fn new() -> RemoveTranslation {
+        RemoveTranslation {}
     }
 }
 
 impl Control for RemoveTranslation {
     fn control(&mut self, system: &mut System) {
-        if !self.alternator.can_run() {
-            return
-        }
         let total_mass = system.iter().fold(0.0, |total_mass, particle| total_mass + particle.mass);
 
         let total_velocity = system.iter().fold(
@@ -138,24 +143,18 @@ impl Control for RemoveTranslation {
 
 /******************************************************************************/
 /// Remove global rotation from the system
-pub struct RemoveRotation {
-    alternator: Alternator
-}
+pub struct RemoveRotation;
 
 impl RemoveRotation {
     /// Create a new `RemoveRotation` control, that will
     /// run every `every` step of the simulation.
-    pub fn new(every: usize) -> RemoveRotation {
-        RemoveRotation { alternator: Alternator::new(every) }
+    pub fn new() -> RemoveRotation {
+        RemoveRotation {}
     }
 }
 
 impl Control for RemoveRotation {
     fn control(&mut self, system: &mut System) {
-        if !self.alternator.can_run() {
-            return
-        }
-
         // Center-of-mass
         let com = system.center_of_mass();
 
@@ -197,6 +196,7 @@ mod tests {
     use sys::*;
     use sys::veloc::{BoltzmannVelocities, InitVelocities};
     use types::*;
+    use sim::Alternator;
 
     fn testing_system() -> System {
         let mut system = System::from_cell(UnitCell::cubic(20.0));;
@@ -271,7 +271,7 @@ mod tests {
         system[0].velocity = Vector3D::new(1.0, 2.0, 0.0);
         system[1].velocity = Vector3D::new(1.0, 0.0, 0.0);
 
-        let mut control = RemoveTranslation::new(4);
+        let mut control = Alternator::new(4, RemoveTranslation::new());
 
         // The three first controls do nothing
         let vel_0 = system[0].velocity;
@@ -300,7 +300,7 @@ mod tests {
         system[0].velocity = Vector3D::new(0.0, 1.0, 0.0);
         system[1].velocity = Vector3D::new(0.0, -1.0, 2.0);
 
-        let mut control = RemoveRotation::new(4);
+        let mut control = Alternator::new(4, RemoveRotation::new());
 
         // The three first controls do nothing
         let vel_0 = system[0].velocity;
