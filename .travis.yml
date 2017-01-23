@@ -49,6 +49,7 @@ script:
     - cd ../..
     - cd src/input && cargo test
     - cd ../..
+    - python scripts/check-whitespaces.py
 after_script:
     - |
       if [[ "${TRAVIS_RUST_VERSION}" == "stable" ]]; then
