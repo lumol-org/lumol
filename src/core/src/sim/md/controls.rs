@@ -7,6 +7,7 @@
 use types::{Matrix3, Vector3D, Zero};
 use sys::System;
 use sys::veloc;
+use sim::Alternator;
 
 /// Trait for controlling some parameters in a system during a simulation.
 pub trait Control {
@@ -104,8 +105,26 @@ impl Control for BerendsenThermostat {
 impl Thermostat for BerendsenThermostat {}
 
 /******************************************************************************/
+
+impl<T> Control for Alternator<T> where T: Control {
+
+    fn control(&mut self, system: &mut System) {
+        if self.can_run() {
+            self.as_mut().control(system)
+        }
+    }
+}
+
 /// Remove global translation from the system
 pub struct RemoveTranslation;
+
+impl RemoveTranslation {
+    /// Create a new `RemoveTranslation"` control, that will
+    /// run every `every` step of the simulation.
+    pub fn new() -> RemoveTranslation {
+        RemoveTranslation {}
+    }
+}
 
 impl Control for RemoveTranslation {
     fn control(&mut self, system: &mut System) {
@@ -125,6 +144,14 @@ impl Control for RemoveTranslation {
 /******************************************************************************/
 /// Remove global rotation from the system
 pub struct RemoveRotation;
+
+impl RemoveRotation {
+    /// Create a new `RemoveRotation` control, that will
+    /// run every `every` step of the simulation.
+    pub fn new() -> RemoveRotation {
+        RemoveRotation {}
+    }
+}
 
 impl Control for RemoveRotation {
     fn control(&mut self, system: &mut System) {
@@ -169,6 +196,7 @@ mod tests {
     use sys::*;
     use sys::veloc::{BoltzmannVelocities, InitVelocities};
     use types::*;
+    use sim::Alternator;
 
     fn testing_system() -> System {
         let mut system = System::from_cell(UnitCell::cubic(20.0));;
@@ -243,8 +271,21 @@ mod tests {
         system[0].velocity = Vector3D::new(1.0, 2.0, 0.0);
         system[1].velocity = Vector3D::new(1.0, 0.0, 0.0);
 
-        RemoveTranslation.control(&mut system);
+        let mut control = Alternator::new(4, RemoveTranslation::new());
 
+        // The three first controls do nothing
+        let vel_0 = system[0].velocity;
+        let vel_1 = system[1].velocity;
+        for _ in 0..3 {
+            control.control(&mut system);
+            for i in 0..3 {
+                assert_approx_eq!(system[0].velocity[i], vel_0[i]);
+                assert_approx_eq!(system[1].velocity[i], vel_1[i]);
+            }
+        }
+
+        // The fourth one removes global translation
+        control.control(&mut system);
         assert_eq!(system[0].velocity, Vector3D::new(0.0, 1.0, 0.0));
         assert_eq!(system[1].velocity, Vector3D::new(0.0, -1.0, 0.0));
     }
@@ -259,10 +300,23 @@ mod tests {
         system[0].velocity = Vector3D::new(0.0, 1.0, 0.0);
         system[1].velocity = Vector3D::new(0.0, -1.0, 2.0);
 
-        RemoveRotation.control(&mut system);
+        let mut control = Alternator::new(4, RemoveRotation::new());
 
+        // The three first controls do nothing
+        let vel_0 = system[0].velocity;
+        let vel_1 = system[1].velocity;
+        for _ in 0..3 {
+            control.control(&mut system);
+            for i in 0..3 {
+                assert_approx_eq!(system[0].velocity[i], vel_0[i]);
+                assert_approx_eq!(system[1].velocity[i], vel_1[i]);
+            }
+        }
+
+        // The fourth one removes global rotation
         let vel_0 = Vector3D::new(0.0, 0.0, 1.0);
         let vel_1 = Vector3D::new(0.0, 0.0, 1.0);
+        control.control(&mut system);
         for i in 0..3 {
             assert_approx_eq!(system[0].velocity[i], vel_0[i]);
             assert_approx_eq!(system[1].velocity[i], vel_1[i]);

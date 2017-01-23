@@ -15,3 +15,6 @@ pub use self::simulations::Simulation;
 pub use self::md::MolecularDynamics;
 pub use self::mc::MonteCarlo;
 pub use self::min::Minimization;
+
+mod utils;
+pub use self::utils::Alternator;

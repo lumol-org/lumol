@@ -4,6 +4,7 @@ use toml::Table;
 
 use lumol::sim::md::*;
 use lumol::units;
+use lumol::sim::Alternator;
 
 use error::{Error, Result};
 use {FromToml, FromTomlWithData};
@@ -78,10 +79,10 @@ impl FromToml for MolecularDynamics {
 
                 let control: Box<Control> = match try!(extract::typ(control, "control")) {
                     "RemoveTranslation" => Box::new(try!(
-                        RemoveTranslation::from_toml(control)
+                        Alternator::<RemoveTranslation>::from_toml(control)
                     )),
                     "RemoveRotation" => Box::new(try!(
-                        RemoveRotation::from_toml(control)
+                        Alternator::<RemoveRotation>::from_toml(control)
                     )),
                     other => return Err(Error::from(
                         format!("Unknown control '{}'", other)
@@ -168,14 +169,24 @@ impl FromToml for RescaleThermostat {
     }
 }
 
-impl FromToml for RemoveTranslation {
-    fn from_toml(_: &Table) -> Result<RemoveTranslation> {
-        Ok(RemoveTranslation)
+impl FromToml for Alternator<RemoveTranslation> {
+    fn from_toml(config: &Table) -> Result<Alternator<RemoveTranslation>> {
+        let every = if config.contains_key("every") {
+            try!(extract::number("every", config, "RemoveTranslation control")) as u64
+        } else {
+           1
+        };
+        Ok(Alternator::new(every, RemoveTranslation::new()))
     }
 }
 
-impl FromToml for RemoveRotation {
-    fn from_toml(_: &Table) -> Result<RemoveRotation> {
-        Ok(RemoveRotation)
+impl FromToml for Alternator<RemoveRotation> {
+    fn from_toml(config: &Table) -> Result<Alternator<RemoveRotation>> {
+        let every = if config.contains_key("every") {
+            try!(extract::number("every", config, "RemoveRotation control")) as u64
+        } else {
+           1
+        };
+        Ok(Alternator::new(every, RemoveRotation::new()))
     }
 }
