@@ -12,3 +12,4 @@ type = "MonteCarlo"
 temperature = "300 K"
 moves = false
 #^ 'moves' must be an array in Monte-Carlo propagator
+

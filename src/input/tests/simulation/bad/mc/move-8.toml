@@ -14,3 +14,4 @@ moves = [
     {type = "Translate"}
     #^ Missing 'delta' key in Translate move
 ]
+

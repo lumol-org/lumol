@@ -14,3 +14,4 @@ moves = [
     {bla = "ble"}
     #^ Missing 'type' key in Monte-Carlo move
 ]
+

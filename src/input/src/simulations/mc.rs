@@ -35,6 +35,7 @@ impl FromTomlWithData for MonteCarlo {
             let mc_move: Box<MCMove> = match try!(extract::typ(mc_move, "Monte-Carlo move")) {
                 "Translate" => Box::new(try!(Translate::from_toml(mc_move, root.clone()))),
                 "Rotate" => Box::new(try!(Rotate::from_toml(mc_move, root.clone()))),
+                "Resize" => Box::new(try!(Resize::from_toml(mc_move, root.clone()))),
                 other => return Err(Error::from(
                     format!("Unknown Monte-Carlo move '{}'", other)
                 ))
@@ -71,7 +72,7 @@ impl FromTomlWithData for Rotate {
         let delta = try!(units::from_str(delta));
 
         if config.get("molecule").is_some() {
-            let molfile = try!(extract::str("molecule", config, "Translate move"));
+            let molfile = try!(extract::str("molecule", config, "Rotate move"));
             let molfile = get_input_path(root, molfile);
             let (molecule, atoms) = try!(read_molecule(molfile));
             let moltype = molecule_type(&molecule, &atoms);
@@ -79,5 +80,18 @@ impl FromTomlWithData for Rotate {
         } else {
             Ok(Rotate::new(delta))
         }
+    }
+}
+
+impl FromTomlWithData for Resize {
+    type Data = PathBuf;
+    fn from_toml(config: &Table, _: PathBuf) -> Result<Resize> {
+        let pressure = try!(extract::str("pressure", config, "Resize move"));
+        let pressure = try!(units::from_str(pressure));
+
+        let delta = try!(extract::str("delta", config, "Resize move"));
+        let delta = try!(units::from_str(delta));
+
+        Ok(Resize::new(pressure, delta))        
     }
 }

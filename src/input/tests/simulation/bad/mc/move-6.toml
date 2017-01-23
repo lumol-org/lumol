@@ -14,3 +14,4 @@ moves = [
     {type = "Rotate", delta = "6 A", frequency = "6"}
     #^ 'frequency' must be a number in Monte-Carlo move
 ]
+

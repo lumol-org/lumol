@@ -16,4 +16,5 @@ moves = [
     # The path for molecule is very long here, because we need to get the file
     # from a `cargo test` invocation
     {type = "Rotate", delta = "20 deg", molecule = "../CO2.xyz"},
+    {type = "Resize", pressure = "5.00 bar", delta = "5 A^3", frequency = 1},
 ]

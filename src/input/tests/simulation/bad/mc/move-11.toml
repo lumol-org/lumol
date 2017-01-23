@@ -14,3 +14,4 @@ moves = [
     {type = "Translate", delta = "6 A", molecule = 6}
     #^ 'molecule' must be a string in Translate move
 ]
+

@@ -14,3 +14,4 @@ moves = [
     {type = "Translate", delta = 6}
     #^ 'delta' must be a string in Translate move
 ]
+
