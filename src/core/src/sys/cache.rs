@@ -276,7 +276,7 @@ impl EnergyCache {
     /// Return the cost for moving all molecules of the system.
     ///
     /// This function computes changes due to
-    ///  
+    ///
     /// - van der Waals interactions,
     /// - Coulomb interactions,
     /// - Global interactions,
@@ -285,7 +285,7 @@ impl EnergyCache {
     /// # Remarks
     ///
     /// Note that this function only recomputes interactions *between*
-    /// molecules. You must not use this function when the intramolecular 
+    /// molecules. You must not use this function when the intramolecular
     /// configuration changed.
     /// Also, this function **does not** update the cache.
     /// Invoke the `update` function to apply the changes.
@@ -301,7 +301,7 @@ impl EnergyCache {
                 for pi in mi.iter() {
                     for pj in mj.iter() {
                         let r = system.cell().distance(
-                            &system[pi].position, 
+                            &system[pi].position,
                             &system[pj].position);
                         let energy = evaluator.pair(r, pi, pj);
                         pairs_delta += energy;

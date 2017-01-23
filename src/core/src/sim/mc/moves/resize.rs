@@ -67,7 +67,7 @@ impl MCMove for Resize {
 
         // Copy the system: the proposed state will be stored here
         // TODO: we only need to store positions and the cell; all
-        // other information stays the same.  
+        // other information stays the same.
         self.new_system = system.clone();
 
         let volume = system.volume();
@@ -81,7 +81,7 @@ impl MCMove for Resize {
             .lengths()
             .iter()
             .any(|&d| 0.5 * d <= self.rc_max) {
-            fatal_error!("Tried to decrease the cell size but new size 
+            fatal_error!("Tried to decrease the cell size but new size
                 conflicts with the cut off radius. \
                 Increase the number of particles to get rid of this problem.")
         }
@@ -91,7 +91,7 @@ impl MCMove for Resize {
         // (com) of a molecule and apply it to all its particles.
         // Note that to do this, the com of a molecule *always* has
         // to reside inside the simulation cell.
-        
+
         // TODO: Check if system.size == system.molecules().len
         // if that is the case, skip com computation since it is a
         // system without molecules.
@@ -102,7 +102,7 @@ impl MCMove for Resize {
             let old_com = system.molecule_com(mi);
             let frac_com = system.cell().fractional(&old_com);
             // compute translation vector
-            let delta_com = 
+            let delta_com =
                 self.new_system.cell().cartesian(&frac_com) - old_com;
             // loop over all particles (indices) in the molecule
             for pi in molecule.iter() {

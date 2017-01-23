@@ -9,7 +9,7 @@ use lumol::units;
 use lumol::sim::Simulation;
 use lumol::energy::{LennardJones, PairInteraction, PairRestriction, NullPotential, Ewald};
 use lumol::sim::mc::{MonteCarlo, Translate, Rotate, Resize};
-use lumol::out::{EnergyOutput, PropertiesOutput, TrajectoryOutput}; 
+use lumol::out::{EnergyOutput, PropertiesOutput, TrajectoryOutput};
 
 use std::path::Path;
 use std::sync::{Once, ONCE_INIT};
@@ -67,7 +67,7 @@ fn get_system() -> System {
 fn main() {
     START.call_once(|| {Logger::stdout();});
     let mut system = get_system();
-    
+
     let temperature = units::from(300.0, "K").unwrap();
     let pressure = units::from(1.0, "bar").unwrap();
 
@@ -81,8 +81,8 @@ fn main() {
     // We strive for 50% acceptances - but that's arbitrary.
     // You should try different values to make your system run
     // efficiently.
-    // Also, amplitudes are limited (180° for angles and the largest 
-    // cut-off in the system for translations). If you don't limit 
+    // Also, amplitudes are limited (180° for angles and the largest
+    // cut-off in the system for translations). If you don't limit
     // amplitudes, they may explode.
     // I.e. for a dilute gas, translation amplitudes grow infinitely
     // since the system has so few particles that almost all moves are
@@ -90,14 +90,14 @@ fn main() {
     mc.add_move_with_acceptance(
         Box::new(Translate::new(delta_trans)), 45.0, 0.5);
     mc.add_move_with_acceptance(
-        Box::new(Rotate::new(delta_rot)), 45.0, 0.5);        
+        Box::new(Rotate::new(delta_rot)), 45.0, 0.5);
     mc.add_move_with_acceptance(
-        Box::new(Resize::new(pressure, delta_vol)), 2.0, 0.5);    
+        Box::new(Resize::new(pressure, delta_vol)), 2.0, 0.5);
     mc.set_amplitude_update_frequency(500);
 
     // Setup simulation.
     let mut simulation = Simulation::new(Box::new(mc));
-    
+
     // Add output.
     simulation.add_output_with_frequency(
         Box::new(PropertiesOutput::new("npt_spce_prp.dat").unwrap()), 500);
@@ -117,7 +117,7 @@ fn main() {
     println!("Simuation of 90 spce molecules.");
     let ener_init = units::to(system.total_energy(), "kJ/mol").unwrap();
     println!("Initial energy: {}", ener_init);
-    println!("Simulating {} cycles with a total of {} moves", 
+    println!("Simulating {} cycles with a total of {} moves",
         cycles, cycles * moves_per_cycle);
     println!("  running ....");
     simulation.run(&mut system, cycles * moves_per_cycle);

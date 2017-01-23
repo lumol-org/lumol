@@ -92,6 +92,6 @@ impl FromTomlWithData for Resize {
         let delta = try!(extract::str("delta", config, "Resize move"));
         let delta = try!(units::from_str(delta));
 
-        Ok(Resize::new(pressure, delta))        
+        Ok(Resize::new(pressure, delta))
     }
 }

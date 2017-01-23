@@ -59,12 +59,12 @@ No consistency check is performed, and it is up to you to check the given units.
 cutoff = "8 A"
 # OK, will use the internal unit of distance.
 # This is not recommended. The internal unit may change, and the input convey less information
-cutoff = "8"    
+cutoff = "8"
 # OK, but big !
-cutoff = "8 km"  
+cutoff = "8 km"
 
 # OK, but probably not what you want. Will be interpreted as 8000 A
 cutoff = "8 ps"
 # invalid, 'cutoff' must be a string
-cutoff = 8.0   
+cutoff = 8.0
 ```

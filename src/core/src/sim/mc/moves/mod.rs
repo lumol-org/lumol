@@ -18,9 +18,9 @@ pub trait MCMove {
     /// Give a short description of this move
     fn describe(&self) -> &str;
 
-    /// Set up move before simulation is run 
+    /// Set up move before simulation is run
     fn setup(&mut self, system: &System);
-    
+
     /// Prepare the move by selecting the particles to move, and the parameters
     /// of the move. The `rng` random number generator should be used to
     /// generate the parameters of the move.

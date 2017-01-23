@@ -68,7 +68,7 @@ impl MCMove for Translate {
         "molecular translation"
     }
 
-    fn setup(&mut self, system: &System) { 
+    fn setup(&mut self, system: &System) {
         // Limit the displacement range to the maximum cutoff
         self.dr_max = system.interactions()
                             .all_pairs()
@@ -118,7 +118,7 @@ impl MCMove for Translate {
         for (i, pi) in system.molecule(self.molid).iter().enumerate() {
             system[pi].position = self.newpos[i];
         }
-        // Move molecule such that its center-of-mass 
+        // Move molecule such that its center-of-mass
         // is inside the simulation cell.
         // Note that particles of the molecule may still be
         // outside the cell, but that is not important.
@@ -142,7 +142,7 @@ impl MCMove for Translate {
                     );
                 }
             }
-            
+
         };
     }
 }
