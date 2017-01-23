@@ -21,7 +21,7 @@
 /// impl<T> SaySomething for Alternator<T> where T: SaySomething {
 ///     fn say_something(&mut self) -> &'static str {
 ///         if self.can_run() {
-///             "Hello world!"
+///             self.as_mut().say_something()
 ///         } else {
 ///             ""
 ///         }
@@ -59,12 +59,12 @@ impl<T> Alternator<T> {
     }
 
     /// Access the base algorithm.
-    pub fn base(&self) -> &T {
+    pub fn as_ref(&self) -> &T {
         &self.base
     }
 
     /// Access the base algorithm.
-    pub fn base_mut(&mut self) -> &mut T {
+    pub fn as_mut(&mut self) -> &mut T {
         &mut self.base
     }
 }
