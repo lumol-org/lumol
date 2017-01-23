@@ -10,7 +10,7 @@ use std::mem;
 use super::MCMove;
 
 use types::{Matrix3, One};
-use sys::{System, EnergyCache, CellShape};
+use sys::{System, EnergyCache};
 
 /// Monte-Carlo move that changes the size of the simulation cell
 pub struct Resize {
@@ -48,7 +48,7 @@ impl MCMove for Resize {
 
     fn setup(&mut self, system: &System) {
         // check if the cell is infinite
-        if system.cell().shape() == CellShape::Infinite {
+        if system.cell().is_infinite() {
             fatal_error!("Cannot use `Resize` move with infinite simulation cell.")
         }
 
