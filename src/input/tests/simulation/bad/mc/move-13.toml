@@ -14,3 +14,4 @@ moves = [
     {type = "Resize", pressure = "5 bar", delta = 6}
     #^ 'delta' must be a string in Resize move
 ]
+

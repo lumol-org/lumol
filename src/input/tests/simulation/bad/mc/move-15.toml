@@ -14,3 +14,4 @@ moves = [
     {type = "Resize", delta = "6 A^3"}
     #^ Missing 'pressure' key in Resize move
 ]
+

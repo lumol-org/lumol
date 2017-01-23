@@ -14,3 +14,4 @@ moves = [
     {type = "Rotate", delta = 6}
     #^ 'delta' must be a string in Rotate move
 ]
+

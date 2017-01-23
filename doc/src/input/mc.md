@@ -5,9 +5,13 @@ If you want to perform a Monte-Carlo simulation, you have to set the propagator
 Every Monte-Carlo simulations needs a `temperature` and a set of `moves` 
 (this set can consist of a single move).
 
-You can think of a "move" as a specific instruction to change the system.
+You can think of a "move" as a specific instruction to generate a new trial 
+configuration.
 For example: "translate a single molecule in the system", "rotate a molecule", 
 or "change the cell size".
+If a move is accepted (based on an acceptance criterion), the trial configuration 
+becomes the new configuration. If the move is rejected, the system stays in its
+current configuration.
 You can add multiple moves so that the ensemble of your choice is sampled.
 
 Here is a list of all moves that are currently implemented in Lumol:
@@ -120,8 +124,12 @@ contains the value with unit of distance.
 type = "MonteCarlo"
 temperature = "500 K"
 moves = [
+    # Define a translation for all molecules in the system, including He.
     {type = "Translate", delta = "1 A", frequency = 2},
-    # for He, use a larger maximum displacement.
+    # For He, pick a larger displacement with half the frequency of the 
+    # first move. Now there is a 66% chance to pick *any* molecule
+    # and translate it by up to 1 A. There is a 33% chance to pick He (and only He)
+    # and translate it by up to 10 A.  
     {type = "Translate", delta = "10 A", molecule = "He.xyz"},
 ]
 ```

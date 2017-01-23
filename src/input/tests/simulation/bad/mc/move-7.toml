@@ -14,3 +14,4 @@ moves = [
     {type = "Rotate", delta = "6 A", molecule = 6}
     #^ 'molecule' must be a string in Rotate move
 ]
+
