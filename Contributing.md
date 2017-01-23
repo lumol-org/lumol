@@ -61,6 +61,11 @@ cd lumol
 cargo build
 ```
 
+Make sure your editor is configured to read the [`.editorconfig`](.editorconfig)
+file. This file is used to specify code formatting rules your editor. Most 
+editors
+[support it natively or have plugin that does](http://editorconfig.org/#download).
+
 Then create a new branch for your changes
 
 ```bash
