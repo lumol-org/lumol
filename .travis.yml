@@ -64,7 +64,7 @@ after_script:
     - |
       if [[ "${TRAVIS_RUST_VERSION}" == "stable" && "${TRAVIS_PULL_REQUEST}" == "false" && "${TRAVIS_BRANCH}" == "master" ]]; then
           git clone https://${GH_TOKEN}@github.com/lumol-org/lumol.git target/website
-          ./doc/publish.sh
+          ./scripts/publish-docs.sh
       fi
 cache:
   cargo: true
