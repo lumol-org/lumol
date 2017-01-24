@@ -1,5 +1,5 @@
 // Lumol, an extensible molecular simulation engine
-// Copyright (C) 2015-2016 G. Fraux — BSD license
+// Copyright (C) 2015-2016 Lumol's contributors — BSD license
 use toml::Table;
 use std::path::PathBuf;
 

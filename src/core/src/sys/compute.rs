@@ -1,5 +1,5 @@
 // Lumol, an extensible molecular simulation engine
-// Copyright (C) 2015-2016 G. Fraux — BSD license
+// Copyright (C) 2015-2016 Lumol's contributors — BSD license
 
 //! Computing properties of a system
 use consts::K_BOLTZMANN;

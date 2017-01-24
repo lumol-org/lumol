@@ -1,3 +1,6 @@
+// Lumol, an extensible molecular simulation engine
+// Copyright (C) 2015-2016 Lumol's contributors — BSD license
+
 //! Molecular dynamics simulation of an Argon crystal melt.
 //!
 //! In this example, we do everything by hand, from the system setup to the

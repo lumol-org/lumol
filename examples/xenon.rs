@@ -1,3 +1,6 @@
+// Lumol, an extensible molecular simulation engine
+// Copyright (C) 2015-2016 Lumol's contributors — BSD license
+
 //! Monte-Carlo simulation of a Xenon crystal melt.
 extern crate lumol;
 
