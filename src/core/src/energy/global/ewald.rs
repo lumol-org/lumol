@@ -101,6 +101,14 @@ impl Ewald {
         }
     }
 
+    /// Set the value of the alpha parameter for ewald computation. The default is to use
+    /// `alpha = 3 * π / (4 * rc)`.
+    // TODO: add a way to set alpha ensuring O(n^3/2) behavior, and a given precision
+    pub fn set_alpha(&mut self, alpha: f64) {
+        assert!(alpha > 0.0, "Ewald parameter alpha must be positive");
+        self.alpha = alpha;
+    }
+
     fn precompute(&mut self, cell: &UnitCell) {
         if let Some(ref prev_cell) = self.previous_cell {
             if cell == prev_cell {
@@ -790,6 +798,13 @@ mod tests {
             system.set_cell(UnitCell::triclinic(10.0, 10.0, 10.0, 90.0, 90.0, 90.0));
             let mut ewald = Ewald::new(8.0, 10);
             let _ = ewald.energy(&system);
+        }
+
+        #[test]
+        #[should_panic]
+        fn negative_alpha() {
+            let mut ewald = Ewald::new(8.0, 10);
+            ewald.set_alpha(-45.2);
         }
     }
 

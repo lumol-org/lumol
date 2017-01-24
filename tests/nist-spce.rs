@@ -71,6 +71,7 @@ pub fn get_system(path: &str, cutoff: f64) -> System {
 
     let mut ewald = Ewald::new(cutoff, 5);
     ewald.set_restriction(PairRestriction::InterMolecular);
+    ewald.set_alpha(5.6 / f64::min(f64::min(a, b), c));
     system.interactions_mut().set_coulomb(Box::new(ewald));
 
     return system;
@@ -107,7 +108,7 @@ mod cutoff_9 {
 
         let energy = system.potential_energy() / K_BOLTZMANN;
         let expected = -1.71488e6;
-        assert!(f64::abs((energy - expected)/expected) < 1e-5);
+        assert!(f64::abs((energy - expected)/expected) < 1e-3);
     }
 
     #[test]
@@ -117,10 +118,7 @@ mod cutoff_9 {
 
         let energy = system.potential_energy() / K_BOLTZMANN;
         let expected = -3.08010e6;
-        // We do not reproduce very well this computation.
-        // Is it because we do not use the exact same set of parameters
-        // (alpha and k_max)?
-        assert!(f64::abs((energy - expected)/expected) < 1e-1);
+        assert!(f64::abs((energy - expected)/expected) < 1e-3);
     }
 }
 
@@ -165,9 +163,6 @@ mod cutoff_10 {
 
         let energy = system.potential_energy() / K_BOLTZMANN;
         let expected = -3.20501e6;
-        // We do not reproduce very well this computation.
-        // Is it because we do not use the exact same set of parameters
-        // (alpha and k_max)?
-        assert!(f64::abs((energy - expected)/expected) < 1e-1);
+        assert!(f64::abs((energy - expected)/expected) < 1e-3);
     }
 }
