@@ -20,6 +20,12 @@ impl FromTomlWithData for MonteCarlo {
 
         let mut mc = MonteCarlo::new(temperature);
 
+        if config.get("update_delta_every").is_some() {
+            let update_amplitude = try!(extract::uint(
+                    "update_delta_every", config, "Monte-Carlo propagator"));
+            mc.set_amplitude_update_frequency(update_amplitude);
+        }
+
         let moves = try!(extract::slice("moves", config, "Monte-Carlo propagator"));
         for mc_move in moves {
             let mc_move = try!(mc_move.as_table().ok_or(
@@ -32,6 +38,12 @@ impl FromTomlWithData for MonteCarlo {
                 1.0
             };
 
+            let target_acceptance = if mc_move.get("target_acceptance").is_some() {
+                Some(try!(extract::number("target_acceptance", mc_move, "Monte-Carlo move")))
+            } else {
+                None
+            };
+
             let mc_move: Box<MCMove> = match try!(extract::typ(mc_move, "Monte-Carlo move")) {
                 "Translate" => Box::new(try!(Translate::from_toml(mc_move, root.clone()))),
                 "Rotate" => Box::new(try!(Rotate::from_toml(mc_move, root.clone()))),
@@ -41,7 +53,10 @@ impl FromTomlWithData for MonteCarlo {
                 ))
             };
 
-            mc.add(mc_move, frequency);
+            match target_acceptance {
+                Some(ta) => mc.add_move_with_acceptance(mc_move, frequency, ta),
+                None     => mc.add(mc_move, frequency),
+            }
         }
         return Ok(mc);
     }
@@ -95,3 +110,4 @@ impl FromTomlWithData for Resize {
         Ok(Resize::new(pressure, delta))
     }
 }
+
