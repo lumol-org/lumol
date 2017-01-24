@@ -110,7 +110,7 @@ fn generate_tests<F>(group: &str, callback: F) -> Result<Vec<TestDescAndFn>, io:
         }
     }
 
-    return Ok(tests);
+    Ok(tests)
 }
 
 fn cleanup() {

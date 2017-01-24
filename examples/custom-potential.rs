@@ -8,7 +8,7 @@ use lumol::energy::{Potential, PairPotential, PairInteraction};
 use lumol::sim::{Simulation, MolecularDynamics};
 use lumol::units;
 
-/// Let's define a new version of the LennardJones potential, using the
+/// Let's define a new version of the Lennard-Jones potential, using the
 /// alternative form:
 ///
 ///         A         B

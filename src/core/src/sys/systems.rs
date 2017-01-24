@@ -331,12 +331,12 @@ impl System {
     /// to the positions.
     pub fn wrap_molecule(&mut self, molid: usize) {
         let com = self.molecule_com(molid);
-        let mut com_wrapped = com.clone();
+        let mut com_wrapped = com;
         self.cell.wrap_vector(&mut com_wrapped);
         let delta = com_wrapped - com;
         // iterate over all positions and move them accordingly
         for pi in self.molecule(molid) {
-            self[pi].position += delta
+            self[pi].position += delta;
         }
     }
 

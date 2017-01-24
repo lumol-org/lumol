@@ -1,4 +1,4 @@
-//! Molecular dynamics simulation of a crystal NaCl, reading system and
+//! Molecular dynamics simulation of a crystal of sodium chloride, reading system and
 //! potentials from files.
 extern crate lumol;
 extern crate lumol_input as input;

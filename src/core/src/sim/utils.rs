@@ -1,3 +1,8 @@
+// Lumol, an extensible molecular simulation engine
+// Copyright (C) 2015-2016 G. Fraux — BSD license
+
+//! Module for small utility structs
+
 /// Helper struct that can wrap an algorithm to make
 /// it run only a fraction of the times it is called.
 ///
@@ -38,6 +43,7 @@
 /// assert_eq!(alternator.say_something(), "Hello world!");
 ///
 /// ```
+#[derive(Debug)]
 pub struct Alternator<T> {
     every: u64,
     count: u64,
@@ -57,14 +63,18 @@ impl<T> Alternator<T> {
         self.count += 1;
         self.count % self.every == 0
     }
+}
 
-    /// Access the base algorithm.
-    pub fn as_ref(&self) -> &T {
+impl<T> AsRef<T> for Alternator<T> {
+    /// Access the base algorithm as a reference.
+    fn as_ref(&self) -> &T {
         &self.base
     }
+}
 
-    /// Access the base algorithm.
-    pub fn as_mut(&mut self) -> &mut T {
+impl<T> AsMut<T> for Alternator<T> {
+    /// Access the base algorithm as a mutable reference.
+    fn as_mut(&mut self) -> &mut T {
         &mut self.base
     }
 }
