@@ -41,6 +41,27 @@ pub fn number(key: &str, config: &Table, context: &str) -> Result<f64> {
     }
 }
 
+/// Extract a unsigned integer at the given `key`, from the `config`
+/// TOML table interpreted as a `context`
+pub fn uint(key: &str, config: &Table, context: &str) -> Result<u64> {
+    let number = try!(config.get(key).ok_or(Error::from(
+        format!("Missing '{}' key in {}", key, context)
+    )));
+    match *number {
+        ::toml::Value::Integer(v) => {
+            if v < 0 {
+                Err(Error::from(format!(
+                    "'{}' must be a positive integer in {}", key, context)))
+            } else {
+                Ok(v as u64)
+            }
+        },
+        _ => Err(Error::from(
+            format!("'{}' must be an usigned integer in {}", key, context)
+        ))
+    }
+}
+
 /// Extract an array at the given `key`, from the `config` TOML table
 /// interpreted as a `context`
 pub fn slice<'a>(key: &str, config: &'a Table, context: &str) -> Result<&'a [Value]> {
@@ -61,3 +82,4 @@ pub fn typ<'a>(config: &'a Table, context: &str) -> Result<&'a str> {
         format!("'type' key must be a string in {}", context)
     ));
 }
+
