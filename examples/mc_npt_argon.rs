@@ -1,7 +1,7 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) 2015-2016 G. Fraux — BSD license
 
-//! Testing physical properties of a Lennard-Jones Argon 
+//! Testing physical properties of a Lennard-Jones Argon
 //! Monte-Carlo simulation
 extern crate lumol;
 extern crate lumol_input as input;
@@ -12,7 +12,7 @@ use lumol::energy::{LennardJones, PairInteraction};
 use lumol::sim::Simulation;
 use lumol::sim::mc::{MonteCarlo, Translate, Resize};
 use lumol::units;
-use lumol::out::{EnergyOutput, PropertiesOutput}; 
+use lumol::out::{EnergyOutput, PropertiesOutput};
 
 use std::sync::{Once, ONCE_INIT};
 static START: Once = ONCE_INIT;
@@ -52,7 +52,7 @@ fn main() {
     // V  = 25306.1891827 A^3
     // p  = 20.1586274874 bar
     // L  = 29.3590670058 A
-    
+
     let temperature = units::from(102.231042155, "K").unwrap();
     let pressure = units::from(20.1586274874, "bar").unwrap();
     let mut mc = MonteCarlo::new(temperature);
@@ -66,7 +66,7 @@ fn main() {
     mc.add_move_with_acceptance(
         Box::new(Resize::new(pressure, delta_vol)), 2.0, 0.5);
     mc.set_amplitude_update_frequency(200);
-        
+
     let mut simulation = Simulation::new(Box::new(mc));
     simulation.add_output_with_frequency(
         Box::new(PropertiesOutput::new("npt_argon_prp.dat").unwrap()), 500);
@@ -74,7 +74,7 @@ fn main() {
         Box::new(EnergyOutput::new("npt_argon_ener.dat").unwrap()), 500);
 
     println!("Starting simulation.");
-    
+
     // run simulation
     simulation.run(&mut system, 2_000_000);
 }

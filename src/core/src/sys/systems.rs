@@ -287,7 +287,7 @@ impl System {
     ///
     /// This function does not check for the particles' positions'
     /// nearest images. To use this function properly, make sure
-    /// that all particles of the molecule are adjacent.  
+    /// that all particles of the molecule are adjacent.
     pub fn molecule_com(&self, molid: usize) -> Vector3D {
         // iterate over all particles of molecule(molid)
         let total_mass = self.molecule(molid)
@@ -332,7 +332,7 @@ impl System {
     pub fn wrap_molecule(&mut self, molid: usize) {
         let com = self.molecule_com(molid);
         let mut com_wrapped = com.clone();
-        self.cell.wrap_vector(&mut com_wrapped); 
+        self.cell.wrap_vector(&mut com_wrapped);
         let delta = com_wrapped - com;
         // iterate over all positions and move them accordingly
         for pi in self.molecule(molid) {
