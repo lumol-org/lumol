@@ -85,12 +85,7 @@ Please come by and [talk with us][Gitter] a bit before staring new work, or open
 an [issue][issues] to discuss improvements. We also have
 [recommendations][contributing] for contributors.
 
-Lumol was created and is maintained by [Guillaume
-Fraux](https://github.com/Luthaf). Contributors to the code include, in
-alphabetic order:
-- [Gernot Bauer](https://github.com/g-bauer)
-- [Guillaume Fraux](https://github.com/Luthaf)
-- [Oscar David Arbeláez E.](https://github.com/odarbelaeze)
+See the [AUTHORS](AUTHORS) file for a list of contributors to the code.
 
 ## License
 

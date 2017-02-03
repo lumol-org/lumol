@@ -1,3 +1,6 @@
+// Lumol, an extensible molecular simulation engine
+// Copyright (C) 2015-2016 Lumol's contributors — BSD license
+
 //! Using a custom potential in simulations
 extern crate lumol;
 
@@ -8,7 +11,7 @@ use lumol::energy::{Potential, PairPotential, PairInteraction};
 use lumol::sim::{Simulation, MolecularDynamics};
 use lumol::units;
 
-/// Let's define a new version of the LennardJones potential, using the
+/// Let's define a new version of the Lennard-Jones potential, using the
 /// alternative form:
 ///
 ///         A         B

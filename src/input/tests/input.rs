@@ -1,3 +1,6 @@
+// Lumol, an extensible molecular simulation engine
+// Copyright (C) 2015-2016 Lumol's contributors — BSD license
+
 extern crate test;
 extern crate walkdir;
 
@@ -110,7 +113,7 @@ fn generate_tests<F>(group: &str, callback: F) -> Result<Vec<TestDescAndFn>, io:
         }
     }
 
-    return Ok(tests);
+    Ok(tests)
 }
 
 fn cleanup() {

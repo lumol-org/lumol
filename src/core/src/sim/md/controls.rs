@@ -1,5 +1,5 @@
 // Lumol, an extensible molecular simulation engine
-// Copyright (C) 2015-2016 G. Fraux — BSD license
+// Copyright (C) 2015-2016 Lumol's contributors — BSD license
 
 //! While running a simulation, we often want to have control over some
 //! simulation parameters: the temperature, the pressure, etc. This is the goal
@@ -119,10 +119,15 @@ impl<T> Control for Alternator<T> where T: Control {
 pub struct RemoveTranslation;
 
 impl RemoveTranslation {
-    /// Create a new `RemoveTranslation"` control, that will
-    /// run every `every` step of the simulation.
+    /// Create a new `RemoveTranslation` control.
     pub fn new() -> RemoveTranslation {
-        RemoveTranslation {}
+        RemoveTranslation
+    }
+}
+
+impl Default for RemoveTranslation {
+    fn default() -> RemoveTranslation {
+        RemoveTranslation::new()
     }
 }
 
@@ -146,10 +151,15 @@ impl Control for RemoveTranslation {
 pub struct RemoveRotation;
 
 impl RemoveRotation {
-    /// Create a new `RemoveRotation` control, that will
-    /// run every `every` step of the simulation.
+    /// Create a new `RemoveRotation` control.
     pub fn new() -> RemoveRotation {
-        RemoveRotation {}
+        RemoveRotation
+    }
+}
+
+impl Default for RemoveRotation {
+    fn default() -> RemoveRotation {
+        RemoveRotation::new()
     }
 }
 

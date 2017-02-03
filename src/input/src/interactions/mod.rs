@@ -1,5 +1,5 @@
 // Lumol, an extensible molecular simulation engine
-// Copyright (C) 2015-2016 G. Fraux — BSD license
+// Copyright (C) 2015-2016 Lumol's contributors — BSD license
 use toml::{Parser, Table, Value};
 
 use std::io::prelude::*;
@@ -31,13 +31,13 @@ impl InteractionsInput {
         let mut file = try_io!(File::open(&path), path);
         let mut buffer = String::new();
         let _ = try_io!(file.read_to_string(&mut buffer), path);
-        return InteractionsInput::from_str(&buffer);
+        return InteractionsInput::from_string(&buffer);
     }
 
     /// Read the interactions from a TOML formatted string.
     // TODO: use restricted privacy here
     #[doc(hidden)]
-    pub fn from_str(string: &str) -> Result<InteractionsInput> {
+    pub fn from_string(string: &str) -> Result<InteractionsInput> {
         let mut parser = Parser::new(string);
         let config = try!(parser.parse().ok_or(
             Error::TOML(toml_error_to_string(&parser))

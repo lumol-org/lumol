@@ -1,5 +1,5 @@
 // Lumol, an extensible molecular simulation engine
-// Copyright (C) 2015-2016 G. Fraux — BSD license
+// Copyright (C) 2015-2016 Lumol's contributors — BSD license
 
 //! The `system` module provide a way to store data about a simulated system.
 //! These systems are represented by an `System` instance, made of a list of

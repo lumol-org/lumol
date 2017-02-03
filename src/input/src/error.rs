@@ -1,6 +1,5 @@
 // Lumol, an extensible molecular simulation engine
-// Copyright (C) 2015-2016 G. Fraux — BSD license
-
+// Copyright (C) 2015-2016 Lumol's contributors — BSD license
 use std::io;
 use std::error;
 use std::fmt;
@@ -22,7 +21,7 @@ pub enum Error {
     /// Error in the TOML input file
     TOML(String),
     /// IO error, and associated file path
-    IoError(io::Error, PathBuf),
+    Io(io::Error, PathBuf),
     /// Error while reading a trajectory file
     Trajectory(TrajectoryError),
     /// File content error: missing sections, bad data types
@@ -32,7 +31,7 @@ pub enum Error {
 }
 
 impl From<(io::Error, PathBuf)> for Error {
-    fn from((err, path): (io::Error, PathBuf)) -> Error {Error::IoError(err, path)}
+    fn from((err, path): (io::Error, PathBuf)) -> Error {Error::Io(err, path)}
 }
 
 impl From<TrajectoryError> for Error {
@@ -65,7 +64,7 @@ impl fmt::Display for Error {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> result::Result<(), fmt::Error> {
         use std::error::Error as StdError;
         let message = match *self {
-            Error::IoError(ref err, ref path) => {
+            Error::Io(ref err, ref path) => {
                 match err.kind() {
                     io::ErrorKind::NotFound => {
                         format!("can not find '{}'", path.display())
@@ -89,7 +88,7 @@ impl error::Error for Error {
     fn description(&self) -> &str {
         match *self {
             Error::TOML(ref err) | Error::Config(ref err) => err,
-            Error::IoError(ref err, _) => err.description(),
+            Error::Io(ref err, _) => err.description(),
             Error::Trajectory(ref err) => err.description(),
             Error::Unit(ref err) => err.description(),
         }
@@ -98,7 +97,7 @@ impl error::Error for Error {
     fn cause(&self) -> Option<&error::Error> {
         match *self {
             Error::TOML(..) | Error::Config(..) => None,
-            Error::IoError(ref err, _) => Some(err),
+            Error::Io(ref err, _) => Some(err),
             Error::Trajectory(ref err) => Some(err),
             Error::Unit(ref err) => Some(err),
         }
