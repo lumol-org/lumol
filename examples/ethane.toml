@@ -5,8 +5,8 @@
 version = 1
 
 [[systems]]
-file = "data/ethane.xyz"  
-guess_bonds = true         
+file = "data/ethane.xyz"
+guess_bonds = true
 cell = 100.0
 
 [systems.potentials.global]

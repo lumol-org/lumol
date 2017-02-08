@@ -59,7 +59,7 @@ impl FromTomlWithData for MonteCarlo {
                     } else {
                         mc.add_move_with_acceptance(mc_move, frequency, ta)
                     }
-                }              
+                }
                 None => mc.add(mc_move, frequency),
             }
         }
