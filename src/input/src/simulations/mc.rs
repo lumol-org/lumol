@@ -20,10 +20,10 @@ impl FromTomlWithData for MonteCarlo {
 
         let mut mc = MonteCarlo::new(temperature);
 
-        if config.get("update_delta_every").is_some() {
-            let update_amplitude = try!(extract::uint(
-                    "update_delta_every", config, "Monte-Carlo propagator"));
-            mc.set_amplitude_update_frequency(update_amplitude);
+        if config.get("update_frequency").is_some() {
+            let update_frequency = try!(extract::uint(
+                    "update_frequency", config, "Monte-Carlo propagator"));
+            mc.set_amplitude_update_frequency(update_frequency);
         }
 
         let moves = try!(extract::slice("moves", config, "Monte-Carlo propagator"));

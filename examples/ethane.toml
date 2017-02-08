@@ -32,7 +32,7 @@ outputs = [
 [simulations.propagator]
 type = "MonteCarlo"
 temperature = "217.0 K"
-update_delta_every = 500
+update_frequency = 500
 
 moves = [
     {type = "Translate", delta = "20 A", frequency = 50, target_acceptance = 0.5},

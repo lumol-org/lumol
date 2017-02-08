@@ -29,7 +29,7 @@ You can add all necessary information after the `[simulations.propagator]` label
 temperature with unit.
 
 - Optional keys:
-    * `update_delta_every` (uint): After this number of steps of a move, `delta` values 
+    * `update_frequency` (positive integer): After this number of steps of a move, `delta` values 
 for this move are updated. Updates use statistics of a moves' acceptance ratio so it 
 is recommended to choose a sufficiently high number (>100). 
 
@@ -48,7 +48,7 @@ can look like so:
 [simulations.propagator]
 type = "MonteCarlo"
 temperature = "500 K"
-update_delta_every = 500
+update_frequency = 500
 
 moves = [
     {type = "Translate", delta = "1 A", frequency = 2, target_acceptance = 0.5},
@@ -115,7 +115,7 @@ where no further adjustments are made.
 type = "MonteCarlo"
 temperature = "300 K"
 # we update the maximum displacement `delta` after a move was called 500 times
-update_delta_every = 500
+update_frequency = 500
 
 moves = [
     # we have much more water in the system so we want to move it more often
@@ -141,7 +141,7 @@ by adding a random displacement vector to its center of mass.
 contains the path to the configuration file of the molecule.
     * `target_acceptance` (float): The target acceptance for this move. Value 
 has to be greater than zero and smaller than one. Can only be used in conjunction 
-with `update_delta_every`.
+with `update_frequency`.
 
 If the `molecule` key is used, the move will only apply to one molecule type. If
 not, the move will apply to all molecule types in the system. The `delta` key is
@@ -179,7 +179,7 @@ center of mass.
 contains the path to the configuration file of the molecule.
     * `target_acceptance` (float): The target acceptance for this move. Value 
 has to be greater than zero and smaller than one. Can only be used in conjunction 
-with `update_delta_every`.
+with `update_frequency`.
 
 If the `molecule` key is used, the move will only apply to one molecule type. If
 not, the move will apply to all molecules in the system. The `delta` key is the
@@ -209,7 +209,7 @@ The `Resize` move can be used to isotropically change the systems' volume.
     * `frequency` (float): Move frequency.  
     * `target_acceptance` (float): The target acceptance for this move. Value 
 has to be greater than zero and smaller than one. Can only be used in conjunction 
-with `update_delta_every`.
+with `update_frequency`.
 
 For a given `pressure`, the volume will fluctuate during the simulation. We can
 use this move to sample an isobaric-isothermal ensemble. The `delta` key sets
