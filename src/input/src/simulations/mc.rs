@@ -20,17 +20,17 @@ impl FromTomlWithData for MonteCarlo {
 
         let mut mc = MonteCarlo::new(temperature);
 
-        if config.get("update_frequency").is_some() {
-            let update_frequency = try!(extract::uint(
-                    "update_frequency", config, "Monte-Carlo propagator"));
+        let has_update_frequency = config.get("update_frequency").is_some();
+        if has_update_frequency {
+            let update_frequency =
+                try!(extract::uint("update_frequency", config, "Monte-Carlo propagator"));
             mc.set_amplitude_update_frequency(update_frequency);
         }
 
         let moves = try!(extract::slice("moves", config, "Monte-Carlo propagator"));
         for mc_move in moves {
-            let mc_move = try!(mc_move.as_table().ok_or(
-                Error::from("All moves must be tables in Monte-Carlo")
-            ));
+            let mc_move = try!(mc_move.as_table()
+                .ok_or(Error::from("All moves must be tables in Monte-Carlo")));
 
             let frequency = if mc_move.get("frequency").is_some() {
                 try!(extract::number("frequency", mc_move, "Monte-Carlo move"))
@@ -48,14 +48,19 @@ impl FromTomlWithData for MonteCarlo {
                 "Translate" => Box::new(try!(Translate::from_toml(mc_move, root.clone()))),
                 "Rotate" => Box::new(try!(Rotate::from_toml(mc_move, root.clone()))),
                 "Resize" => Box::new(try!(Resize::from_toml(mc_move, root.clone()))),
-                other => return Err(Error::from(
-                    format!("Unknown Monte-Carlo move '{}'", other)
-                ))
+                other => return Err(Error::from(format!("Unknown Monte-Carlo move '{}'", other))),
             };
 
             match target_acceptance {
-                Some(ta) => mc.add_move_with_acceptance(mc_move, frequency, ta),
-                None     => mc.add(mc_move, frequency),
+                Some(ta) => {
+                    if !has_update_frequency {
+                        return Err(Error::from(format!("No 'update_frequency' found. Please \
+                        specify 'update_frequency' in combination with 'target_acceptance'!")));
+                    } else {
+                        mc.add_move_with_acceptance(mc_move, frequency, ta)
+                    }
+                }              
+                None => mc.add(mc_move, frequency),
             }
         }
         return Ok(mc);
@@ -110,4 +115,3 @@ impl FromTomlWithData for Resize {
         Ok(Resize::new(pressure, delta))
     }
 }
-
