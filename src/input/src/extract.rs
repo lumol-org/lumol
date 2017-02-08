@@ -57,7 +57,7 @@ pub fn uint(key: &str, config: &Table, context: &str) -> Result<u64> {
             }
         },
         _ => Err(Error::from(
-            format!("'{}' must be an usigned integer in {}", key, context)
+            format!("'{}' must be a positive integer in {}", key, context)
         ))
     }
 }
