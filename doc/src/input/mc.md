@@ -21,31 +21,40 @@ center of mass.
 Currently, all Monte-Carlo simulations are carried out using Metropolis
 acceptance criteria.
 
-A sample input for a Monte-Carlo simulation (in the NPT ensemble) can look like
-so:
+You can add all necessary information after the `[simulations.propagator]` label.
+
+- Needed keys:
+    * `type = "MonteCarlo"`
+    * `temperature` (string): System temperature. The string contains the
+temperature with unit.
+
+- Optional keys:
+    * `update_frequency` (positive integer): After this number of steps of a move, `delta` values
+for this move are updated. Updates use statistics of a moves' acceptance ratio so it
+is recommended to choose a sufficiently high number (>100).
+
+Naturally, Monte-Carlo simulations are carried out at constant
+temperature which is set using the `temperature` key.
+
+Different from Molecular Dynamics, Monte-Carlo simulations don't carry
+information about the velocities of particles.
+As a consequence we cannot access temperature from the kinetic energy.
+
+### Example
+A sample input for a Monte-Carlo simulation (in the NPT ensemble)
+can look like so:
 
 ```toml
 [simulations.propagator]
 type = "MonteCarlo"
 temperature = "500 K"
+
 moves = [
     {type = "Translate", delta = "1 A", frequency = 2},
     {type = "Rotate", delta = "20 deg", molecule = "CO2.xyz"},
     {type = "Resize", pressure = "10 bar", delta = "3 A^3", frequency = 0.001},
 ]
 ```
-
-## Temperature
-
-Naturally, Monte-Carlo simulations are carried out at constant temperature which
-is set using the `temperature` key.
-
-* `temperature` (string): System temperature. The string contains the
-temperature with unit.
-
-Different from Molecular Dynamics, Monte-Carlo simulations don't carry
-information about the velocities of particles. (As a consequence we cannot
-access temperature from the kinetic energy.)
 
 ## Moves
 
@@ -77,20 +86,46 @@ If you specify a molecule, it will be selected with the following algorithm:
 - If the file does not contain any bonding information, try to guess the bonds;
 - Use the first molecule of the frame.
 
+`moves` that use a displacement (`delta`) can be added with the
+`target_acceptance` key.
+After a specific number of times a move was called (`update_frequency`),
+we compute the acceptance ratio for the current `delta` value, *i.e.* how often
+the move was accepted versus how often a move was attempted.
+If the current acceptance is far away from the `target_acceptance`, we compute
+a new value of `delta` based on the current acceptance.
+A `target_acceptance` can only be used in conjunction with the
+update_frequency` key that specifies the frequency between updates.
+
+Sometimes a given acceptance value cannot be achieved. Either due to limits of
+the adjusted `delta` value (it makes no sense to rotate a particle by more than 180° or to
+translate it by multiple values of the cutoff range) or due to the nature of the
+system.
+
+To summarize, using an adjustable displacement, we can increase the efficiency of
+our simulation, but strictly speaking we violate detailed balance and therefore
+the Markov chain. To make sure you get correct results from your simulations, we
+recommend to use adjustable displacements *only for equilibration runs*. You can
+then take the resulting values for `delta` and use them for a production run,
+where no further adjustments are made.
+
 [chemfiles]: chemfiles.github.io
 
 ### Example
 
 ```toml
-# Simulation of a protein in water.
+# Equilibration of a protein in water.
 [simulations.propagator]
 type = "MonteCarlo"
 temperature = "300 K"
+# we update the maximum displacement `delta` after a move was called 500 times
+update_frequency = 500
+
 moves = [
     # we have much more water in the system so we want to move it more often
     # hence we set the `frequency = 100`
-    {type = "Translate", delta = "2 A", molecule = "H2O.xyz", frequency = 100},
-    # the single protein will be displaced only a small distance `delta = "0.05 A"`
+    # after 500 calls to this translation move, we adjust `delta` to get to approximately 50% acceptance
+    {type = "Translate", delta = "2 A", molecule = "H2O.xyz", frequency = 100, target_acceptance = 0.5},
+    # the single protein will be displaced only by a small distance `delta = "0.05 A"` during the whole run
     {type = "Translate", delta = "0.05 A", molecule = "protein.pdb", frequency = 1},
 ]
 ```
@@ -107,6 +142,8 @@ by adding a random displacement vector to its center of mass.
     * `frequency` (float): Move frequency.
     * `molecule` (string): Select only the specified molecule type. The string
 contains the path to the configuration file of the molecule.
+    * `target_acceptance` (float): The target acceptance for this move. Value
+has to be greater than zero and smaller than one. Can only be used in conjunction with `update_frequency`.
 
 If the `molecule` key is used, the move will only apply to one molecule type. If
 not, the move will apply to all molecule types in the system. The `delta` key is
@@ -142,6 +179,8 @@ center of mass.
     * `frequency` (float): Move frequency.
     * `molecule` (string): Select only the specified molecule type. The string
 contains the path to the configuration file of the molecule.
+    * `target_acceptance` (float): The target acceptance for this move. Value
+has to be greater than zero and smaller than one. Can only be used in conjunction with `update_frequency`.
 
 If the `molecule` key is used, the move will only apply to one molecule type. If
 not, the move will apply to all molecules in the system. The `delta` key is the
@@ -169,6 +208,8 @@ The `Resize` move can be used to isotropically change the systems' volume.
     * `delta` (string): Amplitude.
 - Optional keys:
     * `frequency` (float): Move frequency.
+    * `target_acceptance` (float): The target acceptance for this move. Value
+has to be greater than zero and smaller than one. Can only be used in conjunction with `update_frequency`.
 
 For a given `pressure`, the volume will fluctuate during the simulation. We can
 use this move to sample an isobaric-isothermal ensemble. The `delta` key sets
