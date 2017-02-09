@@ -10,8 +10,9 @@ nsteps = 1
 [simulations.propagator]
 type = "MonteCarlo"
 temperature = "300 K"
-update_frequency = -1
-#^ 'update_frequency' must be a positive integer in Monte-Carlo propagator
+update_frequency = 100
 moves = [
-    {type = "Rotate", delta = "6 A", frequency = 0.3, target_acceptance = 0.5}
+    {type = "Rotate", delta = "6 A", frequency = 0.3, target_acceptance = -0.1}
+    #^ 'target_acceptance' has to be between 0.0 and 1.0
 ]
+

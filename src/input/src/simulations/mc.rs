@@ -55,7 +55,10 @@ impl FromTomlWithData for MonteCarlo {
                 Some(ta) => {
                     if !has_update_frequency {
                         return Err(Error::from(format!("No 'update_frequency' found. Please \
-                        specify 'update_frequency' in combination with 'target_acceptance'!")));
+                        specify 'update_frequency' in combination with 'target_acceptance'")));
+                    } else if ta < 0.0 || ta > 1.0 {
+                        return Err(Error::from(format!("'target_acceptance' has to be between \
+                        0.0 and 1.0")));
                     } else {
                         mc.add_move_with_acceptance(mc_move, frequency, ta)
                     }

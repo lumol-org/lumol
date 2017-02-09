@@ -48,12 +48,11 @@ can look like so:
 [simulations.propagator]
 type = "MonteCarlo"
 temperature = "500 K"
-update_frequency = 500
 
 moves = [
-    {type = "Translate", delta = "1 A", frequency = 2, target_acceptance = 0.5},
-    {type = "Rotate", delta = "20 deg", molecule = "CO2.xyz", target_acceptance = 0.5},
-    {type = "Resize", pressure = "10 bar", delta = "3 A^3", frequency = 0.001, target_acceptance = 0.5},
+    {type = "Translate", delta = "1 A", frequency = 2},
+    {type = "Rotate", delta = "20 deg", molecule = "CO2.xyz"},
+    {type = "Resize", pressure = "10 bar", delta = "3 A^3", frequency = 0.001},
 ]
 ```
 
@@ -87,11 +86,15 @@ If you specify a molecule, it will be selected with the following algorithm:
 - If the file does not contain any bonding information, try to guess the bonds;
 - Use the first molecule of the frame.
 
-`moves` that use a displacement (`delta`) can be added with the `target_acceptance`
-key. After a specific number of times a move was called, we can compute how efficient
-the current value for `delta` changes the system, *i.e.* how often the move was
-accepted. If the current acceptance is far away from the `target_acceptance`, we
-compute a new value of `delta` based on the current acceptance.
+`moves` that use a displacement (`delta`) can be added with the
+`target_acceptance` key.
+After a specific number of times a move was called (`update_frequency`),
+we compute the acceptance ratio for the current `delta` value, *i.e.* how often
+the move was accepted versus how often a move was attempted.
+If the current acceptance is far away from the `target_acceptance`, we compute
+a new value of `delta` based on the current acceptance.
+A `target_acceptance` can only be used in conjunction with the
+update_frequency` key that specifies the frequency between updates.
 
 Sometimes a given acceptance value cannot be achieved. Either due to limits of
 the adjusted `delta` value (it makes no sense to rotate a particle by more than 180° or to
@@ -122,7 +125,7 @@ moves = [
     # hence we set the `frequency = 100`
     # after 500 calls to this translation move, we adjust `delta` to get to approximately 50% acceptance
     {type = "Translate", delta = "2 A", molecule = "H2O.xyz", frequency = 100, target_acceptance = 0.5},
-    # the single protein will initially be displaced only a small distance `delta = "0.05 A"`
+    # the single protein will be displaced only by a small distance `delta = "0.05 A"` during the whole run
     {type = "Translate", delta = "0.05 A", molecule = "protein.pdb", frequency = 1},
 ]
 ```
