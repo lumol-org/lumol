@@ -39,9 +39,9 @@ fn setup(potential: &str, n: usize) -> (Simulation, System) {
         system.add_particle(Particle::new("H"));
         system.add_particle(Particle::new("H"));
 
-        system[3*i + 0].position = origin.clone();
-        system[3*i + 1].position = origin.clone() + h_1.clone();
-        system[3*i + 2].position = origin.clone() + h_2.clone();
+        system[3*i + 0].position = *origin;
+        system[3*i + 1].position = origin + h_1;
+        system[3*i + 2].position = origin + h_2;
 
         system.add_bond(3*i, 3*i + 1);
         system.add_bond(3*i, 3*i + 2);
@@ -64,14 +64,15 @@ fn setup(potential: &str, n: usize) -> (Simulation, System) {
 #[test]
 fn constant_energy_ewald() {
     START.call_once(|| {Logger::stdout();});
-    let (mut simulation, mut system) = setup("water-ewald.toml", 2);
+    let (mut simulation, mut system) = setup("water-ewald.toml", 3);
 
     let e_initial = system.total_energy();
     simulation.run(&mut system, 1000);
     let e_final = system.total_energy();
 
-    // TODO: use a better thresold when updating Ewald to work with triclinic
-    // cells.
+    println!("{} {} {}", e_initial, e_final, f64::abs((e_initial - e_final)/e_final));
+
+    // FIXME? This thresold is really bad
     assert!(f64::abs((e_initial - e_final)/e_final) < 1e-1);
 }
 

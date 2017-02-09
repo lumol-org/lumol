@@ -62,8 +62,8 @@ impl PairRestriction {
     /// let restriction = PairRestriction::Scale14(0.5);
     /// assert_eq!(restriction.information(2).excluded, true);
     /// assert_eq!(restriction.information(3).excluded, false);
+    /// assert_eq!(restriction.information(2).scaling, 1.0);
     /// assert_eq!(restriction.information(3).scaling, 0.5);
-    /// assert_eq!(restriction.information(4).scaling, 1.0);
     /// ```
     pub fn information(&self, distance: i8) -> RestrictionInfo {
         let are_in_same_molecule = distance >= 0;

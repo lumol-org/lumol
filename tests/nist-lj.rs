@@ -2,7 +2,8 @@
 // Copyright (C) 2015-2016 Lumol's contributors — BSD license
 
 //! Testing energy of a Lennard-Jones fluid using data from
-//! http://www.nist.gov/mml/csd/informatics_research/lj_refcalcs.cfm
+//! https://www.nist.gov/mml/csd/chemical-informatics-research-group/lennard-jones-fluid-reference-calculations
+
 extern crate lumol;
 extern crate lumol_input as input;
 
@@ -74,7 +75,7 @@ mod cutoff_3_lrc {
 
     #[test]
     fn nist1() {
-        let path = "nist1.xyz";
+        let path = "nist/lj-1.xyz";
         let mut system = get_system(path);
         set_interaction(&mut system, PairKind::None);
 
@@ -93,7 +94,7 @@ mod cutoff_3_lrc {
 
     #[test]
     fn nist2() {
-        let path = "nist2.xyz";
+        let path = "nist/lj-2.xyz";
         let mut system = get_system(path);
         set_interaction(&mut system, PairKind::None);
 
@@ -112,7 +113,7 @@ mod cutoff_3_lrc {
 
     #[test]
     fn nist3() {
-        let path = "nist3.xyz";
+        let path = "nist/lj-3.xyz";
         let mut system = get_system(path);
         set_interaction(&mut system, PairKind::None);
 
@@ -131,7 +132,7 @@ mod cutoff_3_lrc {
 
     #[test]
     fn nist4() {
-        let path = "nist4.xyz";
+        let path = "nist/lj-4.xyz";
         let mut system = get_system(path);
         set_interaction(&mut system, PairKind::None);
 
@@ -174,7 +175,7 @@ mod cutoff_4_lrc {
 
     #[test]
     fn nist1() {
-        let path = "nist1.xyz";
+        let path = "nist/lj-1.xyz";
         let mut system = get_system(path);
         set_interaction(&mut system, PairKind::None);
 
@@ -193,7 +194,7 @@ mod cutoff_4_lrc {
 
     #[test]
     fn nist2() {
-        let path = "nist2.xyz";
+        let path = "nist/lj-2.xyz";
         let mut system = get_system(path);
         set_interaction(&mut system, PairKind::None);
 
@@ -212,7 +213,7 @@ mod cutoff_4_lrc {
 
     #[test]
     fn nist3() {
-        let path = "nist3.xyz";
+        let path = "nist/lj-3.xyz";
         let mut system = get_system(path);
         set_interaction(&mut system, PairKind::None);
 
@@ -231,7 +232,7 @@ mod cutoff_4_lrc {
 
     #[test]
     fn nist4() {
-        let path = "nist4.xyz";
+        let path = "nist/lj-4.xyz";
         let mut system = get_system(path);
         set_interaction(&mut system, PairKind::None);
 
