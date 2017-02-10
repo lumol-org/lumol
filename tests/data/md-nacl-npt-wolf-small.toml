@@ -14,3 +14,4 @@ nsteps = 10_000
 type = "MolecularDynamics"
 timestep = "1 fs"
 integrator = {type = "AnisoBerendsenBarostat", pressure = "5e4 bar", timestep = 1000}
+thermostat = {type = "Berendsen", temperature = "273 K", timestep = 1000}

@@ -37,9 +37,8 @@ mod wolf {
     fn anisotropic_berendsen() {
         START.call_once(|| {Logger::stdout();});
         let path = Path::new(file!()).parent().unwrap().join("data")
-                                     .join("md-nacl-np-wolf-small.toml");
+                                     .join("md-nacl-npt-wolf-small.toml");
         let mut config = Input::new(path).unwrap().read().unwrap();
-
 
 
         config.simulation.run(&mut config.system, config.nsteps);
