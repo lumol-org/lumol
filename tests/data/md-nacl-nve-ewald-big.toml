@@ -1,0 +1,8 @@
+[input]
+version = 1
+
+[[systems]]
+file = "trajectories/nacl-big.xyz"
+cell = 22.5608
+potentials = "interactions/nacl-ewald.toml"
+velocities = {init = "300 K"}

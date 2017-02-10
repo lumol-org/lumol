@@ -1,0 +1,15 @@
+[input]
+version = 1
+
+[[systems]]
+file = "trajectories/nacl-small.xyz"
+cell = 11.2804
+potentials = "interactions/nacl-ewald.toml"
+velocities = {init = "300 K"}
+
+[[simulations]]
+nsteps = 100
+
+[simulations.propagator]
+type = "MolecularDynamics"
+timestep = "1 fs"
