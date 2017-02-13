@@ -47,6 +47,40 @@ atoms = ["O", "O"]
 lennardjones = {sigma = "3.16 A", epsilon = "0.155 kcal/mol"}
 ```
 
+## Buckingham potential
+
+The Buckingham potential is a potential for pair interactions expressed as: $$
+V(x) = A \exp(-r / \rho) - \frac{C}{r^6}.$$
+
+The potential type keyword is `buckingham`, and the parameters `A`, `rho`
+($\rho$) and `C` should be provided as strings.
+
+```toml
+[[pairs]]
+atoms = ["A", "B"]
+buckingham = {A = "40 kJ/mol", C = "120e-6 kJ/mol/A^6", rho = "3.0 A"}
+```
+
+## Born-Mayer-Huggins potential
+
+The Born-Mayer-Huggins potential is a potential for pair interactions, used in
+particular for halide alkali. Its expression is: $$ V(x) = A
+\exp\left(\frac{\sigma -r}{\rho}\right) - \frac{C}{r^6} + \frac{D}{r^8}.$$
+
+The potential type keyword is `born`, and the parameters `A`, `C`, `D`, `sigma`
+($\sigma$) and `rho` ($\rho$) should be provided as strings.
+
+```toml
+[[pairs]]
+atoms = ["A", "B"]
+[pairs.born]
+A = "40 kJ/mol"
+C = "120e-6 kJ/mol/A^6"
+D = "23e-6 kJ/mol/A^8"
+rho = "3.0 A"
+sigma = "2.2 A"
+```
+
 ## Harmonic potential
 
 The Harmonic potential is usually used for intramolecular interactions such as
