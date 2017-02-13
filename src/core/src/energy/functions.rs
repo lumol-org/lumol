@@ -247,6 +247,68 @@ impl Potential for Torsion {
 
 impl DihedralPotential for Torsion {}
 
+/// Buckingham potential.
+///
+/// The following potential expression is used: `V(x) = A * exp((sigma - r) /
+/// rho) - C/r^6`; where `A` and `C` are energetic constants, and `rho` is a
+/// length parameter.
+///
+/// # Examples
+///
+/// ```
+/// use lumol::energy::Potential;
+/// use lumol::energy::Buckingham;
+///
+/// let potential = Buckingham{a: 2.0, c: 1.0, rho: 5.3};
+/// assert_eq!(potential.energy(2.2), 1.3117360696239022);
+/// assert_eq!(potential.force(2.2), 0.2251072178835946);
+/// ```
+#[derive(Clone, Copy)]
+pub struct Buckingham {
+    /// Exponential term energetic constant
+    pub a: f64,
+    /// `1/r^6` term energetic constant
+    pub c: f64,
+    /// Width of the exponential term length constant
+    pub rho: f64,
+}
+
+impl Potential for Buckingham {
+    #[inline]
+    fn energy(&self, r: f64) -> f64 {
+        let r3 = r * r * r;
+        let r6 = r3 * r3;
+        let exp = f64::exp(- r / self.rho);
+        self.a * exp - self.c / r6
+    }
+
+    #[inline]
+    fn force(&self, r: f64) -> f64 {
+        let r3 = r * r * r;
+        let r7 = r3 * r3 * r;
+        let exp = f64::exp(- r / self.rho);
+        self.a / self.rho * exp - 6.0 * self.c / r7
+    }
+}
+
+impl PairPotential for Buckingham {
+    fn tail_energy(&self, rc: f64) -> f64 {
+        let rc2 = rc * rc;
+        let rc3 = rc2 * rc;
+        let exp = f64::exp(- rc / self.rho);
+        let factor = rc2 - 2.0 * rc * self.rho + 2.0 * self.rho * self.rho;
+        self.a * self.rho * exp * factor - self.c / (3.0 * rc3)
+    }
+
+    fn tail_virial(&self, rc: f64) -> f64 {
+        let rc2 = rc * rc;
+        let rc3 = rc2 * rc;
+        let exp = f64::exp(- rc / self.rho);
+        let factor = rc3 + 3.0 * rc2 * self.rho + 6.0 * rc * self.rho * self.rho + 6.0 * self.rho * self.rho * self.rho;
+        self.a * exp * factor - 20.0 * self.c / rc3 + 8.0
+    }
+}
+
 
 /// Born-Mayer-Huggins potential.
 ///
@@ -404,6 +466,22 @@ mod tests {
         let e0 = torsion.energy(4.0);
         let e1 = torsion.energy(4.0 + EPS);
         assert_approx_eq!((e0 - e1)/EPS, torsion.force(4.0), 1e-6);
+    }
+
+    #[test]
+    fn buckingham() {
+        let buckingham = Buckingham{a: 2.0, c: 1.0, rho: 2.0};
+
+        // Comparing to externally computed values
+        assert_eq!(buckingham.energy(2.0), 0.7201338823428847);
+        assert_eq!(buckingham.force(2.0), 0.32100444117144233);
+
+        assert_eq!(buckingham.tail_energy(10.0), 1.8323882504179136);
+        assert_eq!(buckingham.tail_virial(10.0), 33.422487868546725);
+
+        let e0 = buckingham.energy(4.0);
+        let e1 = buckingham.energy(4.0 + EPS);
+        assert_approx_eq!((e0 - e1)/EPS, buckingham.force(4.0), 1e-6);
     }
 
     #[test]
