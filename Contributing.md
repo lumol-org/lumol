@@ -25,7 +25,7 @@ Github pull request (have a look [here][PR] for Github model of pull request);
 or you can send patches by email at luthaf@luthaf.fr.
 
 If you want to work on the code and pick something easy to get started, have a
-look at the [easy level issues][L-Easy].
+look at the [easy level issues][E-Easy].
 
 If you want to add a new feature to Lumol, please create an issue so that we
 can discuss it, and you have more chances to see your changes incorporated.
@@ -62,7 +62,7 @@ cargo build
 ```
 
 Make sure your editor is configured to read the [`.editorconfig`](.editorconfig)
-file. This file is used to specify code formatting rules your editor. Most 
+file. This file is used to specify code formatting rules your editor. Most
 editors
 [support it natively or have plugin that does](http://editorconfig.org/#download).
 
@@ -79,10 +79,10 @@ Then, run all the test and check that they still pass:
 
 ```bash
 # Unit tests
-cd src/core && cargo test && cd ../..
-cd src/input && cargo test && cd ../..
+cargo test -p lumol-core
+cargo test -p lumol-input
 # Simulation tests, in relase mode to be faster
-cargo test --release
+cargo test --all --release
 ```
 
 Finally, you can push your code to Github, and create a [Pull-Request][PR] to
@@ -91,5 +91,5 @@ the `lumol-org/lumol` repository.
 [Gitter]: https://gitter.im/lumol-org/lumol
 [issues]: https://github.com/lumol-org/lumol/issues/new
 [PR]: https://help.github.com/articles/using-pull-requests/
-[L-Easy]: https://github.com/lumol-org/lumol/labels/L%3AEasy
+[E-Easy]: https://github.com/lumol-org/lumol/labels/E-Easy
 [fork]: https://help.github.com/articles/fork-a-repo/

@@ -43,12 +43,11 @@ install:
     - rm -f target/debug/*-*
 script:
     # Run all tests in release mode
-    - cargo test --release
+    - cargo test --all --release
     # Run unit tests and doc tests in debug mode
-    - cd src/core && cargo test
-    - cd ../..
-    - cd src/input && cargo test
-    - cd ../..
+    - cargo test -p lumol-core
+    - cargo test -p lumol-input
+    # Misc style checking
     - python scripts/check-whitespaces.py
 after_script:
     - |
