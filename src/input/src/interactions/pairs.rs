@@ -208,7 +208,7 @@ fn read_pair_potential(pair: &Table) -> Result<Box<PairPotential>> {
         match key {
             "null" => Ok(Box::new(try!(NullPotential::from_toml(table)))),
             "harmonic" => Ok(Box::new(try!(Harmonic::from_toml(table)))),
-            "lj" | "lennardjones" => Ok(Box::new(try!(LennardJones::from_toml(table)))),
+            "lj" => Ok(Box::new(try!(LennardJones::from_toml(table)))),
             other => Err(
                 Error::from(format!("Unknown potential type '{}'", other))
             ),

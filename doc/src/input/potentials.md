@@ -37,14 +37,14 @@ The Lennard-Jones potential is a classical potential for pair interactions
 expressed as: $$ V(x) = 4 \epsilon \left[\left(\frac{\sigma}{x}\right)^{12} -
 \left(\frac{\sigma}{x}\right)^6\right].$$
 
-The Lennard-Jones potential is defined using the `lj` or `lennardjones` key. The
+The Lennard-Jones potential is defined using the `lj` key. The
 parameters are `sigma` ($\sigma$) and `epsilon` ($\epsilon$), which should be
 provided as strings.
 
 ```toml
 [[pairs]]
 atoms = ["O", "O"]
-lennardjones = {sigma = "3.16 A", epsilon = "0.155 kcal/mol"}
+lj = {sigma = "3.16 A", epsilon = "0.155 kcal/mol"}
 ```
 
 ## Harmonic potential
