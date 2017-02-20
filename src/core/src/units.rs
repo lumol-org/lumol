@@ -386,8 +386,8 @@ pub fn from_str(value: &str) -> Result<f64, ParseError> {
     } else {
         try!(UnitExpr::parse(&unit))
     };
-    let value: &str = value.split_whitespace().take(1).collect::<Vec<&str>>()[0];
-    let value: f64 = try!(value.parse());
+    let value = value.split_whitespace().take(1).collect::<Vec<&str>>()[0];
+    let value = try!(value.parse::<f64>());
     return Ok(unit.eval() * value);
 }
 

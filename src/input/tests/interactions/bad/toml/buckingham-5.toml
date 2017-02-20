@@ -1,0 +1,8 @@
+[input]
+version = 1
+
+[[pairs]]
+atoms = ["A", "A"]
+cutoff = "3 A"
+buckingham = {C = "5e-6 kJ/mol/A^6", rho = "2.3 A"}
+#^ Missing 'A' in Buckingham potential

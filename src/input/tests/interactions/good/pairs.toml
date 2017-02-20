@@ -15,6 +15,23 @@ tail_correction = false
 harmonic = {x0 = "3 A", k = "5.9 kJ/mol/A^2"}
 
 [[pairs]]
+atoms = ["A", "B"]
+null = {}
+
+[[pairs]]
+atoms = ["A", "B"]
+buckingham = {A = "4.2 kJ/mol", C = "5e-6 kJ/mol/A^6", rho = "2.3 A"}
+
+[[pairs]]
+atoms = ["A", "B"]
+[pairs.born]
+A = "4.2 kJ/mol"
+C = "5e-6 kJ/mol/A^6"
+D = "7.6e-5 kJ/mol/A^8"
+sigma = "3.2 A"
+rho = "2.3 A"
+
+[[pairs]]
 # Table computations
 atoms = ["A", "B"]
 null = {}

@@ -8,7 +8,8 @@ use error::{Error, Result};
 use FromToml;
 use FromTomlWithData;
 
-use lumol::energy::{Harmonic, LennardJones, NullPotential, CosineHarmonic, Torsion};
+use lumol::energy::{Harmonic, LennardJones, NullPotential, CosineHarmonic};
+use lumol::energy::{Torsion, Buckingham, BornMayerHuggins};
 use lumol::energy::{Wolf, Ewald};
 use lumol::energy::{PairPotential, TableComputation};
 
@@ -92,8 +93,57 @@ impl FromToml for Torsion {
             Ok(Torsion{n: n as usize, k: k, delta: delta})
         } else {
             Err(
-                Error::from("'k' and 'delta' must be strings in torsion potential, \
-                and 'n' must be an integer")
+                Error::from(
+                    "'k' and 'delta' must be strings in torsion potential, \
+                    and 'n' must be an integer"
+                )
+            )
+        }
+    }
+}
+
+impl FromToml for Buckingham {
+    fn from_toml(table: &Table) -> Result<Buckingham> {
+        let a = try_extract_parameter!(table, "A", "Buckingham potential");
+        let c = try_extract_parameter!(table, "C", "Buckingham potential");
+        let rho = try_extract_parameter!(table, "rho", "Buckingham potential");
+
+        if let (Some(a), Some(c), Some(rho)) = (a.as_str(), c.as_str(), rho.as_str()) {
+            let a = try!(::lumol::units::from_str(a));
+            let c = try!(::lumol::units::from_str(c));
+            let rho = try!(::lumol::units::from_str(rho));
+            Ok(Buckingham{a: a, c: c, rho: rho})
+        } else {
+            Err(
+                Error::from(
+                    "'A', 'C' and 'rho' must be strings in Buckingham potential"
+                )
+            )
+        }
+    }
+}
+
+impl FromToml for BornMayerHuggins {
+    fn from_toml(table: &Table) -> Result<BornMayerHuggins> {
+        let a = try_extract_parameter!(table, "A", "Born-Mayer-Huggins potential");
+        let c = try_extract_parameter!(table, "C", "Born-Mayer-Huggins potential");
+        let d = try_extract_parameter!(table, "D", "Born-Mayer-Huggins potential");
+        let sigma = try_extract_parameter!(table, "sigma", "Born-Mayer-Huggins potential");
+        let rho = try_extract_parameter!(table, "rho", "Born-Mayer-Huggins potential");
+
+        if let (Some(a), Some(c), Some(d), Some(sigma), Some(rho)) =
+               (a.as_str(), c.as_str(), d.as_str(), sigma.as_str(), rho.as_str()) {
+            let a = try!(::lumol::units::from_str(a));
+            let c = try!(::lumol::units::from_str(c));
+            let d = try!(::lumol::units::from_str(d));
+            let sigma = try!(::lumol::units::from_str(sigma));
+            let rho = try!(::lumol::units::from_str(rho));
+            Ok(BornMayerHuggins{a: a, c: c, d: d, sigma: sigma, rho: rho})
+        } else {
+            Err(
+                Error::from(
+                    "'A', 'C', 'D', 'sigma' and 'rho' must be strings in Born-Mayer-Huggins potential"
+                )
             )
         }
     }
