@@ -172,7 +172,7 @@ impl FromToml for RescaleThermostat {
 impl FromToml for Alternator<RemoveTranslation> {
     fn from_toml(config: &Table) -> Result<Alternator<RemoveTranslation>> {
         let every = if config.contains_key("every") {
-            try!(extract::number("every", config, "RemoveTranslation control")) as u64
+            try!(extract::uint("every", config, "RemoveTranslation control"))
         } else {
            1
         };
@@ -183,7 +183,7 @@ impl FromToml for Alternator<RemoveTranslation> {
 impl FromToml for Alternator<RemoveRotation> {
     fn from_toml(config: &Table) -> Result<Alternator<RemoveRotation>> {
         let every = if config.contains_key("every") {
-            try!(extract::number("every", config, "RemoveRotation control")) as u64
+            try!(extract::uint("every", config, "RemoveRotation control"))
         } else {
            1
         };
