@@ -5,7 +5,7 @@ version = 1
 file = "configuration/water.xyz"
 cell = 18
 guess_bonds = true
-potentials = "interactions/mc-water-wolf.toml"
+potentials = "interactions/water-wolf.toml"
 
 
 [[simulations]]
