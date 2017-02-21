@@ -152,7 +152,9 @@ underlying interactions) only.
 Interactions between atoms are formulated via potentials; functions that give us
 information about energies and forces acting between atoms. We distinguish
 between *inter*- and *intramolecular* potentials. For an overview of available
-potential functions, have a look at [here][potentials].
+potential functions, have a look [here][potentials].
+
+[potentials]: input/potentials.html
 
 You can specify interactions between atoms in two ways: either inside the main
 input file or in a separate file. As example we will use a flexible SPC water
