@@ -1,0 +1,6 @@
+[input]
+version = 1
+
+[[systems]]
+file = "configuration/nist1.xyz"
+cell = 10

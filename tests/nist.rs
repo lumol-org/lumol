@@ -9,32 +9,16 @@ extern crate lumol_input as input;
 use lumol::sys::{System, UnitCell};
 use lumol::sys::Trajectory;
 
+use input::Input;
+
 use std::path::Path;
 use std::fs::File;
 use std::io::prelude::*;
 
-pub fn get_system(path: &str) -> System {
-    let data_dir = Path::new(file!()).parent().unwrap();
-    let path = data_dir.join("data").join(path);
-    let mut system = Trajectory::open(&path)
-                                .and_then(|mut traj| traj.read())
-                                .unwrap();
-
-    let mut file = File::open(path).unwrap();
-    let mut buffer = String::new();
-    file.read_to_string(&mut buffer).unwrap();
-    let line = buffer.lines().skip(1).next().unwrap();
-    let mut splited = line.split_whitespace();
-    assert_eq!(splited.next(), Some("cell:"));
-    let a: f64 = splited.next().expect("Missing 'a' cell parameter")
-                        .parse().expect("'a' cell parameter is not a float");
-    let b: f64 = splited.next().expect("Missing 'b' cell parameter")
-                        .parse().expect("'b' cell parameter is not a float");
-    let c: f64 = splited.next().expect("Missing 'c' cell parameter")
-                        .parse().expect("'c' cell parameter is not a float");
-
-    system.set_cell(UnitCell::ortho(a, b, c));
-    return system;
+pub fn get_system(name: &str) -> System {
+    let path = Path::new(file!()).parent().unwrap().join("data")
+                                 .join(name);
+    return Input::new(path).unwrap().read_system().unwrap();
 }
 
 pub trait RoundAt {
@@ -53,6 +37,9 @@ mod cutoff_3_lrc {
     use super::*;
     use lumol::sys::System;
     use lumol::energy::{PairInteraction, LennardJones};
+
+
+    use std::path::Path;
 
     enum PairKind {
         None,
@@ -74,7 +61,7 @@ mod cutoff_3_lrc {
 
     #[test]
     fn nist1() {
-        let path = "nist1.xyz";
+        let path = "nist1.toml";
         let mut system = get_system(path);
         set_interaction(&mut system, PairKind::None);
 
@@ -93,7 +80,7 @@ mod cutoff_3_lrc {
 
     #[test]
     fn nist2() {
-        let path = "nist2.xyz";
+        let path = "nist2.toml";
         let mut system = get_system(path);
         set_interaction(&mut system, PairKind::None);
 
@@ -112,7 +99,7 @@ mod cutoff_3_lrc {
 
     #[test]
     fn nist3() {
-        let path = "nist3.xyz";
+        let path = "nist3.toml";
         let mut system = get_system(path);
         set_interaction(&mut system, PairKind::None);
 
@@ -131,7 +118,7 @@ mod cutoff_3_lrc {
 
     #[test]
     fn nist4() {
-        let path = "nist4.xyz";
+        let path = "nist4.toml";
         let mut system = get_system(path);
         set_interaction(&mut system, PairKind::None);
 
@@ -174,7 +161,7 @@ mod cutoff_4_lrc {
 
     #[test]
     fn nist1() {
-        let path = "nist1.xyz";
+        let path = "nist1.toml";
         let mut system = get_system(path);
         set_interaction(&mut system, PairKind::None);
 
@@ -193,7 +180,7 @@ mod cutoff_4_lrc {
 
     #[test]
     fn nist2() {
-        let path = "nist2.xyz";
+        let path = "nist2.toml";
         let mut system = get_system(path);
         set_interaction(&mut system, PairKind::None);
 
@@ -212,7 +199,7 @@ mod cutoff_4_lrc {
 
     #[test]
     fn nist3() {
-        let path = "nist3.xyz";
+        let path = "nist3.toml";
         let mut system = get_system(path);
         set_interaction(&mut system, PairKind::None);
 
@@ -231,7 +218,7 @@ mod cutoff_4_lrc {
 
     #[test]
     fn nist4() {
-        let path = "nist4.xyz";
+        let path = "nist4.toml";
         let mut system = get_system(path);
         set_interaction(&mut system, PairKind::None);
 
