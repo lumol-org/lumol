@@ -2,7 +2,7 @@
 version = 1
 
 [[systems]]
-file = "trajectories/nacl-small.xyz"
+file = "configuration/nacl-small.xyz"
 cell = 11.2804
 potentials = "interactions/nacl-ewald.toml"
 velocities = {init = "300 K"}
