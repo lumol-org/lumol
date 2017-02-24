@@ -36,7 +36,7 @@ fn constant_energy_ewald() {
 fn constant_energy_wolf() {
     START.call_once(|| {Logger::stdout();});
     let path = Path::new(file!()).parent().unwrap().join("data")
-                                 .join("md-water-ewald.toml");
+                                 .join("md-water-wolf.toml");
 
     let mut config = Input::new(path).unwrap().read().unwrap();
 
