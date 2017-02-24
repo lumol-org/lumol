@@ -75,8 +75,8 @@ mod ewald {
         START.call_once(|| {Logger::stdout();});
         let path = Path::new(file!()).parent().unwrap().join("data")
                                      .join("md-nacl-nve-ewald-big.toml");
-        let config = Input::new(path).unwrap().read().unwrap();
-        let energy = units::to(config.system.total_energy(), "kcal/mol").unwrap();
+        let system = Input::new(path).unwrap().read_system().unwrap();
+        let energy = units::to(system.total_energy(), "kcal/mol").unwrap();
 
         // Energy of this system given by LAMMPS in kcal/mol
         const LAMMPS_ENERGY: f64 = -48610.136;
