@@ -7,14 +7,11 @@
 extern crate lumol;
 extern crate lumol_input as input;
 
-use lumol::sys::{System, UnitCell};
-use lumol::sys::Trajectory;
+use lumol::sys::{System};
 
 use input::Input;
 
 use std::path::Path;
-use std::fs::File;
-use std::io::prelude::*;
 
 pub fn get_system(name: &str) -> System {
     let path = Path::new(file!()).parent().unwrap().join("data")
@@ -40,7 +37,6 @@ mod cutoff_3_lrc {
     use lumol::energy::{PairInteraction, LennardJones};
 
 
-    use std::path::Path;
 
     enum PairKind {
         None,
