@@ -58,9 +58,9 @@ fn main() {
     let mut mc = MonteCarlo::new(temperature);
 
     // Build move set for NPT
-    let delta_trans = units::from(50.0, "A").unwrap();
+    let delta_trans = units::from(20.0, "A").unwrap();
     let delta_rot = units::from(20.0, "deg").unwrap();
-    let delta_vol = units::from(0.05 * system.volume(), "A^3").unwrap();
+    let delta_vol = units::from(5.0, "A^3").unwrap();
 
     // We strive for 50% acceptances - but that's arbitrary.
     // You should try different values to make your system run
@@ -87,14 +87,14 @@ fn main() {
         Box::new(PropertiesOutput::new("npt_ethane_prp.dat").unwrap()), 500);
     simulation.add_output_with_frequency(
         Box::new(EnergyOutput::new("npt_ethane_ener.dat").unwrap()), 500);
-    simulation.add_output_with_frequency(
-        Box::new(TrajectoryOutput::new("npt_ethane_conf.xyz").unwrap()), 10000);
+    // simulation.add_output_with_frequency(
+    //     Box::new(TrajectoryOutput::new("npt_ethane_conf.xyz").unwrap()), 10000);
 
     // Often, a simulation is described using `MC cycles`.
     // We define a `cycle` to contain `nmols+2` moves.
     // (See frequencies of moves:
     // nmols/2 translations + nmols/2 rotations + 2 resize moves)
-    let moves_per_cycle = 102;
+    let moves_per_cycle = 10;
     let cycles = 100000;
 
     // Some output and start of the simulation.

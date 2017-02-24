@@ -1,0 +1,8 @@
+[input]
+version = 1
+
+[[pairs]]
+atoms = ["A", "A"]
+cutoff = "3 A"
+born = true
+#^ 'born' potential must be a table

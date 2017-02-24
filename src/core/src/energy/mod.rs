@@ -241,7 +241,7 @@ impl_box_clone!(DihedralPotential, BoxCloneDihedral, box_clone_dihedral);
 
 mod functions;
 pub use self::functions::{NullPotential, LennardJones, Harmonic, CosineHarmonic};
-pub use self::functions::Torsion;
+pub use self::functions::{Torsion, Buckingham, BornMayerHuggins};
 
 mod computations;
 pub use self::computations::{Computation, TableComputation};

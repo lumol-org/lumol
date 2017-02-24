@@ -1,6 +1,0 @@
-[input]
-version = 1
-
-[[systems]]
-file = "configuration/nist3.xyz"
-cell = 10

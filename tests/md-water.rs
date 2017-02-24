@@ -26,8 +26,9 @@ fn constant_energy_ewald() {
     config.simulation.run(&mut config.system, config.nsteps);
     let e_final = config.system.total_energy();
 
-    // TODO: use a better thresold when updating Ewald to work with triclinic
-    // cells.
+    println!("{} {} {}", e_initial, e_final, f64::abs((e_initial - e_final)/e_final));
+
+    // FIXME? This thresold is really bad
     assert!(f64::abs((e_initial - e_final)/e_final) < 1e-1);
 }
 

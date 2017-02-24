@@ -1,0 +1,8 @@
+[input]
+version = 1
+
+[[pairs]]
+atoms = ["A", "A"]
+cutoff = "3 A"
+buckingham = true
+#^ 'buckingham' potential must be a table

@@ -178,6 +178,7 @@ pub struct Virial;
 impl Compute for Virial {
     type Output = Matrix3;
     fn compute(&self, system: &System) -> Matrix3 {
+        assert!(!system.cell().is_infinite(), "Can not compute virial for infinite cell");
         let mut virial = Matrix3::zero();
         for i in 0..system.size() {
             for j in (i+1)..system.size() {
@@ -192,7 +193,7 @@ impl Compute for Virial {
             }
         }
 
-        let volume = system.volume();
+        let volume = system.cell().volume();
         let composition = system.composition();
         for i in system.particle_kinds() {
             let ni = composition[&i] as f64;
@@ -232,10 +233,11 @@ pub struct PressureAtTemperature {
 impl Compute for PressureAtTemperature {
     type Output = f64;
     fn compute(&self, system: &System) -> f64 {
+        assert!(!system.cell().is_infinite(), "Can not compute pressure for infinite cell");
         assert!(self.temperature >= 0.0);
         let virial_tensor = system.virial();
         let virial = virial_tensor.trace();
-        let volume = system.volume();
+        let volume = system.cell().volume();
         let natoms = system.size() as f64;
         return natoms * K_BOLTZMANN * self.temperature / volume + virial / (3.0 * volume);
     }
@@ -256,8 +258,9 @@ impl Compute for StressAtTemperature {
     type Output = Matrix3;
     fn compute(&self, system: &System) -> Matrix3 {
         assert!(self.temperature >= 0.0);
+        assert!(!system.cell().is_infinite(), "Can not compute stress for infinite cell");
         let virial = system.virial();
-        let volume = system.volume();
+        let volume = system.cell().volume();
         let natoms = system.size() as f64;
         let kinetic = natoms * K_BOLTZMANN * self.temperature * Matrix3::one();
         return (kinetic + virial) / volume;
@@ -271,14 +274,15 @@ pub struct Stress;
 impl Compute for Stress {
     type Output = Matrix3;
     fn compute(&self, system: &System) -> Matrix3 {
+        assert!(!system.cell().is_infinite(), "Can not compute stress for infinite cell");
         let mut kinetic = Matrix3::zero();
         for particle in system.iter() {
             let velocity = &particle.velocity;
             kinetic += particle.mass * velocity.tensorial(velocity);
         }
 
-        let virial = Virial.compute(system);
-        let volume = Volume.compute(system);
+        let volume = system.cell().volume();
+        let virial = system.virial();
         return (kinetic + virial) / volume;
     }
 }
@@ -428,6 +432,12 @@ mod test {
     }
 
     #[test]
+    #[should_panic]
+    fn virial_infinite_cell() {
+        let _ = Virial.compute(&System::new());
+    }
+
+    #[test]
     fn virial() {
         let system = &test_pairs_system();
         let virial = Virial.compute(system);
@@ -450,6 +460,13 @@ mod test {
         let system = &test_pairs_system();
         let pressure = PressureAtTemperature{temperature: -4.0};
         let _ = pressure.compute(system);
+    }
+
+    #[test]
+    #[should_panic]
+    fn pressure_at_temperature_infinite_cell() {
+        let pressure = PressureAtTemperature{temperature: -4.0};
+        let _ = pressure.compute(&System::new());
     }
 
     #[test]
@@ -487,6 +504,13 @@ mod test {
     }
 
     #[test]
+    #[should_panic]
+    fn stress_at_temperature_infinite_cell() {
+        let stress = StressAtTemperature{temperature: 300.0};
+        let _ = stress.compute(&System::new());
+    }
+
+    #[test]
     fn stress_at_temperature() {
         let system = &mut test_pairs_system();
         let temperature = 550.0;
@@ -502,6 +526,12 @@ mod test {
     }
 
     #[test]
+    #[should_panic]
+    fn stress_infinite_cell() {
+        let _ = Stress.compute(&System::new());
+    }
+
+    #[test]
     fn stress() {
         let system = &test_pairs_system();
         let stress = Stress.compute(system);
@@ -511,6 +541,12 @@ mod test {
         let trace = stress.trace() / 3.0;
         assert_approx_eq!(trace, pressure, 1e-9);
         assert_eq!(stress, system.stress());
+    }
+
+    #[test]
+    #[should_panic]
+    fn pressure_infinite_cell() {
+        let _ = Pressure.compute(&System::new());
     }
 
     #[test]

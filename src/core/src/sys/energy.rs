@@ -53,6 +53,9 @@ impl<'a> EnergyEvaluator<'a> {
     /// Compute the energy due to long range corrections for the pairs
     #[inline]
     pub fn pairs_tail(&self) -> f64 {
+        if self.system.cell().is_infinite() {
+            return 0.0;
+        }
         let mut energy = 0.0;
         let volume = self.system.volume();
         let composition = self.system.composition();
@@ -219,6 +222,15 @@ mod tests {
         let evaluator = EnergyEvaluator::new(&system);
         assert_approx_eq!(evaluator.pairs(), unit_from(-258.3019360389957, "kJ/mol"));
         assert_approx_eq!(evaluator.pairs_tail(), -0.0000028110338032153973);
+    }
+
+    #[test]
+    fn pairs_tail_infinite_cell() {
+        let mut system = testing_system();
+        system.set_cell(UnitCell::new());
+
+        let evaluator = EnergyEvaluator::new(&system);
+        assert_eq!(evaluator.pairs_tail(), 0.0);
     }
 
     #[test]

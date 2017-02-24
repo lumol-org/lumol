@@ -1,0 +1,41 @@
+# run via:
+# cargo run ethane.toml --release
+
+[input]
+version = 1
+
+[[systems]]
+file = "data/ethane.xyz"
+guess_bonds = true
+cell = 100.0
+
+[systems.potentials.global]
+cutoff = "14.0 A"
+tail_correction = true
+
+[[systems.potentials.pairs]]
+atoms = ["C", "C"]
+lj = {sigma = "3.750 A", epsilon = "0.814821 kJ/mol"}
+restriction = "InterMolecular"
+
+[[systems.potentials.bonds]]
+atoms = ["C", "C"]
+null = {}
+
+[[simulations]]
+nsteps = 1_000_000
+outputs = [
+    {type = "Energy", file = "input_ethane_ener.dat", frequency = 500},
+    {type = "Properties", file = "input_ethane_prp.dat", frequency = 500}
+]
+
+[simulations.propagator]
+type = "MonteCarlo"
+temperature = "217.0 K"
+update_frequency = 500
+
+moves = [
+    {type = "Translate", delta = "20 A", frequency = 50, target_acceptance = 0.5},
+    {type = "Rotate", delta = "20 deg", frequency = 50, target_acceptance = 0.5},
+    {type = "Resize", pressure = "5.98 bar", delta = "5 A^3", frequency = 2, target_acceptance = 0.5},
+]

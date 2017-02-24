@@ -30,7 +30,7 @@ use energy::PairRestriction;
 /// ```
 /// use lumol::energy::{GlobalPotential, GlobalCache};
 /// use lumol::types::{Vector3D, Matrix3, Zero};
-/// use lumol::sys::{System, Particle};
+/// use lumol::sys::{System, Particle, UnitCell};
 ///
 /// /// Shift the energy of all the particles by a given delta.
 /// #[derive(Clone)]
@@ -68,7 +68,7 @@ use energy::PairRestriction;
 /// }
 ///
 /// // A simple test
-/// let mut system = System::new();
+/// let mut system = System::from_cell(UnitCell::cubic(10.0));
 /// system.add_particle(Particle::new("Na"));
 /// system.add_particle(Particle::new("Cl"));
 ///

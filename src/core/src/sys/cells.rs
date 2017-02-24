@@ -107,6 +107,12 @@ impl UnitCell {
         self.shape
     }
 
+    /// Check if this unit cell is infinite, *i.e.* if it does not have periodic boundary
+    /// conditions.
+    pub fn is_infinite(&self) -> bool {
+        self.shape() == CellShape::Infinite
+    }
+
     /// Get the first vector of the cell
     pub fn vect_a(&self) -> Vector3D {
         let x = self.cell[(0, 0)];
@@ -210,7 +216,7 @@ impl UnitCell {
         }
     }
 
-    /// Get the volume angle of the cell
+    /// Get the volume of the cell
     pub fn volume(&self) -> f64 {
         let volume = match self.shape {
             CellShape::Infinite => 0.0,
@@ -242,6 +248,9 @@ impl UnitCell {
 
     /// Get the reciprocal vectors of this unit cell
     pub fn reciprocal_vectors(&self) -> (Vector3D, Vector3D, Vector3D) {
+        assert!(!self.is_infinite(),
+            "Can not get reciprocal vectors of infinite cells"
+        );
         let volume = self.volume();
         let (a, b, c) = (self.vect_a(), self.vect_b(), self.vect_c());
 
@@ -437,6 +446,7 @@ mod tests {
     fn infinite() {
         let cell = UnitCell::new();
         assert_eq!(cell.shape(), CellShape::Infinite);
+        assert!(cell.is_infinite());
 
         assert_eq!(cell.vect_a(), Vector3D::zero());
         assert_eq!(cell.vect_b(), Vector3D::zero());
@@ -457,6 +467,7 @@ mod tests {
     fn cubic() {
         let cell = UnitCell::cubic(3.0);
         assert_eq!(cell.shape(), CellShape::Orthorombic);
+        assert!(!cell.is_infinite());
 
         assert_eq!(cell.vect_a(), Vector3D::new(3.0, 0.0, 0.0));
         assert_eq!(cell.vect_b(), Vector3D::new(0.0, 3.0, 0.0));
@@ -477,6 +488,7 @@ mod tests {
     fn orthorombic() {
         let cell = UnitCell::ortho(3.0, 4.0, 5.0);
         assert_eq!(cell.shape(), CellShape::Orthorombic);
+        assert!(!cell.is_infinite());
 
         assert_eq!(cell.vect_a(), Vector3D::new(3.0, 0.0, 0.0));
         assert_eq!(cell.vect_b(), Vector3D::new(0.0, 4.0, 0.0));
@@ -497,6 +509,7 @@ mod tests {
     fn triclinic() {
         let cell = UnitCell::triclinic(3.0, 4.0, 5.0, 80.0, 90.0, 110.0);
         assert_eq!(cell.shape(), CellShape::Triclinic);
+        assert!(!cell.is_infinite());
 
         assert_eq!(cell.vect_a(), Vector3D::new(3.0, 0.0, 0.0));
         assert_eq!(cell.vect_b()[2], 0.0);
