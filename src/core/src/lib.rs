@@ -41,6 +41,8 @@ extern crate log_once;
 extern crate bitflags;
 #[macro_use]
 extern crate lazy_static;
+#[macro_use]
+extern crate approx;
 
 extern crate chemfiles;
 extern crate ndarray;

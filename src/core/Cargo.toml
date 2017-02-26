@@ -20,6 +20,7 @@ bitflags = "0.7"
 ndarray = "0.6"
 lazy_static = "0.2"
 num-traits = "0.1"
+approx = "0.1.1"
 
 [dev-dependencies]
 tempfile = "2.1"
