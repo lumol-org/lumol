@@ -232,31 +232,31 @@ mod tests {
     fn rescale_thermostat() {
         let mut system = testing_system();
         let temperature = system.temperature();
-        assert_approx_eq!(temperature, 300.0, 1e-12);
+        assert_ulps_eq!(temperature, 300.0, epsilon=1e-12);
 
         let mut thermostat = RescaleThermostat::with_tolerance(250.0, 100.0);
         thermostat.control(&mut system);
         let temperature = system.temperature();
-        assert_approx_eq!(temperature, 300.0, 1e-12);
+        assert_ulps_eq!(temperature, 300.0, epsilon=1e-12);
 
         let mut thermostat = RescaleThermostat::with_tolerance(250.0, 10.0);
         thermostat.control(&mut system);
         let temperature = system.temperature();
-        assert_approx_eq!(temperature, 250.0, 1e-12);
+        assert_ulps_eq!(temperature, 250.0, epsilon=1e-12);
     }
 
     #[test]
     fn berendsen_thermostat() {
         let mut system = testing_system();
         let temperature = system.temperature();
-        assert_approx_eq!(temperature, 300.0, 1e-12);
+        assert_ulps_eq!(temperature, 300.0, epsilon=1e-9);
 
         let mut thermostat = BerendsenThermostat::new(250.0, 100.0);
-        for _ in 0..1000 {
+        for _ in 0..3000 {
             thermostat.control(&mut system);
         }
         let temperature = system.temperature();
-        assert_approx_eq!(temperature, 250.0, 1e-2);
+        assert_ulps_eq!(temperature, 250.0, epsilon=1e-9);
     }
 
     #[test]

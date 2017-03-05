@@ -455,10 +455,11 @@ mod test {
         assert_eq!(UnitExpr::parse("nm").unwrap(), UnitExpr::Val(10.0));
 
         assert_eq!(UnitExpr::parse("bohr/fs").unwrap().eval(), 0.52917720859);
-        assert_approx_eq!(UnitExpr::parse("kcal/mol/A^2").unwrap().eval(), 4.184e-4, 1e-12);
         assert_eq!(UnitExpr::parse("(Ry / rad^-3   )").unwrap().eval(), 0.13127498789124938);
         assert_eq!(UnitExpr::parse("bar/(m * fs^2)").unwrap().eval(), 6.0221417942167636e-19);
         assert_eq!(UnitExpr::parse("kJ/mol/deg^2").unwrap().eval(), 0.3282806352310398);
+
+        assert_ulps_eq!(UnitExpr::parse("kcal/mol/A^2").unwrap().eval(), 4.184e-4, epsilon=1e-9);
     }
 
     #[test]

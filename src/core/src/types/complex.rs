@@ -278,10 +278,10 @@ mod tests {
     #[test]
     fn norm() {
         let c = Complex::polar(3.0, 5.0);
-        assert_approx_eq!(c.norm(), 3.0);
+        assert_ulps_eq!(c.norm(), 3.0);
 
         let c = Complex::polar(-3.0, 0.0);
-        assert_approx_eq!(c.norm(), 3.0);
+        assert_ulps_eq!(c.norm(), 3.0);
     }
 
     #[test]
@@ -289,14 +289,14 @@ mod tests {
         // Phase is between 0 and 2π
         for &phase in &[-consts::PI, -3.1, -1.5, 0.0, 0.1, 2.0, 3.1] {
             let c = Complex::polar(1.0, phase);
-            assert_approx_eq!(c.phase(), phase);
+            assert_ulps_eq!(c.phase(), phase);
         }
 
         let c = Complex::polar(1.0, -8.0);
-        assert_approx_eq!(c.phase(), -8.0 + 2.0 * consts::PI);
+        assert_ulps_eq!(c.phase(), -8.0 + 2.0 * consts::PI);
 
         let c = Complex::polar(1.0, 12.0);
-        assert_approx_eq!(c.phase(), 12.0 - 4.0 * consts::PI);
+        assert_ulps_eq!(c.phase(), 12.0 - 4.0 * consts::PI, max_ulps=10);
 
         let c = Complex::polar(1.0, consts::PI);
         assert_eq!(c.phase(), consts::PI);
@@ -325,24 +325,24 @@ mod tests {
     #[test]
     fn cartesian() {
         let c = Complex::polar(1.0, 0.0);
-        assert_approx_eq!(c.real(), 1.0);
-        assert_approx_eq!(c.imag(), 0.0);
+        assert_ulps_eq!(c.real(), 1.0);
+        assert_ulps_eq!(c.imag(), 0.0);
 
         let c = Complex::polar(1.0, consts::PI);
-        assert_approx_eq!(c.real(), -1.0);
-        assert_approx_eq!(c.imag(), 0.0);
+        assert_ulps_eq!(c.real(), -1.0);
+        assert_ulps_eq!(c.imag(), 0.0);
 
         let c = Complex::polar(1.0, consts::FRAC_PI_2);
-        assert_approx_eq!(c.real(), 0.0);
-        assert_approx_eq!(c.imag(), 1.0);
+        assert_ulps_eq!(c.real(), 0.0);
+        assert_ulps_eq!(c.imag(), 1.0);
 
         let c = Complex::polar(1.0, consts::FRAC_PI_4);
-        assert_approx_eq!(c.real(), consts::FRAC_1_SQRT_2);
-        assert_approx_eq!(c.imag(), consts::FRAC_1_SQRT_2);
+        assert_ulps_eq!(c.real(), consts::FRAC_1_SQRT_2);
+        assert_ulps_eq!(c.imag(), consts::FRAC_1_SQRT_2);
 
         let c = Complex::cartesian(consts::FRAC_1_SQRT_2, consts::FRAC_1_SQRT_2);
-        assert_approx_eq!(c.norm(), 1.0);
-        assert_approx_eq!(c.phase(), consts::FRAC_PI_4);
+        assert_ulps_eq!(c.norm(), 1.0);
+        assert_ulps_eq!(c.phase(), consts::FRAC_PI_4);
     }
 
     #[test]
@@ -370,11 +370,11 @@ mod tests {
         let a = Complex::polar(2.0, 0.2);
         let c = -a;
 
-        assert_approx_eq!(c.norm(), a.norm());
-        assert_approx_eq!(c.phase(), a.phase() - consts::PI);
+        assert_ulps_eq!(c.norm(), a.norm());
+        assert_ulps_eq!(c.phase(), a.phase() - consts::PI);
 
-        assert_approx_eq!(c.real(), - a.real());
-        assert_approx_eq!(c.imag(), - a.imag());
+        assert_ulps_eq!(c.real(), - a.real());
+        assert_ulps_eq!(c.imag(), - a.imag());
     }
 
     #[test]
@@ -396,7 +396,7 @@ mod tests {
 
         let c = -2.0 * a;
         assert_eq!(c.norm(), 2.0 * a.norm());
-        assert_approx_eq!(c.phase(), a.phase() - consts::PI);
+        assert_ulps_eq!(c.phase(), a.phase() - consts::PI);
     }
 
     #[test]
@@ -410,10 +410,10 @@ mod tests {
 
         let c = a / 3.0;
         assert_eq!(c.norm(), a.norm()/3.0);
-        assert_approx_eq!(c.phase(), a.phase());
+        assert_ulps_eq!(c.phase(), a.phase());
 
         let c = a / (-2.0);
         assert_eq!(c.norm(), a.norm()/2.0);
-        assert_approx_eq!(c.phase(), a.phase() - consts::PI);
+        assert_ulps_eq!(c.phase(), a.phase() - consts::PI);
     }
 }

@@ -268,7 +268,7 @@ mod tests {
 
         let e = wolf.energy(&system);
         // Wolf is not very good for heterogeneous systems
-        assert_approx_eq!(e, E_BRUTE_FORCE, 1e-2);
+        assert_ulps_eq!(e, E_BRUTE_FORCE, epsilon=1e-2);
     }
 
     #[test]
@@ -279,7 +279,7 @@ mod tests {
         let forces = wolf.forces(&system);
         let norm = (forces[0] + forces[1]).norm();
         // Total force should be null
-        assert_approx_eq!(norm, 0.0, 1e-9);
+        assert_ulps_eq!(norm, 0.0);
 
         // Finite difference computation of the force
         let e = wolf.energy(&system);
@@ -288,6 +288,6 @@ mod tests {
 
         let e1 = wolf.energy(&system);
         let force = wolf.forces(&system)[0][0];
-        assert_approx_eq!((e - e1)/eps, force, 1e-6);
+        assert_relative_eq!((e - e1) / eps, force, epsilon=1e-6);
     }
 }
