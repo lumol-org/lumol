@@ -5,8 +5,10 @@
 use std::ops::{Add, Sub, Neg, Mul, Div, BitXor, Index, IndexMut};
 use std::ops::{AddAssign, SubAssign, MulAssign, DivAssign};
 use std::cmp::PartialEq;
-use types::{Matrix3, Zero};
+
 use approx::ApproxEq;
+
+use types::{Matrix3, Zero};
 
 /// A 3-dimensional vector type
 ///
