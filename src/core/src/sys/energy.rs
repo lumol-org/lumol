@@ -220,8 +220,8 @@ mod tests {
     fn pairs() {
         let system = testing_system();
         let evaluator = EnergyEvaluator::new(&system);
-        assert_approx_eq!(evaluator.pairs(), unit_from(-258.3019360389957, "kJ/mol"));
-        assert_approx_eq!(evaluator.pairs_tail(), -0.0000028110338032153973);
+        assert_ulps_eq!(evaluator.pairs(), unit_from(-258.3019360389957, "kJ/mol"));
+        assert_ulps_eq!(evaluator.pairs_tail(), -0.0000028110338032153973);
     }
 
     #[test]
@@ -237,20 +237,20 @@ mod tests {
     fn bonds() {
         let system = testing_system();
         let evaluator = EnergyEvaluator::new(&system);
-        assert_approx_eq!(evaluator.bonds(), unit_from(150.0, "kJ/mol"));
+        assert_ulps_eq!(evaluator.bonds(), unit_from(150.0, "kJ/mol"));
     }
 
     #[test]
     fn angles() {
         let system = testing_system();
         let evaluator = EnergyEvaluator::new(&system);
-        assert_approx_eq!(evaluator.angles(), unit_from(400.0, "kJ/mol"));
+        assert_ulps_eq!(evaluator.angles(), unit_from(400.0, "kJ/mol"));
     }
 
     #[test]
     fn dihedrals() {
         let system = testing_system();
         let evaluator = EnergyEvaluator::new(&system);
-        assert_approx_eq!(evaluator.dihedrals(), unit_from(1250.0, "kJ/mol"));
+        assert_ulps_eq!(evaluator.dihedrals(), unit_from(1250.0, "kJ/mol"), max_ulps=15);
     }
 }

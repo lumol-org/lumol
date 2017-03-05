@@ -52,8 +52,6 @@ extern crate special;
 
 // Helper modules
 #[macro_use]
-mod tests;
-#[macro_use]
 mod utils;
 #[macro_use]
 mod logging;

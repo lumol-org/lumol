@@ -119,7 +119,7 @@ mod test {
         velocities.seed(1234);
         velocities.init(&mut system);
         let temperature = system.temperature();
-        assert_approx_eq!(temperature, 300.0, 1e-9);
+        assert_ulps_eq!(temperature, 300.0, epsilon=1e-12);
     }
 
     #[test]
@@ -129,6 +129,6 @@ mod test {
         velocities.seed(1234);
         velocities.init(&mut system);
         let temperature = system.temperature();
-        assert_approx_eq!(temperature, 300.0, 1e-9);
+        assert_ulps_eq!(temperature, 300.0);
     }
 }

@@ -331,7 +331,7 @@ mod tests {
         let pairs = PairInteraction::shifted(Box::new(lj), 4.0);
 
         assert_eq!(pairs.force(2.5), lj.force(2.5));
-        assert_approx_eq!(pairs.energy(2.5), -0.030681134109158216);
+        assert_ulps_eq!(pairs.energy(2.5), -0.030681134109158216);
 
         assert_eq!(pairs.force(4.1), 0.0);
         assert_eq!(pairs.energy(4.1), 0.0);
@@ -344,6 +344,6 @@ mod tests {
         pairs.enable_tail_corrections();
 
         assert_eq!(pairs.tail_energy(), -0.041663275824652776);
-        assert_approx_eq!(pairs.tail_virial().trace(), -0.24995930989583334);
+        assert_ulps_eq!(pairs.tail_virial().trace(), -0.24995930989583334);
     }
 }

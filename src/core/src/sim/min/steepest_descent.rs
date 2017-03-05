@@ -99,6 +99,6 @@ mod tests {
             minization.propagate(&mut system);
         }
         assert!(minization.converged());
-        assert_approx_eq!(system.distance(0, 1), 2.3, 1e-4);
+        assert_relative_eq!(system.distance(0, 1), 2.3, epsilon=1e-3);
     }
 }
