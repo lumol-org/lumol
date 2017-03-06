@@ -5,7 +5,7 @@ authors = ["Luthaf <luthaf@luthaf.fr>"]
 documentation = "https://lumol-org.github.io/lumol"
 repository = "https://github.com/lumol-org/lumol"
 readme = "../../README.md"
-license = "BSD"
+license = "BSD-3-Clause"
 
 [lib]
 name = "lumol"
