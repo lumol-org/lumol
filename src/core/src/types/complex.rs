@@ -5,8 +5,6 @@
 use std::ops::{Add, Sub, Neg, Mul, Div};
 use std::f64;
 
-use approx::ApproxEq;
-
 use types::{Zero, One};
 
 #[derive(Debug, Clone, Copy, PartialEq, Default)]
@@ -244,36 +242,37 @@ impl One for Complex {
     }
 }
 
-impl ApproxEq for Complex {
-    type Epsilon = <f64 as ApproxEq>::Epsilon;
-
-    fn default_epsilon() -> Self::Epsilon {
-        f64::default_epsilon()
-    }
-
-    fn default_max_relative() -> Self::Epsilon {
-        f64::default_max_relative()
-    }
-
-    fn default_max_ulps() -> u32 {
-        f64::default_max_ulps()
-    }
-
-    fn relative_eq(&self, other: &Self, epsilon: Self::Epsilon, max_relative: Self::Epsilon) -> bool {
-        f64::relative_eq(&self.real, &other.real, epsilon, max_relative) &&
-        f64::relative_eq(&self.imag, &other.imag, epsilon, max_relative)
-    }
-
-    fn ulps_eq(&self, other: &Self, epsilon: Self::Epsilon, max_ulps: u32) -> bool {
-        f64::ulps_eq(&self.real, &other.real, epsilon, max_ulps) &&
-        f64::ulps_eq(&self.imag, &other.imag, epsilon, max_ulps)
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
     use std::f64::consts;
+
+    use approx::ApproxEq;
+    impl ApproxEq for Complex {
+        type Epsilon = <f64 as ApproxEq>::Epsilon;
+
+        fn default_epsilon() -> Self::Epsilon {
+            f64::default_epsilon()
+        }
+
+        fn default_max_relative() -> Self::Epsilon {
+            f64::default_max_relative()
+        }
+
+        fn default_max_ulps() -> u32 {
+            f64::default_max_ulps()
+        }
+
+        fn relative_eq(&self, other: &Self, epsilon: Self::Epsilon, max_relative: Self::Epsilon) -> bool {
+            f64::relative_eq(&self.real, &other.real, epsilon, max_relative) &&
+            f64::relative_eq(&self.imag, &other.imag, epsilon, max_relative)
+        }
+
+        fn ulps_eq(&self, other: &Self, epsilon: Self::Epsilon, max_ulps: u32) -> bool {
+            f64::ulps_eq(&self.real, &other.real, epsilon, max_ulps) &&
+            f64::ulps_eq(&self.imag, &other.imag, epsilon, max_ulps)
+        }
+    }
 
     #[test]
     fn norm() {

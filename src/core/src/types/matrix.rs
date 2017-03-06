@@ -5,8 +5,6 @@
 use std::ops::{Add, Sub, Mul, Div, Index, IndexMut};
 use std::ops::{AddAssign, SubAssign, MulAssign, DivAssign};
 
-use approx::ApproxEq;
-
 use types::{Vector3D, Zero, One};
 
 /// A 3x3 square matrix type.
@@ -387,56 +385,57 @@ impl One for Matrix3 {
     }
 }
 
-impl ApproxEq for Matrix3 {
-    type Epsilon = <f64 as ApproxEq>::Epsilon;
-
-    fn default_epsilon() -> Self::Epsilon {
-        f64::default_epsilon()
-    }
-
-    fn default_max_relative() -> Self::Epsilon {
-        f64::default_max_relative()
-    }
-
-    fn default_max_ulps() -> u32 {
-        f64::default_max_ulps()
-    }
-
-    fn relative_eq(&self, other: &Self, epsilon: Self::Epsilon, max_relative: Self::Epsilon) -> bool {
-        f64::relative_eq(&self[0][0], &other[0][0], epsilon, max_relative) &&
-        f64::relative_eq(&self[0][1], &other[0][1], epsilon, max_relative) &&
-        f64::relative_eq(&self[0][2], &other[0][2], epsilon, max_relative) &&
-
-        f64::relative_eq(&self[1][0], &other[1][0], epsilon, max_relative) &&
-        f64::relative_eq(&self[1][1], &other[1][1], epsilon, max_relative) &&
-        f64::relative_eq(&self[1][2], &other[1][2], epsilon, max_relative) &&
-
-        f64::relative_eq(&self[2][0], &other[2][0], epsilon, max_relative) &&
-        f64::relative_eq(&self[2][1], &other[2][1], epsilon, max_relative) &&
-        f64::relative_eq(&self[2][2], &other[2][2], epsilon, max_relative)
-    }
-
-    fn ulps_eq(&self, other: &Self, epsilon: Self::Epsilon, max_ulps: u32) -> bool {
-        f64::ulps_eq(&self[0][0], &other[0][0], epsilon, max_ulps) &&
-        f64::ulps_eq(&self[0][1], &other[0][1], epsilon, max_ulps) &&
-        f64::ulps_eq(&self[0][2], &other[0][2], epsilon, max_ulps) &&
-
-        f64::ulps_eq(&self[1][0], &other[1][0], epsilon, max_ulps) &&
-        f64::ulps_eq(&self[1][1], &other[1][1], epsilon, max_ulps) &&
-        f64::ulps_eq(&self[1][2], &other[1][2], epsilon, max_ulps) &&
-
-        f64::ulps_eq(&self[2][0], &other[2][0], epsilon, max_ulps) &&
-        f64::ulps_eq(&self[2][1], &other[2][1], epsilon, max_ulps) &&
-        f64::ulps_eq(&self[2][2], &other[2][2], epsilon, max_ulps)
-    }
-}
-
 #[cfg(test)]
 mod tests {
     // TODO: remove most of these when we can generate coverage from doc tests
     // see https://github.com/rust-lang/rust/issues/36956
     use super::*;
     use types::{Vector3D, Zero, One};
+
+    use approx::ApproxEq;
+    impl ApproxEq for Matrix3 {
+        type Epsilon = <f64 as ApproxEq>::Epsilon;
+
+        fn default_epsilon() -> Self::Epsilon {
+            f64::default_epsilon()
+        }
+
+        fn default_max_relative() -> Self::Epsilon {
+            f64::default_max_relative()
+        }
+
+        fn default_max_ulps() -> u32 {
+            f64::default_max_ulps()
+        }
+
+        fn relative_eq(&self, other: &Self, epsilon: Self::Epsilon, max_relative: Self::Epsilon) -> bool {
+            f64::relative_eq(&self[0][0], &other[0][0], epsilon, max_relative) &&
+            f64::relative_eq(&self[0][1], &other[0][1], epsilon, max_relative) &&
+            f64::relative_eq(&self[0][2], &other[0][2], epsilon, max_relative) &&
+
+            f64::relative_eq(&self[1][0], &other[1][0], epsilon, max_relative) &&
+            f64::relative_eq(&self[1][1], &other[1][1], epsilon, max_relative) &&
+            f64::relative_eq(&self[1][2], &other[1][2], epsilon, max_relative) &&
+
+            f64::relative_eq(&self[2][0], &other[2][0], epsilon, max_relative) &&
+            f64::relative_eq(&self[2][1], &other[2][1], epsilon, max_relative) &&
+            f64::relative_eq(&self[2][2], &other[2][2], epsilon, max_relative)
+        }
+
+        fn ulps_eq(&self, other: &Self, epsilon: Self::Epsilon, max_ulps: u32) -> bool {
+            f64::ulps_eq(&self[0][0], &other[0][0], epsilon, max_ulps) &&
+            f64::ulps_eq(&self[0][1], &other[0][1], epsilon, max_ulps) &&
+            f64::ulps_eq(&self[0][2], &other[0][2], epsilon, max_ulps) &&
+
+            f64::ulps_eq(&self[1][0], &other[1][0], epsilon, max_ulps) &&
+            f64::ulps_eq(&self[1][1], &other[1][1], epsilon, max_ulps) &&
+            f64::ulps_eq(&self[1][2], &other[1][2], epsilon, max_ulps) &&
+
+            f64::ulps_eq(&self[2][0], &other[2][0], epsilon, max_ulps) &&
+            f64::ulps_eq(&self[2][1], &other[2][1], epsilon, max_ulps) &&
+            f64::ulps_eq(&self[2][2], &other[2][2], epsilon, max_ulps)
+        }
+    }
 
     #[test]
     #[should_panic]
