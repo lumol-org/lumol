@@ -9,7 +9,7 @@ use lumol::units;
 use lumol::sim::Simulation;
 use lumol::energy::{LennardJones, PairInteraction, PairRestriction, NullPotential};
 use lumol::sim::mc::{MonteCarlo, Translate, Rotate, Resize};
-use lumol::out::{EnergyOutput, PropertiesOutput, TrajectoryOutput};
+use lumol::out::{EnergyOutput, PropertiesOutput};
 
 use std::path::Path;
 use std::sync::{Once, ONCE_INIT};
