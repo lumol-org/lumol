@@ -2,6 +2,7 @@ coverage:
   ignore:
     - tests/.*
   status:
+    patch: off
     project:
       default:
         target: 87%
