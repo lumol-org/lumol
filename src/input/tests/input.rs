@@ -117,7 +117,9 @@ fn generate_tests<F>(group: &str, callback: F) -> Result<Vec<TestDescAndFn>, io:
 }
 
 fn cleanup() {
-    const REMOVE: &'static [&'static str] = &["energy.dat", "filename.xyz"];
+    const REMOVE: &'static [&'static str] = &[
+        "energy.dat", "filename.xyz", "cell.dat", "properties.dat"
+    ];
 
     for file in REMOVE {
         if let Err(err) = fs::remove_file(file) {

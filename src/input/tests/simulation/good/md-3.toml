@@ -1,0 +1,14 @@
+[input]
+version = 1
+
+[[systems]]
+file = "../CO2.xyz"
+cell = [10.0, 10.0, 10.0, 90.0, 90.0, 110.0]
+
+[[simulations]]
+nsteps = 1000000
+
+[simulations.propagator]
+type = "MolecularDynamics"
+timestep = "1 fs"
+integrator = {type = "VelocityVerlet"}
