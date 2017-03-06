@@ -1,0 +1,6 @@
+[input]
+version = 1
+
+[coulomb]
+ewald = true
+#^ Coulombic solver 'ewald' must be a table

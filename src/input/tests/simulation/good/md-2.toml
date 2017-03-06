@@ -1,0 +1,18 @@
+[input]
+version = 1
+
+[[systems]]
+file = "../CO2.xyz"
+
+[[simulations]]
+nsteps = 1000000
+outputs = [
+    {type = "Cell", file = "cell.dat"},
+    {type = "Properties", file = "properties.dat"}
+]
+
+[simulations.propagator]
+type = "MolecularDynamics"
+timestep = "1 fs"
+integrator = {type = "LeapFrog"}
+thermostat = {type = "Rescale", temperature = "400 K", tolerance = "10 K"}
