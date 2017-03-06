@@ -56,14 +56,14 @@ impl ToLumol for chemfiles::Atom {
 impl ToLumol for chemfiles::UnitCell {
     type Output = UnitCell;
     fn to_lumol(self) -> TrajectoryResult<UnitCell> {
-        let cell_type = try!(self.cell_type());
+        let cell_type = try!(self.shape());
         let cell = match cell_type {
-            chemfiles::CellType::Infinite => UnitCell::new(),
-            chemfiles::CellType::Orthorhombic => {
+            chemfiles::CellShape::Infinite => UnitCell::new(),
+            chemfiles::CellShape::Orthorhombic => {
                 let (a, b, c) = try!(self.lengths());
                 UnitCell::ortho(a, b, c)
             },
-            chemfiles::CellType::Triclinic => {
+            chemfiles::CellShape::Triclinic => {
                 let (a, b, c) = try!(self.lengths());
                 let (alpha, beta, gamma) = try!(self.angles());
                 UnitCell::triclinic(a, b, c, alpha, beta, gamma)
@@ -80,18 +80,18 @@ impl ToLumol for chemfiles::Frame {
         let cell = try!(cell.to_lumol());
         let mut system = System::from_cell(cell);
         let topology = try!(self.topology());
-        let natoms = try!(self.natoms());
+        let natoms = try!(self.natoms()) as usize;
 
         let positions = try!(self.positions());
         for i in 0..natoms {
-            let atom = try!(topology.atom(i));
+            let atom = try!(topology.atom(i as u64));
             let particle = try!(atom.to_lumol());
 
             system.add_particle(particle);
             let position = Vector3D::new(
-                positions[i][0] as f64,
-                positions[i][1] as f64,
-                positions[i][2] as f64
+                positions[i][0],
+                positions[i][1],
+                positions[i][2]
             );
             system[i].position = position;
         }
@@ -105,24 +105,24 @@ impl ToLumol for chemfiles::Frame {
     }
 }
 
-fn apply_particle_permutation(bonds: &mut Vec<[usize; 2]>, perms: Vec<(usize, usize)>) {
+fn apply_particle_permutation(bonds: &mut Vec<[u64; 2]>, permutations: Vec<(usize, usize)>) {
     for bond in bonds {
         // Search for a permutation applying to the first atom of the bond. We
         // need to stop just after the first permutations is found, because we
         // can have a permutation looking like this: [1 -> 2, 2 -> 3, 3 -> 4].
         // If we do not stop after the first match, then all indexes in 1-3
         // range will become 4.
-        for perm in &perms {
-            if bond[0] == perm.0 {
-                bond[0] = perm.1;
+        for permutation in &permutations {
+            if bond[0] == permutation.0 as u64 {
+                bond[0] = permutation.1 as u64;
                 break;
             }
         }
 
         // Now we look for permutations applying to the second atom of the bond
-        for perm in &perms {
-            if bond[1] == perm.0 {
-                bond[1] = perm.1;
+        for permutation in &permutations {
+            if bond[1] == permutation.0 as u64 {
+                bond[1] = permutation.1 as u64;
                 break;
             }
         }
@@ -142,9 +142,9 @@ pub trait ToChemfiles {
 impl ToChemfiles for Particle {
     type Output = chemfiles::Atom;
     fn to_chemfiles(&self) -> TrajectoryResult<chemfiles::Atom> {
-        let mut res = try!(chemfiles::Atom::new(self.name()));
-        try!(res.set_mass(self.mass as f32));
-        return Ok(res);
+        let mut atom = try!(chemfiles::Atom::new(self.name()));
+        try!(atom.set_mass(self.mass));
+        return Ok(atom);
     }
 }
 
@@ -172,43 +172,39 @@ impl ToChemfiles for UnitCell {
 impl ToChemfiles for System {
     type Output = chemfiles::Frame;
     fn to_chemfiles(&self) -> TrajectoryResult<chemfiles::Frame> {
-
-        let natoms = self.size();
-        let mut frame = try!(chemfiles::Frame::new(natoms));
-
-        try!(frame.set_step(self.step() as usize));
+        let mut frame = try!(chemfiles::Frame::new());
+        try!(frame.resize(self.size() as u64));
+        try!(frame.set_step(self.step() as u64));
 
         {
             let positions = try!(frame.positions_mut());
-            for (i, p) in self.iter().enumerate() {
-                let pos = p.position;
-                positions[i][0] = pos[0] as f32;
-                positions[i][1] = pos[1] as f32;
-                positions[i][2] = pos[2] as f32;
+            for (i, particle) in self.iter().enumerate() {
+                positions[i][0] = particle.position[0];
+                positions[i][1] = particle.position[1];
+                positions[i][2] = particle.position[2];
             }
         }
 
         {
             try!(frame.add_velocities());
             let velocities = try!(frame.velocities_mut());
-            for (i, p) in self.iter().enumerate() {
-                let vel = p.velocity;
-                velocities[i][0] = vel[0] as f32;
-                velocities[i][1] = vel[1] as f32;
-                velocities[i][2] = vel[2] as f32;
+            for (i, particle) in self.iter().enumerate() {
+                velocities[i][0] = particle.velocity[0];
+                velocities[i][1] = particle.velocity[1];
+                velocities[i][2] = particle.velocity[2];
             }
         }
 
         let mut topology = try!(chemfiles::Topology::new());
         for particle in self {
             let atom = try!(particle.to_chemfiles());
-            try!(topology.push(&atom));
+            try!(topology.add_atom(&atom));
         }
 
 
         for molecule in self.molecules() {
             for bond in molecule.bonds() {
-                try!(topology.add_bond(bond.i(), bond.j()));
+                try!(topology.add_bond(bond.i() as u64, bond.j() as u64));
             }
         }
 
@@ -230,19 +226,19 @@ pub type TrajectoryResult<T> = Result<T, TrajectoryError>;
 impl Trajectory {
     /// Open an existing file at `path` for reading.
     pub fn open<P: AsRef<Path>>(path: P) -> TrajectoryResult<Trajectory> {
-        let traj = try!(chemfiles::Trajectory::open(path));
-        return Ok(Trajectory(traj));
+        let trajectory = try!(chemfiles::Trajectory::open(path, 'r'));
+        return Ok(Trajectory(trajectory));
     }
 
-    /// Create a new file at `path` for writing, and overwrite any existing file.
+    /// Create a new file at `path` for writing, overwrite any existing file.
     pub fn create<P: AsRef<Path>>(path: P) -> TrajectoryResult<Trajectory> {
-        let traj = try!(chemfiles::Trajectory::create(path));
-        return Ok(Trajectory(traj));
+        let trajectory = try!(chemfiles::Trajectory::open(path, 'w'));
+        return Ok(Trajectory(trajectory));
     }
 
     /// Read the next step of the trajectory
     pub fn read(&mut self) -> TrajectoryResult<System> {
-        let mut frame = try!(chemfiles::Frame::new(0));
+        let mut frame = try!(chemfiles::Frame::new());
         try!(self.0.read(&mut frame));
         return frame.to_lumol();
     }
@@ -250,7 +246,7 @@ impl Trajectory {
     /// Read the next step of the trajectory, and guess the bonds of the
     /// resulting System.
     pub fn read_guess_bonds(&mut self) -> TrajectoryResult<System> {
-        let mut frame = try!(chemfiles::Frame::new(0));
+        let mut frame = try!(chemfiles::Frame::new());
         try!(self.0.read(&mut frame));
         try!(frame.guess_topology());
         return frame.to_lumol();
@@ -273,10 +269,8 @@ impl Trajectory {
 /// Read a the first molecule from the file at `path`. If no bond information
 /// exists in the file, bonds are guessed.
 pub fn read_molecule<P: AsRef<Path>>(path: P) -> TrajectoryResult<(Molecule, Vec<Particle>)> {
-    let path = path.as_ref();
-
-    let mut trajectory = try!(chemfiles::Trajectory::open(path));
-    let mut frame = try!(chemfiles::Frame::new(0));
+    let mut trajectory = try!(chemfiles::Trajectory::open(&path, 'r'));
+    let mut frame = try!(chemfiles::Frame::new());
     try!(trajectory.read(&mut frame));
 
     // Only guess the topology when we have no bond information
@@ -286,7 +280,10 @@ pub fn read_molecule<P: AsRef<Path>>(path: P) -> TrajectoryResult<(Molecule, Vec
     }
     let system = try!(frame.to_lumol());
 
-    assert!(system.size() != 0, "No molecule in the file at {}", path.display());
+    assert!(
+        system.size() != 0,
+        "No molecule in the file at {}", path.as_ref().display()
+    );
     let molecule = system.molecule(0).clone();
     let mut particles = Vec::new();
     for i in &molecule {
