@@ -41,6 +41,8 @@ extern crate log_once;
 extern crate bitflags;
 #[macro_use]
 extern crate lazy_static;
+
+#[cfg(test)]
 #[macro_use]
 extern crate approx;
 
