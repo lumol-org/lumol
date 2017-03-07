@@ -26,7 +26,7 @@ impl Input {
         let mut with_cell = false;
         if let Some(cell) = try!(self.read_cell()) {
             let cell = try!(cell.to_chemfiles());
-            try!(trajectory.as_chemfiles().set_cell(cell));
+            try!(trajectory.as_chemfiles().set_cell(&cell));
             with_cell = true;
         }
 

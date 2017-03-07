@@ -82,4 +82,3 @@ pub fn typ<'a>(config: &'a Table, context: &str) -> Result<&'a str> {
         format!("'type' key must be a string in {}", context)
     ));
 }
-

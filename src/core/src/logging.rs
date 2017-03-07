@@ -63,14 +63,9 @@ lazy_static!(
 
 impl Logger{
     fn new<T>(level: LogLevel, target: Target, handle: T) -> Logger where T: Write + Send + Sync + 'static {
-        ::chemfiles::Logger::get().log_callback(|level, message| {
-            match level {
-                ::chemfiles::LogLevel::Error => error!("{}", message),
-                ::chemfiles::LogLevel::Warning => warn!("{}", message),
-                ::chemfiles::LogLevel::Info => info!("{}", message),
-                ::chemfiles::LogLevel::Debug => debug!("{}", message),
-            }
-        }).expect("Could not set the chemfiles logging callback");
+        ::chemfiles::set_warning_callback(|message| {
+            warn!("[chemfiles] {}", message);
+        }).expect("Could not set the chemfiles warning callback");
         Logger {
             level: level,
             target: target,

@@ -474,9 +474,9 @@ mod tests {
         }
         let cost = cache.move_rigid_molecules_cost(&new_system);
         let new_e = new_system.potential_energy();
-        assert_ulps_eq!(cost, new_e - old_e);
+        assert_ulps_eq!(cost, new_e - old_e, epsilon=1e-12);
         cache.update(&mut new_system);
-        assert_ulps_eq!(cache.energy(), new_e);
+        assert_ulps_eq!(cache.energy(), new_e, epsilon=1e-12);
 
         // Check that the cache is really updated
         // move the other molecule
@@ -489,6 +489,6 @@ mod tests {
         }
         let cost = cache.move_rigid_molecules_cost(&new_system);
         let new_e = new_system.potential_energy();
-        assert_ulps_eq!(cost, new_e - old_e);
+        assert_ulps_eq!(cost, new_e - old_e, epsilon=1e-12);
     }
 }
