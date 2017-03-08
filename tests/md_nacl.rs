@@ -23,7 +23,7 @@ mod wolf {
     fn constant_energy() {
         START.call_once(|| {Logger::stdout();});
         let path = Path::new(file!()).parent().unwrap().join("data")
-                                     .join("md-nacl-nve-wolf-small.toml");
+                                     .join("md_nacl_nve_wolf_small.toml");
         let mut config = Input::new(path).unwrap().read().unwrap();
 
         let e_initial = config.system.total_energy();
@@ -37,7 +37,7 @@ mod wolf {
     fn anisotropic_berendsen() {
         START.call_once(|| {Logger::stdout();});
         let path = Path::new(file!()).parent().unwrap().join("data")
-                                     .join("md-nacl-npt-wolf-small.toml");
+                                     .join("md_nacl_npt_wolf_small.toml");
         let mut config = Input::new(path).unwrap().read().unwrap();
 
 
