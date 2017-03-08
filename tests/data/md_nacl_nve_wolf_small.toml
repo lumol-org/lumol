@@ -2,9 +2,9 @@
 version = 1
 
 [[systems]]
-file = "configuration/nacl-small.xyz"
+file = "configuration/nacl_small.xyz"
 cell = 11.2804
-potentials = "interactions/nacl-wolf.toml"
+potentials = "interactions/nacl_wolf.toml"
 velocities = {init = "300 K"}
 
 [[simulations]]

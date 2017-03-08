@@ -2,5 +2,5 @@
 version = 1
 
 [[systems]]
-file = "configuration/lj-2.xyz"
+file = "configuration/lj_2.xyz"
 cell = 8

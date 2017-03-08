@@ -2,8 +2,8 @@
 version = 1
 
 [[systems]]
-file = "configuration/water-grid.pdb"
-potentials = "interactions/water-wolf.toml"
+file = "configuration/water_grid_small.pdb"
+potentials = "interactions/water_ewald.toml"
 velocities = {init = "300 K"}
 
 [[simulations]]

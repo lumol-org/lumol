@@ -61,7 +61,7 @@ mod ewald {
     fn constant_energy() {
         START.call_once(|| {Logger::stdout();});
         let path = Path::new(file!()).parent().unwrap().join("data")
-                                     .join("md-nacl-nve-ewald-small.toml");
+                                     .join("md_nacl_nve_ewald_small.toml");
         let mut config = Input::new(path).unwrap().read().unwrap();
 
         let e_initial = config.system.total_energy();
@@ -74,7 +74,7 @@ mod ewald {
     fn energy() {
         START.call_once(|| {Logger::stdout();});
         let path = Path::new(file!()).parent().unwrap().join("data")
-                                     .join("md-nacl-nve-ewald-big.toml");
+                                     .join("md_nacl_nve_ewald_big.toml");
         let system = Input::new(path).unwrap().read_system().unwrap();
         let energy = units::to(system.total_energy(), "kcal/mol").unwrap();
 
