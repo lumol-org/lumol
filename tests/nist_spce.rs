@@ -83,7 +83,7 @@ mod cutoff_9 {
 
     #[test]
     fn nist1() {
-        let path = "nist/spce-1.xyz";
+        let path = "nist/spce_1.xyz";
         let system = get_system(path, 9.0);
 
         let energy = system.potential_energy() / K_BOLTZMANN;
@@ -93,7 +93,7 @@ mod cutoff_9 {
 
     #[test]
     fn nist2() {
-        let path = "nist/spce-2.xyz";
+        let path = "nist/spce_2.xyz";
         let system = get_system(path, 9.0);
 
         let energy = system.potential_energy() / K_BOLTZMANN;
@@ -103,7 +103,7 @@ mod cutoff_9 {
 
     #[test]
     fn nist3() {
-        let path = "nist/spce-3.xyz";
+        let path = "nist/spce_3.xyz";
         let system = get_system(path, 9.0);
 
         let energy = system.potential_energy() / K_BOLTZMANN;
@@ -113,7 +113,7 @@ mod cutoff_9 {
 
     #[test]
     fn nist4() {
-        let path = "nist/spce-4.xyz";
+        let path = "nist/spce_4.xyz";
         let system = get_system(path, 9.0);
 
         let energy = system.potential_energy() / K_BOLTZMANN;
@@ -128,7 +128,7 @@ mod cutoff_10 {
 
     #[test]
     fn nist1() {
-        let path = "nist/spce-1.xyz";
+        let path = "nist/spce_1.xyz";
         let system = get_system(path, 10.0);
 
         let energy = system.potential_energy() / K_BOLTZMANN;
@@ -138,7 +138,7 @@ mod cutoff_10 {
 
     #[test]
     fn nist2() {
-        let path = "nist/spce-2.xyz";
+        let path = "nist/spce_2.xyz";
         let system = get_system(path, 10.0);
 
         let energy = system.potential_energy() / K_BOLTZMANN;
@@ -148,7 +148,7 @@ mod cutoff_10 {
 
     #[test]
     fn nist3() {
-        let path = "nist/spce-3.xyz";
+        let path = "nist/spce_3.xyz";
         let system = get_system(path, 10.0);
 
         let energy = system.potential_energy() / K_BOLTZMANN;
@@ -158,7 +158,7 @@ mod cutoff_10 {
 
     #[test]
     fn nist4() {
-        let path = "nist/spce-4.xyz";
+        let path = "nist/spce_4.xyz";
         let system = get_system(path, 10.0);
 
         let energy = system.potential_energy() / K_BOLTZMANN;
