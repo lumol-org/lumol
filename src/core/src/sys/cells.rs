@@ -522,7 +522,7 @@ mod tests {
         assert_eq!(cell.beta(), 90.0);
         assert_eq!(cell.gamma(), 110.0);
 
-        assert_approx_eq!(cell.volume(), 55.410529, 1e-6);
+        assert_relative_eq!(cell.volume(), 55.410529, epsilon=1e-6);
     }
 
     #[test]
@@ -572,13 +572,13 @@ mod tests {
         let (rec_a, rec_b, rec_c) = cell.reciprocal_vectors();
 
         let delta_a = rec_a - Vector3D::new(4.0 * 5.0 * two_pi_vol, 0.0, 0.0);
-        assert_approx_eq!(delta_a.norm(), 0.0);
+        assert_ulps_eq!(delta_a.norm(), 0.0);
 
         let delta_b = rec_b - Vector3D::new(0.0, 3.0 * 5.0 * two_pi_vol, 0.0);
-        assert_approx_eq!(delta_b.norm(), 0.0);
+        assert_ulps_eq!(delta_b.norm(), 0.0);
 
         let delta_c = rec_c - Vector3D::new(0.0, 0.0, 3.0 * 4.0 * two_pi_vol);
-        assert_approx_eq!(delta_c.norm(), 0.0);
+        assert_ulps_eq!(delta_c.norm(), 0.0);
     }
 
     #[test]
@@ -623,9 +623,9 @@ mod tests {
         let mut v = Vector3D::new(1.0, 1.5, 6.0);
         cell.wrap_vector(&mut v);
         let res = Vector3D::new(1.0, 1.5, 1.0);
-        assert_approx_eq!(v[0], res[0]);
-        assert_approx_eq!(v[1], res[1]);
-        assert_approx_eq!(v[2], res[2]);
+        assert_ulps_eq!(v[0], res[0], max_ulps=5);
+        assert_ulps_eq!(v[1], res[1], max_ulps=5);
+        assert_ulps_eq!(v[2], res[2], max_ulps=5);
     }
 
     #[test]
@@ -653,9 +653,9 @@ mod tests {
         let mut v = Vector3D::new(1.0, 1.5, 6.0);
         cell.vector_image(&mut v);
         let res = Vector3D::new(1.0, 1.5, 1.0);
-        assert_approx_eq!(v[0], res[0]);
-        assert_approx_eq!(v[1], res[1]);
-        assert_approx_eq!(v[2], res[2]);
+        assert_ulps_eq!(v[0], res[0], max_ulps=5);
+        assert_ulps_eq!(v[1], res[1], max_ulps=5);
+        assert_ulps_eq!(v[2], res[2], max_ulps=5);
     }
 
     #[test]
@@ -670,9 +670,7 @@ mod tests {
 
         for test in &tests {
             let transformed = cell.cartesian(&cell.fractional(test));
-            for i in 0..3 {
-                assert_approx_eq!(test[i], transformed[i], 1e-12);
-            }
+            assert_ulps_eq!(test, &transformed, epsilon=1e-15);
         }
     }
 
@@ -706,19 +704,19 @@ mod tests {
         for i in 0..3 {
             let mut p = a;
             p[i] += EPS;
-            assert_approx_eq!((cell.angle(&p, &b, &c) - angle)/EPS, d1[i], EPS);
+            assert_ulps_eq!((cell.angle(&p, &b, &c) - angle) / EPS, d1[i], epsilon=1e-6);
         }
 
         for i in 0..3 {
             let mut p = b;
             p[i] += EPS;
-            assert_approx_eq!((cell.angle(&a, &p, &c) - angle)/EPS, d2[i], EPS);
+            assert_ulps_eq!((cell.angle(&a, &p, &c) - angle) / EPS, d2[i], epsilon=1e-6);
         }
 
         for i in 0..3 {
             let mut p = c;
             p[i] += EPS;
-            assert_approx_eq!((cell.angle(&a, &b, &p) - angle)/EPS, d3[i], EPS);
+            assert_ulps_eq!((cell.angle(&a, &b, &p) - angle) / EPS, d3[i], epsilon=1e-6);
         }
     }
 
@@ -736,7 +734,10 @@ mod tests {
         let b = Vector3D::new(-0.011, -0.441, 0.333);
         let c = Vector3D::new(-1.176, 0.296, -0.332);
         let d = Vector3D::new(-1.396, 1.211, 0.219);
-        assert_approx_eq!(cell.dihedral(&a, &b, &c, &d), -1.0453789, 1e-6);
+        assert_relative_eq!(
+            cell.dihedral(&a, &b, &c, &d),
+            -1.0453789626063168
+        );
     }
 
     #[test]
@@ -755,25 +756,25 @@ mod tests {
         for i in 0..3 {
             let mut p = a;
             p[i] += EPS;
-            assert_approx_eq!((cell.dihedral(&p, &b, &c, &d) - angle)/EPS, d1[i], EPS);
+            assert_ulps_eq!((cell.dihedral(&p, &b, &c, &d) - angle) / EPS, d1[i], epsilon=1e-6);
         }
 
         for i in 0..3 {
             let mut p = b;
             p[i] += EPS;
-            assert_approx_eq!((cell.dihedral(&a, &p, &c, &d) - angle)/EPS, d2[i], EPS);
+            assert_ulps_eq!((cell.dihedral(&a, &p, &c, &d) - angle) / EPS, d2[i], epsilon=1e-6);
         }
 
         for i in 0..3 {
             let mut p = c;
             p[i] += EPS;
-            assert_approx_eq!((cell.dihedral(&a, &b, &p, &d) - angle)/EPS, d3[i], EPS);
+            assert_ulps_eq!((cell.dihedral(&a, &b, &p, &d) - angle) / EPS, d3[i], epsilon=1e-6);
         }
 
         for i in 0..3 {
             let mut p = d;
             p[i] += EPS;
-            assert_approx_eq!((cell.dihedral(&a, &b, &c, &p) - angle)/EPS, d4[i], EPS);
+            assert_ulps_eq!((cell.dihedral(&a, &b, &c, &p) - angle) / EPS, d4[i], epsilon=1e-6);
         }
     }
 }

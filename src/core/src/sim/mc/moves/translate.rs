@@ -135,14 +135,10 @@ impl MCMove for Translate {
                 self.dr *= s;
                 self.range = Range::new(-self.dr, self.dr);
             } else {
-                // FIXME: fix the warn_once macro formatting usage
-                #[allow(useless_format)] {
-                    warn_once!(
-                        "Tried to increase the maximum amplitude for translations to more than the set maximum."
-                    );
-                }
+                warn_once!(
+                    "Tried to increase the maximum amplitude for translations to more than the set maximum."
+                );
             }
-
         };
     }
 }

@@ -42,6 +42,10 @@ extern crate bitflags;
 #[macro_use]
 extern crate lazy_static;
 
+#[cfg(test)]
+#[macro_use]
+extern crate approx;
+
 extern crate chemfiles;
 extern crate ndarray;
 extern crate num_traits as num;
@@ -49,8 +53,6 @@ extern crate rand;
 extern crate special;
 
 // Helper modules
-#[macro_use]
-mod tests;
 #[macro_use]
 mod utils;
 #[macro_use]

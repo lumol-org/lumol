@@ -820,7 +820,7 @@ mod tests {
             let energy = ewald.energy(&system);
             // This was computed by hand
             let energy_brute_force = -0.09262397663346732;
-            assert_approx_eq!(energy, energy_brute_force, 1e-4);
+            assert_ulps_eq!(energy, energy_brute_force, epsilon=1e-4);
         }
 
         #[test]
@@ -831,7 +831,7 @@ mod tests {
             let forces = ewald.forces(&system);
             let norm = (forces[0] + forces[1]).norm();
             // Total force should be null
-            assert_approx_eq!(norm, 0.0, 1e-9);
+            assert_ulps_eq!(norm, 0.0);
 
             // Force is attractive
             for i in 0..3 {
@@ -846,7 +846,7 @@ mod tests {
 
             let e1 = ewald.energy(&system);
             let force = ewald.forces(&system)[0][0];
-            assert_approx_eq!((e - e1)/eps, force, 1e-6);
+            assert_relative_eq!((e - e1) / eps, force, epsilon=1e-6);
         }
     }
 
@@ -863,11 +863,11 @@ mod tests {
 
             let energy = ewald.energy(&system);
             let expected = 0.0002257554843856993;
-            assert_approx_eq!(energy, expected, 1e-12);
+            assert_ulps_eq!(energy, expected);
 
             let molcorrect = ewald.molcorrect_energy(&system);
             let expected = 0.02452968743897957;
-            assert_approx_eq!(molcorrect, expected, 1e-12);
+            assert_ulps_eq!(molcorrect, expected);
         }
 
         #[test]
@@ -879,7 +879,7 @@ mod tests {
             let forces = ewald.forces(&system);
             let norm = (forces[0] + forces[1]).norm();
             // Total force should be null
-            assert_approx_eq!(norm, 0.0, 1e-3);
+            assert!(norm.abs() < 1e-3);
 
             // Finite difference computation of all the force components
             let energy = ewald.energy(&system);
@@ -914,9 +914,9 @@ mod tests {
 
             // No real space energetic contribution here, we only have one
             // molecule.
-            assert_approx_eq!(real_energy , 0.0, 1e-9);
-            assert_approx_eq!(real_energy_1 , 0.0, 1e-9);
-            assert_approx_eq!(real_force , 0.0, 1e-9);
+            assert_ulps_eq!(real_energy, 0.0);
+            assert_ulps_eq!(real_energy_1, 0.0);
+            assert_ulps_eq!(real_force, 0.0);
 
             let kspace_force_fda = (kspace_energy - kspace_energy_1) / eps;
             assert!(f64::abs((kspace_force_fda - kspace_force) / kspace_force) < 1e-4);
@@ -940,13 +940,8 @@ mod tests {
             let virial = ewald.real_space_virial(&system);
             let mut forces = vec![Vector3D::zero(); 2];
             ewald.real_space_forces(&system, &mut forces);
-            let w = forces[0].tensorial(&Vector3D::new(1.5, 0.0, 0.0));
-
-            for i in 0..3 {
-                for j in 0..3 {
-                    assert_approx_eq!(virial[(i, j)], w[(i, j)]);
-                }
-            }
+            let expected = forces[0].tensorial(&Vector3D::new(1.5, 0.0, 0.0));
+            assert_ulps_eq!(virial, expected);
         }
 
         #[test]
@@ -957,13 +952,8 @@ mod tests {
             let virial = ewald.kspace_virial(&system);
             let mut forces = vec![Vector3D::zero(); 2];
             ewald.kspace_forces(&system, &mut forces);
-            let w = forces[0].tensorial(&Vector3D::new(1.5, 0.0, 0.0));
-
-            for i in 0..3 {
-                for j in 0..3 {
-                    assert_approx_eq!(virial[(i, j)], w[(i, j)]);
-                }
-            }
+            let expected = forces[0].tensorial(&Vector3D::new(1.5, 0.0, 0.0));
+            assert_ulps_eq!(virial, expected);
         }
 
         #[test]
@@ -977,13 +967,8 @@ mod tests {
             let virial = ewald.molcorrect_virial(&system);
             let mut forces = vec![Vector3D::zero(); 2];
             ewald.molcorrect_forces(&system, &mut forces);
-            let w = forces[0].tensorial(&Vector3D::new(1.5, 0.0, 0.0));
-
-            for i in 0..3 {
-                for j in 0..3 {
-                    assert_approx_eq!(virial[(i, j)], w[(i, j)]);
-                }
-            }
+            let expected = forces[0].tensorial(&Vector3D::new(1.5, 0.0, 0.0));
+            assert_ulps_eq!(virial, expected);
         }
 
         #[test]
@@ -993,13 +978,8 @@ mod tests {
 
             let virial = ewald.virial(&system);
             let force = ewald.forces(&system)[0];
-            let w = force.tensorial(&Vector3D::new(1.5, 0.0, 0.0));
-
-            for i in 0..3 {
-                for j in 0..3 {
-                    assert_approx_eq!(virial[(i, j)], w[(i, j)]);
-                }
-            }
+            let expected = force.tensorial(&Vector3D::new(1.5, 0.0, 0.0));
+            assert_ulps_eq!(virial, expected, max_ulps=25);
         }
     }
 
@@ -1040,7 +1020,7 @@ mod tests {
             system[0].position = newpos[0];
             system[1].position = newpos[1];
             let new_e = ewald_check.energy(&system);
-            assert_approx_eq!(cost, new_e - old_e, 1e-14);
+            assert_ulps_eq!(cost, new_e - old_e);
         }
 
         #[test]
@@ -1060,7 +1040,7 @@ mod tests {
             system[0].position = newpos[0];
             system[1].position = newpos[1];
             let new_e = ewald_check.real_space_energy(&system);
-            assert_approx_eq!(cost, new_e - old_e, 1e-14);
+            assert_ulps_eq!(cost, new_e - old_e);
         }
 
         #[test]
@@ -1080,7 +1060,7 @@ mod tests {
             system[0].position = newpos[0];
             system[1].position = newpos[1];
             let new_e = ewald_check.kspace_energy(&system);
-            assert_approx_eq!(cost, new_e - old_e, 1e-14);
+            assert_ulps_eq!(cost, new_e - old_e);
         }
 
         #[test]
@@ -1100,7 +1080,7 @@ mod tests {
             system[0].position = newpos[0];
             system[1].position = newpos[1];
             let new_e = ewald_check.molcorrect_energy(&system);
-            assert_approx_eq!(cost, new_e - old_e, 1e-14);
+            assert_ulps_eq!(cost, new_e - old_e);
         }
     }
 }

@@ -396,7 +396,7 @@ mod tests {
 
         let e0 = null.energy(2.0);
         let e1 = null.energy(2.0 + EPS);
-        assert_approx_eq!((e0 - e1)/EPS, null.force(2.0), EPS);
+        assert_ulps_eq!((e0 - e1) / EPS, null.force(2.0));
     }
 
     #[test]
@@ -413,45 +413,45 @@ mod tests {
         assert_eq!(lj.tail_virial(2.0), -17.06666666666667);
         assert_eq!(lj.tail_virial(14.42), -0.1366035877536718);
 
-        assert_approx_eq!(lj.force(f64::powf(2.0, 1.0/6.0) * 2.0), 0.0);
-        assert_approx_eq!(lj.force(2.5), -0.95773475733504);
+        assert!(lj.force(f64::powf(2.0, 1.0/6.0) * 2.0).abs() < 1e-15);
+        assert_ulps_eq!(lj.force(2.5), -0.95773475733504);
 
         let e0 = lj.energy(4.0);
         let e1 = lj.energy(4.0 + EPS);
-        assert_approx_eq!((e0 - e1)/EPS, lj.force(4.0), 1e-6);
+        assert_relative_eq!((e0 - e1) / EPS, lj.force(4.0), epsilon=1e-6);
     }
 
     #[test]
     fn harmonic() {
-        let harm = Harmonic{k: 50.0, x0: 2.0};
-        assert_eq!(harm.energy(2.0), 0.0);
-        assert_eq!(harm.energy(2.5), 6.25);
+        let harmonic = Harmonic{k: 50.0, x0: 2.0};
+        assert_eq!(harmonic.energy(2.0), 0.0);
+        assert_eq!(harmonic.energy(2.5), 6.25);
 
-        assert_eq!(harm.force(2.0), 0.0);
-        assert_eq!(harm.force(2.5), -25.0);
+        assert_eq!(harmonic.force(2.0), 0.0);
+        assert_eq!(harmonic.force(2.5), -25.0);
 
-        assert_eq!(harm.tail_energy(1.0), 0.0);
-        assert_eq!(harm.tail_virial(1.0), 0.0);
+        assert_eq!(harmonic.tail_energy(1.0), 0.0);
+        assert_eq!(harmonic.tail_virial(1.0), 0.0);
 
-        let e0 = harm.energy(2.1);
-        let e1 = harm.energy(2.1 + EPS);
-        assert_approx_eq!((e0 - e1)/EPS, harm.force(2.1), 1e-6);
+        let e0 = harmonic.energy(2.1);
+        let e1 = harmonic.energy(2.1 + EPS);
+        assert_relative_eq!((e0 - e1) / EPS, harmonic.force(2.1), epsilon=1e-6);
     }
 
     #[test]
     fn cosine_harmonic() {
-        let harm = CosineHarmonic::new(50.0, 2.0);
-        assert_eq!(harm.energy(2.0), 0.0);
+        let harmonic = CosineHarmonic::new(50.0, 2.0);
+        assert_eq!(harmonic.energy(2.0), 0.0);
         let dcos = f64::cos(2.5) - f64::cos(2.0);
-        assert_eq!(harm.energy(2.5), 0.5 * 50.0 * dcos * dcos);
+        assert_eq!(harmonic.energy(2.5), 0.5 * 50.0 * dcos * dcos);
 
-        assert_eq!(harm.force(2.0), 0.0);
+        assert_eq!(harmonic.force(2.0), 0.0);
         let dcos = f64::cos(2.5) - f64::cos(2.0);
-        assert_eq!(harm.force(2.5), 50.0 * dcos * f64::sin(2.5));
+        assert_eq!(harmonic.force(2.5), 50.0 * dcos * f64::sin(2.5));
 
-        let e0 = harm.energy(2.3);
-        let e1 = harm.energy(2.3 + EPS);
-        assert_approx_eq!((e0 - e1)/EPS, harm.force(2.3), 1e-6);
+        let e0 = harmonic.energy(2.3);
+        let e1 = harmonic.energy(2.3 + EPS);
+        assert_relative_eq!((e0 - e1) / EPS, harmonic.force(2.3), epsilon=1e-6);
     }
 
     #[test]
@@ -465,7 +465,7 @@ mod tests {
 
         let e0 = torsion.energy(4.0);
         let e1 = torsion.energy(4.0 + EPS);
-        assert_approx_eq!((e0 - e1)/EPS, torsion.force(4.0), 1e-6);
+        assert_relative_eq!((e0 - e1) / EPS, torsion.force(4.0), epsilon=1e-6);
     }
 
     #[test]
@@ -481,7 +481,7 @@ mod tests {
 
         let e0 = buckingham.energy(4.0);
         let e1 = buckingham.energy(4.0 + EPS);
-        assert_approx_eq!((e0 - e1)/EPS, buckingham.force(4.0), 1e-6);
+        assert_relative_eq!((e0 - e1) / EPS, buckingham.force(4.0), epsilon=1e-6);
     }
 
     #[test]
@@ -497,6 +497,6 @@ mod tests {
 
         let e0 = born.energy(4.0);
         let e1 = born.energy(4.0 + EPS);
-        assert_approx_eq!((e0 - e1)/EPS, born.force(4.0), 1e-6);
+        assert_relative_eq!((e0 - e1) / EPS, born.force(4.0), epsilon=1e-6);
     }
 }

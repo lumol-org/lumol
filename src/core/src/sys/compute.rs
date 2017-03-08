@@ -377,13 +377,13 @@ mod test {
         assert_eq!(forces_tot, Vector3D::zero());
 
         let force = unit_from(30.0, "kJ/mol/A");
-        assert_approx_eq!(res[0][0], force, 1e-9);
-        assert_approx_eq!(res[0][1], 0.0);
-        assert_approx_eq!(res[0][1], 0.0);
+        assert_ulps_eq!(res[0][0], force);
+        assert_ulps_eq!(res[0][1], 0.0);
+        assert_ulps_eq!(res[0][1], 0.0);
 
-        assert_approx_eq!(res[1][0], -force, 1e-9);
-        assert_approx_eq!(res[1][1], 0.0);
-        assert_approx_eq!(res[1][1], 0.0);
+        assert_ulps_eq!(res[1][0], -force);
+        assert_ulps_eq!(res[1][1], 0.0);
+        assert_ulps_eq!(res[1][1], 0.0);
     }
 
     #[test]
@@ -391,7 +391,7 @@ mod test {
         let system = test_molecular_system();
         let res = Forces.compute(&system);
         let forces_tot = res[0] + res[1] + res[2] + res[3];
-        assert_approx_eq!(forces_tot.norm2(), 0.0, 1e-12);
+        assert_ulps_eq!(forces_tot.norm2(), 0.0);
     }
 
     #[test]
@@ -412,14 +412,14 @@ mod test {
     #[test]
     fn energy_molecular() {
         let system = test_molecular_system();
-        assert_approx_eq!(PotentialEnergy.compute(&system), unit_from(1800.0, "kJ/mol"));
+        assert_ulps_eq!(PotentialEnergy.compute(&system), unit_from(1800.0, "kJ/mol"));
     }
 
     #[test]
     fn temperature() {
         let system = &test_pairs_system();
         let temperature = Temperature.compute(system);
-        assert_approx_eq!(temperature, 300.0, 1e-9);
+        assert_ulps_eq!(temperature, 300.0);
         assert_eq!(temperature, system.temperature());
     }
 
@@ -442,15 +442,11 @@ mod test {
         let system = &test_pairs_system();
         let virial = Virial.compute(system);
 
-        let mut res = Matrix3::zero();
+        let mut expected = Matrix3::zero();
         let force = unit_from(30.0, "kJ/mol/A");
-        res[(0, 0)] = - force * 1.3;
+        expected[(0, 0)] = - force * 1.3;
 
-        for i in 0..3 {
-            for j in 0..3 {
-                assert_approx_eq!(virial[(i, j)], res[(i, j)], 1e-9);
-            }
-        }
+        assert_ulps_eq!(virial, expected);
         assert_eq!(virial, system.virial());
     }
 
@@ -482,7 +478,7 @@ mod test {
         // Direct computation
         let expected = natoms * K_BOLTZMANN * temperature / volume + virial / (3.0 * volume);
         let pressure = PressureAtTemperature{temperature: temperature}.compute(system);
-        assert_approx_eq!(pressure, expected, 1e-9);
+        assert_ulps_eq!(pressure, expected);
 
         // Computation with the real system temperature
         let pressure = PressureAtTemperature{temperature: system.temperature()};
@@ -519,7 +515,7 @@ mod test {
 
         // tail corrections are smaller than 1e-9
         let trace = (stress[(0, 0)] + stress[(1, 1)] + stress[(2, 2)]) / 3.0;
-        assert_approx_eq!(trace, pressure, 1e-9);
+        assert_ulps_eq!(trace, pressure);
 
         system.external_temperature(Some(temperature));
         assert_eq!(stress, system.stress());
@@ -537,9 +533,8 @@ mod test {
         let stress = Stress.compute(system);
         let pressure = Pressure.compute(system);
 
-        // tail corrections are smaller than 1e-9
         let trace = stress.trace() / 3.0;
-        assert_approx_eq!(trace, pressure, 1e-9);
+        assert_ulps_eq!(trace, pressure);
         assert_eq!(stress, system.stress());
     }
 
@@ -561,8 +556,7 @@ mod test {
         let volume = 1000.0;
         let expected = natoms * K_BOLTZMANN * temperature / volume + virial / (3.0 * volume);
 
-        // tail corrections are smaller than 1e-9
-        assert_approx_eq!(pressure, expected, 1e-9);
+        assert_ulps_eq!(pressure, expected);
         assert_eq!(pressure, system.pressure());
     }
 }

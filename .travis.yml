@@ -42,25 +42,24 @@ install:
     # Clean any cached test executable
     - rm -f target/debug/*-*
 script:
+    # link dead code for better coverage generation
+    - export RUSTFLAGS='-C link-dead-code'
     # Run all tests in release mode
-    - cargo test --release
+    - cargo test --all --release
     # Run unit tests and doc tests in debug mode
-    - cd src/core && cargo test
-    - cd ../..
-    - cd src/input && cargo test
-    - cd ../..
+    - cargo test -p lumol-core
+    - cargo test -p lumol-input
+    # Misc style checking
     - python scripts/check-whitespaces.py
-after_script:
+    # Generate and publish coverage
     - |
       if [[ "${TRAVIS_RUST_VERSION}" == "stable" ]]; then
-          cd $TRAVIS_BUILD_DIR
-          mkdir target/kcov
-          KCOV_ARGS="--include-pattern=$(pwd) --exclude-pattern=target"
-          for test in target/debug/*-*; do
-              kcov $KCOV_ARGS target/kcov $test
+          for test in $(find target/debug/deps/ ! -name "lib*" -type f); do
+              kcov --include-pattern=$(pwd) --exclude-pattern=target target/kcov $test
           done
           bash <(curl -s https://codecov.io/bash) -s target/kcov
       fi
+    # Generate and publish doc
     - |
       if [[ "${TRAVIS_RUST_VERSION}" == "stable" && "${TRAVIS_PULL_REQUEST}" == "false" && "${TRAVIS_BRANCH}" == "master" ]]; then
           git clone https://${GH_TOKEN}@github.com/lumol-org/lumol.git target/website

@@ -424,7 +424,7 @@ mod tests {
         let mut cache = EnergyCache::new();
         cache.init(&system);
 
-        assert_approx_eq!(cache.energy(), system.potential_energy());
+        assert_ulps_eq!(cache.energy(), system.potential_energy());
     }
 
     #[test]
@@ -442,10 +442,10 @@ mod tests {
         system[0].position = newpos[0];
         system[3].position = newpos[1];
         let new_e = system.potential_energy();
-        assert_approx_eq!(cost, new_e - old_e, 1e-14);
+        assert_ulps_eq!(cost, new_e - old_e);
 
         cache.update(&mut system);
-        assert_approx_eq!(cache.energy(), new_e, 1e-14);
+        assert_ulps_eq!(cache.energy(), new_e);
 
         // Check that the cache is really updated
         let old_e = new_e;
@@ -455,7 +455,7 @@ mod tests {
         system[2].position = newpos[0];
         system[3].position = newpos[1];
         let new_e = system.potential_energy();
-        assert_approx_eq!(cost, new_e - old_e, 1e-14);
+        assert_ulps_eq!(cost, new_e - old_e);
     }
 
     #[test]
@@ -474,9 +474,9 @@ mod tests {
         }
         let cost = cache.move_rigid_molecules_cost(&new_system);
         let new_e = new_system.potential_energy();
-        assert_approx_eq!(cost, new_e - old_e, 1e-14);
+        assert_ulps_eq!(cost, new_e - old_e, epsilon=1e-12);
         cache.update(&mut new_system);
-        assert_approx_eq!(cache.energy(), new_e, 1e-14);
+        assert_ulps_eq!(cache.energy(), new_e, epsilon=1e-12);
 
         // Check that the cache is really updated
         // move the other molecule
@@ -489,6 +489,6 @@ mod tests {
         }
         let cost = cache.move_rigid_molecules_cost(&new_system);
         let new_e = new_system.potential_energy();
-        assert_approx_eq!(cost, new_e - old_e, 1e-14);
+        assert_ulps_eq!(cost, new_e - old_e, epsilon=1e-12);
     }
 }

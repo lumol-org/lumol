@@ -19,6 +19,10 @@ lj = {sigma = "3 A", epsilon = "5 kJ/mol"}
 atoms = ["C", "O"]
 harmonic = {x0 = "3 A", k = "5 kJ/mol"}
 
+[systems.potentials.charges]
+C = 0.8
+O = -0.4
+
 [[simulations]]
 nsteps = 1
 [simulations.propagator]
