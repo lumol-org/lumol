@@ -6,18 +6,12 @@ extern crate bencher;
 extern crate lumol;
 
 use bencher::Bencher;
-
-use lumol::Logger;
 use lumol::energy::{Ewald, Wolf, GlobalPotential};
-
-use std::sync::{Once, ONCE_INIT};
-pub static START: Once = ONCE_INIT;
 
 mod utils;
 
 
 fn energy_ewald(bencher: &mut Bencher) {
-    START.call_once(|| {Logger::stdout();});
     let system = utils::get_system("nacl");
     let mut ewald = Ewald::new(9.5, 7);
 
@@ -27,7 +21,6 @@ fn energy_ewald(bencher: &mut Bencher) {
 }
 
 fn forces_ewald(bencher: &mut Bencher) {
-    START.call_once(|| {Logger::stdout();});
     let system = utils::get_system("nacl");
     let mut ewald = Ewald::new(9.5, 7);
 
@@ -37,7 +30,6 @@ fn forces_ewald(bencher: &mut Bencher) {
 }
 
 fn virial_ewald(bencher: &mut Bencher) {
-    START.call_once(|| {Logger::stdout();});
     let system = utils::get_system("nacl");
     let mut ewald = Ewald::new(9.5, 7);
 
@@ -47,7 +39,6 @@ fn virial_ewald(bencher: &mut Bencher) {
 }
 
 fn energy_wolf(bencher: &mut Bencher) {
-    START.call_once(|| {Logger::stdout();});
     let system = utils::get_system("nacl");
     let mut wolf = Wolf::new(12.0);
 
@@ -57,7 +48,6 @@ fn energy_wolf(bencher: &mut Bencher) {
 }
 
 fn forces_wolf(bencher: &mut Bencher) {
-    START.call_once(|| {Logger::stdout();});
     let system = utils::get_system("nacl");
     let mut wolf = Wolf::new(12.0);
 
@@ -67,7 +57,6 @@ fn forces_wolf(bencher: &mut Bencher) {
 }
 
 fn virial_wolf(bencher: &mut Bencher) {
-    START.call_once(|| {Logger::stdout();});
     let system = utils::get_system("nacl");
     let mut wolf = Wolf::new(12.0);
 
