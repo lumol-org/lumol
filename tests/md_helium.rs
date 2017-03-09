@@ -7,12 +7,6 @@ extern crate lumol;
 extern crate lumol_input as input;
 
 use lumol::Logger;
-use lumol::sys::{System, Trajectory, UnitCell};
-use lumol::sys::veloc::{BoltzmannVelocities, InitVelocities};
-use lumol::energy::{LennardJones, PairInteraction};
-use lumol::energy::TableComputation;
-use lumol::sim::{Simulation, MolecularDynamics};
-use lumol::sim::md::{LeapFrog, VelocityVerlet, Verlet, BerendsenBarostat};
 use lumol::consts::K_BOLTZMANN;
 use lumol::units;
 
@@ -23,29 +17,7 @@ static START: Once = ONCE_INIT;
 
 use std::path::Path;
 
-fn get_system() -> System {
-    let data_dir = Path::new(file!()).parent().unwrap();
-    let configuration = data_dir.join("data").join("helium.xyz");
-    let mut system = Trajectory::open(configuration)
-                                .and_then(|mut traj| traj.read())
-                                .unwrap();
-    system.set_cell(UnitCell::cubic(10.0));
 
-    let mut velocities = BoltzmannVelocities::new(units::from(300.0, "K").unwrap());
-    velocities.init(&mut system);
-    return system;
-}
-
-fn get_system_with_interaction() -> System {
-    let mut system = get_system();
-    let lj = Box::new(LennardJones{
-        sigma: units::from(2.0, "A").unwrap(),
-        epsilon: units::from(0.2, "kJ/mol").unwrap()
-    });
-
-    system.interactions_mut().add_pair("He", "He", PairInteraction::new(lj, 10.0));
-    return system;
-}
 
 #[test]
 fn constant_energy_velocity_verlet() {
