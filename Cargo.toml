@@ -34,3 +34,7 @@ harness = false
 [[bench]]
 name = "nacl"
 harness = false
+
+[[bench]]
+name = "argon"
+harness = false

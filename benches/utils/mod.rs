@@ -18,6 +18,7 @@ pub fn get_system(name: &str) -> System {
             "Cl" => -1.0,
             "O" => -0.82,
             "H" => 0.41,
+            "Ar" => 0.0,
             other => panic!("Missing charge value for {}", other)
         };
         particle.charge = charge;
