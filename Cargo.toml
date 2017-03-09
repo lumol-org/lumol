@@ -38,3 +38,7 @@ harness = false
 [[bench]]
 name = "argon"
 harness = false
+
+[[bench]]
+name = "propane"
+harness = false
