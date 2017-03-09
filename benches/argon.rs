@@ -4,55 +4,28 @@
 #[macro_use]
 extern crate bencher;
 extern crate lumol;
+extern crate lumol_input;
 
 use bencher::Bencher;
-
-use lumol::units;
-use lumol::energy::{PairInteraction, LennardJones};
-
 mod utils;
 
 
 fn energy(bencher: &mut Bencher) {
-    let mut system = utils::get_system("argon");
-    system.interactions_mut().add_pair("Ar", "Ar", PairInteraction::new(
-        Box::new(LennardJones{
-            epsilon: units::from(1.0, "kJ/mol").unwrap(),
-            sigma: units::from(3.4, "A").unwrap(),
-        }),
-        units::from(10.0, "A").unwrap(),
-    ));
-
+    let system = utils::get_system("argon");
     bencher.iter(||{
         let _ = system.potential_energy();
     })
 }
 
 fn forces(bencher: &mut Bencher) {
-    let mut system = utils::get_system("argon");
-    system.interactions_mut().add_pair("Ar", "Ar", PairInteraction::new(
-        Box::new(LennardJones{
-            epsilon: units::from(1.0, "kJ/mol").unwrap(),
-            sigma: units::from(3.4, "A").unwrap(),
-        }),
-        units::from(10.0, "A").unwrap(),
-    ));
-
+    let system = utils::get_system("argon");
     bencher.iter(||{
         let _ = system.forces();
     })
 }
 
 fn virial(bencher: &mut Bencher) {
-    let mut system = utils::get_system("argon");
-    system.interactions_mut().add_pair("Ar", "Ar", PairInteraction::new(
-        Box::new(LennardJones{
-            epsilon: units::from(1.0, "kJ/mol").unwrap(),
-            sigma: units::from(3.4, "A").unwrap(),
-        }),
-        units::from(10.0, "A").unwrap(),
-    ));
-
+    let system = utils::get_system("argon");
     bencher.iter(||{
         let _ = system.virial();
     })

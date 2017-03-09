@@ -1,28 +1,17 @@
 use lumol::sys::{System, Trajectory};
-
+use lumol_input::InteractionsInput;
 use std::path::Path;
 
 pub fn get_system(name: &str) -> System {
-    let configuration = Path::new(file!())
-                             .parent().unwrap()
-                             .join("..")
-                             .join("data")
-                             .join(String::from(name) + ".pdb");
-    let mut system = Trajectory::open(configuration)
+    let data = Path::new(file!()).parent().unwrap().join("..").join("data");
+
+    let mut system = Trajectory::open(data.join(String::from(name) + ".pdb"))
                                 .and_then(|mut trajectory| trajectory.read())
                                 .unwrap();
 
-    for particle in &mut system {
-        let charge = match particle.name() {
-            "Na" => 1.0,
-            "Cl" => -1.0,
-            "O" => -0.82,
-            "H" => 0.41,
-            "Ar" => 0.0,
-            other => panic!("Missing charge value for {}", other)
-        };
-        particle.charge = charge;
-    }
+    InteractionsInput::new(data.join(String::from(name) + ".toml"))
+                      .and_then(|input| input.read(&mut system))
+                      .unwrap();
 
     system
 }

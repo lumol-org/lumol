@@ -1,0 +1,6 @@
+[input]
+version = 1
+
+[charges]
+Na = 1.0
+Cl = -1.0

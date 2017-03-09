@@ -4,6 +4,7 @@
 #[macro_use]
 extern crate bencher;
 extern crate lumol;
+extern crate lumol_input;
 
 use bencher::Bencher;
 use lumol::energy::{Ewald, Wolf, GlobalPotential};
