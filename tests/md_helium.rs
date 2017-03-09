@@ -4,6 +4,7 @@
 //! Testing physical properties of a Lennard-Jones gas of Helium using Molecular
 //! dynamics
 extern crate lumol;
+extern crate lumol_input as input;
 
 use lumol::Logger;
 use lumol::sys::{System, Trajectory, UnitCell};
@@ -14,6 +15,8 @@ use lumol::sim::{Simulation, MolecularDynamics};
 use lumol::sim::md::{LeapFrog, VelocityVerlet, Verlet, BerendsenBarostat};
 use lumol::consts::K_BOLTZMANN;
 use lumol::units;
+
+use input::Input;
 
 use std::sync::{Once, ONCE_INIT};
 static START: Once = ONCE_INIT;
@@ -47,15 +50,14 @@ fn get_system_with_interaction() -> System {
 #[test]
 fn constant_energy_velocity_verlet() {
     START.call_once(|| {Logger::stdout();});
-    let mut system = get_system_with_interaction();
-    let mut simulation = Simulation::new(Box::new(
-        MolecularDynamics::from_integrator(Box::new(
-            VelocityVerlet::new(units::from(1.0, "fs").unwrap())
-        ))
-    ));
-    let e_initial = system.total_energy();
-    simulation.run(&mut system, 1000);
-    let e_final = system.total_energy();
+
+    let path = Path::new(file!()).parent().unwrap().join("data")
+                                 .join("md_helium/velocity_verlet.toml");
+    let mut config = Input::new(path).unwrap().read().unwrap();
+
+    let e_initial = config.system.total_energy();
+    config.simulation.run(&mut config.system, config.nsteps);
+    let e_final = config.system.total_energy();
     assert!(f64::abs((e_initial - e_final)/e_final) < 1e-3);
 }
 
@@ -63,15 +65,14 @@ fn constant_energy_velocity_verlet() {
 #[test]
 fn constant_energy_verlet() {
     START.call_once(|| {Logger::stdout();});
-    let mut system = get_system_with_interaction();
-    let mut simulation = Simulation::new(Box::new(
-        MolecularDynamics::from_integrator(Box::new(
-            Verlet::new(units::from(1.0, "fs").unwrap())
-        ))
-    ));
-    let e_initial = system.total_energy();
-    simulation.run(&mut system, 1000);
-    let e_final = system.total_energy();
+
+    let path = Path::new(file!()).parent().unwrap().join("data")
+                                 .join("md_helium/verlet.toml");
+    let mut config = Input::new(path).unwrap().read().unwrap();
+
+    let e_initial = config.system.total_energy();
+    config.simulation.run(&mut config.system, config.nsteps);
+    let e_final = config.system.total_energy();
     assert!(f64::abs((e_initial - e_final)/e_final) < 1e-2);
 }
 
@@ -79,39 +80,31 @@ fn constant_energy_verlet() {
 #[test]
 fn constant_energy_leap_frog() {
     START.call_once(|| {Logger::stdout();});
-    let mut system = get_system_with_interaction();
-    let mut simulation = Simulation::new(Box::new(
-        MolecularDynamics::from_integrator(Box::new(
-            LeapFrog::new(units::from(1.0, "fs").unwrap())
-        ))
-    ));
-    let e_initial = system.total_energy();
-    simulation.run(&mut system, 1000);
-    let e_final = system.total_energy();
+
+    let path = Path::new(file!()).parent().unwrap().join("data")
+                                 .join("md_helium/leap_frog.toml");
+    let mut config = Input::new(path).unwrap().read().unwrap();
+
+    let e_initial = config.system.total_energy();
+    config.simulation.run(&mut config.system, config.nsteps);
+    let e_final = config.system.total_energy();
     assert!(f64::abs((e_initial - e_final)/e_final) < 1e-3);
 }
 
 #[test]
-fn perfect_gaz() {
-    START.call_once(|| {Logger::stdout();});
-    let mut system = get_system_with_interaction();
-    let mut simulation = Simulation::new(Box::new(
-        MolecularDynamics::from_integrator(Box::new(
-            VelocityVerlet::new(units::from(1.0, "fs").unwrap())
-        ))
-    ));
+fn perfect_gas() {
+     START.call_once(|| {Logger::stdout();});
 
-    // dilating the system!
-    for particle in system.iter_mut() {
-        particle.position = 10.0 * particle.position;
-    }
-    system.set_cell(UnitCell::cubic(100.0));
+    let path = Path::new(file!()).parent().unwrap().join("data")
+                                 .join("md_helium/perfect_gas.toml");
+    let mut config = Input::new(path).unwrap().read().unwrap();
 
-    simulation.run(&mut system, 1000);
-    let pressure = system.pressure();
-    let volume = system.volume();
-    let temperature = system.temperature();
-    let n = system.size() as f64;
+    config.simulation.run(&mut config.system, config.nsteps);
+
+    let pressure = config.system.pressure();
+    let volume = config.system.volume();
+    let temperature = config.system.temperature();
+    let n = config.system.size() as f64;
 
     assert!(f64::abs(pressure * volume - n * K_BOLTZMANN * temperature) < 1e-3);
 }
@@ -119,75 +112,41 @@ fn perfect_gaz() {
 #[test]
 fn berendsen_barostat() {
     START.call_once(|| {Logger::stdout();});
-    let mut system = get_system_with_interaction();
-    let mut simulation = Simulation::new(Box::new(
-        MolecularDynamics::from_integrator(Box::new(
-            BerendsenBarostat::new(
-                units::from(1.0, "fs").unwrap(),
-                units::from(5000.0, "bar").unwrap(),
-                1000.0
-            )
-        ))
-    ));
+      let path = Path::new(file!()).parent().unwrap().join("data")
+                                 .join("md_helium/berendsen_barostat.toml");
+    let mut config = Input::new(path).unwrap().read().unwrap();
 
-    simulation.run(&mut system, 1000);
+    config.simulation.run(&mut config.system, config.nsteps);
+
     let pressure = units::from(5000.0, "bar").unwrap();
-    assert!(f64::abs((system.pressure() - pressure)/pressure) < 5e-2);
+    assert!(f64::abs((config.system.pressure() - pressure)/pressure) < 5e-2);
 }
 
 #[test]
 fn shifted() {
     START.call_once(|| {Logger::stdout();});
-    let mut system = get_system();
 
-    let lj = Box::new(LennardJones{
-        sigma: units::from(2.0, "A").unwrap(),
-        epsilon: units::from(0.2, "kJ/mol").unwrap()
-    });
-    system.interactions_mut().add_pair("He", "He",
-        PairInteraction::shifted(lj, units::from(7.0, "A").unwrap())
-    );
+    let path = Path::new(file!()).parent().unwrap().join("data")
+                                 .join("md_helium/shifted.toml");
+    let mut config = Input::new(path).unwrap().read().unwrap();
 
-    let mut simulation = Simulation::new(Box::new(
-        MolecularDynamics::from_integrator(Box::new(
-            VelocityVerlet::new(units::from(1.0, "fs").unwrap())
-        ))
-    ));
-    simulation.run(&mut system, 100);
-
-    let e_initial = system.total_energy();
-    simulation.run(&mut system, 1000);
-    let e_final = system.total_energy();
+    let e_initial = config.system.total_energy();
+    config.simulation.run(&mut config.system, config.nsteps);
+    let e_final = config.system.total_energy();
     assert!(f64::abs((e_initial - e_final)/e_final) < 2e-3);
 }
 
 
 #[test]
 fn table_computation() {
-    START.call_once(|| {Logger::stdout();});
-    let mut system = get_system();
+     START.call_once(|| {Logger::stdout();});
 
-    let potential = Box::new(TableComputation::new(
-        Box::new(LennardJones {
-            sigma: units::from(2.0, "A").unwrap(),
-            epsilon: units::from(0.2, "kJ/mol").unwrap()
-        }),
-        1000,
-        units::from(7.0, "A").unwrap()
-    ));
-    system.interactions_mut().add_pair("He", "He",
-        PairInteraction::new(potential, units::from(7.0, "A").unwrap())
-    );
+    let path = Path::new(file!()).parent().unwrap().join("data")
+                                 .join("md_helium/table_computation.toml");
+    let mut config = Input::new(path).unwrap().read().unwrap();
 
-    let mut simulation = Simulation::new(Box::new(
-        MolecularDynamics::from_integrator(Box::new(
-            VelocityVerlet::new(units::from(1.0, "fs").unwrap())
-        ))
-    ));
-    simulation.run(&mut system, 100);
-
-    let e_initial = system.total_energy();
-    simulation.run(&mut system, 1000);
-    let e_final = system.total_energy();
+    let e_initial = config.system.total_energy();
+    config.simulation.run(&mut config.system, config.nsteps);
+    let e_final = config.system.total_energy();
     assert!(f64::abs((e_initial - e_final)/e_final) < 2e-3);
 }
