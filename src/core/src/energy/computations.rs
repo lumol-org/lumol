@@ -117,7 +117,7 @@ impl TableComputation {
 
 impl Computation for TableComputation {
     fn compute_energy(&self, r: f64) -> f64 {
-        debug_assert!(self.energy_table.len() == self.force_table.len());
+        debug_assert_eq!(self.energy_table.len(), self.force_table.len());
         let bin = f64::floor(r / self.delta) as usize;
         if bin < self.energy_table.len() - 1 {
             let dx = r - (bin as f64) * self.delta;
@@ -129,7 +129,7 @@ impl Computation for TableComputation {
     }
 
     fn compute_force(&self, r: f64) -> f64 {
-        debug_assert!(self.energy_table.len() == self.force_table.len());
+        debug_assert_eq!(self.energy_table.len(), self.force_table.len());
         let bin = f64::floor(r / self.delta) as usize;
         if bin < self.force_table.len() - 1 {
             let dx = r - (bin as f64) * self.delta;

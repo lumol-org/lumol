@@ -17,7 +17,7 @@ pub struct Bond {
 impl Bond {
     /// Create a new Bond between the particles at indexes `first` and `second`
     pub fn new(first: usize, second: usize) -> Bond {
-        assert!(first != second);
+        assert_ne!(first, second);
         let i = min(first, second);
         let j = max(first, second);
         Bond{i: i, j: j}
@@ -44,9 +44,9 @@ pub struct Angle {
 impl Angle {
     /// Create a new Angle between the particles at indexes `first`, `second` and `third`
     pub fn new(first: usize, second: usize, third: usize) -> Angle {
-        assert!(first != second);
-        assert!(first != third);
-        assert!(second != third);
+        assert_ne!(first, second);
+        assert_ne!(first, third);
+        assert_ne!(second, third);
         let i = min(first, third);
         let k = max(first, third);
         Angle{i: i, j: second, k: k}
@@ -76,9 +76,9 @@ impl Dihedral {
     /// Create a new Dihedral between the particles at indexes `first`, `second`,
     /// `third` and `fourth`
     pub fn new(first: usize, second: usize, third: usize, fourth: usize) -> Dihedral {
-        assert!(first != second);
-        assert!(second != third);
-        assert!(third != fourth);
+        assert_ne!(first, second);
+        assert_ne!(second, third);
+        assert_ne!(third, fourth);
         let (i, j, k, m) = if max(first, second) < max(third, fourth) {
             (first, second, third, fourth)
         } else {

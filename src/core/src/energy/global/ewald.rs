@@ -175,7 +175,7 @@ impl Ewald {
         if r > self.rc || info.excluded {
             return 0.0
         }
-        assert!(info.scaling  == 1.0, "Scaling restriction scheme using Ewald are not implemented");
+        assert_eq!(info.scaling, 1.0, "Scaling restriction scheme using Ewald are not implemented");
         return qi * qj * f64::erfc(self.alpha * r) / r / ELCC;
     }
 
@@ -218,7 +218,7 @@ impl Ewald {
     /// Real space contribution to the forces
     fn real_space_forces(&self, system: &System, forces: &mut [Vector3D]) {
         let natoms = system.size();
-        assert!(forces.len() == system.size());
+        assert_eq!(forces.len(), system.size());
 
         for i in 0..natoms {
             let qi = system[i].charge;
@@ -380,7 +380,7 @@ impl Ewald {
 
     /// k-space contribution to the forces
     fn kspace_forces(&mut self, system: &System, forces: &mut [Vector3D]) {
-        assert!(forces.len() == system.size());
+        assert_eq!(forces.len(), system.size());
         self.density_fft(system);
 
         let factor = 4.0 * PI / (system.cell().volume() * ELCC);
@@ -532,7 +532,7 @@ impl Ewald {
     #[inline]
     fn molcorrect_energy_pair(&self, info: RestrictionInfo, qi: f64, qj: f64, r: f64) -> f64 {
         assert!(info.excluded, "Can not compute molecular correction for non-excluded pair");
-        assert!(info.scaling  == 1.0, "Scaling restriction scheme using Ewald are not implemented");
+        assert_eq!(info.scaling, 1.0, "Scaling restriction scheme using Ewald are not implemented");
         assert!(r < self.rc, "Atoms in molecule are separated by more than the cutoff radius of Ewald sum.");
 
         return - qi * qj / ELCC * f64::erf(self.alpha * r)/r;
@@ -543,7 +543,7 @@ impl Ewald {
     #[inline]
     fn molcorrect_force_pair(&self, info: RestrictionInfo, qi: f64, qj: f64, rij: &Vector3D) -> Vector3D {
         assert!(info.excluded, "Can not compute molecular correction for non-excluded pair");
-        assert!(info.scaling  == 1.0, "Scaling restriction scheme using Ewald are not implemented");
+        assert_eq!(info.scaling, 1.0, "Scaling restriction scheme using Ewald are not implemented");
         let r = rij.norm();
         assert!(r < self.rc, "Atoms in molecule are separated by more than the cutoff radius of Ewald sum.");
 
@@ -582,7 +582,7 @@ impl Ewald {
     /// Molecular correction contribution to the forces
     fn molcorrect_forces(&self, system: &System, forces: &mut [Vector3D]) {
         let natoms = system.size();
-        assert!(forces.len() == natoms);
+        assert_eq!(forces.len(), natoms);
 
         for i in 0..natoms {
             let qi = system[i].charge;

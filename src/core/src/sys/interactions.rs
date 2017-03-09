@@ -33,7 +33,7 @@ impl ParticleKinds {
 
     /// Get or create the kind corresponding to the given `name`
     fn kind(&mut self, name: &str) -> Kind {
-        assert!(self.names.len() == self.kinds.len());
+        debug_assert_eq!(self.names.len(), self.kinds.len());
         if self.kinds.get(name).is_none() {
             let kind = Kind(self.kinds.len() as u32);
             let _ = self.kinds.insert(String::from(name), kind);
@@ -45,7 +45,7 @@ impl ParticleKinds {
     /// Get the name corresponding to a given kind, or `None` if this kind is
     /// unknown
     fn name(&self, kind: Kind) -> Option<String> {
-        assert!(self.names.len() == self.kinds.len());
+        debug_assert_eq!(self.names.len(), self.kinds.len());
         self.names.get(&kind).cloned()
     }
 
@@ -70,18 +70,23 @@ impl ParticleKinds {
     if max(i, j) < max(k, m) { (i, j, k, m) } else { (m, k, j, i) }
 }
 
+type PairKind = (Kind, Kind);
+type BondKind = (Kind, Kind);
+type AngleKind = (Kind, Kind, Kind);
+type DihedralKind = (Kind, Kind, Kind, Kind);
+
 /// The Interaction type hold all data about the potentials in the system,
 /// indexed by particle type.
 #[derive(Clone)]
 pub struct Interactions {
     /// Pair potentials
-    pairs: BTreeMap<(Kind, Kind), Vec<PairInteraction>>,
+    pairs: BTreeMap<PairKind, Vec<PairInteraction>>,
     /// Bond potentials
-    bonds: BTreeMap<(Kind, Kind), Vec<Box<BondPotential>>>,
+    bonds: BTreeMap<BondKind, Vec<Box<BondPotential>>>,
     /// Angle potentials
-    angles: BTreeMap<(Kind, Kind, Kind), Vec<Box<AnglePotential>>>,
+    angles: BTreeMap<AngleKind, Vec<Box<AnglePotential>>>,
     /// Dihedral angles potentials
-    dihedrals: BTreeMap<(Kind, Kind, Kind, Kind), Vec<Box<DihedralPotential>>>,
+    dihedrals: BTreeMap<DihedralKind, Vec<Box<DihedralPotential>>>,
     /// Coulombic potential solver
     coulomb: Option<RefCell<Box<CoulombicPotential>>>,
     /// Global potentials

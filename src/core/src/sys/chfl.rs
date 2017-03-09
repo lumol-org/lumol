@@ -99,20 +99,20 @@ impl ToLumol for chemfiles::Frame {
         let mut bonds = try!(topology.bonds());
         while let Some(bond) = bonds.pop() {
             let permutations = system.add_bond(bond[0] as usize, bond[1] as usize);
-            apply_particle_permutation(&mut bonds, permutations);
+            apply_particle_permutation(&mut bonds, &permutations);
         }
         Ok(system)
     }
 }
 
-fn apply_particle_permutation(bonds: &mut Vec<[u64; 2]>, permutations: Vec<(usize, usize)>) {
+fn apply_particle_permutation(bonds: &mut Vec<[u64; 2]>, permutations: &[(usize, usize)]) {
     for bond in bonds {
         // Search for a permutation applying to the first atom of the bond. We
         // need to stop just after the first permutations is found, because we
         // can have a permutation looking like this: [1 -> 2, 2 -> 3, 3 -> 4].
         // If we do not stop after the first match, then all indexes in 1-3
         // range will become 4.
-        for permutation in &permutations {
+        for permutation in permutations {
             if bond[0] == permutation.0 as u64 {
                 bond[0] = permutation.1 as u64;
                 break;
@@ -120,7 +120,7 @@ fn apply_particle_permutation(bonds: &mut Vec<[u64; 2]>, permutations: Vec<(usiz
         }
 
         // Now we look for permutations applying to the second atom of the bond
-        for permutation in &permutations {
+        for permutation in permutations {
             if bond[1] == permutation.0 as u64 {
                 bond[1] = permutation.1 as u64;
                 break;
@@ -281,7 +281,7 @@ pub fn read_molecule<P: AsRef<Path>>(path: P) -> TrajectoryResult<(Molecule, Vec
     let system = try!(frame.to_lumol());
 
     assert!(
-        system.size() != 0,
+        !system.is_empty(),
         "No molecule in the file at {}", path.as_ref().display()
     );
     let molecule = system.molecule(0).clone();
@@ -293,7 +293,7 @@ pub fn read_molecule<P: AsRef<Path>>(path: P) -> TrajectoryResult<(Molecule, Vec
 }
 
 /// Guess the bonds in a system using Chemfiles algorithm
-pub fn guess_bonds(system: System) -> TrajectoryResult<System> {
+pub fn guess_bonds(system: &System) -> TrajectoryResult<System> {
     let mut frame = try!(system.to_chemfiles());
     try!(frame.guess_topology());
     return frame.to_lumol();

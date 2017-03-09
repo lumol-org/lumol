@@ -247,8 +247,8 @@ impl EnergyCache {
             cache.global += global_delta;
 
             let (n, m) = new_pairs.shape();
-            debug_assert!(n == m);
-            debug_assert!((n, m) == cache.pairs_cache.shape());
+            debug_assert_eq!(n, m);
+            debug_assert_eq!((n, m), cache.pairs_cache.shape());
             // only loop over the indices that actually changed
             for &i in &idxes {
                 for j in 0..n {
@@ -332,8 +332,8 @@ impl EnergyCache {
             cache.global = new_global;
 
             let (n, m) = new_pairs.shape();
-            debug_assert!(n == m);
-            debug_assert!((n, m) == cache.pairs_cache.shape());
+            debug_assert_eq!(n, m);
+            debug_assert_eq!((n, m), cache.pairs_cache.shape());
             for (i, mi) in system.molecules().iter().enumerate() {
                 for mj in system.molecules().iter().skip(i + 1) {
                     for pi in mi.iter() {

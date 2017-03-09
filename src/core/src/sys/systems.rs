@@ -122,7 +122,7 @@ impl System {
 
     /// Check if the particles at indexes `i` and `j` are in the same molecule
     #[inline] pub fn are_in_same_molecule(&self, i: usize, j:usize) -> bool {
-        debug_assert!(self.molids.len() == self.particles.len());
+        debug_assert_eq!(self.molids.len(), self.particles.len());
         self.molids[i] == self.molids[j]
     }
 
@@ -247,7 +247,7 @@ impl System {
             particle_i -= delta; // i moved
         };
 
-        assert!(self.molids[particle_i] == self.molids[particle_j]);
+        assert_eq!(self.molids[particle_i], self.molids[particle_j]);
         self.molecules[self.molids[particle_i]].add_bond(particle_i, particle_j);
         return permutations;
     }
@@ -280,6 +280,9 @@ impl System {
 
     /// Get the number of particles in this system
     #[inline] pub fn size(&self) -> usize {self.particles.len()}
+
+    /// Check if this system contains any particle
+    #[inline] pub fn is_empty(&self) -> bool {self.particles.is_empty()}
 
     /// Return the center-of-mass of a molecule
     ///
