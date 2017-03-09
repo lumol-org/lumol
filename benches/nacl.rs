@@ -8,43 +8,18 @@ extern crate lumol;
 use bencher::Bencher;
 
 use lumol::Logger;
-use lumol::sys::{System, Trajectory, UnitCell};
-use lumol::energy::{Ewald, PairRestriction, CoulombicPotential, GlobalPotential};
+use lumol::energy::{Ewald, GlobalPotential};
 
-use std::path::Path;
 use std::sync::{Once, ONCE_INIT};
 pub static START: Once = ONCE_INIT;
 
-pub fn get_system() -> System {
-    let data_dir = Path::new(file!()).parent().unwrap();
-    let configuration = data_dir.join("data").join("nacl.xyz");
-    let mut system = Trajectory::open(configuration)
-                                .and_then(|mut traj| traj.read())
-                                .unwrap();
-    system.set_cell(UnitCell::cubic(11.2804));
+mod utils;
 
-    for particle in &mut system {
-        let charge = match particle.name() {
-            "Na" => 1.0,
-            "Cl" => -1.0,
-            _ => panic!("Missing charge value for {}", particle.name())
-        };
-        particle.charge = charge;
-    }
-
-    return system;
-}
-
-pub fn get_ewald() -> Ewald {
-    let mut ewald = Ewald::new(5.5, 7);
-    ewald.set_restriction(PairRestriction::InterMolecular);
-    return ewald;
-}
 
 fn energy_ewald(bencher: &mut Bencher) {
     START.call_once(|| {Logger::stdout();});
-    let system = get_system();
-    let mut ewald = get_ewald();
+    let system = utils::get_system("nacl");
+    let mut ewald = Ewald::new(5.5, 7);
 
     bencher.iter(||{
         let _ = ewald.energy(&system);
@@ -53,8 +28,8 @@ fn energy_ewald(bencher: &mut Bencher) {
 
 fn forces_ewald(bencher: &mut Bencher) {
     START.call_once(|| {Logger::stdout();});
-    let system = get_system();
-    let mut ewald = get_ewald();
+    let system = utils::get_system("nacl");
+    let mut ewald = Ewald::new(5.5, 7);
 
     bencher.iter(||{
         let _ = ewald.forces(&system);
@@ -63,8 +38,8 @@ fn forces_ewald(bencher: &mut Bencher) {
 
 fn virial_ewald(bencher: &mut Bencher) {
     START.call_once(|| {Logger::stdout();});
-    let system = get_system();
-    let mut ewald = get_ewald();
+    let system = utils::get_system("nacl");
+    let mut ewald = Ewald::new(5.5, 7);
 
     bencher.iter(||{
         let _ = ewald.virial(&system);
