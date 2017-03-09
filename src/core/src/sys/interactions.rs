@@ -5,7 +5,7 @@
 //! associations.
 
 use std::collections::BTreeMap;
-use std::cmp::max;
+use std::cmp::{min, max};
 use std::cell::RefCell;
 
 use energy::{PairInteraction, BondPotential, AnglePotential, DihedralPotential};
@@ -56,18 +56,34 @@ impl ParticleKinds {
 }
 
 /// Sort pair indexes to get a canonical representation
-#[inline] fn sort_pair(i: Kind, j:Kind) -> (Kind, Kind) {
+#[inline] fn sort_pair(i: Kind, j: Kind) -> (Kind, Kind) {
     if i < j { (i, j) } else { (j, i) }
 }
 
 /// Sort angle indexes to get a canonical representation
-#[inline] fn sort_angle(i: Kind, j:Kind, k:Kind) -> (Kind, Kind, Kind) {
-    if i < k { (i, j, k) } else { (k, j, i) }
+#[inline] fn sort_angle(i: Kind, j: Kind, k: Kind) -> (Kind, Kind, Kind) {
+    if i < k {
+        (i, j, k)
+    } else {
+        (k, j, i)
+    }
 }
 
 /// Sort dihedral indexes to get a canonical representation
-#[inline] fn sort_dihedral(i: Kind, j:Kind, k:Kind, m:Kind) -> (Kind, Kind, Kind, Kind) {
-    if max(i, j) < max(k, m) { (i, j, k, m) } else { (m, k, j, i) }
+#[inline] fn sort_dihedral(i: Kind, j: Kind, k: Kind, m: Kind) -> (Kind, Kind, Kind, Kind) {
+    let max_ij = max(i, j);
+    let max_km = max(k, m);
+    if max_ij == max_km {
+        if min(i, j) < min(k, m) {
+            (i, j, k, m)
+        } else {
+            (m, k, j, i)
+        }
+    } else if max_ij < max_km {
+        (i, j, k, m)
+    } else {
+        (m, k, j, i)
+    }
 }
 
 type PairKind = (Kind, Kind);
@@ -280,6 +296,34 @@ mod test {
 
         assert_eq!(kinds.name(Kind(0)), Some(String::from("JK")));
         assert_eq!(kinds.name(Kind(1)), Some(String::from("H")));
+    }
+
+    #[test]
+    fn sorting_pairs() {
+        assert_eq!(sort_pair(Kind(0), Kind(1)), sort_pair(Kind(1), Kind(0)));
+        assert_eq!(sort_pair(Kind(125), Kind(0)), sort_pair(Kind(0), Kind(125)));
+    }
+
+    #[test]
+    fn sorting_angles() {
+        assert_eq!(sort_angle(Kind(1), Kind(0), Kind(2)), sort_angle(Kind(2), Kind(0), Kind(1)));
+        assert_eq!(sort_angle(Kind(15), Kind(4), Kind(8)), sort_angle(Kind(8), Kind(4), Kind(15)));
+        assert_eq!(sort_angle(Kind(0), Kind(0), Kind(1)), sort_angle(Kind(1), Kind(0), Kind(0)));
+        assert_eq!(sort_angle(Kind(10), Kind(10), Kind(1)), sort_angle(Kind(1), Kind(10), Kind(10)));
+    }
+
+    #[test]
+    fn sorting_dihedrals() {
+        assert_eq!(sort_dihedral(Kind(1), Kind(0), Kind(2), Kind(3)), sort_dihedral(Kind(3), Kind(2), Kind(0), Kind(1)));
+        assert_eq!(sort_dihedral(Kind(10), Kind(8), Kind(2), Kind(3)), sort_dihedral(Kind(3), Kind(2), Kind(8), Kind(10)));
+        assert_eq!(sort_dihedral(Kind(0), Kind(0), Kind(2), Kind(3)), sort_dihedral(Kind(3), Kind(2), Kind(0), Kind(0)));
+        assert_eq!(sort_dihedral(Kind(1), Kind(5), Kind(0), Kind(0)), sort_dihedral(Kind(0), Kind(0), Kind(5), Kind(1)));
+        assert_eq!(sort_dihedral(Kind(10), Kind(10), Kind(2), Kind(3)), sort_dihedral(Kind(3), Kind(2), Kind(10), Kind(10)));
+        assert_eq!(sort_dihedral(Kind(1), Kind(5), Kind(10), Kind(10)), sort_dihedral(Kind(10), Kind(10), Kind(5), Kind(1)));
+        assert_eq!(sort_dihedral(Kind(0), Kind(0), Kind(0), Kind(3)), sort_dihedral(Kind(3), Kind(0), Kind(0), Kind(0)));
+        assert_eq!(sort_dihedral(Kind(1), Kind(5), Kind(5), Kind(5)), sort_dihedral(Kind(5), Kind(5), Kind(5), Kind(1)));
+        assert_eq!(sort_dihedral(Kind(0), Kind(0), Kind(3), Kind(0)), sort_dihedral(Kind(0), Kind(3), Kind(0), Kind(0)));
+        assert_eq!(sort_dihedral(Kind(5), Kind(1), Kind(5), Kind(5)), sort_dihedral(Kind(5), Kind(5), Kind(1), Kind(5)));
     }
 
     #[test]
