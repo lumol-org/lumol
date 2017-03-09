@@ -18,25 +18,6 @@ use std::path::Path;
 use std::sync::{Once, ONCE_INIT};
 static START: Once = ONCE_INIT;
 
-fn setup_system() -> System {
-    let path = Path::new(file!()).parent().unwrap().join("data")
-                                     .join("md_butane.toml");
-    return Input::new(path).unwrap().read_system().unwrap();
-//    let data_dir = Path::new(file!()).parent().unwrap().join("data");
-//    let configuration = data_dir.join("butane.xyz");
-//    let mut system = Trajectory::open(configuration)
-//                                .and_then(|mut traj| traj.read_guess_bonds())
-//                                .unwrap();
-//    system.set_cell(UnitCell::cubic(20.0));
-//
-//    let input = InteractionsInput::new(data_dir.join("butane.toml")).unwrap();
-//    input.read(&mut system).unwrap();
-//
-//    let mut velocities = BoltzmannVelocities::new(units::from(300.0, "K").unwrap());
-//    velocities.init(&mut system);
-//
-//    return system;
-}
 
 #[test]
 fn bonds_detection() {
