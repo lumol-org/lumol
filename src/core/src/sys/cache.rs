@@ -143,7 +143,9 @@ impl EnergyCache {
 
 impl EnergyCache {
     /// Get the cost of moving the set of particles with indexes in `idxes` to
-    /// `newpos`. This function DOES NOT update the cache, the
+    /// `newpos`.
+    ///
+    /// This function ***DOES NOT*** update the cache, the
     /// `update_particles_moved` function MUST be called if the particles are
     /// effectively moved.
     pub fn move_particles_cost(&mut self, system: &System, idxes: Vec<usize>, newpos: &[Vector3D]) -> f64 {
@@ -273,23 +275,23 @@ impl EnergyCache {
         return cost;
     }
 
-    /// Return the cost for moving all molecules of the system.
+    /// Return the cost for moving all **rigid** molecules of the system.
     ///
-    /// This function computes changes due to
+    /// This function is intended for use when all the molecules in the system
+    /// are moved rigidly, for example when resizing the system in NPT
+    /// Monte-Carlo. It computes energy changes due to:
     ///
-    /// - van der Waals interactions,
-    /// - Coulomb interactions,
-    /// - Global interactions,
-    /// - long range corrections due to potential truncation.
+    /// - non bonded pairs interactions;
+    /// - Coulomb interactions;
+    /// - global interactions;
     ///
-    /// # Remarks
+    /// It **DOES NOT** recompute bonds, angles and dihedral interactions. You
+    /// must not use this function when the intramolecular configuration
+    /// changed.
     ///
-    /// Note that this function only recomputes interactions *between*
-    /// molecules. You must not use this function when the intramolecular
-    /// configuration changed.
-    /// Also, this function **does not** update the cache.
-    /// Invoke the `update` function to apply the changes.
-    pub fn move_rigid_molecules_cost(&mut self, system: &System) -> f64 {
+    /// This function ***DOES NOT*** update the cache, the `update` function
+    /// MUST be called if the molecules are effectively moved.
+    pub fn move_all_rigid_molecules_cost(&mut self, system: &System) -> f64 {
         let evaluator = system.energy_evaluator();
 
         let mut new_pairs = Array2::<f64>::zeros((system.size(), system.size()));
@@ -459,7 +461,7 @@ mod tests {
     }
 
     #[test]
-    fn test_move_rigid_molecules_cost() {
+    fn move_all_rigid_molecules() {
         let system = testing_system();
         let mut cache = EnergyCache::new();
         let old_e = system.potential_energy();
@@ -472,7 +474,7 @@ mod tests {
         for pi in system.molecule(0) {
             new_system[pi].position += delta
         }
-        let cost = cache.move_rigid_molecules_cost(&new_system);
+        let cost = cache.move_all_rigid_molecules_cost(&new_system);
         let new_e = new_system.potential_energy();
         assert_ulps_eq!(cost, new_e - old_e, epsilon=1e-12);
         cache.update(&mut new_system);
@@ -487,7 +489,7 @@ mod tests {
         for pi in &system.molecules()[1] {
             new_system[pi].position += delta
         }
-        let cost = cache.move_rigid_molecules_cost(&new_system);
+        let cost = cache.move_all_rigid_molecules_cost(&new_system);
         let new_e = new_system.potential_energy();
         assert_ulps_eq!(cost, new_e - old_e, epsilon=1e-12);
     }
