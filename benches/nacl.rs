@@ -3,11 +3,16 @@
 
 #[macro_use]
 extern crate bencher;
+extern crate rand;
 extern crate lumol;
 extern crate lumol_input;
 
 use bencher::Bencher;
+use rand::Rng;
+
 use lumol::energy::{Ewald, Wolf, GlobalPotential};
+use lumol::sys::EnergyCache;
+use lumol::types::Vector3D;
 
 mod utils;
 
@@ -66,6 +71,44 @@ fn virial_wolf(bencher: &mut Bencher) {
     })
 }
 
+fn cache_move_particle_ewald(bencher: &mut Bencher) {
+    let mut system = utils::get_system("nacl");
+    system.interactions_mut().set_coulomb(Box::new(Ewald::new(9.5, 7)));
+
+    let mut cache = EnergyCache::new();
+    cache.init(&system);
+
+    let mut rng = rand::weak_rng();
+
+    let particle: usize = rng.gen_range(0, system.size());
+    let mut delta = system[particle].position;
+    delta += Vector3D::new(rng.gen(), rng.gen(), rng.gen());
+
+    bencher.iter(||{
+        cache.move_particles_cost(&system, vec![particle], &[delta])
+    })
+}
+
+fn cache_move_particle_wolf(bencher: &mut Bencher) {
+    let mut system = utils::get_system("nacl");
+    system.interactions_mut().set_coulomb(Box::new(Wolf::new(12.0)));
+
+    let mut cache = EnergyCache::new();
+    cache.init(&system);
+
+    let mut rng = rand::weak_rng();
+
+    let particle: usize = rng.gen_range(0, system.size());
+    let mut delta = system[particle].position;
+    delta += Vector3D::new(rng.gen(), rng.gen(), rng.gen());
+
+    bencher.iter(||{
+        cache.move_particles_cost(&system, vec![particle], &[delta])
+    })
+}
+
 benchmark_group!(ewald, energy_ewald, forces_ewald, virial_ewald);
 benchmark_group!(wolf, energy_wolf, forces_wolf, virial_wolf);
-benchmark_main!(ewald, wolf);
+benchmark_group!(monte_carlo_cache, cache_move_particle_ewald, cache_move_particle_wolf);
+
+benchmark_main!(ewald, wolf, monte_carlo_cache);
