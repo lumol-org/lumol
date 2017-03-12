@@ -1,0 +1,21 @@
+[input]
+version = 1
+
+[[systems]]
+file = "configuration/helium_gas.pdb"
+
+[[systems.potentials.pairs]]
+atoms = ["He", "He"]
+lj = {sigma = "2 A", epsilon = "0.2 kJ/mol"}
+cutoff = "5 A"
+
+
+[[simulations]]
+nsteps = 5_000
+
+[simulations.propagator]
+type = "MonteCarlo"
+temperature = "300 K"
+moves = [
+    {type = "Translate", delta = "3 A", frequency = 1},
+]
