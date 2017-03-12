@@ -30,7 +30,7 @@
     cast_possible_truncation, cast_precision_loss, cast_sign_loss,
     cast_possible_wrap, float_cmp, or_fun_call, string_add, non_ascii_literal,
     doc_markdown, missing_docs_in_private_items, module_inception, stutter,
-    unseparated_literal_suffix
+    unseparated_literal_suffix, zero_ptr
 )]
 
 #[macro_use]

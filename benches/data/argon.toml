@@ -1,0 +1,8 @@
+[input]
+version = 1
+
+[[pairs]]
+atoms = ["Ar", "Ar"]
+lj = {sigma = "3.4 A", epsilon = "1.0 kJ/mol"}
+cutoff = "10 A"
+tail_correction = true

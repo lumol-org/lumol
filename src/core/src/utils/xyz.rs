@@ -31,7 +31,7 @@ pub fn system_from_xyz(content: &str) -> System {
     }
 
     if lines[1].contains("bonds") {
-        return guess_bonds(system).expect("Could not guess the bonds");
+        return guess_bonds(&system).expect("Could not guess the bonds");
     }
 
     return system;

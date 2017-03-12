@@ -180,7 +180,7 @@ impl Molecule {
     /// Merge this molecule with `other`. The first particle in `other` should
     /// be the particle just after the last one in `self`.
     pub fn merge_with(&mut self, other: Molecule) {
-        assert!(self.range.end == other.range.start);
+        assert_eq!(self.range.end, other.range.start);
         self.range.end = other.range.end;
         for bond in other.bonds() {
             self.bonds.insert(*bond);
@@ -249,7 +249,7 @@ impl Molecule {
     pub fn add_bond(&mut self, i: usize, j: usize)  {
         assert!(self.contains(i));
         assert!(self.contains(j));
-        assert!(i != j);
+        assert_ne!(i, j);
         self.bonds.insert(Bond::new(i, j));
         self.rebuild();
     }
@@ -313,7 +313,7 @@ impl Molecule {
 /// This type can be used to identify all the molecules containing the same
 /// bonds and particles (see `System::molecule_type` for more information).
 pub fn molecule_type(molecule: &Molecule, particles: &[Particle]) -> u64 {
-    assert!(particles.len() == molecule.size());
+    assert_eq!(particles.len(), molecule.size());
     let mut hasher = DefaultHasher::new();
     molecule.cached_hash.hash(&mut hasher);
     for particle in particles {

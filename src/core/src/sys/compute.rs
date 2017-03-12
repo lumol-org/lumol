@@ -83,7 +83,7 @@ impl Compute for Forces {
 
         if let Some(coulomb) = system.interactions().coulomb() {
             let forces = coulomb.borrow_mut().forces(system);
-            debug_assert!(forces.len() == natoms, "Wrong `forces` size in coulomb potentials");
+            debug_assert_eq!(forces.len(), natoms, "Wrong `forces` size in coulomb potentials");
             for (i, force) in forces.iter().enumerate() {
                 res[i] += force;
             }
@@ -91,7 +91,7 @@ impl Compute for Forces {
 
         for global in system.interactions().globals() {
             let forces = global.borrow_mut().forces(system);
-            debug_assert!(forces.len() == natoms, "Wrong `forces` size in global potentials");
+            debug_assert_eq!(forces.len(), natoms, "Wrong `forces` size in global potentials");
             for (i, force) in forces.iter().enumerate() {
                 res[i] += force;
             }

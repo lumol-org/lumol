@@ -5,7 +5,7 @@
 //! associations.
 
 use std::collections::BTreeMap;
-use std::cmp::max;
+use std::cmp::{min, max};
 use std::cell::RefCell;
 
 use energy::{PairInteraction, BondPotential, AnglePotential, DihedralPotential};
@@ -33,7 +33,7 @@ impl ParticleKinds {
 
     /// Get or create the kind corresponding to the given `name`
     fn kind(&mut self, name: &str) -> Kind {
-        assert!(self.names.len() == self.kinds.len());
+        debug_assert_eq!(self.names.len(), self.kinds.len());
         if self.kinds.get(name).is_none() {
             let kind = Kind(self.kinds.len() as u32);
             let _ = self.kinds.insert(String::from(name), kind);
@@ -45,7 +45,7 @@ impl ParticleKinds {
     /// Get the name corresponding to a given kind, or `None` if this kind is
     /// unknown
     fn name(&self, kind: Kind) -> Option<String> {
-        assert!(self.names.len() == self.kinds.len());
+        debug_assert_eq!(self.names.len(), self.kinds.len());
         self.names.get(&kind).cloned()
     }
 
@@ -56,32 +56,53 @@ impl ParticleKinds {
 }
 
 /// Sort pair indexes to get a canonical representation
-#[inline] fn sort_pair(i: Kind, j:Kind) -> (Kind, Kind) {
+#[inline] fn normalize_pair(i: Kind, j: Kind) -> (Kind, Kind) {
     if i < j { (i, j) } else { (j, i) }
 }
 
 /// Sort angle indexes to get a canonical representation
-#[inline] fn sort_angle(i: Kind, j:Kind, k:Kind) -> (Kind, Kind, Kind) {
-    if i < k { (i, j, k) } else { (k, j, i) }
+#[inline] fn normalize_angle(i: Kind, j: Kind, k: Kind) -> (Kind, Kind, Kind) {
+    if i < k {
+        (i, j, k)
+    } else {
+        (k, j, i)
+    }
 }
 
 /// Sort dihedral indexes to get a canonical representation
-#[inline] fn sort_dihedral(i: Kind, j:Kind, k:Kind, m:Kind) -> (Kind, Kind, Kind, Kind) {
-    if max(i, j) < max(k, m) { (i, j, k, m) } else { (m, k, j, i) }
+#[inline] fn normalize_dihedral(i: Kind, j: Kind, k: Kind, m: Kind) -> (Kind, Kind, Kind, Kind) {
+    let max_ij = max(i, j);
+    let max_km = max(k, m);
+    if max_ij == max_km {
+        if min(i, j) < min(k, m) {
+            (i, j, k, m)
+        } else {
+            (m, k, j, i)
+        }
+    } else if max_ij < max_km {
+        (i, j, k, m)
+    } else {
+        (m, k, j, i)
+    }
 }
+
+type PairKind = (Kind, Kind);
+type BondKind = (Kind, Kind);
+type AngleKind = (Kind, Kind, Kind);
+type DihedralKind = (Kind, Kind, Kind, Kind);
 
 /// The Interaction type hold all data about the potentials in the system,
 /// indexed by particle type.
 #[derive(Clone)]
 pub struct Interactions {
     /// Pair potentials
-    pairs: BTreeMap<(Kind, Kind), Vec<PairInteraction>>,
+    pairs: BTreeMap<PairKind, Vec<PairInteraction>>,
     /// Bond potentials
-    bonds: BTreeMap<(Kind, Kind), Vec<Box<BondPotential>>>,
+    bonds: BTreeMap<BondKind, Vec<Box<BondPotential>>>,
     /// Angle potentials
-    angles: BTreeMap<(Kind, Kind, Kind), Vec<Box<AnglePotential>>>,
+    angles: BTreeMap<AngleKind, Vec<Box<AnglePotential>>>,
     /// Dihedral angles potentials
-    dihedrals: BTreeMap<(Kind, Kind, Kind, Kind), Vec<Box<DihedralPotential>>>,
+    dihedrals: BTreeMap<DihedralKind, Vec<Box<DihedralPotential>>>,
     /// Coulombic potential solver
     coulomb: Option<RefCell<Box<CoulombicPotential>>>,
     /// Global potentials
@@ -123,7 +144,7 @@ impl Interactions {
     /// Add the `potential` pair interaction for the pair `(i, j)`
     pub fn add_pair(&mut self, i: &str, j: &str, potential: PairInteraction) {
         let (i, j) = (self.get_kind(i), self.get_kind(j));
-        let (i, j) = sort_pair(i, j);
+        let (i, j) = normalize_pair(i, j);
         let pairs = self.pairs.entry((i, j)).or_insert(Vec::new());
         pairs.push(potential);
     }
@@ -131,7 +152,7 @@ impl Interactions {
     /// Add the `potential` bonded interaction for the pair `(i, j)`
     pub fn add_bond(&mut self, i: &str, j: &str, potential: Box<BondPotential>) {
         let (i, j) = (self.get_kind(i), self.get_kind(j));
-        let (i, j) = sort_pair(i, j);
+        let (i, j) = normalize_pair(i, j);
         let bonds = self.bonds.entry((i, j)).or_insert(Vec::new());
         bonds.push(potential);
     }
@@ -139,7 +160,7 @@ impl Interactions {
     /// Add the `potential` angle interaction for the angle `(i, j, k)`
     pub fn add_angle(&mut self, i: &str, j: &str, k: &str, potential: Box<AnglePotential>) {
         let (i, j, k) = (self.get_kind(i), self.get_kind(j), self.get_kind(k));
-        let (i, j, k) = sort_angle(i, j, k);
+        let (i, j, k) = normalize_angle(i, j, k);
         let angles = self.angles.entry((i, j, k)).or_insert(Vec::new());
         angles.push(potential);
     }
@@ -148,7 +169,7 @@ impl Interactions {
     /// k, m)`
     pub fn add_dihedral(&mut self, i: &str, j: &str, k: &str, m: &str, potential: Box<DihedralPotential>) {
         let (i, j, k, m) = (self.get_kind(i), self.get_kind(j), self.get_kind(k), self.get_kind(m));
-        let (i, j, k, m) = sort_dihedral(i, j, k, m);
+        let (i, j, k, m) = normalize_dihedral(i, j, k, m);
         let dihedrals = self.dihedrals.entry((i, j, k, m)).or_insert(Vec::new());
         dihedrals.push(potential);
     }
@@ -172,7 +193,7 @@ static NO_DIHEDRAL_INTERACTION: &'static [Box<DihedralPotential>] = &[];
 impl Interactions {
     /// Get all pair interactions corresponding to the pair `(i, j)`
     pub fn pairs(&self, i: Kind, j: Kind) -> &[PairInteraction] {
-        let (i, j) = sort_pair(i, j);
+        let (i, j) = normalize_pair(i, j);
         if let Some(val) = self.pairs.get(&(i, j)) {
             val
         } else {
@@ -197,7 +218,7 @@ impl Interactions {
 
     /// Get all bonded interactions corresponding to the pair `(i, j)`
     pub fn bonds(&self, i: Kind, j: Kind) -> &[Box<BondPotential>] {
-        let (i, j) = sort_pair(i, j);
+        let (i, j) = normalize_pair(i, j);
         if let Some(val) = self.bonds.get(&(i, j)) {
             val
         } else {
@@ -212,7 +233,7 @@ impl Interactions {
 
     /// Get all angle interactions corresponding to the angle `(i, j, k)`
     pub fn angles(&self, i: Kind, j:Kind, k:Kind) -> &[Box<AnglePotential>] {
-        let (i, j, k) = sort_angle(i, j, k);
+        let (i, j, k) = normalize_angle(i, j, k);
         if let Some(val) = self.angles.get(&(i, j, k)) {
             val
         } else {
@@ -229,7 +250,7 @@ impl Interactions {
 
     /// Get all dihedral interactions corresponding to the dihedral `(i, j, k, m)`
     pub fn dihedrals(&self, i: Kind, j: Kind, k: Kind, m: Kind) -> &[Box<DihedralPotential>] {
-        let (i, j, k, m) = sort_dihedral(i, j, k, m);
+        let (i, j, k, m) = normalize_dihedral(i, j, k, m);
         if let Some(val) = self.dihedrals.get(&(i, j, k, m)) {
             val
         } else {
@@ -275,6 +296,85 @@ mod test {
 
         assert_eq!(kinds.name(Kind(0)), Some(String::from("JK")));
         assert_eq!(kinds.name(Kind(1)), Some(String::from("H")));
+    }
+
+    #[test]
+    fn sorting_pairs() {
+        assert_eq!(normalize_pair(Kind(0), Kind(1)), normalize_pair(Kind(1), Kind(0)));
+        assert_eq!(normalize_pair(Kind(125), Kind(0)), normalize_pair(Kind(0), Kind(125)));
+
+        assert_eq!(normalize_pair(Kind(0), Kind(1)), (Kind(0), Kind(1)));
+        assert_eq!(normalize_pair(Kind(125), Kind(0)), (Kind(0), Kind(125)));
+    }
+
+    #[test]
+    fn sorting_angles() {
+        // Checking that equivalent angles are normalized to the same tuple
+        assert_eq!(normalize_angle(Kind(1), Kind(0), Kind(2)),
+                   normalize_angle(Kind(2), Kind(0), Kind(1)));
+        assert_eq!(normalize_angle(Kind(15), Kind(4), Kind(8)),
+                   normalize_angle(Kind(8), Kind(4), Kind(15)));
+        assert_eq!(normalize_angle(Kind(0), Kind(0), Kind(1)),
+                   normalize_angle(Kind(1), Kind(0), Kind(0)));
+        assert_eq!(normalize_angle(Kind(10), Kind(10), Kind(1)),
+                   normalize_angle(Kind(1), Kind(10), Kind(10)));
+
+        // Checking the actual normalized value
+        assert_eq!(normalize_angle(Kind(1), Kind(0), Kind(2)),
+                   (Kind(1), Kind(0), Kind(2)));
+        assert_eq!(normalize_angle(Kind(15), Kind(4), Kind(8)),
+                   (Kind(8), Kind(4), Kind(15)));
+        assert_eq!(normalize_angle(Kind(0), Kind(0), Kind(1)),
+                   (Kind(0), Kind(0), Kind(1)));
+        assert_eq!(normalize_angle(Kind(10), Kind(10), Kind(1)),
+                   (Kind(1), Kind(10), Kind(10)));
+    }
+
+    #[test]
+    fn sorting_dihedrals() {
+        // Checking that equivalent dihedrals are normalized to the same tuple
+        assert_eq!(normalize_dihedral(Kind(1), Kind(0), Kind(2), Kind(3)),
+                   normalize_dihedral(Kind(3), Kind(2), Kind(0), Kind(1)));
+        assert_eq!(normalize_dihedral(Kind(10), Kind(8), Kind(2), Kind(3)),
+                   normalize_dihedral(Kind(3), Kind(2), Kind(8), Kind(10)));
+        assert_eq!(normalize_dihedral(Kind(0), Kind(0), Kind(2), Kind(3)),
+                   normalize_dihedral(Kind(3), Kind(2), Kind(0), Kind(0)));
+        assert_eq!(normalize_dihedral(Kind(1), Kind(5), Kind(0), Kind(0)),
+                   normalize_dihedral(Kind(0), Kind(0), Kind(5), Kind(1)));
+        assert_eq!(normalize_dihedral(Kind(10), Kind(10), Kind(2), Kind(3)),
+                   normalize_dihedral(Kind(3), Kind(2), Kind(10), Kind(10)));
+        assert_eq!(normalize_dihedral(Kind(1), Kind(5), Kind(10), Kind(10)),
+                   normalize_dihedral(Kind(10), Kind(10), Kind(5), Kind(1)));
+        assert_eq!(normalize_dihedral(Kind(0), Kind(0), Kind(0), Kind(3)),
+                   normalize_dihedral(Kind(3), Kind(0), Kind(0), Kind(0)));
+        assert_eq!(normalize_dihedral(Kind(1), Kind(5), Kind(5), Kind(5)),
+                   normalize_dihedral(Kind(5), Kind(5), Kind(5), Kind(1)));
+        assert_eq!(normalize_dihedral(Kind(0), Kind(0), Kind(3), Kind(0)),
+                   normalize_dihedral(Kind(0), Kind(3), Kind(0), Kind(0)));
+        assert_eq!(normalize_dihedral(Kind(5), Kind(1), Kind(5), Kind(5)),
+                   normalize_dihedral(Kind(5), Kind(5), Kind(1), Kind(5)));
+
+        // Checking the actual normalized value
+        assert_eq!(normalize_dihedral(Kind(1), Kind(0), Kind(2), Kind(3)),
+                   (Kind(1), Kind(0), Kind(2), Kind(3)));
+        assert_eq!(normalize_dihedral(Kind(10), Kind(8), Kind(2), Kind(3)),
+                   (Kind(3), Kind(2), Kind(8), Kind(10)));
+        assert_eq!(normalize_dihedral(Kind(0), Kind(0), Kind(2), Kind(3)),
+                   (Kind(0), Kind(0), Kind(2), Kind(3)));
+        assert_eq!(normalize_dihedral(Kind(1), Kind(5), Kind(0), Kind(0)),
+                   (Kind(0), Kind(0), Kind(5), Kind(1)));
+        assert_eq!(normalize_dihedral(Kind(10), Kind(10), Kind(2), Kind(3)),
+                   (Kind(3), Kind(2), Kind(10), Kind(10)));
+        assert_eq!(normalize_dihedral(Kind(1), Kind(5), Kind(10), Kind(10)),
+                   (Kind(1), Kind(5), Kind(10), Kind(10)));
+        assert_eq!(normalize_dihedral(Kind(0), Kind(0), Kind(0), Kind(3)),
+                   (Kind(0), Kind(0), Kind(0), Kind(3)));
+        assert_eq!(normalize_dihedral(Kind(1), Kind(5), Kind(5), Kind(5)),
+                   (Kind(1), Kind(5), Kind(5), Kind(5)));
+        assert_eq!(normalize_dihedral(Kind(0), Kind(0), Kind(3), Kind(0)),
+                   (Kind(0), Kind(0), Kind(3), Kind(0)));
+        assert_eq!(normalize_dihedral(Kind(5), Kind(1), Kind(5), Kind(5)),
+                   (Kind(5), Kind(1), Kind(5), Kind(5)));
     }
 
     #[test]

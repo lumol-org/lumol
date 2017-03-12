@@ -49,6 +49,8 @@ script:
     # Run unit tests and doc tests in debug mode
     - cargo test -p lumol-core
     - cargo test -p lumol-input
+    # Check that benchmarks still compile
+    - cargo bench --no-run
     # Misc style checking
     - python scripts/check-whitespaces.py
     # Generate and publish coverage

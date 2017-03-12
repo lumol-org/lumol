@@ -1,0 +1,442 @@
+CRYST1   25.000   25.000   25.000  90.00  90.00  90.00 P 1           1
+HETATM    1    H RES X   1      12.766   6.695   3.912  1.00  0.00           H
+HETATM    2    C RES X   2      13.421   6.117   3.255  1.00  0.00           C
+HETATM    3    H RES X   3      13.899   5.335   3.851  1.00  0.00           H
+HETATM    4    H RES X   4      12.805   5.638   2.491  1.00  0.00           H
+HETATM    5    C RES X   5      14.486   7.032   2.603  1.00  0.00           C
+HETATM    6    H RES X   6      15.149   6.432   1.970  1.00  0.00           H
+HETATM    7    H RES X   7      15.110   7.483   3.381  1.00  0.00           H
+HETATM    8    C RES X   8      13.825   8.145   1.756  1.00  0.00           C
+HETATM    9    H RES X   9      13.179   8.770   2.377  1.00  0.00           H
+HETATM   10    H RES X  10      13.217   7.713   0.957  1.00  0.00           H
+HETATM   11    H RES X  11      14.585   8.785   1.300  1.00  0.00           H
+HETATM   12    H RES X  12      13.685  21.233  11.878  1.00  0.00           H
+HETATM   13    C RES X  13      14.767  21.323  11.756  1.00  0.00           C
+HETATM   14    H RES X  14      15.223  20.366  12.020  1.00  0.00           H
+HETATM   15    H RES X  15      14.978  21.525  10.703  1.00  0.00           H
+HETATM   16    C RES X  16      15.324  22.457  12.651  1.00  0.00           C
+HETATM   17    H RES X  17      16.411  22.516  12.536  1.00  0.00           H
+HETATM   18    H RES X  18      15.126  22.226  13.703  1.00  0.00           H
+HETATM   19    C RES X  19      14.687  23.821  12.289  1.00  0.00           C
+HETATM   20    H RES X  20      13.603  23.788  12.422  1.00  0.00           H
+HETATM   21    H RES X  21      14.897  24.080  11.248  1.00  0.00           H
+HETATM   22    H RES X  22      15.087  24.613  12.926  1.00  0.00           H
+HETATM   23    H RES X  23      23.922  11.383  21.649  1.00  0.00           H
+HETATM   24    C RES X  24      24.073  11.408  20.567  1.00  0.00           C
+HETATM   25    H RES X  25      24.998  10.872  20.338  1.00  0.00           H
+HETATM   26    H RES X  26      23.243  10.879  20.093  1.00  0.00           H
+HETATM   27    C RES X  27      24.151  12.868  20.060  1.00  0.00           C
+HETATM   28    H RES X  28      24.328  12.874  18.980  1.00  0.00           H
+HETATM   29    H RES X  29      25.002  13.375  20.526  1.00  0.00           H
+HETATM   30    C RES X  30      22.847  13.641  20.378  1.00  0.00           C
+HETATM   31    H RES X  31      22.668  13.667  21.456  1.00  0.00           H
+HETATM   32    H RES X  32      21.989  13.163  19.899  1.00  0.00           H
+HETATM   33    H RES X  33      22.912  14.670  20.016  1.00  0.00           H
+HETATM   34    H RES X  34      17.378  24.999  23.989  1.00  0.00           H
+HETATM   35    C RES X  35      17.678  23.948  23.969  1.00  0.00           C
+HETATM   36    H RES X  36      18.639  23.876  23.454  1.00  0.00           H
+HETATM   37    H RES X  37      17.815  23.611  25.000  1.00  0.00           H
+HETATM   38    C RES X  38      16.609  23.089  23.251  1.00  0.00           C
+HETATM   39    H RES X  39      16.937  22.046  23.218  1.00  0.00           H
+HETATM   40    H RES X  40      16.504  23.424  22.214  1.00  0.00           H
+HETATM   41    C RES X  41      15.241  23.182  23.969  1.00  0.00           C
+HETATM   42    H RES X  42      14.885  24.215  23.989  1.00  0.00           H
+HETATM   43    H RES X  43      15.322  22.827  25.000  1.00  0.00           H
+HETATM   44    H RES X  44      14.494  22.573  23.455  1.00  0.00           H
+HETATM   45    H RES X  45       2.325   3.412  19.568  1.00  0.00           H
+HETATM   46    C RES X  46       1.916   2.514  20.037  1.00  0.00           C
+HETATM   47    H RES X  47       0.878   2.402  19.715  1.00  0.00           H
+HETATM   48    H RES X  48       2.481   1.651  19.675  1.00  0.00           H
+HETATM   49    C RES X  49       2.002   2.616  21.579  1.00  0.00           C
+HETATM   50    H RES X  50       1.564   1.720  22.032  1.00  0.00           H
+HETATM   51    H RES X  51       1.410   3.469  21.925  1.00  0.00           H
+HETATM   52    C RES X  52       3.468   2.774  22.049  1.00  0.00           C
+HETATM   53    H RES X  53       3.913   3.678  21.627  1.00  0.00           H
+HETATM   54    H RES X  54       4.068   1.917  21.734  1.00  0.00           H
+HETATM   55    H RES X  55       3.517   2.845  23.139  1.00  0.00           H
+HETATM   56    H RES X  56      13.710   6.229  22.988  1.00  0.00           H
+HETATM   57    C RES X  57      14.175   5.631  23.776  1.00  0.00           C
+HETATM   58    H RES X  58      14.456   6.300  24.593  1.00  0.00           H
+HETATM   59    H RES X  59      13.433   4.923  24.152  1.00  0.00           H
+HETATM   60    C RES X  60      15.417   4.883  23.233  1.00  0.00           C
+HETATM   61    H RES X  61      15.884   4.311  24.041  1.00  0.00           H
+HETATM   62    H RES X  62      16.160   5.608  22.884  1.00  0.00           H
+HETATM   63    C RES X  63      15.035   3.931  22.074  1.00  0.00           C
+HETATM   64    H RES X  64      14.590   4.490  21.247  1.00  0.00           H
+HETATM   65    H RES X  65      14.313   3.184  22.411  1.00  0.00           H
+HETATM   66    H RES X  66      15.918   3.408  21.698  1.00  0.00           H
+HETATM   67    H RES X  67       6.136   2.833  12.189  1.00  0.00           H
+HETATM   68    C RES X  68       6.471   2.833  13.229  1.00  0.00           C
+HETATM   69    H RES X  69       6.124   1.911  13.700  1.00  0.00           H
+HETATM   70    H RES X  70       7.564   2.833  13.238  1.00  0.00           H
+HETATM   71    C RES X  71       5.919   4.070  13.979  1.00  0.00           C
+HETATM   72    H RES X  72       6.242   4.040  15.025  1.00  0.00           H
+HETATM   73    H RES X  73       4.825   4.041  13.983  1.00  0.00           H
+HETATM   74    C RES X  74       6.403   5.385  13.323  1.00  0.00           C
+HETATM   75    H RES X  75       6.067   5.444  12.284  1.00  0.00           H
+HETATM   76    H RES X  76       7.494   5.443  13.334  1.00  0.00           H
+HETATM   77    H RES X  77       6.008   6.251  13.860  1.00  0.00           H
+HETATM   78    H RES X  78       5.980   0.142   4.688  1.00  0.00           H
+HETATM   79    C RES X  79       5.863   0.852   3.866  1.00  0.00           C
+HETATM   80    H RES X  80       6.734   1.512   3.858  1.00  0.00           H
+HETATM   81    H RES X  81       5.850   0.291   2.928  1.00  0.00           H
+HETATM   82    C RES X  82       4.560   1.670   4.032  1.00  0.00           C
+HETATM   83    H RES X  83       4.473   2.393   3.214  1.00  0.00           H
+HETATM   84    H RES X  84       4.602   2.245   4.963  1.00  0.00           H
+HETATM   85    C RES X  85       3.317   0.748   4.045  1.00  0.00           C
+HETATM   86    H RES X  86       3.375   0.035   4.872  1.00  0.00           H
+HETATM   87    H RES X  87       3.245   0.185   3.111  1.00  0.00           H
+HETATM   88    H RES X  88       2.403   1.335   4.163  1.00  0.00           H
+HETATM   89    H RES X  89      20.398  20.710  22.145  1.00  0.00           H
+HETATM   90    C RES X  90      20.464  19.641  21.929  1.00  0.00           C
+HETATM   91    H RES X  91      20.364  19.094  22.869  1.00  0.00           H
+HETATM   92    H RES X  92      19.625  19.369  21.283  1.00  0.00           H
+HETATM   93    C RES X  93      21.811  19.305  21.243  1.00  0.00           C
+HETATM   94    H RES X  94      21.871  18.228  21.057  1.00  0.00           H
+HETATM   95    H RES X  95      22.639  19.560  21.913  1.00  0.00           H
+HETATM   96    C RES X  96      21.967  20.073  19.908  1.00  0.00           C
+HETATM   97    H RES X  97      21.935  21.152  20.078  1.00  0.00           H
+HETATM   98    H RES X  98      21.162  19.811  19.217  1.00  0.00           H
+HETATM   99    H RES X  99      22.920  19.829  19.433  1.00  0.00           H
+HETATM  100    H RES X 100      15.003   8.341  12.186  1.00  0.00           H
+HETATM  101    C RES X 101      14.791   8.818  13.146  1.00  0.00           C
+HETATM  102    H RES X 102      14.528   9.862  12.958  1.00  0.00           H
+HETATM  103    H RES X 103      13.925   8.322  13.592  1.00  0.00           H
+HETATM  104    C RES X 104      16.017   8.726  14.086  1.00  0.00           C
+HETATM  105    H RES X 105      15.796   9.231  15.031  1.00  0.00           H
+HETATM  106    H RES X 106      16.866   9.250  13.635  1.00  0.00           H
+HETATM  107    C RES X 107      16.402   7.252  14.361  1.00  0.00           C
+HETATM  108    H RES X 108      16.652   6.738  13.430  1.00  0.00           H
+HETATM  109    H RES X 109      15.574   6.720  14.835  1.00  0.00           H
+HETATM  110    H RES X 110      17.269   7.198  15.025  1.00  0.00           H
+HETATM  111    H RES X 111      14.852  15.335  17.520  1.00  0.00           H
+HETATM  112    C RES X 112      14.721  15.537  16.454  1.00  0.00           C
+HETATM  113    H RES X 113      14.987  14.635  15.899  1.00  0.00           H
+HETATM  114    H RES X 114      13.665  15.751  16.273  1.00  0.00           H
+HETATM  115    C RES X 115      15.603  16.730  16.012  1.00  0.00           C
+HETATM  116    H RES X 116      15.478  16.902  14.938  1.00  0.00           H
+HETATM  117    H RES X 117      16.658  16.488  16.176  1.00  0.00           H
+HETATM  118    C RES X 118      15.237  18.017  16.791  1.00  0.00           C
+HETATM  119    H RES X 119      15.380  17.871  17.864  1.00  0.00           H
+HETATM  120    H RES X 120      14.192  18.288  16.618  1.00  0.00           H
+HETATM  121    H RES X 121      15.865  18.852  16.471  1.00  0.00           H
+HETATM  122    H RES X 122      11.000  12.632  10.262  1.00  0.00           H
+HETATM  123    C RES X 123      10.215  13.052   9.629  1.00  0.00           C
+HETATM  124    H RES X 124       9.373  13.332  10.267  1.00  0.00           H
+HETATM  125    H RES X 125      10.603  13.958   9.157  1.00  0.00           H
+HETATM  126    C RES X 126       9.770  12.026   8.558  1.00  0.00           C
+HETATM  127    H RES X 127       8.967  12.454   7.950  1.00  0.00           H
+HETATM  128    H RES X 128       9.361  11.137   9.048  1.00  0.00           H
+HETATM  129    C RES X 129      10.953  11.621   7.646  1.00  0.00           C
+HETATM  130    H RES X 130      11.756  11.168   8.234  1.00  0.00           H
+HETATM  131    H RES X 131      11.358  12.494   7.128  1.00  0.00           H
+HETATM  132    H RES X 132      10.629  10.897   6.894  1.00  0.00           H
+HETATM  133    H RES X 133      11.162   0.855  19.192  1.00  0.00           H
+HETATM  134    C RES X 134      10.136   0.620  19.483  1.00  0.00           C
+HETATM  135    H RES X 135       9.691   0.000  18.700  1.00  0.00           H
+HETATM  136    H RES X 136      10.166   0.035  20.406  1.00  0.00           H
+HETATM  137    C RES X 137       9.314   1.916  19.685  1.00  0.00           C
+HETATM  138    H RES X 138       8.283   1.660  19.950  1.00  0.00           H
+HETATM  139    H RES X 139       9.272   2.475  18.745  1.00  0.00           H
+HETATM  140    C RES X 140       9.931   2.803  20.793  1.00  0.00           C
+HETATM  141    H RES X 141      10.953   3.090  20.532  1.00  0.00           H
+HETATM  142    H RES X 142       9.957   2.269  21.745  1.00  0.00           H
+HETATM  143    H RES X 143       9.344   3.715  20.927  1.00  0.00           H
+HETATM  144    H RES X 144       9.234   3.875   9.811  1.00  0.00           H
+HETATM  145    C RES X 145       9.644   3.429   8.901  1.00  0.00           C
+HETATM  146    H RES X 146       9.296   2.394   8.841  1.00  0.00           H
+HETATM  147    H RES X 147       9.246   3.975   8.042  1.00  0.00           H
+HETATM  148    C RES X 148      11.191   3.484   8.915  1.00  0.00           C
+HETATM  149    H RES X 149      11.584   3.010   8.010  1.00  0.00           H
+HETATM  150    H RES X 150      11.572   2.911   9.767  1.00  0.00           H
+HETATM  151    C RES X 151      11.698   4.944   9.001  1.00  0.00           C
+HETATM  152    H RES X 152      11.336   5.425   9.913  1.00  0.00           H
+HETATM  153    H RES X 153      11.348   5.524   8.144  1.00  0.00           H
+HETATM  154    H RES X 154      12.791   4.971   9.010  1.00  0.00           H
+HETATM  155    H RES X 155      20.864   4.596   0.876  1.00  0.00           H
+HETATM  156    C RES X 156      20.645   3.610   1.293  1.00  0.00           C
+HETATM  157    H RES X 157      20.396   2.937   0.469  1.00  0.00           H
+HETATM  158    H RES X 158      21.548   3.235   1.781  1.00  0.00           H
+HETATM  159    C RES X 159      19.474   3.692   2.302  1.00  0.00           C
+HETATM  160    H RES X 160      19.251   2.693   2.690  1.00  0.00           H
+HETATM  161    H RES X 161      18.572   4.045   1.791  1.00  0.00           H
+HETATM  162    C RES X 162      19.812   4.643   3.476  1.00  0.00           C
+HETATM  163    H RES X 163      20.012   5.652   3.109  1.00  0.00           H
+HETATM  164    H RES X 164      20.696   4.292   4.014  1.00  0.00           H
+HETATM  165    H RES X 165      18.979   4.694   4.182  1.00  0.00           H
+HETATM  166    H RES X 166       9.984  24.078  17.629  1.00  0.00           H
+HETATM  167    C RES X 167      10.327  23.208  17.063  1.00  0.00           C
+HETATM  168    H RES X 168       9.511  22.877  16.416  1.00  0.00           H
+HETATM  169    H RES X 169      11.162  23.519  16.430  1.00  0.00           H
+HETATM  170    C RES X 170      10.760  22.071  18.019  1.00  0.00           C
+HETATM  171    H RES X 171      11.076  21.200  17.436  1.00  0.00           H
+HETATM  172    H RES X 172       9.906  21.755  18.627  1.00  0.00           H
+HETATM  173    C RES X 173      11.916  22.525  18.943  1.00  0.00           C
+HETATM  174    H RES X 174      11.610  23.379  19.552  1.00  0.00           H
+HETATM  175    H RES X 175      12.788  22.820  18.353  1.00  0.00           H
+HETATM  176    H RES X 176      12.214  21.715  19.614  1.00  0.00           H
+HETATM  177    H RES X 177      22.680  22.719  14.386  1.00  0.00           H
+HETATM  178    C RES X 178      21.990  22.048  14.904  1.00  0.00           C
+HETATM  179    H RES X 179      21.979  21.092  14.374  1.00  0.00           H
+HETATM  180    H RES X 180      22.373  21.875  15.913  1.00  0.00           H
+HETATM  181    C RES X 181      20.569  22.659  14.956  1.00  0.00           C
+HETATM  182    H RES X 182      19.887  21.963  15.455  1.00  0.00           H
+HETATM  183    H RES X 183      20.192  22.801  13.939  1.00  0.00           H
+HETATM  184    C RES X 184      20.569  24.014  15.706  1.00  0.00           C
+HETATM  185    H RES X 185      21.226  24.730  15.206  1.00  0.00           H
+HETATM  186    H RES X 186      20.919  23.886  16.733  1.00  0.00           H
+HETATM  187    H RES X 187      19.562  24.436  15.737  1.00  0.00           H
+HETATM  188    H RES X 188      20.540  14.109  11.092  1.00  0.00           H
+HETATM  189    C RES X 189      21.107  15.029  10.931  1.00  0.00           C
+HETATM  190    H RES X 190      21.984  15.010  11.584  1.00  0.00           H
+HETATM  191    H RES X 191      21.452  15.043   9.894  1.00  0.00           H
+HETATM  192    C RES X 192      20.231  16.269  11.231  1.00  0.00           C
+HETATM  193    H RES X 193      20.822  17.180  11.091  1.00  0.00           H
+HETATM  194    H RES X 194      19.916  16.253  12.280  1.00  0.00           H
+HETATM  195    C RES X 195      18.985  16.311  10.314  1.00  0.00           C
+HETATM  196    H RES X 196      18.369  15.420  10.461  1.00  0.00           H
+HETATM  197    H RES X 197      19.281  16.354   9.263  1.00  0.00           H
+HETATM  198    H RES X 198      18.374  17.189  10.534  1.00  0.00           H
+HETATM  199    H RES X 199       5.166  18.762   6.168  1.00  0.00           H
+HETATM  200    C RES X 200       5.945  19.528   6.187  1.00  0.00           C
+HETATM  201    H RES X 201       5.596  20.385   5.606  1.00  0.00           H
+HETATM  202    H RES X 202       6.086  19.849   7.222  1.00  0.00           H
+HETATM  203    C RES X 203       7.268  18.976   5.603  1.00  0.00           C
+HETATM  204    H RES X 204       8.029  19.763   5.605  1.00  0.00           H
+HETATM  205    H RES X 205       7.116  18.683   4.559  1.00  0.00           H
+HETATM  206    C RES X 206       7.775  17.760   6.415  1.00  0.00           C
+HETATM  207    H RES X 207       7.038  16.953   6.402  1.00  0.00           H
+HETATM  208    H RES X 208       7.957  18.040   7.456  1.00  0.00           H
+HETATM  209    H RES X 209       8.709  17.378   5.995  1.00  0.00           H
+HETATM  210    H RES X 210      18.106  14.761   3.212  1.00  0.00           H
+HETATM  211    C RES X 211      18.651  13.888   3.580  1.00  0.00           C
+HETATM  212    H RES X 212      19.413  13.624   2.842  1.00  0.00           H
+HETATM  213    H RES X 213      19.156  14.165   4.509  1.00  0.00           H
+HETATM  214    C RES X 214      17.686  12.701   3.816  1.00  0.00           C
+HETATM  215    H RES X 215      18.253  11.829   4.158  1.00  0.00           H
+HETATM  216    H RES X 216      17.210  12.421   2.871  1.00  0.00           H
+HETATM  217    C RES X 217      16.601  13.060   4.859  1.00  0.00           C
+HETATM  218    H RES X 218      16.009  13.914   4.521  1.00  0.00           H
+HETATM  219    H RES X 219      17.058  13.318   5.818  1.00  0.00           H
+HETATM  220    H RES X 220      15.926  12.216   5.018  1.00  0.00           H
+CONECT    1    2
+CONECT    2    1    3    4    5
+CONECT    3    2
+CONECT    4    2
+CONECT    5    2    6    7    8
+CONECT    6    5
+CONECT    7    5
+CONECT    8    5    9   10   11
+CONECT    9    8
+CONECT   10    8
+CONECT   11    8
+CONECT   12   13
+CONECT   13   12   14   15   16
+CONECT   14   13
+CONECT   15   13
+CONECT   16   13   17   18   19
+CONECT   17   16
+CONECT   18   16
+CONECT   19   16   20   21   22
+CONECT   20   19
+CONECT   21   19
+CONECT   22   19
+CONECT   23   24
+CONECT   24   23   25   26   27
+CONECT   25   24
+CONECT   26   24
+CONECT   27   24   28   29   30
+CONECT   28   27
+CONECT   29   27
+CONECT   30   27   31   32   33
+CONECT   31   30
+CONECT   32   30
+CONECT   33   30
+CONECT   34   35
+CONECT   35   34   36   37   38
+CONECT   36   35
+CONECT   37   35
+CONECT   38   35   39   40   41
+CONECT   39   38
+CONECT   40   38
+CONECT   41   38   42   43   44
+CONECT   42   41
+CONECT   43   41
+CONECT   44   41
+CONECT   45   46
+CONECT   46   45   47   48   49
+CONECT   47   46
+CONECT   48   46
+CONECT   49   46   50   51   52
+CONECT   50   49
+CONECT   51   49
+CONECT   52   49   53   54   55
+CONECT   53   52
+CONECT   54   52
+CONECT   55   52
+CONECT   56   57
+CONECT   57   56   58   59   60
+CONECT   58   57
+CONECT   59   57
+CONECT   60   57   61   62   63
+CONECT   61   60
+CONECT   62   60
+CONECT   63   60   64   65   66
+CONECT   64   63
+CONECT   65   63
+CONECT   66   63
+CONECT   67   68
+CONECT   68   67   69   70   71
+CONECT   69   68
+CONECT   70   68
+CONECT   71   68   72   73   74
+CONECT   72   71
+CONECT   73   71
+CONECT   74   71   75   76   77
+CONECT   75   74
+CONECT   76   74
+CONECT   77   74
+CONECT   78   79
+CONECT   79   78   80   81   82
+CONECT   80   79
+CONECT   81   79
+CONECT   82   79   83   84   85
+CONECT   83   82
+CONECT   84   82
+CONECT   85   82   86   87   88
+CONECT   86   85
+CONECT   87   85
+CONECT   88   85
+CONECT   89   90
+CONECT   90   89   91   92   93
+CONECT   91   90
+CONECT   92   90
+CONECT   93   90   94   95   96
+CONECT   94   93
+CONECT   95   93
+CONECT   96   93   97   98   99
+CONECT   97   96
+CONECT   98   96
+CONECT   99   96
+CONECT  100  101
+CONECT  101  100  102  103  104
+CONECT  102  101
+CONECT  103  101
+CONECT  104  101  105  106  107
+CONECT  105  104
+CONECT  106  104
+CONECT  107  104  108  109  110
+CONECT  108  107
+CONECT  109  107
+CONECT  110  107
+CONECT  111  112
+CONECT  112  111  113  114  115
+CONECT  113  112
+CONECT  114  112
+CONECT  115  112  116  117  118
+CONECT  116  115
+CONECT  117  115
+CONECT  118  115  119  120  121
+CONECT  119  118
+CONECT  120  118
+CONECT  121  118
+CONECT  122  123
+CONECT  123  122  124  125  126
+CONECT  124  123
+CONECT  125  123
+CONECT  126  123  127  128  129
+CONECT  127  126
+CONECT  128  126
+CONECT  129  126  130  131  132
+CONECT  130  129
+CONECT  131  129
+CONECT  132  129
+CONECT  133  134
+CONECT  134  133  135  136  137
+CONECT  135  134
+CONECT  136  134
+CONECT  137  134  138  139  140
+CONECT  138  137
+CONECT  139  137
+CONECT  140  137  141  142  143
+CONECT  141  140
+CONECT  142  140
+CONECT  143  140
+CONECT  144  145
+CONECT  145  144  146  147  148
+CONECT  146  145
+CONECT  147  145
+CONECT  148  145  149  150  151
+CONECT  149  148
+CONECT  150  148
+CONECT  151  148  152  153  154
+CONECT  152  151
+CONECT  153  151
+CONECT  154  151
+CONECT  155  156
+CONECT  156  155  157  158  159
+CONECT  157  156
+CONECT  158  156
+CONECT  159  156  160  161  162
+CONECT  160  159
+CONECT  161  159
+CONECT  162  159  163  164  165
+CONECT  163  162
+CONECT  164  162
+CONECT  165  162
+CONECT  166  167
+CONECT  167  166  168  169  170
+CONECT  168  167
+CONECT  169  167
+CONECT  170  167  171  172  173
+CONECT  171  170
+CONECT  172  170
+CONECT  173  170  174  175  176
+CONECT  174  173
+CONECT  175  173
+CONECT  176  173
+CONECT  177  178
+CONECT  178  177  179  180  181
+CONECT  179  178
+CONECT  180  178
+CONECT  181  178  182  183  184
+CONECT  182  181
+CONECT  183  181
+CONECT  184  181  185  186  187
+CONECT  185  184
+CONECT  186  184
+CONECT  187  184
+CONECT  188  189
+CONECT  189  188  190  191  192
+CONECT  190  189
+CONECT  191  189
+CONECT  192  189  193  194  195
+CONECT  193  192
+CONECT  194  192
+CONECT  195  192  196  197  198
+CONECT  196  195
+CONECT  197  195
+CONECT  198  195
+CONECT  199  200
+CONECT  200  199  201  202  203
+CONECT  201  200
+CONECT  202  200
+CONECT  203  200  204  205  206
+CONECT  204  203
+CONECT  205  203
+CONECT  206  203  207  208  209
+CONECT  207  206
+CONECT  208  206
+CONECT  209  206
+CONECT  210  211
+CONECT  211  210  212  213  214
+CONECT  212  211
+CONECT  213  211
+CONECT  214  211  215  216  217
+CONECT  215  214
+CONECT  216  214
+CONECT  217  214  218  219  220
+CONECT  218  217
+CONECT  219  217
+CONECT  220  217
+END

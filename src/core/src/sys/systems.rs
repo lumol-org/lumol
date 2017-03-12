@@ -122,7 +122,7 @@ impl System {
 
     /// Check if the particles at indexes `i` and `j` are in the same molecule
     #[inline] pub fn are_in_same_molecule(&self, i: usize, j:usize) -> bool {
-        debug_assert!(self.molids.len() == self.particles.len());
+        debug_assert_eq!(self.molids.len(), self.particles.len());
         self.molids[i] == self.molids[j]
     }
 
@@ -202,8 +202,9 @@ impl System {
     pub fn add_bond(&mut self, mut particle_i: usize, mut particle_j: usize) -> Permutations {
         assert!(particle_i <= self.particles.len());
         assert!(particle_j <= self.particles.len());
+        assert_ne!(particle_i, particle_j);
         trace!(
-            "Adding bond {} --- {}, in molecules {} and {}",
+            "Adding bond {}-{} between molecules {} and {}",
             particle_i, particle_j, self.molids[particle_i], self.molids[particle_j]
         );
 
@@ -214,6 +215,7 @@ impl System {
         let old_molid = max(molid_i, molid_j);
         let new_mol = self.molecules[new_molid].clone();
         let old_mol = self.molecules[old_molid].clone();
+        let already_in_same_molecule = self.are_in_same_molecule(particle_i, particle_j);
 
         // Effective merge
         let delta = self.merge_molecules(molid_i, molid_j);
@@ -221,7 +223,7 @@ impl System {
         let mut permutations = Permutations::new();
         // If new_mol.last() + 1 == old_mol.first(), no one moved. Else,
         // we generate the permutations
-        if !self.are_in_same_molecule(particle_i, particle_j) && new_mol.end() != old_mol.start() {
+        if !already_in_same_molecule && new_mol.end() != old_mol.start() {
             let size = old_mol.size();
             let first = old_mol.start();
             let second = new_mol.end();
@@ -247,7 +249,7 @@ impl System {
             particle_i -= delta; // i moved
         };
 
-        assert!(self.molids[particle_i] == self.molids[particle_j]);
+        assert_eq!(self.molids[particle_i], self.molids[particle_j]);
         self.molecules[self.molids[particle_i]].add_bond(particle_i, particle_j);
         return permutations;
     }
@@ -280,6 +282,9 @@ impl System {
 
     /// Get the number of particles in this system
     #[inline] pub fn size(&self) -> usize {self.particles.len()}
+
+    /// Check if this system contains any particle
+    #[inline] pub fn is_empty(&self) -> bool {self.particles.is_empty()}
 
     /// Return the center-of-mass of a molecule
     ///
@@ -369,8 +374,12 @@ impl System {
     ///
     /// This functions return the change in index of the first particle of the
     /// moved molecule, i.e. in this example `4`.
-    #[allow(block_in_if_condition_stmt)]
     fn merge_molecules(&mut self, first: usize, second: usize) -> usize {
+        // Do not try to merge a molecule with itself
+        if first == second {
+            return 0;
+        }
+
         let (new_molid, old_molid) = if first < second {
             (first, second)
         } else {
@@ -424,13 +433,16 @@ impl System {
         let _ = self.molecules.remove(old_molid);
 
         // Check that self.molids is sorted and only contains successive values
-        debug_assert!(self.molids.iter().fold((true, 0), |(is_valid, previous), &i| {
-            if i == previous || i == previous + 1 {
-                (is_valid, i)
-            } else {
-                (false, i)
-            }
-        }).0, "Unsorted molecule ids {:?}", self.molids);
+        #[allow(block_in_if_condition_stmt)]
+        {
+            debug_assert!(self.molids.iter().fold((true, 0), |(is_valid, previous), &i| {
+                if i == previous || i == previous + 1 {
+                    (is_valid, i)
+                } else {
+                    (false, i)
+                }
+            }).0, "Unsorted molecule ids {:?}", self.molids);
+        }
 
         return delta;
     }

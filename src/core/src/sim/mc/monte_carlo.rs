@@ -108,7 +108,7 @@ impl MonteCarlo {
     }
 
     fn normalize_frequencies(&mut self) {
-        assert!(self.frequencies.len() == self.moves.len());
+        assert_eq!(self.frequencies.len(), self.moves.len());
         if self.frequencies.is_empty() {
             warn!(
                 "No move in the Monte-Carlo simulation, \

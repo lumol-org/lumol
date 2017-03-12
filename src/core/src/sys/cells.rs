@@ -165,7 +165,7 @@ impl UnitCell {
 
     /// Get the distances between faces of the unit cell
     pub fn lengths(&self) -> [f64; 3] {
-        assert!(self.shape != CellShape::Infinite);
+        assert_ne!(self.shape, CellShape::Infinite);
 
         let (a, b, c) = (self.vect_a(), self.vect_b(), self.vect_c());
         // Plans normal vectors

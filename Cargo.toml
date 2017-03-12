@@ -23,3 +23,23 @@ lumol-input = {path = "src/input"}
 lumol-core = {path = "src/core"}
 log = "0.3"
 clap = "2"
+
+[dev-dependencies]
+bencher = "0.1"
+rand = "0.3"
+
+[[bench]]
+name = "water"
+harness = false
+
+[[bench]]
+name = "nacl"
+harness = false
+
+[[bench]]
+name = "argon"
+harness = false
+
+[[bench]]
+name = "propane"
+harness = false
