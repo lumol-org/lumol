@@ -6,13 +6,11 @@ extern crate lumol;
 extern crate lumol_input as input;
 
 use lumol::Logger;
-
 use input::Input;
 
 use std::path::Path;
 use std::sync::{Once, ONCE_INIT};
 static START: Once = ONCE_INIT;
-
 
 
 #[test]
