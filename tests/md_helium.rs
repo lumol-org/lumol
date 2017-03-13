@@ -16,6 +16,8 @@ use std::path::Path;
 use std::sync::{Once, ONCE_INIT};
 static START: Once = ONCE_INIT;
 
+mod utils;
+
 
 #[test]
 fn constant_energy_velocity_verlet() {
@@ -86,10 +88,20 @@ fn berendsen_barostat() {
                                  .join("md_helium/berendsen_barostat.toml");
     let mut config = Input::new(path).unwrap().read().unwrap();
 
+    let collecter = utils::Collecter::new(4000);
+    let temperatures = collecter.temperatures();
+    let pressures = collecter.pressures();
+
+    config.simulation.add_output(Box::new(collecter));
     config.simulation.run(&mut config.system, config.nsteps);
 
-    let pressure = units::from(5000.0, "bar").unwrap();
-    assert!(f64::abs((config.system.pressure() - pressure)/pressure) < 5e-2);
+    let expected = units::from(5000.0, "bar").unwrap();
+    let pressure = ::utils::mean(pressures.clone());
+    assert!(f64::abs(pressure - expected) / expected < 1e-2);
+
+    let expected = units::from(273.0, "K").unwrap();
+    let temperature = ::utils::mean(temperatures.clone());
+    assert!(f64::abs(temperature - expected) / expected < 1e-2);
 }
 
 #[test]
