@@ -368,7 +368,7 @@ impl Ewald {
                 for ikz in 0..self.kmax {
                     // The k = 0 case and the cutoff in k-space are already
                     // handled in `expfactors`
-                    if self.expfactors[(ikx, iky, ikz)].abs() < f64::MIN {continue}
+                    if self.expfactors[(ikx, iky, ikz)].abs() < f64::EPSILON {continue}
                     let density = self.rho[(ikx, iky, ikz)].norm();
                     energy += self.expfactors[(ikx, iky, ikz)] * density * density;
                 }
@@ -391,7 +391,7 @@ impl Ewald {
                 for ikz in 0..self.kmax {
                     // The k = 0 and the cutoff in k-space are already handled
                     // in `expfactors`.
-                    if self.expfactors[(ikx, iky, ikz)].abs() < f64::MIN {continue}
+                    if self.expfactors[(ikx, iky, ikz)].abs() < f64::EPSILON {continue}
                     let k = (ikx as f64) * rec_kx + (iky as f64) * rec_ky + (ikz as f64) * rec_kz;
                     for i in 0..system.size() {
                         let qi = system[i].charge;
@@ -437,7 +437,7 @@ impl Ewald {
                 for ikz in 0..self.kmax {
                     // The k = 0 and the cutoff in k-space are already handled
                     // in `expfactors`.
-                    if self.expfactors[(ikx, iky, ikz)].abs() < f64::MIN {continue}
+                    if self.expfactors[(ikx, iky, ikz)].abs() < f64::EPSILON {continue}
                     let k = (ikx as f64) * rec_kx + (iky as f64) * rec_ky + (ikz as f64) * rec_kz;
                     for i in 0..system.size() {
                         let qi = system[i].charge;
@@ -512,7 +512,7 @@ impl Ewald {
                 for ikz in 0..self.kmax {
                     // The k = 0 case and the cutoff in k-space are already
                     // handled in `expfactors`.
-                    if self.expfactors[(ikx, iky, ikz)].abs() < f64::MIN {continue}
+                    if self.expfactors[(ikx, iky, ikz)].abs() < f64::EPSILON {continue}
                     let rho = self.rho[(ikx, iky, ikz)] + self.delta_rho[(ikx, iky, ikz)];
                     let density = rho.norm();
                     e_new += self.expfactors[(ikx, iky, ikz)] * density * density;
