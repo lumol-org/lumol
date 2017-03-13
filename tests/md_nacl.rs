@@ -74,7 +74,7 @@ mod ewald {
     fn energy() {
         START.call_once(|| {Logger::stdout();});
         let path = Path::new(file!()).parent().unwrap().join("data")
-                                     .join("md_nacl_nve_ewald_big.toml");
+                                     .join("energy_nacl_ewald_big.toml");
         let system = Input::new(path).unwrap().read_system().unwrap();
         let energy = units::to(system.total_energy(), "kcal/mol").unwrap();
 
