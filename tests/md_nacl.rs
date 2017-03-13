@@ -8,6 +8,8 @@ extern crate lumol_input as input;
 use std::sync::{Once, ONCE_INIT};
 pub static START: Once = ONCE_INIT;
 
+mod utils;
+
 
 mod wolf {
     use START;
@@ -40,10 +42,20 @@ mod wolf {
                                      .join("md_nacl_npt_wolf_small.toml");
         let mut config = Input::new(path).unwrap().read().unwrap();
 
+        let collecter = ::utils::Collecter::new(9000);
+        let temperatures = collecter.temperatures();
+        let pressures = collecter.pressures();
 
+        config.simulation.add_output(Box::new(collecter));
         config.simulation.run(&mut config.system, config.nsteps);
-        let pressure = units::from(5e4, "bar").unwrap();
-        assert!(f64::abs(config.system.pressure() - pressure)/pressure < 1e-2);
+
+        let expected = units::from(50000.0, "bar").unwrap();
+        let pressure = ::utils::mean(pressures.clone());
+        assert!(f64::abs(pressure - expected) / expected < 1e-3);
+
+        let expected = units::from(273.0, "K").unwrap();
+        let temperature = ::utils::mean(temperatures.clone());
+        assert!(f64::abs(temperature - expected) / expected < 1e-2);
     }
 }
 

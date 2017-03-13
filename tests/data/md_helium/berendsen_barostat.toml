@@ -12,7 +12,7 @@ lj = {sigma = "2 A", epsilon = "0.2 kJ/mol"}
 cutoff = "10 A"
 
 [[simulations]]
-nsteps = 1_000
+nsteps = 5_000
 
 [simulations.propagator]
 type = "MolecularDynamics"
