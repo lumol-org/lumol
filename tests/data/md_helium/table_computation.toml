@@ -1,0 +1,21 @@
+[input]
+version = 1
+
+[[systems]]
+file = "../configuration/helium.xyz"
+cell = 10
+velocities = {init = "300 K"}
+
+[[systems.potentials.pairs]]
+atoms = ["He", "He"]
+lj = {sigma = "2 A", epsilon = "0.2 kJ/mol"}
+cutoff = "7 A"
+computation = {table = {max = "7 A", n = 1000}}
+
+[[simulations]]
+nsteps = 1_000
+
+[simulations.propagator]
+type = "MolecularDynamics"
+timestep = "1 fs"
+integrator = {type = "VelocityVerlet"}

@@ -1,0 +1,6 @@
+[input]
+version = 1
+
+[[systems]]
+file = "configuration/lj_4.xyz"
+cell = 8
