@@ -1,0 +1,16 @@
+[input]
+version = 1
+
+[[systems]]
+file = "butane.xyz"
+guess_bonds = true
+cell = 20
+potentials = "butane.toml"
+velocities = {init = "300 K"}
+
+[[simulations]]
+nsteps = 1_000
+
+[simulations.propagator]
+type = "MolecularDynamics"
+timestep = "1 fs"

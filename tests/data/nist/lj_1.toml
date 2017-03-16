@@ -1,6 +1,0 @@
-[input]
-version = 1
-
-[[systems]]
-file = "configuration/lj_1.xyz"
-cell = 10

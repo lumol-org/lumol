@@ -1,0 +1,6 @@
+[input]
+version = 1
+
+[[systems]]
+file = "lj-3.xyz"
+cell = 10
