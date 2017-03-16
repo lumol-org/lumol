@@ -1,0 +1,15 @@
+[input]
+version = 1
+
+[[systems]]
+file = "small.xyz"
+cell = 11.2804
+potentials = "ewald.toml"
+velocities = {init = "300 K"}
+
+[[simulations]]
+nsteps = 100
+
+[simulations.propagator]
+type = "MolecularDynamics"
+timestep = "1 fs"

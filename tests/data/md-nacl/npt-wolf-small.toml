@@ -1,0 +1,17 @@
+[input]
+version = 1
+
+[[systems]]
+file = "small.xyz"
+cell = 11.2804
+potentials = "wolf.toml"
+velocities = {init = "300 K"}
+
+[[simulations]]
+nsteps = 10_000
+
+[simulations.propagator]
+type = "MolecularDynamics"
+timestep = "1 fs"
+integrator = {type = "AnisoBerendsenBarostat", pressure = "50000 bar", timestep = 1000}
+thermostat = {type = "Berendsen", temperature = "273 K", timestep = 100}

@@ -1,0 +1,14 @@
+[input]
+version = 1
+
+[[systems]]
+file = "big.pdb"
+potentials = "wolf.toml"
+velocities = {init = "300 K"}
+
+[[simulations]]
+nsteps = 1_000
+
+[simulations.propagator]
+type = "MolecularDynamics"
+timestep = "1 fs"
