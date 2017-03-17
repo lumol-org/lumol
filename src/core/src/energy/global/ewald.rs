@@ -394,13 +394,17 @@ impl Ewald {
                 for ikz in 0..self.kmax {
                     // The k = 0 and the cutoff in k-space are already handled
                     // in `expfactors`.
-                    if self.expfactors[(ikx, iky, ikz)].abs() < f64::EPSILON {continue}
+                    let expfactor = self.expfactors[(ikx, iky, ikz)].abs() ;
+                    if expfactor < f64::EPSILON {continue}
+
+                    let f = expfactor * factor;
+
                     let k = (ikx as f64) * rec_kx + (iky as f64) * rec_ky + (ikz as f64) * rec_kz;
                     for i in 0..system.size() {
                         let qi = system[i].charge;
                         for j in (i + 1)..system.size() {
                             let qj = system[j].charge;
-                            let force = factor * self.kspace_force_factor(i, j, ikx, iky, ikz, qi, qj) * k;
+                            let force = f * self.kspace_force_factor(i, j, ikx, iky, ikz, qi, qj) * k;
                             callback(i, j, force);
                         }
                     }
@@ -432,7 +436,7 @@ impl Ewald {
                       * self.fourier_phases[(ikz, j, 2)];
         let sin_kr = (fourier_i - fourier_j).imag();
 
-        return qi * qj * self.expfactors[(ikx, iky, ikz)] * sin_kr;
+        return qi * qj * sin_kr;
     }
 
     /// k-space contribution to the virial
