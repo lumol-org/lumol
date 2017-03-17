@@ -398,13 +398,16 @@ impl Ewald {
                     if expfactor < f64::EPSILON {continue}
 
                     let f = expfactor * factor;
-
                     let k = (ikx as f64) * rec_kx + (iky as f64) * rec_ky + (ikz as f64) * rec_kz;
+
                     for i in 0..system.size() {
                         let qi = system[i].charge;
+                        let fourier_i = self.fourier_phases[(ikx, i, 0)].imag_mul(
+                            self.fourier_phases[(iky, i, 1)] * self.fourier_phases[(ikz, i, 2)]
+                        );
                         for j in (i + 1)..system.size() {
                             let qj = system[j].charge;
-                            let force = f * self.kspace_force_factor(i, j, ikx, iky, ikz, qi, qj) * k;
+                            let force = f * self.kspace_force_factor(j, ikx, iky, ikz, qi, qj, fourier_i) * k;
                             callback(i, j, force);
                         }
                     }
@@ -427,10 +430,9 @@ impl Ewald {
     /// `qj`, at k point  `(ikx, iky, ikz)`
     #[inline]
     #[allow(too_many_arguments)]
-    fn kspace_force_factor(&self, i: usize, j: usize, ikx: usize, iky: usize, ikz: usize, qi: f64, qj: f64) -> f64 {
-        let fourier_i = self.fourier_phases[(ikx, i, 0)].imag_mul(
-            self.fourier_phases[(iky, i, 1)] * self.fourier_phases[(ikz, i, 2)]
-        );
+    fn kspace_force_factor(&self, j: usize, ikx: usize, iky: usize, ikz: usize,
+                           qi: f64, qj: f64, fourier_i: f64) -> f64 {
+
         let fourier_j = self.fourier_phases[(ikx, j, 0)].imag_mul(
             self.fourier_phases[(iky, j, 1)] * self.fourier_phases[(ikz, j, 2)]
         );
