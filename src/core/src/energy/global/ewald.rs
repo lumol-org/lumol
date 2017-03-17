@@ -378,9 +378,12 @@ impl Ewald {
         return energy;
     }
 
-    /// k-space contribution to the forces
-    fn kspace_forces(&mut self, system: &System, forces: &mut [Vector3D]) {
-        assert_eq!(forces.len(), system.size());
+    /// Loop over each k_space force.
+    ///
+    /// Abstracts over the very similar computations in `kspace_forces`
+    /// and `kspace_virial`.
+    fn for_each_kspace_force<F>(&mut self, system: &System, mut callback: F)
+    where F : FnMut(usize, usize, Vector3D){
         self.density_fft(system);
 
         let factor = 4.0 * PI / (system.cell().volume() * ELCC);
@@ -398,14 +401,22 @@ impl Ewald {
                         for j in (i + 1)..system.size() {
                             let qj = system[j].charge;
                             let force = factor * self.kspace_force_factor(i, j, ikx, iky, ikz, qi, qj) * k;
-
-                            forces[i] -= force;
-                            forces[j] += force;
+                            callback(i, j, force);
                         }
                     }
                 }
             }
         }
+    }
+
+    /// k-space contribution to the forces
+    fn kspace_forces(&mut self, system: &System, forces: &mut [Vector3D]) {
+        assert_eq!(forces.len(), system.size());
+
+        self.for_each_kspace_force(system, |i, j, force|{
+            forces[i] -= force;
+            forces[j] += force;
+        });
     }
 
     /// Get the force factor for particles `i` and `j` with charges `qi` and
@@ -426,32 +437,13 @@ impl Ewald {
 
     /// k-space contribution to the virial
     fn kspace_virial(&mut self, system: &System) -> Matrix3 {
-        self.density_fft(system);
         let mut virial = Matrix3::zero();
 
-        let factor = 4.0 * PI / (system.cell().volume() * ELCC);
-        let (rec_kx, rec_ky, rec_kz) = system.cell().reciprocal_vectors();
+        self.for_each_kspace_force(system, |i, j, force|{
+            let rij = system.nearest_image(i, j);
+            virial += force.tensorial(&rij);
+        });
 
-        for ikx in 0..self.kmax {
-            for iky in 0..self.kmax {
-                for ikz in 0..self.kmax {
-                    // The k = 0 and the cutoff in k-space are already handled
-                    // in `expfactors`.
-                    if self.expfactors[(ikx, iky, ikz)].abs() < f64::EPSILON {continue}
-                    let k = (ikx as f64) * rec_kx + (iky as f64) * rec_ky + (ikz as f64) * rec_kz;
-                    for i in 0..system.size() {
-                        let qi = system[i].charge;
-                        for j in (i + 1)..system.size() {
-                            let qj = system[j].charge;
-                            let force = factor * self.kspace_force_factor(i, j, ikx, iky, ikz, qi, qj) * k;
-                            let rij = system.nearest_image(i, j);
-
-                            virial += force.tensorial(&rij);
-                        }
-                    }
-                }
-            }
-        }
         return virial;
     }
 
