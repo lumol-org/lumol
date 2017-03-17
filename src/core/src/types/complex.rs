@@ -153,10 +153,27 @@ impl Complex {
             imag: -self.imag
         }
     }
+
+    /// Get only the imaginary part of the multiplication.
+    /// # Examples
+    /// ```
+    /// # use lumol::types::Complex;
+    /// let a = Complex::cartesian(3.0, -2.0);
+    /// let b = Complex::cartesian(1.5, -3.0);
+    ///
+    /// assert_eq!(a.imag_mul(b), (a*b).imag());
+    /// assert_eq!(b.imag_mul(a), (a*b).imag());
+    /// ```
+    #[inline]
+    pub fn imag_mul(self, other: Complex) -> f64 {
+        self.real() * other.imag() + self.imag() * other.real()
+    }
 }
 
 impl Add<Complex> for Complex {
     type Output = Complex;
+
+    #[inline]
     fn add(self, other: Complex) -> Complex {
         let x = self.real() + other.real();
         let y = self.imag() + other.imag();
@@ -166,6 +183,8 @@ impl Add<Complex> for Complex {
 
 impl Sub<Complex> for Complex {
     type Output = Complex;
+
+    #[inline]
     fn sub(self, other: Complex) -> Complex {
         let x = self.real() - other.real();
         let y = self.imag() - other.imag();
@@ -175,6 +194,8 @@ impl Sub<Complex> for Complex {
 
 impl Neg for Complex {
     type Output = Complex;
+
+    #[inline]
     fn neg(self) -> Complex {
         Complex{
             real: -self.real,
@@ -185,6 +206,8 @@ impl Neg for Complex {
 
 impl Mul<Complex> for Complex {
     type Output = Complex;
+
+    #[inline]
     fn mul(self, other: Complex) -> Complex {
         let x = self.real() * other.real() - self.imag() * other.imag();
         let y = self.real() * other.imag() + self.imag() * other.real();
@@ -194,6 +217,8 @@ impl Mul<Complex> for Complex {
 
 impl Mul<f64> for Complex {
     type Output = Complex;
+
+    #[inline]
     fn mul(self, other: f64) -> Complex {
         Complex::cartesian(self.real() * other, self.imag() * other)
     }
@@ -201,6 +226,8 @@ impl Mul<f64> for Complex {
 
 impl Mul<Complex> for f64 {
     type Output = Complex;
+
+    #[inline]
     fn mul(self, other: Complex) -> Complex {
         Complex::cartesian(self * other.real(), self * other.imag())
     }
@@ -208,6 +235,8 @@ impl Mul<Complex> for f64 {
 
 impl Div<Complex> for Complex {
     type Output = Complex;
+
+    #[inline]
     fn div(self, other: Complex) -> Complex {
         let r = other.norm2();
         let x = self.real() * other.real() + self.imag() * other.imag();
@@ -219,6 +248,8 @@ impl Div<Complex> for Complex {
 
 impl Div<f64> for Complex {
     type Output = Complex;
+
+    #[inline]
     fn div(self, other: f64) -> Complex {
         let norm = self.norm() / other;
         let phase = self.phase();

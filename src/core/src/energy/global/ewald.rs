@@ -428,15 +428,14 @@ impl Ewald {
     #[inline]
     #[allow(too_many_arguments)]
     fn kspace_force_factor(&self, i: usize, j: usize, ikx: usize, iky: usize, ikz: usize, qi: f64, qj: f64) -> f64 {
-        let fourier_i = self.fourier_phases[(ikx, i, 0)]
-                      * self.fourier_phases[(iky, i, 1)]
-                      * self.fourier_phases[(ikz, i, 2)];
-        let fourier_j = self.fourier_phases[(ikx, j, 0)]
-                      * self.fourier_phases[(iky, j, 1)]
-                      * self.fourier_phases[(ikz, j, 2)];
-        let sin_kr = (fourier_i - fourier_j).imag();
+        let fourier_i = self.fourier_phases[(ikx, i, 0)].imag_mul(
+            self.fourier_phases[(iky, i, 1)] * self.fourier_phases[(ikz, i, 2)]
+        );
+        let fourier_j = self.fourier_phases[(ikx, j, 0)].imag_mul(
+            self.fourier_phases[(iky, j, 1)] * self.fourier_phases[(ikz, j, 2)]
+        );
 
-        return qi * qj * sin_kr;
+        return qi * qj * (fourier_i - fourier_j);
     }
 
     /// k-space contribution to the virial
