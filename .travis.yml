@@ -51,6 +51,8 @@ script:
     - cargo test -p lumol-input
     # Check that benchmarks still compile
     - cargo bench --no-run
+    # Run benchmarks if __TRAVIS_RUN_BENCHES=[n_commits] appears in the commit msg
+    - python scripts/run-benchmarks.py
     # Misc style checking
     - python scripts/check-whitespaces.py
     # Generate and publish coverage
