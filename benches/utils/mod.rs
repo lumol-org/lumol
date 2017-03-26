@@ -2,6 +2,8 @@ use lumol::sys::{System, Trajectory};
 use lumol_input::InteractionsInput;
 use std::path::Path;
 
+use rand::{XorShiftRng, SeedableRng};
+
 pub fn get_system(name: &str) -> System {
     let data = Path::new(file!()).parent().unwrap().join("..").join("data");
 
@@ -14,4 +16,8 @@ pub fn get_system(name: &str) -> System {
                       .unwrap();
 
     system
+}
+
+pub fn get_rng(seed: u32) -> XorShiftRng {
+    XorShiftRng::from_seed([seed, 784, 71255487, 5824])
 }

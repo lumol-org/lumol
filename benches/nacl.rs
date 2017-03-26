@@ -78,7 +78,7 @@ fn cache_move_particle_ewald(bencher: &mut Bencher) {
     let mut cache = EnergyCache::new();
     cache.init(&system);
 
-    let mut rng = rand::weak_rng();
+    let mut rng = utils::get_rng(41201154);
 
     let particle: usize = rng.gen_range(0, system.size());
     let mut delta = system[particle].position;
@@ -96,7 +96,7 @@ fn cache_move_particle_wolf(bencher: &mut Bencher) {
     let mut cache = EnergyCache::new();
     cache.init(&system);
 
-    let mut rng = rand::weak_rng();
+    let mut rng = utils::get_rng(474114);
 
     let particle: usize = rng.gen_range(0, system.size());
     let mut delta = system[particle].position;

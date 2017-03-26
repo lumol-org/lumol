@@ -42,7 +42,7 @@ fn cache_move_particle(bencher: &mut Bencher) {
     let mut cache = EnergyCache::new();
     cache.init(&system);
 
-    let mut rng = rand::weak_rng();
+    let mut rng = utils::get_rng(654646);
 
     let particle: usize = rng.gen_range(0, system.size());
     let mut delta = system[particle].position;
