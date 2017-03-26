@@ -89,7 +89,7 @@ fn cache_move_particles_wolf(bencher: &mut Bencher) {
     let mut cache = EnergyCache::new();
     cache.init(&system);
 
-    let mut rng = rand::weak_rng();
+    let mut rng = utils::get_rng(454548784);
 
     let molecule = rng.choose(system.molecules()).unwrap();
     let mut delta = vec![];
@@ -110,7 +110,7 @@ fn cache_move_particles_ewald(bencher: &mut Bencher) {
     let mut cache = EnergyCache::new();
     cache.init(&system);
 
-    let mut rng = rand::weak_rng();
+    let mut rng = utils::get_rng(9886565);
 
     let molecule = rng.choose(system.molecules()).unwrap();
     let mut delta = vec![];
@@ -131,7 +131,7 @@ fn cache_move_all_rigid_molecules_wolf(bencher: &mut Bencher) {
     let mut cache = EnergyCache::new();
     cache.init(&system);
 
-    let mut rng = rand::weak_rng();
+    let mut rng = utils::get_rng(3);
     for molecule in system.molecules().to_owned() {
         let delta = Vector3D::new(rng.gen(), rng.gen(), rng.gen());
         for i in molecule {
@@ -151,7 +151,7 @@ fn cache_move_all_rigid_molecules_ewald(bencher: &mut Bencher) {
     let mut cache = EnergyCache::new();
     cache.init(&system);
 
-    let mut rng = rand::weak_rng();
+    let mut rng = utils::get_rng(2121);
     for molecule in system.molecules().to_owned() {
         let delta = Vector3D::new(rng.gen(), rng.gen(), rng.gen());
         for i in molecule {
