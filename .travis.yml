@@ -39,6 +39,13 @@ install:
       else
           cargo install mdbook
       fi
+    # Build and cache cargo-benchcmp
+    - |
+      if [ -f $HOME/.cargo/bin/cargo-benchcmp ]; then
+          echo "Using cached cargo-benchcmp from ~/.cargo/bin/cargo-benchcmp"
+      else
+          cargo install cargo-benchcmp
+      fi
     # Clean any cached test executable
     - rm -f target/debug/*-*
 script:
