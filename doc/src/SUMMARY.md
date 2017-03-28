@@ -31,7 +31,11 @@
     - [Adding potentials]()
     - [Adding outputs]()
     - [Extending Molecular dynamics]()
-    - [Adding a Monte-Carlo move](advanced_tutorial/mc.md)
+    - [Adding a Monte-Carlo move](advanced_tutorial/add_move.md)
+        - [A minimalist implementation](advanced_tutorial/add_move_minimal.md)
+        - [Adding the move to the propagator](advanced_tutorial/add_move_propagator.md)
+        - [Refining the implementation](advanced_tutorial/add_move_refinment.md)
+        - [Use the move via input files](advanced_tutorial/add_move_input_file.md)
     - [Adding propagators]()
 
 - [FAQ](faq.md)
