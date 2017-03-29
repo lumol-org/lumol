@@ -1,6 +1,6 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) 2015-2016 Lumol's contributors — BSD license
-use toml::Table;
+use toml::value::Table;
 use std::path::PathBuf;
 
 use lumol::out::Output;
@@ -19,7 +19,7 @@ impl Input {
     pub fn read_outputs(&self) -> Result<Vec<(Box<Output>, u64)>> {
         let config = try!(self.simulation_table());
         if let Some(outputs) = config.get("outputs") {
-            let outputs = try!(outputs.as_slice().ok_or(
+            let outputs = try!(outputs.as_array().ok_or(
                 Error::from("'outputs' must be an array of tables in simulation")
             ));
 

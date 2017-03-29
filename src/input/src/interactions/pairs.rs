@@ -1,6 +1,6 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) 2015-2016 Lumol's contributors — BSD license
-use toml::{Value, Table};
+use toml::value::{Value, Table};
 
 use lumol::sys::System;
 use lumol::units;
@@ -62,7 +62,7 @@ impl InteractionsInput {
             None => return Ok(())
         };
 
-        let pairs = try!(pairs.as_slice().ok_or(
+        let pairs = try!(pairs.as_array().ok_or(
             Error::from("The 'pairs' section must be an array")
         ));
 
@@ -157,7 +157,7 @@ impl InteractionsInput {
             None => return Ok(())
         };
 
-        let bonds = try!(bonds.as_slice().ok_or(
+        let bonds = try!(bonds.as_array().ok_or(
             Error::from("The 'bonds' section must be an array")
         ));
 

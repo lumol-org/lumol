@@ -1,6 +1,6 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) 2015-2016 Lumol's contributors — BSD license
-use toml::{Table, Value};
+use toml::value::{Table, Value};
 use error::{Error, Result};
 
 
@@ -68,9 +68,10 @@ pub fn slice<'a>(key: &str, config: &'a Table, context: &str) -> Result<&'a [Val
     let array = try!(config.get(key).ok_or(Error::from(
         format!("Missing '{}' key in {}", key, context)
     )));
-    return array.as_slice().ok_or(Error::from(
+    let array = array.as_array().ok_or(Error::from(
         format!("'{}' must be an array in {}", key, context)
-    ))
+    ));
+    return array.map(|arr| arr.as_slice());
 }
 
 /// Extract the string 'type' key in a TOML table

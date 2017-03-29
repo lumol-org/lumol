@@ -6,7 +6,6 @@ use std::fmt;
 use std::result;
 use std::path::PathBuf;
 
-use toml::Parser;
 use chemfiles;
 
 use lumol::units::ParseError;
@@ -19,7 +18,7 @@ pub type Result<T> = result::Result<T, Error>;
 #[derive(Debug)]
 pub enum Error {
     /// Error in the TOML input file
-    TOML(String),
+    TOML(Box<error::Error>),
     /// IO error, and associated file path
     Io(io::Error, PathBuf),
     /// Error while reading a trajectory file
@@ -63,23 +62,25 @@ impl From<ParseError> for Error {
 impl fmt::Display for Error {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> result::Result<(), fmt::Error> {
         use std::error::Error as StdError;
-        let message = match *self {
+        match *self {
             Error::Io(ref err, ref path) => {
                 match err.kind() {
                     io::ErrorKind::NotFound => {
-                        format!("can not find '{}'", path.display())
+                        try!(write!(fmt, "can not find '{}'", path.display()))
                     }
                     io::ErrorKind::PermissionDenied => {
-                        format!("permission to access '{}' denied", path.display())
+                        try!(write!(fmt, "permission to access '{}' denied", path.display()))
                     }
                     _ => {
-                        format!("error with '{}': {}", path.display(), self.description())
+                        try!(write!(fmt, "error with '{}': {}", path.display(), self.description()))
                     }
                 }
             }
-            _ => String::from(self.description())
+            Error::Trajectory(ref err) => try!(write!(fmt, "{}", err)),
+            Error::TOML(ref err) => try!(write!(fmt, "{}", err)),
+            Error::Config(ref err) => try!(write!(fmt, "{}", err)),
+            Error::Unit(ref err) => try!(write!(fmt, "{}", err)),
         };
-        try!(write!(fmt, "{}", message));
         Ok(())
     }
 }
@@ -87,7 +88,8 @@ impl fmt::Display for Error {
 impl error::Error for Error {
     fn description(&self) -> &str {
         match *self {
-            Error::TOML(ref err) | Error::Config(ref err) => err,
+            Error::Config(ref err) => err,
+            Error::TOML(ref err) => err.description(),
             Error::Io(ref err, _) => err.description(),
             Error::Trajectory(ref err) => err.description(),
             Error::Unit(ref err) => err.description(),
@@ -102,14 +104,4 @@ impl error::Error for Error {
             Error::Unit(ref err) => Some(err),
         }
     }
-}
-
-pub fn toml_error_to_string(parser: &Parser) -> String {
-    let errors = parser.errors.iter().map(|error|{
-        let (line, _) = parser.to_linecol(error.lo);
-        format!("{} at line {}", error.desc, line + 1)
-    }).collect::<Vec<_>>().join("\n    ");
-
-    let plural = if errors.len() == 1 {""} else {"s"};
-    return format!("TOML parsing error{}: {}", plural, errors);
 }

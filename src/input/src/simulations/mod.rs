@@ -1,6 +1,7 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) 2015-2016 Lumol's contributors — BSD license
-use toml::{Parser, Table};
+use toml::de::from_str as parse;
+use toml::value::Table;
 
 use std::io::prelude::*;
 use std::path::{Path, PathBuf};
@@ -8,7 +9,6 @@ use std::fs::File;
 
 use validate;
 use error::{Error, Result};
-use error::toml_error_to_string;
 
 use lumol::sim::Simulation;
 use lumol::sys::System;
@@ -54,14 +54,12 @@ impl Input {
     /// Read the `Input` from a TOML formatted string.
     // TODO: use restricted privacy here
     #[doc(hidden)]
-    pub fn from_str(path: PathBuf, buffer: &str) -> Result<Input> {
-        let mut parser = Parser::new(buffer);
-        let config = try!(parser.parse().ok_or(
-            Error::TOML(toml_error_to_string(&parser))
-        ));
-
+    pub fn from_str(path: PathBuf, string: &str) -> Result<Input> {
+        let config = try!(parse(string).map_err(|err| {
+            Error::TOML(Box::new(err))
+        }));
         try!(validate(&config));
-        Ok(Input{path: path, config: config})
+        Ok(Input{path: path, config: config.clone()})
     }
 
     /// Read input file and get the corresponding `Config`

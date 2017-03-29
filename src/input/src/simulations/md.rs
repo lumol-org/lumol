@@ -1,6 +1,6 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) 2015-2016 Lumol's contributors — BSD license
-use toml::Table;
+use toml::value::Table;
 
 use lumol::sim::md::*;
 use lumol::units;
@@ -68,7 +68,7 @@ impl FromToml for MolecularDynamics {
         }
 
         if let Some(controls) = config.get("controls") {
-            let controls = try!(controls.as_slice().ok_or(Error::from(
+            let controls = try!(controls.as_array().ok_or(Error::from(
                 "'controls' must be an array of tables in molecular dynamics"
             )));
 

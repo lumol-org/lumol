@@ -67,7 +67,7 @@ extern crate toml;
 extern crate chemfiles;
 extern crate lumol;
 
-use toml::Table;
+use toml::value::Table;
 
 macro_rules! try_io {
     ($expr: expr, $path: expr) => (
@@ -108,7 +108,7 @@ fn validate(config: &Table) -> Result<()> {
         Error::from("Missing 'input' table")
     ));
 
-    let version = try!(input.lookup("version").ok_or(
+    let version = try!(input.get("version").ok_or(
         Error::from("Missing 'version' key in 'input' table")
     ));
 
