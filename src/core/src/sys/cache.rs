@@ -66,7 +66,7 @@ impl EnergyCache {
 
     /// Clear all values in the cache by setting them to 0
     fn clear(&mut self) {
-        self.pairs_cache.assign(0.0);
+        self.pairs_cache.fill(0.0);
         self.pairs = 0.0;
         self.pairs_tail = 0.0;
         self.bonds = 0.0;
@@ -248,9 +248,9 @@ impl EnergyCache {
             cache.coulomb += coulomb_delta;
             cache.global += global_delta;
 
-            let (n, m) = new_pairs.shape();
+            let (n, m) = new_pairs.dim();
             debug_assert_eq!(n, m);
-            debug_assert_eq!((n, m), cache.pairs_cache.shape());
+            debug_assert_eq!((n, m), cache.pairs_cache.dim());
             // only loop over the indices that actually changed
             for &i in &idxes {
                 for j in 0..n {
@@ -333,9 +333,9 @@ impl EnergyCache {
             cache.coulomb = new_coulomb;
             cache.global = new_global;
 
-            let (n, m) = new_pairs.shape();
+            let (n, m) = new_pairs.dim();
             debug_assert_eq!(n, m);
-            debug_assert_eq!((n, m), cache.pairs_cache.shape());
+            debug_assert_eq!((n, m), cache.pairs_cache.dim());
             for (i, mi) in system.molecules().iter().enumerate() {
                 for mj in system.molecules().iter().skip(i + 1) {
                     for pi in mi.iter() {
