@@ -1,6 +1,7 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) 2015-2016 Lumol's contributors — BSD license
-use toml::{Parser, Table, Value};
+use toml::de::from_str as parse;
+use toml::value::{Table, Value};
 
 use std::io::prelude::*;
 use std::fs::File;
@@ -11,7 +12,6 @@ use lumol::energy::PairRestriction;
 
 use {Error, Result};
 use validate;
-use error::toml_error_to_string;
 
 mod toml;
 mod pairs;
@@ -38,13 +38,11 @@ impl InteractionsInput {
     // TODO: use restricted privacy here
     #[doc(hidden)]
     pub fn from_string(string: &str) -> Result<InteractionsInput> {
-        let mut parser = Parser::new(string);
-        let config = try!(parser.parse().ok_or(
-            Error::TOML(toml_error_to_string(&parser))
-        ));
-
+        let config = try!(parse(string).map_err(|err| {
+            Error::TOML(Box::new(err))
+        }));
         try!(validate(&config));
-        return InteractionsInput::from_toml(config);
+        return InteractionsInput::from_toml(config.clone());
     }
 
     /// Read the interactions from a TOML table. This is an internal function,

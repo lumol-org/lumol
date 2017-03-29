@@ -1,6 +1,6 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) 2015-2016 Lumol's contributors — BSD license
-use toml::{Table, Value};
+use toml::value::{Table, Value};
 
 use lumol::units;
 use lumol::sys::*;

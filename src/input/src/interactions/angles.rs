@@ -1,6 +1,6 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) 2015-2016 Lumol's contributors — BSD license
-use toml::{Value, Table};
+use toml::value::{Value, Table};
 
 use lumol::sys::System;
 use lumol::energy::{Harmonic, CosineHarmonic, Torsion, NullPotential};
@@ -22,7 +22,7 @@ impl InteractionsInput {
             None => return Ok(())
         };
 
-        let angles = try!(angles.as_slice().ok_or(
+        let angles = try!(angles.as_array().ok_or(
             Error::from("The 'angles' section must be an array")
         ));
 
@@ -58,7 +58,7 @@ impl InteractionsInput {
             None => return Ok(())
         };
 
-        let dihedrals = try!(dihedrals.as_slice().ok_or(
+        let dihedrals = try!(dihedrals.as_array().ok_or(
             Error::from("The 'dihedrals' section must be an array")
         ));
 

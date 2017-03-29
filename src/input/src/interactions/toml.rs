@@ -2,7 +2,7 @@
 // Copyright (C) 2015-2016 Lumol's contributors — BSD license
 
 //! Convert TOML values to Lumol types.
-use toml::Table;
+use toml::value::Table;
 
 use error::{Error, Result};
 use FromToml;
