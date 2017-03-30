@@ -5,8 +5,8 @@
 //! Monte-Carlo simulation
 extern crate lumol;
 extern crate lumol_input as input;
+extern crate env_logger;
 
-use lumol::Logger;
 use lumol::units;
 use lumol::consts::K_BOLTZMANN;
 
@@ -19,7 +19,7 @@ static START: Once = ONCE_INIT;
 
 #[test]
 fn perfect_gas() {
-    START.call_once(|| {Logger::stdout();});
+    START.call_once(|| {env_logger::init().unwrap();});
     let path = Path::new(file!()).parent().unwrap()
                                  .join("data")
                                  .join("mc-helium")

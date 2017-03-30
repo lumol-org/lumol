@@ -3,8 +3,6 @@
 
 //! Using a custom potential in simulations
 extern crate lumol;
-
-use lumol::Logger;
 use lumol::types::{Vector3D, Zero};
 use lumol::sys::{System, Particle};
 use lumol::energy::{Potential, PairPotential, PairInteraction};
@@ -51,7 +49,6 @@ impl PairPotential for LJ {
 }
 
 fn main() {
-    Logger::stdout();
     let mut system = System::new();
 
     system.add_particle(Particle::new("F"));

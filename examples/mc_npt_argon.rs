@@ -6,16 +6,12 @@
 extern crate lumol;
 extern crate lumol_input as input;
 
-use lumol::Logger;
 use lumol::sys::{System, Trajectory, UnitCell};
 use lumol::energy::{LennardJones, PairInteraction};
 use lumol::sim::Simulation;
 use lumol::sim::mc::{MonteCarlo, Translate, Resize};
 use lumol::units;
 use lumol::out::{EnergyOutput, PropertiesOutput};
-
-use std::sync::{Once, ONCE_INIT};
-static START: Once = ONCE_INIT;
 
 use std::path::Path;
 
@@ -42,7 +38,6 @@ fn get_system() -> System {
 
 
 fn main() {
-    START.call_once(|| {Logger::stdout();});
     let mut system = get_system();
 
     // To compare to NIST NVT data

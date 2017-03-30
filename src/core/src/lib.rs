@@ -52,18 +52,30 @@ extern crate num_traits as num;
 extern crate rand;
 extern crate special;
 
+/// Log a fatal error, and then panic with the same message
+macro_rules! fatal_error {
+    ($($args:tt)*) => {{
+        error!($($args)*);
+        panic!($($args)*);
+    }};
+}
+
+/// Log an internal fatal error, and then panic with the same message
+macro_rules! internal_error {
+    ($arg: expr) => {{
+        let message = format!("Internal error: {}", $arg);
+        fatal_error!("{}", message);
+    }};
+}
+
+
 // Helper modules
 #[macro_use]
 mod utils;
-#[macro_use]
-mod logging;
-
-pub mod units;
-pub mod consts;
-
-pub use logging::{Logger, LogLevel};
 
 // Main modules
+pub mod units;
+pub mod consts;
 pub mod types;
 pub mod energy;
 pub mod sys;

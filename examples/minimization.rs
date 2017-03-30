@@ -4,7 +4,6 @@
 //! Geometry minization of a molecule of water
 extern crate lumol;
 
-use lumol::Logger;
 use lumol::sys::{System, Particle};
 use lumol::types::{Vector3D, Zero};
 use lumol::energy::{PairInteraction, NullPotential, Harmonic};
@@ -14,7 +13,6 @@ use lumol::out::EnergyOutput;
 use lumol::units;
 
 fn main() {
-    Logger::stdout();
     let mut system = System::new();
 
     let alpha = units::from(50.0, "deg").unwrap();

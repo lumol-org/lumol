@@ -2,8 +2,8 @@
 // Copyright (C) 2015-2016 Lumol's contributors — BSD license
 extern crate lumol;
 extern crate lumol_input as input;
+extern crate env_logger;
 
-use lumol::Logger;
 use input::Input;
 
 use std::path::Path;
@@ -15,7 +15,7 @@ static START: Once = ONCE_INIT;
 // anything for now. It should test the g(r) function someday.
 #[test]
 fn wolf() {
-    START.call_once(|| {Logger::stdout();});
+    START.call_once(|| {env_logger::init().unwrap();});
     let path = Path::new(file!()).parent().unwrap()
                                  .join("data")
                                  .join("mc-water")
@@ -27,7 +27,7 @@ fn wolf() {
 
 #[test]
 fn ewald() {
-    START.call_once(|| {Logger::stdout();});
+    START.call_once(|| {env_logger::init().unwrap();});
     let path = Path::new(file!()).parent().unwrap()
                                  .join("data")
                                  .join("mc-water")
