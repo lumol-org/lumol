@@ -8,7 +8,6 @@ extern crate lumol_input;
 extern crate log;
 extern crate clap;
 
-use lumol::Logger;
 use lumol_input::Input;
 use clap::{App, ArgMatches};
 
@@ -24,8 +23,6 @@ fn parse_args<'a>() -> ArgMatches<'a> {
 
 fn main() {
     let args = parse_args();
-    // TODO: add logger specification to the input file
-    Logger::stdout();
     let input = args.value_of("input.toml").unwrap();
     let mut config = match Input::new(input).and_then(|input| input.read()) {
         Ok(config) => config,

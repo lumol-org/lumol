@@ -27,6 +27,7 @@ clap = "2"
 [dev-dependencies]
 bencher = "0.1"
 rand = "0.3"
+env_logger = "0.4"
 
 [[bench]]
 name = "water"

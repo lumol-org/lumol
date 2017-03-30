@@ -3,7 +3,6 @@
 extern crate lumol;
 extern crate lumol_input as input;
 
-use lumol::Logger;
 use lumol::sys::{UnitCell, System, Trajectory};
 use lumol::units;
 use lumol::sim::Simulation;
@@ -12,8 +11,6 @@ use lumol::sim::mc::{MonteCarlo, Translate, Rotate, Resize};
 use lumol::out::{EnergyOutput, PropertiesOutput};
 
 use std::path::Path;
-use std::sync::{Once, ONCE_INIT};
-static START: Once = ONCE_INIT;
 
 fn get_system() -> System {
     let data_dir = Path::new(file!()).parent().unwrap().join("data");
@@ -49,7 +46,6 @@ fn get_system() -> System {
 }
 
 fn main() {
-    START.call_once(|| {Logger::stdout();});
     let mut system = get_system();
 
     let temperature = units::from(217.0, "K").unwrap();

@@ -4,25 +4,22 @@
 //! Testing physical properties of a NaCl crystal
 extern crate lumol;
 extern crate lumol_input as input;
+extern crate env_logger;
 
 use std::sync::{Once, ONCE_INIT};
 pub static START: Once = ONCE_INIT;
 
 mod utils;
 
-
 mod wolf {
     use START;
-
-    use lumol::Logger;
     use lumol::units;
-
     use input::Input;
     use std::path::Path;
 
     #[test]
     fn constant_energy() {
-        START.call_once(|| {Logger::stdout();});
+        START.call_once(|| {::env_logger::init().unwrap();});
         let path = Path::new(file!()).parent().unwrap()
                                      .join("data")
                                      .join("md-nacl")
@@ -38,7 +35,7 @@ mod wolf {
 
     #[test]
     fn anisotropic_berendsen() {
-        START.call_once(|| {Logger::stdout();});
+        START.call_once(|| {::env_logger::init().unwrap();});
         let path = Path::new(file!()).parent().unwrap()
                                      .join("data")
                                      .join("md-nacl")
@@ -64,16 +61,13 @@ mod wolf {
 
 mod ewald {
     use START;
-
-    use lumol::Logger;
     use lumol::units;
-
     use input::Input;
     use std::path::Path;
 
     #[test]
     fn constant_energy() {
-        START.call_once(|| {Logger::stdout();});
+        START.call_once(|| {::env_logger::init().unwrap();});
         let path = Path::new(file!()).parent().unwrap()
                                      .join("data")
                                      .join("md-nacl")
@@ -88,7 +82,7 @@ mod ewald {
 
     #[test]
     fn energy() {
-        START.call_once(|| {Logger::stdout();});
+        START.call_once(|| {::env_logger::init().unwrap();});
         let path = Path::new(file!()).parent().unwrap()
                                      .join("data")
                                      .join("md-nacl")

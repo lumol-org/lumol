@@ -5,7 +5,6 @@
 extern crate lumol;
 extern crate lumol_input as input;
 
-use lumol::Logger;
 use lumol::sys::{Molecule, Particle, Trajectory, UnitCell};
 use lumol::sys::{read_molecule, molecule_type};
 use lumol::sim::Simulation;
@@ -15,8 +14,6 @@ use lumol::units;
 use input::InteractionsInput;
 
 fn main() {
-    Logger::stdout();
-
     let mut system = Trajectory::open("data/binary.xyz")
                                 .and_then(|mut traj| traj.read())
                                 .unwrap();

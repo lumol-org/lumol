@@ -7,7 +7,6 @@
 //! simulation run.
 extern crate lumol;
 
-use lumol::Logger;
 use lumol::sys::{System, UnitCell, Particle};
 use lumol::sys::veloc::{BoltzmannVelocities, InitVelocities};
 use lumol::energy::{LennardJones, PairInteraction};
@@ -17,7 +16,6 @@ use lumol::types::Vector3D;
 use lumol::units;
 
 fn main() {
-    Logger::stdout();
     let mut system = System::from_cell(UnitCell::cubic(17.0));
 
     // Create a cubic crystal of Argon by hand.

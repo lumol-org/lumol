@@ -4,8 +4,8 @@
 //! Testing molecular dynamics of butane
 extern crate lumol;
 extern crate lumol_input as input;
+extern crate env_logger;
 
-use lumol::Logger;
 use input::Input;
 
 use std::path::Path;
@@ -15,7 +15,7 @@ static START: Once = ONCE_INIT;
 
 #[test]
 fn bonds_detection() {
-    START.call_once(|| {Logger::stdout();});
+    START.call_once(|| {env_logger::init().unwrap();});
     let path = Path::new(file!()).parent().unwrap()
                                  .join("data")
                                  .join("md-butane")
@@ -32,7 +32,7 @@ fn bonds_detection() {
 
 #[test]
 fn constant_energy() {
-    START.call_once(|| {Logger::stdout();});
+    START.call_once(|| {env_logger::init().unwrap();});
     let path = Path::new(file!()).parent().unwrap()
                                  .join("data")
                                  .join("md-butane")

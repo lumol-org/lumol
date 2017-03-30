@@ -6,7 +6,6 @@
 extern crate lumol;
 extern crate lumol_input as input;
 
-use lumol::Logger;
 use lumol::sys::{UnitCell, Trajectory};
 use lumol::sys::veloc::{BoltzmannVelocities, InitVelocities};
 use lumol::sim::Simulation;
@@ -16,8 +15,6 @@ use lumol::units;
 use input::InteractionsInput;
 
 fn main() {
-    Logger::stdout();
-
     // Read the system fromt the `data/NaCl.xyz` file
     let mut trajectory = Trajectory::open("data/NaCl.xyz").unwrap();
     let mut system = trajectory.read().unwrap();
