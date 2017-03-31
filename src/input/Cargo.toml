@@ -13,6 +13,13 @@ toml = "0.3"
 log = "0.3"
 chemfiles = "0.7"
 
+[dependencies.log4rs]
+version = "0.6"
+# log4rs has a enormous ammount of features pulling a lot of crates. As we don't
+# need most of them, we selectively enable the ones we want.
+default-features = false
+features = ["console_appender", "file_appender", "threshold_filter"]
+
 [dev-dependencies]
 walkdir = "1"
 rustc-test = "0.1"

@@ -13,6 +13,7 @@ use error::{Error, Result};
 use lumol::sim::Simulation;
 use lumol::sys::System;
 
+mod logging;
 mod system;
 mod outputs;
 mod propagator;
@@ -64,6 +65,7 @@ impl Input {
 
     /// Read input file and get the corresponding `Config`
     pub fn read(&self) -> Result<Config> {
+        try!(self.setup_logging());
         let system = try!(self.read_system());
         let simulation = try!(self.read_simulation());
         let nsteps = try!(self.read_nsteps());
