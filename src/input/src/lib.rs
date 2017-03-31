@@ -61,11 +61,13 @@
     unseparated_literal_suffix
 )]
 
-#[macro_use]
-extern crate log;
+extern crate lumol;
 extern crate toml;
 extern crate chemfiles;
-extern crate lumol;
+
+#[macro_use]
+extern crate log;
+extern crate log4rs;
 
 use toml::value::Table;
 
