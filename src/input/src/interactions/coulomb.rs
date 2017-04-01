@@ -3,7 +3,7 @@
 use toml::Value;
 
 use lumol::sys::System;
-use lumol::energy::{Wolf, Ewald, CoulombicPotential};
+use lumol::energy::{Wolf, Ewald, SharedEwald, CoulombicPotential};
 
 use error::{Error, Result};
 use FromToml;
@@ -39,7 +39,10 @@ impl InteractionsInput {
         if let Value::Table(ref table) = coulomb[key] {
             let mut potential: Box<CoulombicPotential> = match key {
                 "wolf" => Box::new(try!(Wolf::from_toml(table))),
-                "ewald" => Box::new(try!(Ewald::from_toml(table))),
+                "ewald" => {
+                    let ewald = try!(Ewald::from_toml(table));
+                    Box::new(SharedEwald::new(ewald))
+                }
                 other => {
                     return Err(Error::from(format!("Unknown coulomb solver '{}'", other)))
                 },

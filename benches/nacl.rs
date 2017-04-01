@@ -10,7 +10,7 @@ extern crate lumol_input;
 use bencher::Bencher;
 use rand::Rng;
 
-use lumol::energy::{Ewald, Wolf, GlobalPotential};
+use lumol::energy::{Ewald, SharedEwald, Wolf, GlobalPotential};
 use lumol::sys::EnergyCache;
 use lumol::types::Vector3D;
 
@@ -19,7 +19,7 @@ mod utils;
 
 fn energy_ewald(bencher: &mut Bencher) {
     let system = utils::get_system("nacl");
-    let mut ewald = Ewald::new(9.5, 7);
+    let ewald = SharedEwald::new(Ewald::new(9.5, 7));
 
     bencher.iter(||{
         let _ = ewald.energy(&system);
@@ -28,7 +28,7 @@ fn energy_ewald(bencher: &mut Bencher) {
 
 fn forces_ewald(bencher: &mut Bencher) {
     let system = utils::get_system("nacl");
-    let mut ewald = Ewald::new(9.5, 7);
+    let ewald = SharedEwald::new(Ewald::new(9.5, 7));
 
     bencher.iter(||{
         let _ = ewald.forces(&system);
@@ -37,7 +37,7 @@ fn forces_ewald(bencher: &mut Bencher) {
 
 fn virial_ewald(bencher: &mut Bencher) {
     let system = utils::get_system("nacl");
-    let mut ewald = Ewald::new(9.5, 7);
+    let ewald = SharedEwald::new(Ewald::new(9.5, 7));
 
     bencher.iter(||{
         let _ = ewald.virial(&system);
@@ -46,7 +46,7 @@ fn virial_ewald(bencher: &mut Bencher) {
 
 fn energy_wolf(bencher: &mut Bencher) {
     let system = utils::get_system("nacl");
-    let mut wolf = Wolf::new(12.0);
+    let wolf = Wolf::new(12.0);
 
     bencher.iter(||{
         let _ = wolf.energy(&system);
@@ -55,7 +55,7 @@ fn energy_wolf(bencher: &mut Bencher) {
 
 fn forces_wolf(bencher: &mut Bencher) {
     let system = utils::get_system("nacl");
-    let mut wolf = Wolf::new(12.0);
+    let wolf = Wolf::new(12.0);
 
     bencher.iter(||{
         let _ = wolf.forces(&system);
@@ -64,7 +64,7 @@ fn forces_wolf(bencher: &mut Bencher) {
 
 fn virial_wolf(bencher: &mut Bencher) {
     let system = utils::get_system("nacl");
-    let mut wolf = Wolf::new(12.0);
+    let wolf = Wolf::new(12.0);
 
     bencher.iter(||{
         let _ = wolf.virial(&system);
@@ -73,7 +73,9 @@ fn virial_wolf(bencher: &mut Bencher) {
 
 fn cache_move_particle_ewald(bencher: &mut Bencher) {
     let mut system = utils::get_system("nacl");
-    system.interactions_mut().set_coulomb(Box::new(Ewald::new(9.5, 7)));
+    system.interactions_mut().set_coulomb(
+        Box::new(SharedEwald::new(Ewald::new(9.5, 7)))
+    );
 
     let mut cache = EnergyCache::new();
     cache.init(&system);

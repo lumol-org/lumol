@@ -220,14 +220,14 @@ impl EnergyCache {
         }
 
         let coulomb_delta = if let Some(coulomb) = system.interactions().coulomb() {
-            coulomb.borrow_mut().move_particles_cost(system, &idxes, newpos)
+            coulomb.move_particles_cost(system, &idxes, newpos)
         } else {
             0.0
         };
 
         let mut global_delta = 0.0;
-        for potential in system.interactions().globals() {
-            global_delta += potential.borrow_mut().move_particles_cost(system, &idxes, newpos);
+        for global in system.interactions().globals() {
+            global_delta += global.move_particles_cost(system, &idxes, newpos);
         }
 
         let pairs_tail = evaluator.pairs_tail();
@@ -266,10 +266,11 @@ impl EnergyCache {
 
             // Update the cache for the global potentials
             if let Some(coulomb) = system.interactions().coulomb() {
-                coulomb.borrow_mut().update();
+                coulomb.update();
             }
-            for potential in system.interactions().globals() {
-                potential.borrow_mut().update();
+
+            for global in system.interactions().globals() {
+                global.update();
             }
         }));
         return cost;

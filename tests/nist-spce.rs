@@ -11,7 +11,7 @@ extern crate lumol_input as input;
 use lumol::sys::{System, UnitCell};
 use lumol::sys::Trajectory;
 use lumol::energy::{PairInteraction, LennardJones, NullPotential};
-use lumol::energy::{Ewald, PairRestriction, CoulombicPotential};
+use lumol::energy::{Ewald, SharedEwald, PairRestriction, CoulombicPotential};
 use lumol::consts::K_BOLTZMANN;
 
 use std::path::Path;
@@ -72,8 +72,9 @@ pub fn get_system(path: &str, cutoff: f64) -> System {
     );
 
     let mut ewald = Ewald::new(cutoff, 5);
-    ewald.set_restriction(PairRestriction::InterMolecular);
     ewald.set_alpha(5.6 / f64::min(f64::min(a, b), c));
+    let mut ewald = SharedEwald::new(ewald);
+    ewald.set_restriction(PairRestriction::InterMolecular);
     system.interactions_mut().set_coulomb(Box::new(ewald));
 
     return system;

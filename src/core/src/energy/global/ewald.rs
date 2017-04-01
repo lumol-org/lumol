@@ -2,6 +2,8 @@
 // Copyright (C) 2015-2016 Lumol's contributors — BSD license
 
 use special::Error;
+
+use std::sync::{RwLock, RwLockReadGuard, RwLockWriteGuard};
 use std::f64::consts::{PI, FRAC_2_SQRT_PI};
 use std::f64;
 
@@ -24,10 +26,12 @@ use super::{GlobalPotential, CoulombicPotential, GlobalCache};
 /// # Examples
 ///
 /// ```
-/// use lumol::energy::Ewald;
+/// use lumol::energy::{Ewald, SharedEwald};
 /// use lumol::units;
 ///
-/// let ewald = Ewald::new(/* cutoff */ 12.0, /* kmax */ 7);
+/// let ewald = SharedEwald::new(
+///     Ewald::new(/* cutoff */ 12.0, /* kmax */ 7)
+/// );
 ///
 /// use lumol::sys::System;
 /// use lumol::sys::Particle;
@@ -49,7 +53,7 @@ use super::{GlobalPotential, CoulombicPotential, GlobalCache};
 /// system.add_particle(na);
 /// system.add_particle(cl);
 ///
-/// // Use Wolf summation for electrostatic interactions
+/// // Use Ewald summation for electrostatic interactions
 /// system.interactions_mut().set_coulomb(Box::new(ewald));
 ///
 /// assert_eq!(system.potential_energy(), -0.07042996180522723);
@@ -703,61 +707,108 @@ impl Ewald {
     }
 }
 
-impl GlobalPotential for Ewald {
-    fn cutoff(&self) -> Option<f64> {
-        Some(self.rc)
+/// Thread-sade wrapper around Ewald implementing `CoulombicPotential`.
+///
+/// This wrapper allow to share a Ewald solver between threads (make it `Send
+/// + Sync`) while still using caching in Monte-Carlo simulations (with
+/// interior mutability).
+pub struct SharedEwald(RwLock<Ewald>);
+
+impl SharedEwald {
+    /// Wrap `ewald` in a thread-safe structure.
+    ///
+    /// # Example
+    /// ```
+    /// # use lumol::energy::{Ewald, SharedEwald, CoulombicPotential};
+    /// let ewald = SharedEwald::new(Ewald::new(12.5, 10));
+    /// let boxed: Box<CoulombicPotential> = Box::new(ewald);
+    /// ```
+    pub fn new(ewald: Ewald) -> SharedEwald {
+        SharedEwald(RwLock::new(ewald))
     }
 
-    fn energy(&mut self, system: &System) -> f64 {
-        self.precompute(system.cell());
-        let real = self.real_space_energy(system);
-        let self_e = self.self_energy(system);
-        let kspace = self.kspace_energy(system);
-        let molecular = self.molcorrect_energy(system);
+    /// Get read access to the underlying Ewald solver
+    fn read(&self) -> RwLockReadGuard<Ewald> {
+        // The lock should never be poisonned, because any panic will unwind
+        // and finish the simulation.
+        self.0.read().expect("Ewald lock is poisonned")
+    }
+
+    /// Get write access to the underlying Ewald solver
+    fn write(&self) -> RwLockWriteGuard<Ewald> {
+        // The lock should never be poisonned, because any panic will unwind
+        // and finish the simulation.
+        self.0.write().expect("Ewald lock is poisonned")
+    }
+}
+
+impl Clone for SharedEwald {
+    fn clone(&self) -> SharedEwald {
+        SharedEwald::new(self.read().clone())
+    }
+}
+
+impl GlobalPotential for SharedEwald {
+    fn cutoff(&self) -> Option<f64> {
+        Some(self.read().rc)
+    }
+
+    fn energy(&self, system: &System) -> f64 {
+        let mut ewald = self.write();
+        ewald.precompute(system.cell());
+        let real = ewald.real_space_energy(system);
+        let self_e = ewald.self_energy(system);
+        let kspace = ewald.kspace_energy(system);
+        let molecular = ewald.molcorrect_energy(system);
         return real + self_e + kspace + molecular;
     }
 
-    fn forces(&mut self, system: &System) -> Vec<Vector3D> {
-        self.precompute(system.cell());
+    fn forces(&self, system: &System) -> Vec<Vector3D> {
+        let mut ewald = self.write();
+        ewald.precompute(system.cell());
         let mut forces = vec![Vector3D::zero(); system.size()];
-        self.real_space_forces(system, &mut forces);
+        ewald.real_space_forces(system, &mut forces);
         /* No self force */
-        self.kspace_forces(system, &mut forces);
-        self.molcorrect_forces(system, &mut forces);
+        ewald.kspace_forces(system, &mut forces);
+        ewald.molcorrect_forces(system, &mut forces);
         return forces;
     }
 
-    fn virial(&mut self, system: &System) -> Matrix3 {
-        self.precompute(system.cell());
-        let real = self.real_space_virial(system);
+    fn virial(&self, system: &System) -> Matrix3 {
+        let mut ewald = self.write();
+        ewald.precompute(system.cell());
+        let real = ewald.real_space_virial(system);
         /* No self virial */
-        let kspace = self.kspace_virial(system);
-        let molecular = self.molcorrect_virial(system);
+        let kspace = ewald.kspace_virial(system);
+        let molecular = ewald.molcorrect_virial(system);
         return real + kspace + molecular;
     }
 }
 
-impl CoulombicPotential for Ewald {
+impl CoulombicPotential for SharedEwald {
     fn set_restriction(&mut self, restriction: PairRestriction) {
-        self.restriction = restriction;
+        self.write().restriction = restriction;
     }
 }
 
-impl GlobalCache for Ewald {
-    fn move_particles_cost(&mut self, system: &System, idxes: &[usize], newpos: &[Vector3D]) -> f64 {
-        self.precompute(system.cell());
-        let real = self.real_space_move_particles_cost(system, idxes, newpos);
+impl GlobalCache for SharedEwald {
+    fn move_particles_cost(&self, system: &System, idxes: &[usize], newpos: &[Vector3D]) -> f64 {
+        let mut ewald = self.write();
+        ewald.precompute(system.cell());
+        let real = ewald.real_space_move_particles_cost(system, idxes, newpos);
         /* No self cost */
-        let kspace = self.kspace_move_particles_cost(system, idxes, newpos);
-        let molecular = self.molcorrect_move_particles_cost(system, idxes, newpos);
+        let kspace = ewald.kspace_move_particles_cost(system, idxes, newpos);
+        let molecular = ewald.molcorrect_move_particles_cost(system, idxes, newpos);
         return real + kspace + molecular;
     }
 
-    fn update(&mut self) {
-        for ikx in 0..self.kmax {
-            for iky in 0..self.kmax {
-                for ikz in 0..self.kmax {
-                    self.rho[(ikx, iky, ikz)] = self.rho[(ikx, iky, ikz)] + self.delta_rho[(ikx, iky, ikz)];
+    fn update(&self) {
+        let mut ewald = self.write();
+        for ikx in 0..ewald.kmax {
+            for iky in 0..ewald.kmax {
+                for ikz in 0..ewald.kmax {
+                    ewald.rho[(ikx, iky, ikz)] = ewald.rho[(ikx, iky, ikz)]
+                                               + ewald.delta_rho[(ikx, iky, ikz)];
                 }
             }
         }
@@ -816,7 +867,7 @@ mod tests {
         fn infinite_cell() {
             let mut system = nacl_pair();
             system.set_cell(UnitCell::new());
-            let mut ewald = Ewald::new(8.0, 10);
+            let ewald = SharedEwald::new(Ewald::new(8.0, 10));
             let _ = ewald.energy(&system);
         }
 
@@ -825,7 +876,7 @@ mod tests {
         fn triclinic_cell() {
             let mut system = nacl_pair();
             system.set_cell(UnitCell::triclinic(10.0, 10.0, 10.0, 90.0, 90.0, 90.0));
-            let mut ewald = Ewald::new(8.0, 10);
+            let ewald = SharedEwald::new(Ewald::new(8.0, 10));
             let _ = ewald.energy(&system);
         }
 
@@ -844,7 +895,7 @@ mod tests {
         #[test]
         fn energy() {
             let system = nacl_pair();
-            let mut ewald = Ewald::new(8.0, 10);
+            let ewald = SharedEwald::new(Ewald::new(8.0, 10));
 
             let energy = ewald.energy(&system);
             // This was computed by hand
@@ -855,7 +906,7 @@ mod tests {
         #[test]
         fn forces() {
             let mut system = nacl_pair();
-            let mut ewald = Ewald::new(8.0, 10);
+            let ewald = SharedEwald::new(Ewald::new(8.0, 10));
 
             let forces = ewald.forces(&system);
             let norm = (forces[0] + forces[1]).norm();
@@ -887,14 +938,14 @@ mod tests {
         #[test]
         fn energy() {
             let system = water();
-            let mut ewald = Ewald::new(8.0, 10);
+            let mut ewald = SharedEwald::new(Ewald::new(8.0, 10));
             ewald.set_restriction(PairRestriction::InterMolecular);
 
             let energy = ewald.energy(&system);
             let expected = 0.0002257554843856993;
             assert_ulps_eq!(energy, expected);
 
-            let molcorrect = ewald.molcorrect_energy(&system);
+            let molcorrect = ewald.read().molcorrect_energy(&system);
             let expected = 0.02452968743897957;
             assert_ulps_eq!(molcorrect, expected);
         }
@@ -902,7 +953,7 @@ mod tests {
         #[test]
         fn forces() {
             let mut system = water();
-            let mut ewald = Ewald::new(8.0, 10);
+            let mut ewald = SharedEwald::new(Ewald::new(8.0, 10));
             ewald.set_restriction(PairRestriction::InterMolecular);
 
             let forces = ewald.forces(&system);
@@ -912,30 +963,30 @@ mod tests {
 
             // Finite difference computation of all the force components
             let energy = ewald.energy(&system);
-            let real_energy = ewald.real_space_energy(&system);
-            let kspace_energy = ewald.kspace_energy(&system);
-            let molcorrect_energy = ewald.molcorrect_energy(&system);
+            let real_energy = ewald.read().real_space_energy(&system);
+            let kspace_energy = ewald.write().kspace_energy(&system);
+            let molcorrect_energy = ewald.read().molcorrect_energy(&system);
 
             let eps = 1e-9;
             system[0].position[0] += eps;
 
             let energy_1 = ewald.energy(&system);
-            let real_energy_1 = ewald.real_space_energy(&system);
-            let kspace_energy_1 = ewald.kspace_energy(&system);
-            let molcorrect_energy_1 = ewald.molcorrect_energy(&system);
+            let real_energy_1 = ewald.read().real_space_energy(&system);
+            let kspace_energy_1 = ewald.write().kspace_energy(&system);
+            let molcorrect_energy_1 = ewald.read().molcorrect_energy(&system);
 
             let force = ewald.forces(&system)[0][0];
 
             let mut forces_buffer = vec![Vector3D::zero(); system.size()];
-            ewald.real_space_forces(&system, &mut forces_buffer);
+            ewald.read().real_space_forces(&system, &mut forces_buffer);
             let real_force = forces_buffer[0][0];
 
             let mut forces_buffer = vec![Vector3D::zero(); system.size()];
-            ewald.kspace_forces(&system, &mut forces_buffer);
+            ewald.write().kspace_forces(&system, &mut forces_buffer);
             let kspace_force = forces_buffer[0][0];
 
             let mut forces_buffer = vec![Vector3D::zero(); system.size()];
-            ewald.molcorrect_forces(&system, &mut forces_buffer);
+            ewald.read().molcorrect_forces(&system, &mut forces_buffer);
             let molcorrect_force = forces_buffer[0][0];
 
             let force_fda = (energy - energy_1) / eps;
@@ -990,12 +1041,12 @@ mod tests {
             let mut system = nacl_pair();
             let _ = system.add_bond(0, 1);
 
-            let mut ewald = Ewald::new(8.0, 10);
+            let mut ewald = SharedEwald::new(Ewald::new(8.0, 10));
             ewald.set_restriction(PairRestriction::InterMolecular);
 
-            let virial = ewald.molcorrect_virial(&system);
+            let virial = ewald.read().molcorrect_virial(&system);
             let mut forces = vec![Vector3D::zero(); 2];
-            ewald.molcorrect_forces(&system, &mut forces);
+            ewald.read().molcorrect_forces(&system, &mut forces);
             let expected = forces[0].tensorial(&Vector3D::new(1.5, 0.0, 0.0));
             assert_ulps_eq!(virial, expected);
         }
@@ -1003,7 +1054,7 @@ mod tests {
         #[test]
         fn total() {
             let system = nacl_pair();
-            let mut ewald = Ewald::new(8.0, 10);
+            let ewald = SharedEwald::new(Ewald::new(8.0, 10));
 
             let virial = ewald.virial(&system);
             let force = ewald.forces(&system)[0];
@@ -1035,10 +1086,10 @@ mod tests {
         #[test]
         fn move_atoms() {
             let mut system = testing_system();
-            let mut ewald = Ewald::new(8.0, 10);
+            let mut ewald = SharedEwald::new(Ewald::new(8.0, 10));
             ewald.set_restriction(PairRestriction::InterMolecular);
 
-            let mut ewald_check = ewald.clone();
+            let ewald_check = ewald.clone();
 
             let old_e = ewald_check.energy(&system);
             let idxes = &[0, 1];
@@ -1055,60 +1106,60 @@ mod tests {
         #[test]
         fn move_atoms_real_space() {
             let mut system = testing_system();
-            let mut ewald = Ewald::new(8.0, 10);
+            let mut ewald = SharedEwald::new(Ewald::new(8.0, 10));
             ewald.set_restriction(PairRestriction::InterMolecular);
 
             let ewald_check = ewald.clone();
 
-            let old_e = ewald_check.real_space_energy(&system);
+            let old_e = ewald_check.read().real_space_energy(&system);
             let idxes = &[0, 1];
             let newpos = &[Vector3D::new(0.0, 0.0, 0.5), Vector3D::new(-0.7, 0.2, 1.5)];
 
-            let cost = ewald.real_space_move_particles_cost(&system, idxes, newpos);
+            let cost = ewald.read().real_space_move_particles_cost(&system, idxes, newpos);
 
             system[0].position = newpos[0];
             system[1].position = newpos[1];
-            let new_e = ewald_check.real_space_energy(&system);
+            let new_e = ewald_check.read().real_space_energy(&system);
             assert_ulps_eq!(cost, new_e - old_e);
         }
 
         #[test]
         fn move_atoms_kspace() {
             let mut system = testing_system();
-            let mut ewald = Ewald::new(8.0, 10);
+            let mut ewald = SharedEwald::new(Ewald::new(8.0, 10));
             ewald.set_restriction(PairRestriction::InterMolecular);
 
-            let mut ewald_check = ewald.clone();
+            let ewald_check = ewald.clone();
 
-            let old_e = ewald_check.kspace_energy(&system);
+            let old_e = ewald_check.write().kspace_energy(&system);
             let idxes = &[0, 1];
             let newpos = &[Vector3D::new(0.0, 0.0, 0.5), Vector3D::new(-0.7, 0.2, 1.5)];
 
-            let cost = ewald.kspace_move_particles_cost(&system, idxes, newpos);
+            let cost = ewald.write().kspace_move_particles_cost(&system, idxes, newpos);
 
             system[0].position = newpos[0];
             system[1].position = newpos[1];
-            let new_e = ewald_check.kspace_energy(&system);
+            let new_e = ewald_check.write().kspace_energy(&system);
             assert_ulps_eq!(cost, new_e - old_e);
         }
 
         #[test]
         fn move_atoms_molcorrect() {
             let mut system = testing_system();
-            let mut ewald = Ewald::new(8.0, 10);
+            let mut ewald = SharedEwald::new(Ewald::new(8.0, 10));
             ewald.set_restriction(PairRestriction::InterMolecular);
 
             let ewald_check = ewald.clone();
 
-            let old_e = ewald_check.molcorrect_energy(&system);
+            let old_e = ewald_check.read().molcorrect_energy(&system);
             let idxes = &[0, 1];
             let newpos = &[Vector3D::new(0.0, 0.0, 0.5), Vector3D::new(-0.7, 0.2, 1.5)];
 
-            let cost = ewald.molcorrect_move_particles_cost(&system, idxes, newpos);
+            let cost = ewald.write().molcorrect_move_particles_cost(&system, idxes, newpos);
 
             system[0].position = newpos[0];
             system[1].position = newpos[1];
-            let new_e = ewald_check.molcorrect_energy(&system);
+            let new_e = ewald_check.read().molcorrect_energy(&system);
             assert_ulps_eq!(cost, new_e - old_e);
         }
     }

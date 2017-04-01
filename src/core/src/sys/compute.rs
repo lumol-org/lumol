@@ -82,7 +82,7 @@ impl Compute for Forces {
         }
 
         if let Some(coulomb) = system.interactions().coulomb() {
-            let forces = coulomb.borrow_mut().forces(system);
+            let forces = coulomb.forces(system);
             debug_assert_eq!(forces.len(), natoms, "Wrong `forces` size in coulomb potentials");
             for (i, force) in forces.iter().enumerate() {
                 res[i] += force;
@@ -90,7 +90,7 @@ impl Compute for Forces {
         }
 
         for global in system.interactions().globals() {
-            let forces = global.borrow_mut().forces(system);
+            let forces = global.forces(system);
             debug_assert_eq!(forces.len(), natoms, "Wrong `forces` size in global potentials");
             for (i, force) in forces.iter().enumerate() {
                 res[i] += force;
@@ -210,11 +210,11 @@ impl Compute for Virial {
         // (angles & dihedrals)
 
         if let Some(coulomb) = system.interactions().coulomb() {
-            virial += coulomb.borrow_mut().virial(system);
+            virial += coulomb.virial(system);
         }
 
         for global in system.interactions().globals() {
-            virial += global.borrow_mut().virial(system);
+            virial += global.virial(system);
         }
 
         return virial;

@@ -7,7 +7,9 @@ use lumol::Logger;
 use lumol::sys::{UnitCell, System, Trajectory};
 use lumol::units;
 use lumol::sim::Simulation;
-use lumol::energy::{LennardJones, PairInteraction, PairRestriction, NullPotential, Ewald};
+use lumol::energy::{PairInteraction, PairRestriction};
+use lumol::energy::{LennardJones, NullPotential};
+use lumol::energy::{Ewald, SharedEwald};
 use lumol::sim::mc::{MonteCarlo, Translate, Rotate, Resize};
 use lumol::out::{EnergyOutput, PropertiesOutput, TrajectoryOutput};
 
@@ -56,7 +58,7 @@ fn get_system() -> System {
 
     // Add ewald summation method.
     let ewald = Ewald::new(6.0, 7);
-    system.interactions_mut().set_coulomb(Box::new(ewald));
+    system.interactions_mut().set_coulomb(Box::new(SharedEwald::new(ewald)));
 
     // Check if bonds are guessed correctly.
     assert_eq!(system.size() as f64 / system.molecules().len() as f64, 3.0);

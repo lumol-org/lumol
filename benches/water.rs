@@ -10,14 +10,14 @@ extern crate lumol_input;
 use bencher::Bencher;
 use rand::Rng;
 
-use lumol::energy::{Ewald, Wolf, PairRestriction, CoulombicPotential, GlobalPotential};
+use lumol::energy::{Ewald, SharedEwald, Wolf, PairRestriction, CoulombicPotential, GlobalPotential};
 use lumol::sys::EnergyCache;
 use lumol::types::Vector3D;
 
 mod utils;
 
-fn get_ewald() -> Ewald {
-    let mut ewald = Ewald::new(8.0, 7);
+fn get_ewald() -> SharedEwald {
+    let mut ewald = SharedEwald::new(Ewald::new(8.0, 7));
     ewald.set_restriction(PairRestriction::InterMolecular);
     ewald
 }
@@ -30,7 +30,7 @@ fn get_wolf() -> Wolf {
 
 fn energy_ewald(bencher: &mut Bencher) {
     let system = utils::get_system("water");
-    let mut ewald = get_ewald();
+    let ewald = get_ewald();
 
     bencher.iter(||{
         let _ = ewald.energy(&system);
@@ -39,7 +39,7 @@ fn energy_ewald(bencher: &mut Bencher) {
 
 fn forces_ewald(bencher: &mut Bencher) {
     let system = utils::get_system("water");
-    let mut ewald = get_ewald();
+    let ewald = get_ewald();
 
     bencher.iter(||{
         let _ = ewald.forces(&system);
@@ -48,7 +48,7 @@ fn forces_ewald(bencher: &mut Bencher) {
 
 fn virial_ewald(bencher: &mut Bencher) {
     let system = utils::get_system("water");
-    let mut ewald = get_ewald();
+    let ewald = get_ewald();
 
     bencher.iter(||{
         let _ = ewald.virial(&system);
@@ -57,7 +57,7 @@ fn virial_ewald(bencher: &mut Bencher) {
 
 fn energy_wolf(bencher: &mut Bencher) {
     let system = utils::get_system("water");
-    let mut wolf = get_wolf();
+    let wolf = get_wolf();
 
     bencher.iter(||{
         let _ = wolf.energy(&system);
@@ -66,7 +66,7 @@ fn energy_wolf(bencher: &mut Bencher) {
 
 fn forces_wolf(bencher: &mut Bencher) {
     let system = utils::get_system("water");
-    let mut wolf = get_wolf();
+    let wolf = get_wolf();
 
     bencher.iter(||{
         let _ = wolf.forces(&system);
@@ -75,7 +75,7 @@ fn forces_wolf(bencher: &mut Bencher) {
 
 fn virial_wolf(bencher: &mut Bencher) {
     let system = utils::get_system("water");
-    let mut wolf = get_wolf();
+    let wolf = get_wolf();
 
     bencher.iter(||{
         let _ = wolf.virial(&system);
