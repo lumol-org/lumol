@@ -114,7 +114,7 @@ impl Wolf {
 }
 
 impl GlobalCache for Wolf {
-    fn move_particles_cost(&mut self, system: &System, idxes: &[usize], newpos: &[Vector3D]) -> f64 {
+    fn move_particles_cost(&self, system: &System, idxes: &[usize], newpos: &[Vector3D]) -> f64 {
         let mut e_old = 0.0;
         let mut e_new = 0.0;
 
@@ -160,7 +160,7 @@ impl GlobalCache for Wolf {
         return e_new - e_old;
     }
 
-    fn update(&mut self) {
+    fn update(&self) {
         // Nothing to do
     }
 }
@@ -170,7 +170,7 @@ impl GlobalPotential for Wolf {
         Some(self.cutoff)
     }
 
-    fn energy(&mut self, system: &System) -> f64 {
+    fn energy(&self, system: &System) -> f64 {
         let natoms = system.size();
         let mut res = 0.0;
         for i in 0..natoms {
@@ -192,7 +192,7 @@ impl GlobalPotential for Wolf {
         return res;
     }
 
-    fn forces(&mut self, system: &System) -> Vec<Vector3D> {
+    fn forces(&self, system: &System) -> Vec<Vector3D> {
         let natoms = system.size();
         let mut res = vec![Vector3D::zero(); natoms];
         for i in 0..natoms {
@@ -214,7 +214,7 @@ impl GlobalPotential for Wolf {
         return res;
     }
 
-    fn virial(&mut self, system: &System) -> Matrix3 {
+    fn virial(&self, system: &System) -> Matrix3 {
         let natoms = system.size();
         let mut res = Matrix3::zero();
         for i in 0..natoms {
@@ -268,7 +268,7 @@ mod tests {
     #[test]
     fn energy() {
         let system = testing_system();
-        let mut wolf = Wolf::new(8.0);
+        let wolf = Wolf::new(8.0);
 
         let e = wolf.energy(&system);
         // Wolf is not very good for heterogeneous systems
@@ -278,7 +278,7 @@ mod tests {
     #[test]
     fn forces() {
         let mut system = testing_system();
-        let mut wolf = Wolf::new(8.0);
+        let wolf = Wolf::new(8.0);
 
         let forces = wolf.forces(&system);
         let norm = (forces[0] + forces[1]).norm();

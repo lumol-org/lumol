@@ -43,17 +43,17 @@ use energy::PairRestriction;
 ///         None
 ///     }
 ///
-///     fn energy(&mut self, system: &System) -> f64 {
+///     fn energy(&self, system: &System) -> f64 {
 ///         // shift all particles by delta
 ///         self.delta * system.size() as f64
 ///     }
 ///
-///     fn forces(&mut self, system: &System) -> Vec<Vector3D> {
+///     fn forces(&self, system: &System) -> Vec<Vector3D> {
 ///         // this potential does not changes the forces
 ///         vec![Vector3D::zero(); system.size()]
 ///     }
 ///
-///     fn virial(&mut self, system: &System) -> Matrix3 {
+///     fn virial(&self, system: &System) -> Matrix3 {
 ///         // the virial is null as all the forces are null
 ///         Matrix3::zero()
 ///     }
@@ -62,11 +62,11 @@ use energy::PairRestriction;
 /// // Not implementing `GlobalCache` means that we will not be able to use
 /// // `ShiftAll` in Monte-Carlo simulations.
 /// impl GlobalCache for ShiftAll {
-///     fn move_particles_cost(&mut self, _: &System, _: &[usize], _: &[Vector3D]) -> f64 {
+///     fn move_particles_cost(&self, _: &System, _: &[usize], _: &[Vector3D]) -> f64 {
 ///         unimplemented!()
 ///     }
 ///
-///     fn update(&mut self) {
+///     fn update(&self) {
 ///         unimplemented!()
 ///     }
 /// }
@@ -87,17 +87,17 @@ use energy::PairRestriction;
 /// assert_eq!(system.forces(), vec![Vector3D::zero(); 3]);
 /// assert_eq!(system.virial(), Matrix3::zero());
 /// ```
-pub trait GlobalPotential: GlobalCache + BoxCloneGlobal {
+pub trait GlobalPotential: GlobalCache + BoxCloneGlobal + Send + Sync {
     /// Return the cut off radius.
     fn cutoff(&self) -> Option<f64>;
     /// Compute the energetic contribution of this potential
-    fn energy(&mut self, system: &System) -> f64;
+    fn energy(&self, system: &System) -> f64;
     /// Compute the force contribution of this potential. This function should
     /// return a vector containing the force acting on each particle in the
     /// system.
-    fn forces(&mut self, system: &System) -> Vec<Vector3D>;
+    fn forces(&self, system: &System) -> Vec<Vector3D>;
     /// Compute the total virial contribution of this potential
-    fn virial(&mut self, system: &System) -> Matrix3;
+    fn virial(&self, system: &System) -> Matrix3;
 }
 
 impl_box_clone!(GlobalPotential, BoxCloneGlobal, box_clone_gobal);
@@ -108,6 +108,10 @@ impl_box_clone!(GlobalPotential, BoxCloneGlobal, box_clone_gobal);
 /// to compute partial energy updates in Monte-Carlo simulations. You can use
 /// a `panic!`ing implementation for all methods if you never need to use a
 /// given [GlobalPotential][GlobalPotential] in Monte-Carlo simulations.
+///
+/// All methods take a non-mutable `&self` receiver, which means you may want
+/// to wrap the implemntation in `RwLock` or `Mutex` to allow for inner
+/// mutability while still implementing `Send + Sync`.
 ///
 /// [EnergyCache]: ../sys/struct.EnergyCache.html
 /// [GlobalPotential]: trait.GlobalPotential.html
@@ -130,30 +134,30 @@ impl_box_clone!(GlobalPotential, BoxCloneGlobal, box_clone_gobal);
 ///         None
 ///     }
 ///
-///     fn energy(&mut self, system: &System) -> f64 {
+///     fn energy(&self, system: &System) -> f64 {
 ///         // shift all particles by delta
 ///         self.delta * system.size() as f64
 ///     }
 ///
-///     fn forces(&mut self, system: &System) -> Vec<Vector3D> {
+///     fn forces(&self, system: &System) -> Vec<Vector3D> {
 ///         // this potential does not changes the forces
 ///         vec![Vector3D::zero(); system.size()]
 ///     }
 ///
-///     fn virial(&mut self, system: &System) -> Matrix3 {
+///     fn virial(&self, system: &System) -> Matrix3 {
 ///         // the virial is null as all the forces are null
 ///         Matrix3::zero()
 ///     }
 /// }
 ///
 /// impl GlobalCache for ShiftAll {
-///     fn move_particles_cost(&mut self, _: &System, _: &[usize], _: &[Vector3D]) -> f64 {
+///     fn move_particles_cost(&self, _: &System, _: &[usize], _: &[Vector3D]) -> f64 {
 ///         // The cost of moving particles is null, because all the particles
 ///         // get the same energy shift whatever there position are.
 ///         return 0.0
 ///     }
 ///
-///     fn update(&mut self) {
+///     fn update(&self) {
 ///         // We are not storing anything in the ShiftAll struct, so this
 ///         // function is a no-op.
 ///     }
@@ -167,20 +171,20 @@ pub trait GlobalCache {
     /// the first moved particle is a call to `system[idxes[0]]`); and `newpos`
     /// contains the new positions of the particles. The previous positions of
     /// the particles are still in the system.
-    fn move_particles_cost(&mut self, system: &System, idxes: &[usize], newpos: &[Vector3D]) -> f64;
+    fn move_particles_cost(&self, system: &System, idxes: &[usize], newpos: &[Vector3D]) -> f64;
 
     /// Update the cache as needed after a call to `move_particles_cost`.
     ///
     /// If the Monte-Carlo move is accepted, this function will be called and
     /// should update any cached quantity so that further call to
     /// `GlobalPotential::energy` gives the right value.
-    fn update(&mut self);
+    fn update(&self);
 }
 
 /// Electrostatic potential solver.
 ///
-/// This trait is a marker trait for [global potentials][GlobalPotential] that are actually
-/// coulombic potential solvers.
+/// This trait is a marker trait for [global potentials][GlobalPotential] that
+/// are actually coulombic potential solvers.
 ///
 /// [GlobalPotential]: trait.GlobalPotential.html
 pub trait CoulombicPotential : GlobalPotential + BoxCloneCoulombic {
@@ -196,4 +200,4 @@ mod wolf;
 pub use self::wolf::Wolf;
 
 mod ewald;
-pub use self::ewald::Ewald;
+pub use self::ewald::{Ewald, SharedEwald};

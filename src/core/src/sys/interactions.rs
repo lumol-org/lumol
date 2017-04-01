@@ -6,7 +6,6 @@
 
 use std::collections::BTreeMap;
 use std::cmp::{min, max};
-use std::cell::RefCell;
 
 use energy::{PairInteraction, BondPotential, AnglePotential, DihedralPotential};
 use energy::{GlobalPotential, CoulombicPotential};
@@ -104,9 +103,9 @@ pub struct Interactions {
     /// Dihedral angles potentials
     dihedrals: BTreeMap<DihedralKind, Vec<Box<DihedralPotential>>>,
     /// Coulombic potential solver
-    coulomb: Option<RefCell<Box<CoulombicPotential>>>,
+    coulomb: Option<Box<CoulombicPotential>>,
     /// Global potentials
-    globals: Vec<RefCell<Box<GlobalPotential>>>,
+    globals: Vec<Box<GlobalPotential>>,
     /// Particles names <=> kind associations
     kinds: ParticleKinds,
 }
@@ -176,12 +175,12 @@ impl Interactions {
 
     /// Set the coulombic interaction for all pairs to `potential`
     pub fn set_coulomb(&mut self, potential: Box<CoulombicPotential>) {
-        self.coulomb = Some(RefCell::new(potential));
+        self.coulomb = Some(potential);
     }
 
     /// Add the `potential` global interaction
     pub fn add_global(&mut self, potential: Box<GlobalPotential>) {
-        self.globals.push(RefCell::new(potential));
+        self.globals.push(potential);
     }
 }
 
@@ -266,15 +265,13 @@ impl Interactions {
         }
     }
 
-    /// Get the coulombic interaction as a `RefCell`, because the
-    /// `GlobalPotential` are allowed to mutate themselves when computing
-    /// energy.
-    pub fn coulomb(&self) -> Option<&RefCell<Box<CoulombicPotential>>> {
+    /// Get the coulombic interaction
+    pub fn coulomb(&self) -> Option<&Box<CoulombicPotential>> {
         self.coulomb.as_ref()
     }
 
     /// Get all global interactions
-    pub fn globals(&self) -> &[RefCell<Box<GlobalPotential>>] {
+    pub fn globals(&self) -> &[Box<GlobalPotential>] {
         &self.globals
     }
 }
