@@ -13,8 +13,8 @@ use rand::Rng;
 use lumol::sys::EnergyCache;
 use lumol::types::Vector3D;
 
+#[macro_use]
 mod utils;
-
 
 fn energy(bencher: &mut Bencher) {
     let system = utils::get_system("propane");

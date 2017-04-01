@@ -21,3 +21,26 @@ pub fn get_system(name: &str) -> System {
 pub fn get_rng(seed: u32) -> XorShiftRng {
     XorShiftRng::from_seed([seed, 784, 71255487, 5824])
 }
+
+macro_rules! benchmark_group {
+    ($group_name:ident, $($function:path),+) => {
+        pub fn $group_name() -> ::std::vec::Vec<bencher::TestDescAndFn> {
+            use bencher::{TestDescAndFn, TestFn, TestDesc};
+            use std::borrow::Cow;
+            use std::path::Path;
+            let mut benches = ::std::vec::Vec::new();
+            $(
+                let path = Path::new(file!());
+                let path = path.file_stem().unwrap().to_string_lossy();
+                benches.push(TestDescAndFn {
+                    desc: TestDesc {
+                        name: Cow::from(path + "::" + stringify!($function)),
+                        ignore: false,
+                    },
+                    testfn: TestFn::StaticBenchFn($function),
+                });
+            )+
+            benches
+        }
+    }
+}

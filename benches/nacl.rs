@@ -14,8 +14,8 @@ use lumol::energy::{Ewald, SharedEwald, Wolf, GlobalPotential};
 use lumol::sys::EnergyCache;
 use lumol::types::Vector3D;
 
+#[macro_use]
 mod utils;
-
 
 fn energy_ewald(bencher: &mut Bencher) {
     let system = utils::get_system("nacl");

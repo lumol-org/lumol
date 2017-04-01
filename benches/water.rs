@@ -14,6 +14,7 @@ use lumol::energy::{Ewald, SharedEwald, Wolf, PairRestriction, CoulombicPotentia
 use lumol::sys::EnergyCache;
 use lumol::types::Vector3D;
 
+#[macro_use]
 mod utils;
 
 fn get_ewald() -> SharedEwald {
