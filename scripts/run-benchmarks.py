@@ -170,6 +170,10 @@ def comment_pull_request(descriptions):
 
 
 def main():
+    if os.environ['TRAVIS_RUST_VERSION'] != 'stable':
+        print('Benchmarks are run only on stable')
+        return
+
     result = check_if_benches_should_run()
     if result is None:
         return
