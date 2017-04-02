@@ -150,7 +150,7 @@ def comment_pull_request(descriptions):
     comment = '## Comparing to master (%s)\nusing `--threshold 2`' % descriptions[-1][0]
 
     for k, (h, title) in enumerate(descriptions[:-1]):
-        cmd = 'cargo benchcmp ../bench_%s.txt ../bench_%s.txt --threshold 2' % (descriptions[-1][0], h)
+        cmd = 'cargo benchcmp ../bench_%s.txt ../bench_%s.txt --threshold 2 --variance' % (descriptions[-1][0], h)
         out = subprocess.check_output(cmd, shell=True).decode('utf-8')
         comment += COMPARISON_TEMPLATE % (h, title, out)
 
