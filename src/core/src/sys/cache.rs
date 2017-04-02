@@ -14,7 +14,7 @@ use types::{Vector3D, Array2};
 
 /// Callback for updating a cache. It also take an `&mut System` argument for
 /// updating the cache inside the global potentials.
-type UpdateCallback = Box<Fn(&mut EnergyCache, &mut System)>;
+type UpdateCallback = Box<Fn(&mut EnergyCache, &mut System) + Send + Sync>;
 
 /// This is a cache for energy computation.
 ///
