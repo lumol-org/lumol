@@ -58,7 +58,7 @@ impl MCMove for Resize {
         self.rc_max = system.interactions()
                             .all_pairs()
                             .iter()
-                            .map(|i| i.get_cutoff())
+                            .map(|i| i.cutoff())
                             .fold(f64::NAN, f64::max)
     }
 

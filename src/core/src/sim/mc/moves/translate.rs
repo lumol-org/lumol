@@ -73,7 +73,7 @@ impl MCMove for Translate {
         self.dr_max = system.interactions()
                             .all_pairs()
                             .iter()
-                            .map(|i| i.get_cutoff())
+                            .map(|i| i.cutoff())
                             .fold(f64::NAN, f64::max);
         if self.dr > self.dr_max {
             self.dr = self.dr_max

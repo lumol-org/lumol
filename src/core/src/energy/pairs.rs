@@ -158,10 +158,10 @@ impl PairInteraction {
     ///
     /// let ar = LennardJones{sigma: 3.405, epsilon: 1.0};
     /// let interaction = PairInteraction::new(Box::new(ar), 9.1935);
-    /// let rc = interaction.get_cutoff();
+    /// let rc = interaction.cutoff();
     /// assert_eq!(rc, 2.7f64 * 3.405);
     /// ```
-    pub fn get_cutoff(&self) -> f64 {
+    pub fn cutoff(&self) -> f64 {
         self.cutoff
     }
 }
@@ -312,7 +312,7 @@ mod tests {
     }
 
     #[test]
-    fn cutoff() {
+    fn test_cutoff() {
         let lj = LennardJones{sigma: 1.0, epsilon: 2.0};
         let pairs = PairInteraction::new(Box::new(lj), 4.0);
 
@@ -322,7 +322,7 @@ mod tests {
         assert_eq!(pairs.force(4.1), 0.0);
         assert_eq!(pairs.energy(4.1), 0.0);
 
-        assert_eq!(pairs.get_cutoff(), 4.0);
+        assert_eq!(pairs.cutoff(), 4.0);
     }
 
     #[test]

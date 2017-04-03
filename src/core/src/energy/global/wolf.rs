@@ -166,6 +166,10 @@ impl GlobalCache for Wolf {
 }
 
 impl GlobalPotential for Wolf {
+    fn cutoff(&self) -> Option<f64> {
+        Some(self.cutoff)
+    }
+
     fn energy(&mut self, system: &System) -> f64 {
         let natoms = system.size();
         let mut res = 0.0;
