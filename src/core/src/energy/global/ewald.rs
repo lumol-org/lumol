@@ -704,7 +704,7 @@ impl Ewald {
 }
 
 impl GlobalPotential for Ewald {
-    fn get_cutoff(&self) -> Option<f64> {
+    fn cutoff(&self) -> Option<f64> {
         Some(self.rc)
     }
 

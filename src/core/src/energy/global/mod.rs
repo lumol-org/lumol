@@ -39,7 +39,7 @@ use energy::PairRestriction;
 /// }
 ///
 /// impl GlobalPotential for ShiftAll {
-///     fn get_cutoff(&self) -> Option<f64> {
+///     fn cutoff(&self) -> Option<f64> {
 ///         None
 ///     }
 ///
@@ -89,7 +89,7 @@ use energy::PairRestriction;
 /// ```
 pub trait GlobalPotential: GlobalCache + BoxCloneGlobal {
     /// Return the cut off radius.
-    fn get_cutoff(&self) -> Option<f64>;
+    fn cutoff(&self) -> Option<f64>;
     /// Compute the energetic contribution of this potential
     fn energy(&mut self, system: &System) -> f64;
     /// Compute the force contribution of this potential. This function should
@@ -126,7 +126,7 @@ impl_box_clone!(GlobalPotential, BoxCloneGlobal, box_clone_gobal);
 /// }
 ///
 /// impl GlobalPotential for ShiftAll {
-///     fn get_cutoff(&self) -> Option<f64> {
+///     fn cutoff(&self) -> Option<f64> {
 ///         None
 ///     }
 ///

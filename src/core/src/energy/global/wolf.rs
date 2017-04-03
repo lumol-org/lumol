@@ -166,7 +166,7 @@ impl GlobalCache for Wolf {
 }
 
 impl GlobalPotential for Wolf {
-    fn get_cutoff(&self) -> Option<f64> {
+    fn cutoff(&self) -> Option<f64> {
         Some(self.cutoff)
     }
 
