@@ -2,6 +2,7 @@
 // Copyright (C) 2015-2016 Lumol's contributors — BSD license
 
 use sys::System;
+use types::Vector3D;
 
 use sim::Propagator;
 use sim::TemperatureStrategy;
@@ -76,11 +77,15 @@ impl Simulation {
         }
 
         self.setup(system);
-        for _ in 0..nsteps {
+        for i in 0..nsteps {
             self.propagator.propagate(system);
             system.increment_step();
             for output in &mut self.outputs {
                 output.write(system);
+            }
+
+            if i % 10000 == 0 {
+                self.sanity_check(system);
             }
         }
         self.finish(system);
@@ -111,4 +116,35 @@ impl Simulation {
             output.finish(system);
         }
     }
+
+    /// Perform some sanity checks on the system
+    fn sanity_check(&self, system: &System) {
+        for particle in system {
+            // The value of 1e6 A should be a good enough threshold. Even with
+            // big boxes (100 A), and going through the boxes multiple time,
+            // the particles positions should stay bellow this point.
+            if any(&particle.position, |x| x.abs() > 1e6) {
+                warn!(
+                    "Some particles have moved very far from the origin, \
+                    the simulation might be exploding"
+                );
+                // we don't want to spam the output, so we return early if a
+                // problem was found
+                return;
+            }
+
+            // Velocity threshold is 1000 A / fs
+            if any(&particle.velocity, |x| x.abs() > 1000.0) {
+                warn!(
+                    "Some particles have a very high velocity, \
+                    the simulation might be exploding"
+                );
+                return;
+            }
+        }
+    }
+}
+
+fn any<F: Fn(f64) -> bool>(vector: &Vector3D, function: F) -> bool {
+    function(vector[0]) || function(vector[1]) || function(vector[2])
 }
