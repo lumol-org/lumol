@@ -280,7 +280,9 @@ impl Interactions {
 #[cfg(test)]
 mod test {
     use super::*;
-    use energy::{Harmonic, Wolf, PairInteraction};
+    use std::f64;
+
+    use energy::{Harmonic, Wolf, Ewald, SharedEwald, PairInteraction};
     use sys::ParticleKind as Kind;
 
     #[test]
@@ -442,5 +444,18 @@ mod test {
         let mut interactions = Interactions::new();
         interactions.add_global(Box::new(Wolf::new(1.0)));
         assert_eq!(interactions.globals().len(), 1);
+    }
+
+    #[test]
+    fn test_globals_cutoff() {
+        let mut interactions = Interactions::new();
+        interactions.add_global(Box::new(Wolf::new(1.0)));
+        interactions.add_global(Box::new(SharedEwald::new(Ewald::new(5.0, 5))));
+        let rc_glob = interactions.globals()
+            .iter()
+            .map(|i| i.cutoff())
+            .filter_map(|rc| rc)
+            .fold(f64::NAN, f64::max);
+        assert_eq!(rc_glob, 5.0)
     }
 }

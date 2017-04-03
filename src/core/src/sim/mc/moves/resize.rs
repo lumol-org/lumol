@@ -54,12 +54,23 @@ impl MCMove for Resize {
 
         // Get the largest cutoff of all intermolecular interactions in the
         // system.
-        // TODO: include electrostatic interactions
-        self.rc_max = system.interactions()
+
+        // Go through global interactions
+        let rc_glob = system.interactions()
+                            .globals()
+                            .iter()
+                            .map(|i| i.cutoff())
+                            .filter_map(|rc| rc)
+                            .fold(f64::NAN, f64::max);
+
+        // Pair interactions
+        let rc_pairs = system.interactions()
                             .all_pairs()
                             .iter()
                             .map(|i| i.cutoff())
-                            .fold(f64::NAN, f64::max)
+                            .fold(f64::NAN, f64::max);
+
+        self.rc_max = f64::max(rc_glob, rc_pairs)
     }
 
     fn prepare(&mut self, system: &mut System, rng: &mut Box<Rng>) -> bool {
