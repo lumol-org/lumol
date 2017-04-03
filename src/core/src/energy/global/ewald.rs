@@ -704,6 +704,10 @@ impl Ewald {
 }
 
 impl GlobalPotential for Ewald {
+    fn get_cutoff(&self) -> Option<f64> {
+        Some(self.rc)
+    }
+
     fn energy(&mut self, system: &System) -> f64 {
         self.precompute(system.cell());
         let real = self.real_space_energy(system);

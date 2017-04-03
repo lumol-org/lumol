@@ -39,6 +39,10 @@ use energy::PairRestriction;
 /// }
 ///
 /// impl GlobalPotential for ShiftAll {
+///     fn get_cutoff(&self) -> Option<f64> {
+///         None
+///     }
+///
 ///     fn energy(&mut self, system: &System) -> f64 {
 ///         // shift all particles by delta
 ///         self.delta * system.size() as f64
@@ -84,6 +88,8 @@ use energy::PairRestriction;
 /// assert_eq!(system.virial(), Matrix3::zero());
 /// ```
 pub trait GlobalPotential: GlobalCache + BoxCloneGlobal {
+    /// Return the cut off radius.
+    fn get_cutoff(&self) -> Option<f64>;
     /// Compute the energetic contribution of this potential
     fn energy(&mut self, system: &System) -> f64;
     /// Compute the force contribution of this potential. This function should
@@ -120,6 +126,10 @@ impl_box_clone!(GlobalPotential, BoxCloneGlobal, box_clone_gobal);
 /// }
 ///
 /// impl GlobalPotential for ShiftAll {
+///     fn get_cutoff(&self) -> Option<f64> {
+///         None
+///     }
+///
 ///     fn energy(&mut self, system: &System) -> f64 {
 ///         // shift all particles by delta
 ///         self.delta * system.size() as f64
