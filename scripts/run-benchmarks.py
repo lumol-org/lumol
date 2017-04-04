@@ -165,9 +165,21 @@ class Benchmarker:
 
 @click.command()
 @click.argument('output_dir')
-@click.option('--n-commits', '-n', type=click.INT, default=None)
+@click.option('--n-commits', '-n', type=click.INT, default=None,
+              help='number of commits to benchmark')
 @click.option('--pr-id', '-p', type=click.INT, default=None)
 def main(output_dir, n_commits, pr_id):
+    """
+    Run the benchmarks.
+
+    If --pr-id is set, runs the benchmarks from this PR. The
+    number of commits to bench is either the number provided in the
+    PR body using [lumol bench <n_commits>], or as a parameter to this
+    script (in case of both the script parameter prevails).
+    The benchmark results are saved in --output-dir, and if a PR id
+    have been set a comment is automatically added to it with the results
+    of the PR.
+    """
     if n_commits is None:
         if pr_id is None:
             raise Exception('--n-commits must be set if no PR id is given')
