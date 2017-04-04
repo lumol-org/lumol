@@ -7,6 +7,8 @@ use std::sync::{RwLock, RwLockReadGuard, RwLockWriteGuard};
 use std::f64::consts::{PI, FRAC_2_SQRT_PI};
 use std::f64;
 
+use rayon::prelude::*;
+
 use sys::{System, UnitCell, CellShape};
 use types::{Matrix3, Vector3D, Array3, Complex, Zero};
 use consts::ELCC;
@@ -445,43 +447,46 @@ impl Ewald {
     /// k-space contribution to the virial
     fn kspace_virial(&mut self, system: &System) -> Matrix3 {
         self.density_fft(system);
-        let mut virial = Matrix3::zero();
 
         let factor = 4.0 * PI / (system.cell().volume() * ELCC);
         let (rec_kx, rec_ky, rec_kz) = system.cell().reciprocal_vectors();
 
-        for ikx in 0..self.kmax {
-            for iky in 0..self.kmax {
-                for ikz in 0..self.kmax {
-                    // The k = 0 and the cutoff in k-space are already handled
-                    // in `expfactors`.
-                    let expfactor = self.expfactors[(ikx, iky, ikz)].abs();
-                    if expfactor < f64::EPSILON { continue }
+        let range = 0..self.kmax;
+        let ik_iter = range.clone().into_par_iter()
+            .flat_map(|ikz| range.clone().into_par_iter()
+            .flat_map(|ikx| range.clone().into_par_iter().map(move |iky| (ikx, iky)))
+            .map(move |(ikx, iky)| (ikx, iky, ikz)));
 
-                    let f = expfactor * factor;
-                    let k = (ikx as f64) * rec_kx + (iky as f64) * rec_ky + (ikz as f64) * rec_kz;
+        ik_iter.map(|(ikx, iky, ikz)| {
+            let mut local_virial = Matrix3::zero();
+            // The k = 0 and the cutoff in k-space are already handled
+            // in `expfactors`.
+            let expfactor = self.expfactors[(ikx, iky, ikz)].abs();
+            if expfactor < f64::EPSILON { return local_virial; }
 
-                    for i in 0..system.size() {
-                        let qi = system[i].charge;
+            let f = expfactor * factor;
+            let k = (ikx as f64) * rec_kx + (iky as f64) * rec_ky + (ikz as f64) * rec_kz;
 
-                        let fourier_i = self.fourier_phases[(ikx, i, 0)] *
-                                        self.fourier_phases[(iky, i, 1)] *
-                                        self.fourier_phases[(ikz, i, 2)];
-                        let fourier_i = fourier_i.imag();
+            for i in 0..system.size() {
+                let qi = system[i].charge;
 
-                        for j in (i + 1)..system.size() {
-                            let qj = system[j].charge;
-                            let force = f * self.kspace_force_factor(j, ikx, iky, ikz, qi, qj, fourier_i) * k;
-                            let rij = system.nearest_image(i, j);
-                            virial += force.tensorial(&rij);
-                        }
+                let fourier_i = self.fourier_phases[(ikx, i, 0)] *
+                                self.fourier_phases[(iky, i, 1)] *
+                                self.fourier_phases[(ikz, i, 2)];
+                let fourier_i = fourier_i.imag();
 
-                    }
+                for j in (i + 1)..system.size() {
+                    let qj = system[j].charge;
+                    let force = f * self.kspace_force_factor(j, ikx, iky, ikz, qi, qj, fourier_i) * k;
+                    let rij = system.nearest_image(i, j);
+                    local_virial += force.tensorial(&rij);
                 }
-            }
-        }
 
-        virial
+            }
+
+            local_virial
+        }).reduce(|| Matrix3::zero(), |a,b| a + b)
+
     }
 
     fn compute_delta_rho_move_particles(&mut self, system: &System, idxes: &[usize], newpos: &[Vector3D]) {
