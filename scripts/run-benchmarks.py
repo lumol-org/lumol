@@ -90,21 +90,22 @@ def get_commit_descriptions(n_commits):
     return descriptions
 
 
+def setup_cloned_repo(pr_id):
+    response = request_api('/pulls/%s' % pr_id)
+    clone_url = response['head']['repo']['clone_url']
+    commit_id = response['head']['sha']
+
+    subprocess.call('git clone %s cloned_repo' % clone_url, shell=True)
+    os.chdir('cloned_repo')
+    subprocess.call('git checkout %s' % commit_id, shell=True)
+    subprocess.call('git remote add upstream %s' % BASE_REPO_URL, shell=True)
+    subprocess.call('git fetch upstream master', shell=True)
+
+
 class Benchmarker:
     def __init__(self, n_commits, output_dir):
         self.commit_descriptions = get_commit_descriptions(n_commits)
         self.output_dir = os.path.abspath(os.path.expanduser(output_dir))
-
-    def setup_cloned_repo(self, pr_id):
-        response = request_api('/pulls/%s' % pr_id)
-        clone_url = response['head']['repo']['clone_url']
-        commit_id = response['head']['sha']
-
-        subprocess.call('git clone %s cloned_repo' % clone_url, shell=True)
-        os.chdir('cloned_repo')
-        subprocess.call('git checkout %s' % commit_id, shell=True)
-        subprocess.call('git remote add upstream %s' % BASE_REPO_URL, shell=True)
-        subprocess.call('git fetch upstream master', shell=True)
 
     def run_warmup(self):
         print('=================== Warming up ==============================')
@@ -183,8 +184,15 @@ def main(output_dir, n_commits, pr_id):
 
     # Search the PR id in the env vars for Travis CI
     if pr_id is None:
-        env_pr_id = os.environ.get('TRAVIS_PULL_REQUEST', 'false')
-        if env_pr_id != 'false':
+        env_pr_id = os.environ.get('TRAVIS_PULL_REQUEST', None)
+        if env_pr_id == 'false':
+            print('This is not a PR build, benchmarks are not run.')
+            return
+
+        if env_pr_id is not None:
+            if os.environ.get('TRAVIS_RUST_VERSION', None) != 'stable':
+                print('Not on stable Rust, benchmarks are not run')
+                return
             pr_id = int(env_pr_id)
 
     if n_commits is None:
@@ -196,18 +204,17 @@ def main(output_dir, n_commits, pr_id):
         print('No benchmark settings in the PR body, exiting.')
         return
 
-    benchmarker = Benchmarker(n_commits, output_dir)
-
     if pr_id is not None:
-        benchmarker.setup_cloned_repo(pr_id)
+        setup_cloned_repo(pr_id)
 
+    benchmarker = Benchmarker(n_commits, output_dir)
     benchmarker.run_warmup()
     benchmarker.run_all_benches()
 
     if pr_id is not None:
         benchmarker.comment_pr(pr_id)
         os.chdir('..')
-        subprocess.call('rm -rf cloned_repo')
+        subprocess.call('rm -rf cloned_repo', shell=True)
 
 
 if __name__ == '__main__':
