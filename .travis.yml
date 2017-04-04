@@ -62,10 +62,7 @@ script:
     # Check that benchmarks still compile
     - cargo bench --no-run
     # Run benchmarks
-    - |
-      if [ -z "$TRAVIS_PULL_REQUEST" ]; then
-          python scripts/run-benchmarks.py .. -p $TRAVIS_PULL_REQUEST
-      fi
+    - python scripts/run-benchmarks.py ..
     # Misc style checking
     - python scripts/check-whitespaces.py
     # Generate and publish coverage

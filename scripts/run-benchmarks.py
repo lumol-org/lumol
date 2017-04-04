@@ -180,10 +180,17 @@ def main(output_dir, n_commits, pr_id):
     have been set a comment is automatically added to it with the results
     of the PR.
     """
+
+    # Search the PR id in the env vars for Travis CI
+    if pr_id is None:
+        env_pr_id = os.environ.get('TRAVIS_PULL_REQUEST', 'false')
+        if env_pr_id != 'false':
+            pr_id = int(env_pr_id)
+
     if n_commits is None:
         if pr_id is None:
             raise Exception('--n-commits must be set if no PR id is given')
-        n_commits = infer_n_commits(125)
+        n_commits = infer_n_commits(pr_id)
 
     if n_commits is None:
         print('No benchmark settings in the PR body, exiting.')
