@@ -47,7 +47,10 @@ def request_api(endpoint, data=None):
 def infer_n_commits(pr_id):
     body = request_api('/pulls/%s' % pr_id)['body']
     pattern = r'\[lumol bench (?P<n_commits>[0-9]+)]'
-    return int(re.search(pattern, body).group('n_commits'))
+    result = re.search(pattern, body)
+    if result is None:
+        return None
+    return int(result.group('n_commits'))
 
 
 def get_master_commit():
@@ -90,8 +93,6 @@ def get_commit_descriptions(n_commits):
 class Benchmarker:
     def __init__(self, n_commits, output_dir):
         self.commit_descriptions = get_commit_descriptions(n_commits)
-        import pprint
-        pprint.pprint(self.commit_descriptions)
         self.output_dir = os.path.abspath(os.path.expanduser(output_dir))
 
     def setup_cloned_repo(self, pr_id):
@@ -100,6 +101,7 @@ class Benchmarker:
         commit_id = response['head']['sha']
 
         subprocess.call('git clone %s cloned_repo' % clone_url, shell=True)
+        os.chdir('cloned_repo')
         subprocess.call('git checkout %s' % commit_id, shell=True)
         subprocess.call('git remote add upstream %s' % BASE_REPO_URL, shell=True)
         subprocess.call('git fetch upstream master', shell=True)
@@ -166,17 +168,19 @@ class Benchmarker:
 @click.option('--n-commits', '-n', type=click.INT, default=None)
 @click.option('--pr-id', '-p', type=click.INT, default=None)
 def main(output_dir, n_commits, pr_id):
-
     if n_commits is None:
         if pr_id is None:
             raise Exception('--n-commits must be set if no PR id is given')
         n_commits = infer_n_commits(125)
 
+    if n_commits is None:
+        print('No benchmark settings in the PR body, exiting.')
+        return
+
     benchmarker = Benchmarker(n_commits, output_dir)
 
     if pr_id is not None:
         benchmarker.setup_cloned_repo(pr_id)
-        os.chdir('cloned_repo')
 
     benchmarker.run_warmup()
     benchmarker.run_all_benches()

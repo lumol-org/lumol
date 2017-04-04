@@ -39,6 +39,15 @@ install:
       else
           cargo install mdbook
       fi
+    # Build and cache cargo-benchcmp
+    - |
+      if [ -f $HOME/.cargo/bin/cargo-benchcmp ]; then
+          echo "Using cached cargo-benchcmp from ~/.cargo/bin/cargo-benchcmp"
+      else
+          cargo install cargo-benchcmp
+      fi
+    # Install python requirements
+    - pip install -r scripts/requirements.txt
     # Clean any cached test executable
     - rm -f target/debug/*-*
 script:
@@ -51,6 +60,11 @@ script:
     - cargo test -p lumol-input
     # Check that benchmarks still compile
     - cargo bench --no-run
+    # Run benchmarks
+    - |
+      if [ -z "$TRAVIS_PULL_REQUEST" ]; then
+          python scripts/run-benchmarks.py .. -p $TRAVIS_PULL_REQUEST
+      fi
     # Misc style checking
     - python scripts/check-whitespaces.py
     # Generate and publish coverage
