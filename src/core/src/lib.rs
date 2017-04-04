@@ -48,9 +48,11 @@ extern crate approx;
 
 extern crate chemfiles;
 extern crate ndarray;
+extern crate ndarray_parallel;
 extern crate num_traits as num;
 extern crate rand;
 extern crate special;
+extern crate rayon;
 
 /// Log a fatal error, and then panic with the same message
 macro_rules! fatal_error {

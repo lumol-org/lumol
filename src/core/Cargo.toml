@@ -18,8 +18,10 @@ log-once = "0.1"
 special = "0.7"
 bitflags = "0.8"
 ndarray = "0.8"
+ndarray-parallel = "0.2.0"
 lazy_static = "0.2"
 num-traits = "0.1"
+rayon = "0.6.0"
 
 [dev-dependencies]
 tempfile = "2.1"
