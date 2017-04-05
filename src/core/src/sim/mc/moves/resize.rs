@@ -22,8 +22,8 @@ pub struct Resize {
     new_system: System,
     /// target pressure
     pressure: f64,
-    /// largest cut off diameter of `PairPotentials`
-    rc_max: f64,
+    /// largest cutoff diameter of potentials in `Interactions`
+    maximum_cutoff: Option<f64>,
 }
 
 impl Resize {
@@ -36,7 +36,7 @@ impl Resize {
             range: Range::new(-delta, delta),
             new_system: System::new(),
             pressure: pressure,
-            rc_max: 0.0,
+            maximum_cutoff: None,
         }
     }
 }
@@ -54,23 +54,7 @@ impl MCMove for Resize {
 
         // Get the largest cutoff of all intermolecular interactions in the
         // system.
-
-        // Go through global interactions
-        let rc_glob = system.interactions()
-                            .globals()
-                            .iter()
-                            .map(|i| i.cutoff())
-                            .filter_map(|rc| rc)
-                            .fold(f64::NAN, f64::max);
-
-        // Pair interactions
-        let rc_pairs = system.interactions()
-                            .all_pairs()
-                            .iter()
-                            .map(|i| i.cutoff())
-                            .fold(f64::NAN, f64::max);
-
-        self.rc_max = f64::max(rc_glob, rc_pairs)
+        self.maximum_cutoff = system.interactions().maximum_cutoff()
     }
 
     fn prepare(&mut self, system: &mut System, rng: &mut Box<Rng>) -> bool {
@@ -88,14 +72,17 @@ impl MCMove for Resize {
         // Check the radius of the smallest inscribed sphere and compare to the
         // cut off distance.
         // Abort simulation when box gets smaller than twice the cutoff radius.
-        if self.new_system.cell()
-            .lengths()
-            .iter()
-            .any(|&d| 0.5 * d <= self.rc_max) {
-            fatal_error!("Tried to decrease the cell size but new size
-                conflicts with the cut off radius. \
-                Increase the number of particles to get rid of this problem.")
-        }
+        if let Some(maximum_cutoff) = self.maximum_cutoff {
+            if self.new_system.cell()
+                    .lengths()
+                    .iter()
+                    .any(|&d| 0.5 * d <= maximum_cutoff) {
+                    fatal_error!("Tried to decrease the cell size but new size
+                        conflicts with the cut off radius. \
+                        Increase the number of particles to get rid of this problem.")
+                    }
+        };
+
         // Loop over all molecules in the system.
         // We don't want to change the intramolecular distances
         // so we compute the translation vector of the center-of-mass

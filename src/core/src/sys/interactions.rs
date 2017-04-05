@@ -315,7 +315,6 @@ impl Interactions {
 #[cfg(test)]
 mod test {
     use super::*;
-    use std::f64;
 
     use energy::{Harmonic, Wolf, Ewald, SharedEwald, LennardJones, PairInteraction};
     use sys::ParticleKind as Kind;
