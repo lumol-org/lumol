@@ -1,0 +1,6 @@
+[input]
+version = 1
+
+[log]
+please_log = true
+#^ Missing 'target' or 'targets' in log section

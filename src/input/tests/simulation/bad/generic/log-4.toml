@@ -1,0 +1,6 @@
+[input]
+version = 1
+
+[log]
+targets = true
+#^ 'targets' must be an array in 'log' section

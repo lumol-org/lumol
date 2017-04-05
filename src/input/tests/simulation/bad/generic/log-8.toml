@@ -1,0 +1,8 @@
+[input]
+version = 1
+
+[log]
+target = "file.log"
+level = "info"
+append = 1
+#^ 'append' must be a boolean in log file target

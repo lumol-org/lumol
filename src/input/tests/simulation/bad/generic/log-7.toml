@@ -1,0 +1,7 @@
+[input]
+version = 1
+
+[log]
+target = "<stdout>"
+level = "false"
+#^ Unknown logging level 'false'

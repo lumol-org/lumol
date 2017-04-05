@@ -2,16 +2,16 @@
 version = 1
 
 [log]
-target = "<stdout>"
+targets = [
+    {target = "<stdout>", level = "warning"},
+    {target = "file.log", level = "info"},
+]
 
 [[systems]]
 file = "../CO2.xyz"
-cell = [10.0, 10.0, 10.0, 90.0, 90.0, 110.0]
 
 [[simulations]]
 nsteps = 1000000
-
 [simulations.propagator]
 type = "MolecularDynamics"
-timestep = "1 fs"
-integrator = {type = "VelocityVerlet"}
+timestep = "1.0 fs"

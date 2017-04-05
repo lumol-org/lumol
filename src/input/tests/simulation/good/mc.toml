@@ -1,6 +1,10 @@
 [input]
 version = 1
 
+[log]
+target = "<stdout>"
+level = "trace"
+
 [[systems]]
 file = "../CO2.xyz"
 cell = []

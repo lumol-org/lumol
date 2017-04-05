@@ -1,0 +1,6 @@
+[input]
+version = 1
+
+[log]
+target = ""
+#^ 'target' can not be an empty string in log target

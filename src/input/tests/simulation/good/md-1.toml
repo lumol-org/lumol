@@ -1,6 +1,11 @@
 [input]
 version = 1
 
+[log]
+target = "file.log"
+level = "debug"
+append = true
+
 [[systems]]
 file = "../CO2.xyz"
 
