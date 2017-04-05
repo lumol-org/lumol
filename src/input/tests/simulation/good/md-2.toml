@@ -1,6 +1,9 @@
 [input]
 version = 1
 
+[log]
+target = "<stderr>"
+
 [[systems]]
 file = "../CO2.xyz"
 

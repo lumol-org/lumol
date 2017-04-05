@@ -1,0 +1,7 @@
+[input]
+version = 1
+
+[log]
+target = true
+targets = true
+#^ Can not have both 'target' and 'targets' in the log section

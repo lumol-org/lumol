@@ -1,0 +1,8 @@
+[input]
+version = 1
+
+[log]
+target = "file.log"
+level = "info"
+verbose = true
+#^ Unknown 'verbose' key in log section
