@@ -4,6 +4,7 @@
 //! The `Interactions` type for storing particles types to potentials
 //! associations.
 
+use std::f64;
 use std::collections::BTreeMap;
 use std::cmp::{min, max};
 
@@ -274,6 +275,40 @@ impl Interactions {
     pub fn globals(&self) -> &[Box<GlobalPotential>] {
         &self.globals
     }
+
+    /// Get maximum cutoff from `coulomb`, `pairs` and `global` interactons.
+    pub fn maximum_cutoff(&self) -> Option<f64> {
+        // Coulomb potential, return cutoff
+        let coulomb_cutoff = match self.coulomb {
+            Some(ref coulomb) => match coulomb.cutoff() {
+                Some(cutoff) => cutoff,
+                None => f64::NAN,
+            },
+            None => f64::NAN,
+        };
+
+        // Go through global interactions, return maximum cutoff
+        let global_cutoff = self.globals()
+            .iter()
+            .map(|i| i.cutoff())
+            .filter_map(|rc| rc)
+            .fold(f64::NAN, f64::max);
+
+        let mut maximum_cutoff = f64::max(global_cutoff, coulomb_cutoff);
+
+        // Pair interactions, return maximum cutoff
+        let pairs_cutoff = self.all_pairs()
+            .iter()
+            .map(|i| i.cutoff())
+            .fold(f64::NAN, f64::max);
+
+        maximum_cutoff = f64::max(maximum_cutoff, pairs_cutoff);
+        if maximum_cutoff.is_nan() {
+            None
+        } else {
+            Some(maximum_cutoff)
+        }
+    }
 }
 
 
@@ -282,7 +317,7 @@ mod test {
     use super::*;
     use std::f64;
 
-    use energy::{Harmonic, Wolf, Ewald, SharedEwald, PairInteraction};
+    use energy::{Harmonic, Wolf, Ewald, SharedEwald, LennardJones, PairInteraction};
     use sys::ParticleKind as Kind;
 
     #[test]
@@ -447,15 +482,35 @@ mod test {
     }
 
     #[test]
-    fn test_globals_cutoff() {
+    fn test_maximum_cutoff() {
+        let mut interactions = Interactions::new();
+        // No cutoff
+        assert_eq!(interactions.maximum_cutoff(), None);
+
+        // Only pairs
+        let pair = PairInteraction::new(Box::new(LennardJones{sigma: 3.405, epsilon: 1.0}), 10.0);
+        interactions.add_pair("A", "B", pair.clone());
+        assert_eq!(interactions.maximum_cutoff(), Some(10.0));
+
+        // Only globals
         let mut interactions = Interactions::new();
         interactions.add_global(Box::new(Wolf::new(1.0)));
+        assert_eq!(interactions.maximum_cutoff(), Some(1.0));
+
         interactions.add_global(Box::new(SharedEwald::new(Ewald::new(5.0, 5))));
-        let rc_glob = interactions.globals()
-            .iter()
-            .map(|i| i.cutoff())
-            .filter_map(|rc| rc)
-            .fold(f64::NAN, f64::max);
-        assert_eq!(rc_glob, 5.0)
+        assert_eq!(interactions.maximum_cutoff(), Some(5.0));
+
+        // Only coulomb
+        let mut interactions = Interactions::new();
+        interactions.set_coulomb(Box::new(Wolf::new(1.0)));
+        assert_eq!(interactions.maximum_cutoff(), Some(1.0));
+
+        // All potentials
+        interactions.add_pair("A", "B", pair.clone());
+        assert_eq!(interactions.maximum_cutoff(), Some(10.0));
+        interactions.add_global(Box::new(SharedEwald::new(Ewald::new(15.0, 5))));
+        assert_eq!(interactions.maximum_cutoff(), Some(15.0));
+        interactions.add_global(Box::new(Wolf::new(1.0)));
+        assert_eq!(interactions.maximum_cutoff(), Some(15.0));
     }
 }
