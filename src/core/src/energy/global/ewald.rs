@@ -7,7 +7,9 @@ use std::sync::{RwLock, RwLockReadGuard, RwLockWriteGuard};
 use std::f64::consts::{PI, FRAC_2_SQRT_PI};
 use std::f64;
 
+use ndarray::Axis;
 use rayon::prelude::*;
+use ndarray_parallel::prelude::*;
 
 use sys::{System, UnitCell, CellShape};
 use types::{Matrix3, Vector3D, Array3, Complex, Zero};
@@ -366,17 +368,22 @@ impl Ewald {
             }
         }
 
-        for ikx in 0..self.kmax {
-            for iky in 0..self.kmax {
-                for ikz in 0..self.kmax {
-                    self.rho[(ikx, iky, ikz)] = Complex::polar(0.0, 0.0);
+        let mut new_rho = Array3::<Complex>::zeros(self.rho.dim());
+
+        new_rho.axis_iter_mut(Axis(0)).into_par_iter().enumerate().for_each(|(ikx, mut rho_0)| {
+            rho_0.axis_iter_mut(Axis(0)).into_par_iter().enumerate().for_each(|(iky, mut rho_1)| {
+                rho_1.axis_iter_mut(Axis(0)).into_par_iter().enumerate().for_each(|(ikz, mut rho)| {
+
                     for j in 0..natoms {
                         let phi = self.fourier_phases[(ikx, j, 0)] * self.fourier_phases[(iky, j, 1)] * self.fourier_phases[(ikz, j, 2)];
-                        self.rho[(ikx, iky, ikz)] = self.rho[(ikx, iky, ikz)] + system[j].charge * phi;
+                        rho[()] = rho[()] + system[j].charge * phi;
                     }
-                }
-            }
-        }
+
+                });
+            });
+        });
+
+        self.rho = new_rho;
     }
 
     /// k-space contribution to the energy
