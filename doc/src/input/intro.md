@@ -4,7 +4,7 @@ An input file contains all information that you need to run a simulation.
 It is usually organized in three main sections: **input**, **systems** and
 **simulations**.
 
-- The [input](input/intro.html#Input%20metadata) section contains metadata about
+- The [input](input/intro.html#input-metadata) section contains metadata about
   the input itself (i.e. a version number).
 - The [systems](input/systems.html) section contains information about the
   initial configuration, the interactions between atoms and the simulation cell.

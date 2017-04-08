@@ -66,7 +66,7 @@ Here are some reasons for you not to use Lumol:
   Lumol is [not yet parallel][parallel], and will be made so, but you should
   continue to use other codes in the meantime.
 
-[parallel]: faq.html#Is%20the%20code%20parallel?%20If%20so,%20how%20well%20does%20it%20scale?
+[parallel]: faq.html#is-the-code-parallel-if-so-how-well-does-it-scale
 
 ## Why is Lumol written in Rust?
 

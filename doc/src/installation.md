@@ -30,5 +30,5 @@ accessible in your PATH.
 
 
 [Rust]: https://www.rust-lang.org/
-[why-rust]: faq.html#Why%20is%20Lumol%20written%20in%20Rust?
+[why-rust]: faq.html#why-is-lumol-written-in-rust
 [rust-download]: https://www.rust-lang.org/downloads.html

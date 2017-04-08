@@ -11,7 +11,7 @@ Excited? Then let's start with an overview of this book:
 - [Installation](installation.html): Where to get and how to install Lumol.
 - [The first simulations](): Step-by-step tutorials on
   how to perform basic molecular dynamics and Monte-Carlo simulations.
-- [Conceptual guides](concepts/intro.html): Learn about the details. How are
+- [Simulation concepts](concepts/intro.html): Learn about the details. How are
   systems assembled? How do system propagators work?
 - [Input files reference](input/intro.html): The complete reference for the
   input files needed to perform simulations;
