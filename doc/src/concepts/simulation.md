@@ -31,4 +31,4 @@ about the simulated system. Temperature, energy, radial distribution functions
 are some examples of output algorithms. The full list of currently implemented
 output algorithms is available [here][Output].
 
-[Output]: input/simulations.html#Outputs
+[Output]: input/simulations.html#outputs

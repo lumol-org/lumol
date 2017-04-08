@@ -24,7 +24,7 @@ additional control algorithm to the simulation.
 Integrators are algorithms that propagate the forces acting on the particles to
 compute their motions. The simplest ones performs an NVE integration, but some
 integrators allow to work in different ensembles. All NVE integrators can be
-turned into NVT integrators by adding a [thermostat](input/md.html#Thermostats)
+turned into NVT integrators by adding a [thermostat](input/md.html#thermostats)
 to the simulation. In the input, if the `integrator` key is absent, the default
 integrator is a Velocity-Verlet integrator.
 

@@ -12,11 +12,11 @@ the move is rejected, the system stays in its current configuration. You can add
 multiple moves so that the ensemble of your choice is sampled.
 
 Here is a list of all moves that are currently implemented in Lumol:
-* [Translate](input/mc.html#Translation): Change the center of mass position of
+* [Translate](input/mc.html#translation): Change the center of mass position of
 a molecule.
-* [Rotate](input/mc.html#Rotation): Perform a rotation of a molecule about its
+* [Rotate](input/mc.html#rotation): Perform a rotation of a molecule about its
 center of mass.
-* [Resize](input/mc.html#Resize): Change the size of the simulation cell.
+* [Resize](input/mc.html#resize): Change the size of the simulation cell.
 
 Currently, all Monte-Carlo simulations are carried out using Metropolis
 acceptance criteria.
@@ -108,7 +108,7 @@ recommend to use adjustable displacements *only for equilibration runs*. You can
 then take the resulting values for `delta` and use them for a production run,
 where no further adjustments are made.
 
-[chemfiles]: chemfiles.github.io
+[chemfiles]: http://chemfiles.org/
 
 ### Example
 

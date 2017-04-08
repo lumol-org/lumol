@@ -89,7 +89,7 @@ In some force fields, neighboring atoms in molecules may interact solely via
 covalent potentials (and not van der Waals or electrostatic). In this case, we
 have to *exclude* interactions between neighbors in molecules. You can do that
 (and more) in the `pairs` section by specifying a
-[restriction](pairs.html#Pairs%20restrictions) using the `restriction` key.
+[restriction](input/pairs.html#pairs-restrictions) using the `restriction` key.
 
 ```toml
 [[pairs]]
@@ -104,7 +104,7 @@ restriction  = "IntraMolecular"
 The method for treatment of electrostatic interactions is specified in the
 `coulomb` section. There are multiple available solvers for [electrostatic
 interactions](input/electrostatic.html). Optionally, an additional
-[restriction](pairs.html#Pairs%20restrictions) can be specified with the
+[restriction](input/pairs.html#pairs-restrictions) can be specified with the
 `restriction` key.
 
 ```toml

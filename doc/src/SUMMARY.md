@@ -10,7 +10,7 @@
     - [Gibbs simulation of ethane]()
     - [Adsorption in zeolites]()
 
-- [Conceptual guides]()
+- [Simulation concepts](concepts/intro.md)
     - [System](concepts/system.md)
     - [Simulation](concepts/simulation.md)
     - [Units](concepts/units.md)
