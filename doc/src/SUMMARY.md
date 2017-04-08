@@ -26,6 +26,7 @@
     - [Molecular dynamics](input/md.md)
     - [Monte-Carlo](input/mc.md)
     - [Minimization](input/min.md)
+    - [Logging configuration](input/log.md)
 
 - [Advanced tutorials]()
     - [Adding potentials]()
