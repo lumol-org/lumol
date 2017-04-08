@@ -19,6 +19,7 @@ install:
     - export CC=gcc-4.9
     - export CXX=g++-4.9
     - export RUSTFLAGS="-C link-dead-code"
+    - pip install --user beautifulsoup4
     # Build and cache kcov
     - |
       if [ -f $HOME/local/bin/kcov ]; then
@@ -53,6 +54,9 @@ script:
     - cargo bench --no-run
     # Misc style checking
     - python scripts/check-whitespaces.py
+    # Check the links in the docs
+    - mdbook build doc
+    - ./scripts/check-html-book.py doc/book
     # Generate and publish coverage
     - |
       if [[ "${TRAVIS_RUST_VERSION}" == "stable" ]]; then
