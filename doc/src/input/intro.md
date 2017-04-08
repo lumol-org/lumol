@@ -45,6 +45,10 @@ while keeping compatibility with previous formats. Please note that
 Lumol is not in version 1.0 yet and we currently cannot guarantee compatibility
 for input files.
 
+The input files can also contain a `[log]` section to control where should the
+code output be printed. Please see the corresponding
+[documentation](input/log.html) for more information.
+
 ## Units in input
 
 The unit of a value can be defined by a specific string, which will be parsed
