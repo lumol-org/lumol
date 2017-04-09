@@ -11,9 +11,10 @@ addons:
     - libcurl4-openssl-dev
     - libelf-dev
     - libdw-dev
+    - python
 rust:
-    - stable
     - beta
+    - stable
 install:
     - export PATH=$HOME/.local/bin:$PATH:$HOME/local/bin:$HOME/.cargo/bin
     - export CC=gcc-4.9
@@ -40,6 +41,15 @@ install:
       else
           cargo install mdbook
       fi
+    # Build and cache cargo-benchcmp
+    - |
+      if [ -f $HOME/.cargo/bin/cargo-benchcmp ]; then
+          echo "Using cached cargo-benchcmp from ~/.cargo/bin/cargo-benchcmp"
+      else
+          cargo install cargo-benchcmp
+      fi
+    # Install python requirements
+    - pip install --user -r scripts/requirements.txt
     # Clean any cached test executable
     - rm -f target/debug/*-*
 script:
@@ -52,6 +62,8 @@ script:
     - cargo test -p lumol-input
     # Check that benchmarks still compile
     - cargo bench --no-run
+    # Run benchmarks
+    - python scripts/run-benchmarks.py ..
     # Misc style checking
     - python scripts/check-whitespaces.py
     # Check the links in the docs
