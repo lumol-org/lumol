@@ -1,5 +1,6 @@
 import subprocess
 import os
+from contextlib import contextmanager
 
 import click
 import cpuinfo
@@ -47,6 +48,14 @@ def check_for_cargo_benchcmp():
                         "`cargo install cargo-benchcmp`")
 
 
+def check_for_environment_variables():
+    """
+    Used to check early that the required env vars are set.
+    """
+    _get_environment_variable('LUMOL_GH_USERNAME')
+    _get_environment_variable('LUMOL_GH_TOKEN')
+
+
 def request_api(endpoint, data=None):
     url = 'https://api.github.com/repos/lumol-org/lumol' + endpoint
     username = _get_environment_variable('LUMOL_GH_USERNAME')
@@ -61,7 +70,7 @@ def request_api(endpoint, data=None):
 
 
 def get_master_commit():
-    cmd = 'git log --oneline upstream/master -n 1'
+    cmd = 'git log --oneline _bot_remote/master -n 1'
     out = subprocess.check_output(cmd, shell=True).decode('utf-8')
     sha, _, title = out.rstrip().partition(' ')
     return sha, title
@@ -103,11 +112,15 @@ def clean_repo():
     subprocess.call('git remote remove _bot_remote', shell=True)
 
 
+@contextmanager
 def setup_repo(pr_id):
     clean_repo()
     subprocess.call('git remote add _bot_remote {}'.format(BASE_REPO_URL), shell=True)
+    subprocess.call('git fetch _bot_remote master'.format(pr_id), shell=True)
     subprocess.call('git fetch _bot_remote pull/{}/head:_bot_pr'.format(pr_id), shell=True)
     subprocess.call('git checkout _bot_pr', shell=True)
+    yield
+    clean_repo()
 
 
 class Benchmarker:
@@ -186,14 +199,13 @@ def main(output_dir, n_commits, pr_id):
     and a personal access token.
     """
     check_for_cargo_benchcmp()
-    setup_repo(pr_id)
+    check_for_environment_variables()
 
-    benchmarker = Benchmarker(n_commits, output_dir)
-    benchmarker.run_warmup()
-    benchmarker.run_all_benches()
-    benchmarker.comment_pr(pr_id)
-
-    clean_repo()
+    with setup_repo(pr_id):
+        benchmarker = Benchmarker(n_commits, output_dir)
+        benchmarker.run_warmup()
+        benchmarker.run_all_benches()
+        benchmarker.comment_pr(pr_id)
 
 
 if __name__ == '__main__':
