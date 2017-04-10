@@ -7,7 +7,7 @@ use std::sync::{RwLock, RwLockReadGuard, RwLockWriteGuard};
 use std::f64::consts::{PI, FRAC_2_SQRT_PI};
 use std::f64;
 
-use ndarray::{Axis, Zip};
+use ndarray::{Zip};
 use rayon::prelude::*;
 use ndarray_parallel::prelude::*;
 
@@ -369,15 +369,11 @@ impl Ewald {
 
         let mut new_rho = Array3::<Complex>::zeros(self.rho.dim());
 
-        new_rho.axis_iter_mut(Axis(0)).into_par_iter().enumerate().for_each(|(ikx, mut rho_0)| {
-            rho_0.axis_iter_mut(Axis(0)).into_par_iter().enumerate().for_each(|(iky, mut rho_1)| {
-                rho_1.axis_iter_mut(Axis(0)).into_par_iter().enumerate().for_each(|(ikz, mut rho)| {
-                    for j in 0..natoms {
-                        let phi = self.fourier_phases[(ikx, j, 0)] * self.fourier_phases[(iky, j, 1)] * self.fourier_phases[(ikz, j, 2)];
-                        rho[()] = rho[()] + system[j].charge * phi;
-                    }
-                });
-            });
+        Zip::indexed(&mut *new_rho).par_apply(|(ikx, iky, ikz), rho|{
+            for j in 0..natoms {
+                let phi = self.fourier_phases[(ikx, j, 0)] * self.fourier_phases[(iky, j, 1)] * self.fourier_phases[(ikz, j, 2)];
+                *rho = *rho + system[j].charge * phi;
+            }
         });
 
         self.rho = new_rho;
