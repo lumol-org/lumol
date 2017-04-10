@@ -7,7 +7,7 @@ use std::sync::{RwLock, RwLockReadGuard, RwLockWriteGuard};
 use std::f64::consts::{PI, FRAC_2_SQRT_PI};
 use std::f64;
 
-use ndarray::{Zip};
+use ndarray::Zip;
 use rayon::prelude::*;
 use ndarray_parallel::prelude::*;
 
@@ -329,20 +329,6 @@ impl Ewald {
 
 /// k-space part of the summation
 impl Ewald {
-    /// Return a vector containing every (ikx, iky, ikz) indexes.
-    ///
-    /// Ideally this would be done using flat_map on a parallel iterator,
-    /// but there is currently no satisfying way to return a FlatMap
-    /// iterator without boxing it.
-    fn get_ik_indexes(&self) -> Vec<(usize, usize, usize)> {
-        let range = 0..self.kmax;
-        let ik_iter = range.clone().into_iter()
-            .flat_map(|ikz| range.clone().into_iter()
-                .flat_map(|ikx| range.clone().into_iter().map(move |iky| (ikx, iky)))
-                .map(move |(ikx, iky)| (ikx, iky, ikz)));
-
-        ik_iter.collect::<Vec<_>>()
-    }
     /// Compute the Fourier transform of the electrostatic density
     fn density_fft(&mut self, system: &System) {
         let natoms = system.size();
@@ -462,17 +448,15 @@ impl Ewald {
 
         let factor = 4.0 * PI / (system.cell().volume() * ELCC);
         let (rec_kx, rec_ky, rec_kz) = system.cell().reciprocal_vectors();
+        let zip = Zip::indexed(&*self.expfactors).into_par_iter();
 
-        let ik_iter = self.get_ik_indexes().into_par_iter();
-
-        ik_iter.map(|(ikx, iky, ikz)| {
+        zip.map(|((ikx, iky, ikz), expfactor)|{
             let mut local_virial = Matrix3::zero();
             // The k = 0 and the cutoff in k-space are already handled
             // in `expfactors`.
-            let expfactor = self.expfactors[(ikx, iky, ikz)].abs();
-            if expfactor < f64::EPSILON { return local_virial; }
+            if *expfactor < f64::EPSILON { return local_virial; }
 
-            let f = expfactor * factor;
+            let f = *expfactor * factor;
             let k = (ikx as f64) * rec_kx + (iky as f64) * rec_ky + (ikz as f64) * rec_kz;
 
             for i in 0..system.size() {
