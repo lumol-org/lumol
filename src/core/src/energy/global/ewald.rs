@@ -205,10 +205,11 @@ impl Ewald {
     /// Real space contribution to the energy
     fn real_space_energy(&self, system: &System) -> f64 {
         let natoms = system.size();
-        let mut energy = 0.0;
-        for i in 0..natoms {
+
+        let energy = (0..natoms).into_par_iter().map(|i| {
+            let mut local_energy = 0.0;
             let qi = system[i].charge;
-            if qi == 0.0 { continue }
+            if qi == 0.0 { return 0.0; }
             for j in i + 1..natoms {
                 let qj = system[j].charge;
                 if qj == 0.0 { continue }
@@ -217,10 +218,13 @@ impl Ewald {
                 let info = self.restriction.information(distance);
 
                 let r = system.distance(i, j);
-                energy += self.real_space_energy_pair(info, qi, qj, r);
+                local_energy += self.real_space_energy_pair(info, qi, qj, r);
             }
-        }
-        return energy;
+
+            local_energy
+        }).sum();
+
+        energy
     }
 
     /// Real space contribution to the forces
