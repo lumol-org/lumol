@@ -53,6 +53,7 @@ extern crate num_traits as num;
 extern crate rand;
 extern crate special;
 extern crate rayon;
+extern crate thread_local;
 
 /// Log a fatal error, and then panic with the same message
 macro_rules! fatal_error {
