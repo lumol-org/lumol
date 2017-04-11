@@ -455,15 +455,16 @@ impl Ewald {
         let zip = Zip::indexed(&*self.expfactors).into_par_iter();
 
         zip.map(|((ikx, iky, ikz), expfactor)|{
-            let mut local_virial = Matrix3::zero();
+
             // The k = 0 and the cutoff in k-space are already handled
             // in `expfactors`.
-            if *expfactor < f64::EPSILON { return local_virial; }
+            if *expfactor < f64::EPSILON { return Matrix3::zero(); }
 
             let f = *expfactor * factor;
             let k = (ikx as f64) * rec_kx + (iky as f64) * rec_ky + (ikz as f64) * rec_kz;
 
-            for i in 0..system.size() {
+            (0..system.size()).into_par_iter().map(|i|{
+                let mut local_virial = Matrix3::zero();
                 let qi = system[i].charge;
 
                 let fourier_i = self.fourier_phases[(ikx, i, 0)] *
@@ -477,9 +478,10 @@ impl Ewald {
                     let rij = system.nearest_image(i, j);
                     local_virial += force.tensorial(&rij);
                 }
-            }
 
-            local_virial
+                local_virial
+            }).reduce(|| Matrix3::zero(), |a, b| a + b)
+
         }).reduce(|| Matrix3::zero(), |a, b| a + b)
     }
 
