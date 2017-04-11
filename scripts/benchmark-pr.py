@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# coding=utf-8
+
 import subprocess
 import os
 from contextlib import contextmanager
@@ -76,20 +79,19 @@ def get_master_commit():
     return sha, title
 
 
-def get_commit_descriptions(n_commits):
+def get_commit_descriptions(n_commits=None):
     """
-    Get hash and title of the `n_commits` latest commits on the branch.
+    Get hash and title of the `n_commits` latest commits on the PR.
 
-    Also adds the commit at the HEAD of master in the end. If this
-    commit is met earlier, stops at this commit (the master commit
-    is guaranteed to be at the end of the result.
+    Also adds the commit at the HEAD of master in the end. If there
+    are more than `n_commits` on the PR, only the ones on the PR
+    are kept.
 
     :param n_commits:
     :return:
     """
-    cmd = 'git log --oneline  -n {}'.format(n_commits)
+    cmd = 'git log --oneline  _bot_remote/master.._bot_pr'.format(n_commits)
     out = subprocess.check_output(cmd, shell=True).decode('utf-8')
-    master_sha, master_title = get_master_commit()
 
     descriptions = []
     for line in out.split('\n'):
@@ -97,12 +99,11 @@ def get_commit_descriptions(n_commits):
             continue
         sha, _, title = line.partition(' ')
         descriptions.append((sha, title))
-        if sha == master_sha:
-            break
 
-    if descriptions[-1][0] != master_sha:
-        descriptions.append((master_sha, master_title))
+    if n_commits is not None:
+        descriptions = descriptions[:min(len(descriptions), n_commits)]
 
+    descriptions.append(get_master_commit())
     return descriptions
 
 
@@ -119,8 +120,10 @@ def setup_repo(pr_id):
     subprocess.call('git fetch _bot_remote master'.format(pr_id), shell=True)
     subprocess.call('git fetch _bot_remote pull/{}/head:_bot_pr'.format(pr_id), shell=True)
     subprocess.call('git checkout _bot_pr', shell=True)
-    yield
-    clean_repo()
+    try:
+        yield
+    finally:
+        clean_repo()
 
 
 class Benchmarker:
@@ -182,13 +185,14 @@ class Benchmarker:
             'body': comment
         }
         request_api('/issues/{}/comments'.format(pr_id), data)
+        print('Comment posted on PR.')
 
 
 @click.command()
-@click.argument('output_dir')
-@click.argument('n_commits', type=click.INT)
 @click.argument('pr_id', type=click.INT)
-def main(output_dir, n_commits, pr_id):
+@click.argument('output_dir', default='./target/benchmarks/')
+@click.option('--n-commits', '-n', type=click.INT, help='maximum number of commits to benchmark')
+def main(pr_id, output_dir, n_commits):
     """
     Run the benchmarks for multiple commits on a PR and compare to master.
 
@@ -200,6 +204,8 @@ def main(output_dir, n_commits, pr_id):
     """
     check_for_cargo_benchcmp()
     check_for_environment_variables()
+
+    os.makedirs(output_dir, exist_ok=True)
 
     with setup_repo(pr_id):
         benchmarker = Benchmarker(n_commits, output_dir)
