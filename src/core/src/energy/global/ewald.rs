@@ -480,9 +480,9 @@ impl Ewald {
                 }
 
                 local_virial
-            }).reduce(|| Matrix3::zero(), |a, b| a + b)
+            }).sum()
 
-        }).reduce(|| Matrix3::zero(), |a, b| a + b)
+        }).sum()
     }
 
     fn compute_delta_rho_move_particles(&mut self, system: &System, idxes: &[usize], newpos: &[Vector3D]) {

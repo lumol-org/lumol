@@ -4,6 +4,7 @@
 //! 3x3 matrix type.
 use std::ops::{Add, Sub, Mul, Div, Index, IndexMut};
 use std::ops::{AddAssign, SubAssign, MulAssign, DivAssign};
+use std::iter;
 
 use types::{Vector3D, Zero, One};
 
@@ -385,6 +386,12 @@ impl One for Matrix3 {
     }
 }
 
+impl iter::Sum<Matrix3> for Matrix3 {
+    fn sum<I: Iterator<Item=Matrix3>>(iter: I) -> Matrix3 {
+        iter.fold(Matrix3::zero(), |a, b| a + b)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     // TODO: remove most of these when we can generate coverage from doc tests
@@ -599,5 +606,23 @@ mod tests {
         );
 
         assert_eq!(matrix.transposed(), transposed);
+    }
+
+    #[test]
+    fn iter_sum() {
+        let a = Matrix3::new(
+            1.0, 2.0, 4.0,
+            0.0, 1.0, 3.0,
+            0.0, 0.0, 1.0
+        );
+        let b = Matrix3::new(
+            7.0, -2.0, 5.0,
+            1.0, 1.0, 3.0,
+            0.0, -8.0, 3.0
+        );
+
+        let vec = vec![a, b, a];
+        let sum : Matrix3 = vec.into_iter().sum();
+        assert_eq!(sum, a + a + b);
     }
 }
