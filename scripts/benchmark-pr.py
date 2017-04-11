@@ -188,8 +188,23 @@ class Benchmarker:
         print('Comment posted on PR.')
 
 
+def benchmark_open_prs(output_dir, n_commits):
+    data = request_api('/pulls')
+
+    for pr in data:
+        benchmark_pr(pr['number'], output_dir, n_commits)
+
+
+def benchmark_pr(pr_id, output_dir, n_commits):
+    with setup_repo(pr_id):
+        benchmarker = Benchmarker(n_commits, output_dir)
+        benchmarker.run_warmup()
+        benchmarker.run_all_benches()
+        benchmarker.comment_pr(pr_id)
+
+
 @click.command()
-@click.argument('pr_id', type=click.INT)
+@click.argument('pr_id', default=-1)
 @click.argument('output_dir', default='./target/benchmarks/')
 @click.option('--n-commits', '-n', type=click.INT, help='maximum number of commits to benchmark')
 def main(pr_id, output_dir, n_commits):
@@ -206,12 +221,10 @@ def main(pr_id, output_dir, n_commits):
     check_for_environment_variables()
 
     os.makedirs(output_dir, exist_ok=True)
-
-    with setup_repo(pr_id):
-        benchmarker = Benchmarker(n_commits, output_dir)
-        benchmarker.run_warmup()
-        benchmarker.run_all_benches()
-        benchmarker.comment_pr(pr_id)
+    if pr_id == -1:
+        benchmark_open_prs(output_dir, n_commits)
+    else:
+        benchmark_pr(pr_id, output_dir, n_commits)
 
 
 if __name__ == '__main__':
