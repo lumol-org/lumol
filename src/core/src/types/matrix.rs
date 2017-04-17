@@ -91,6 +91,51 @@ impl Matrix3 {
                        [m20, m21, m22]]}
     }
 
+
+    /// Returns rotation matrix given a rotation angle and an axis.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use lumol::types::{Vector3D, Matrix3};
+    /// let e1 = Vector3D::new(1.0f64, 0.0, 0.0);
+    /// let e3 = Vector3D::new(0.0f64, 0.0, 1.0);
+    /// let angle = 90f64.to_radians();
+    ///
+    /// let rotation = Matrix3::rotation(&(e1*2.0), angle);
+    /// let mut rot_vec = rotation * e3;
+    /// for i in 0..3 {
+    ///     rot_vec[i] = (rot_vec[i] * 1.0e8).round() / 1.0e8
+    /// };
+    /// assert_eq!(rot_vec, Vector3D::new(0.0, 1.0, 0.0));
+    /// ```
+    pub fn rotation(axis: &Vector3D, angle: f64) -> Matrix3 {
+        let n = axis.normalized();
+        let sin = f64::sin(angle);
+        let cos = f64::cos(angle);
+
+        let x_sin = n[0] * sin;
+        let y_sin = n[1] * sin;
+        let z_sin = n[2] * sin;
+        let one_minus_cos = 1.0 - cos;
+        let xy = n[0] * n[1] * one_minus_cos;
+        let xz = n[0] * n[2] * one_minus_cos;
+        let yz = n[1] * n[2] * one_minus_cos;
+
+        // Build the rotation matrix
+        Matrix3::new(
+            (n[0] * n[0]) * one_minus_cos + cos,
+            xy + z_sin,
+            xz - y_sin,
+            xy - z_sin,
+            (n[1] * n[1]) * one_minus_cos + cos,
+            yz + x_sin,
+            xz + y_sin,
+            yz - x_sin,
+            (n[2] * n[2]) * one_minus_cos + cos
+        )
+    }
+
     /// Compute the trace of the matrix
     /// # Examples
     /// ```

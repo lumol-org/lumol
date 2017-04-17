@@ -132,37 +132,9 @@ impl MCMove for Rotate {
 /// `com` around the `axis` axis by `angle`. The `positions` array is
 /// overwritten with the new positions.
 fn rotate_around_axis(positions: &mut [Vector3D], com: Vector3D, axis: Vector3D, angle: f64) {
-    let rotation = rotation_matrix(&axis, angle);
+    let rotation = Matrix3::rotation(&axis, angle);
     for position in positions {
         let oldpos = *position - com;
         *position = com + rotation * oldpos;
     }
-}
-
-fn rotation_matrix(axis: &Vector3D, angle: f64) -> Matrix3 {
-    let sin = f64::sin(angle);
-    let cos = f64::cos(angle);
-
-    let x_sin = axis[0] * sin;
-    let y_sin = axis[1] * sin;
-    let z_sin = axis[2] * sin;
-    let one_minus_cos = 1.0 - cos;
-    let xy = axis[0] * axis[1] * one_minus_cos;
-    let xz = axis[0] * axis[2] * one_minus_cos;
-    let yz = axis[1] * axis[2] * one_minus_cos;
-
-    // Build the rotation matrix
-    let rotation = Matrix3::new(
-        (axis[0] * axis[0]) * one_minus_cos + cos,
-        xy + z_sin,
-        xz - y_sin,
-        xy - z_sin,
-        (axis[1] * axis[1]) * one_minus_cos + cos,
-        yz + x_sin,
-        xz + y_sin,
-        yz - x_sin,
-        (axis[2] * axis[2]) * one_minus_cos + cos
-    );
-
-    return rotation;
 }
