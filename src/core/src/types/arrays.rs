@@ -4,7 +4,7 @@
 //! Multi-dimensional arrays based on ndarray
 use ndarray;
 
-use std::ops::{Index, IndexMut, Deref, DerefMut};
+use std::ops::{Deref, DerefMut};
 use types::Zero;
 
 /// Two dimensional tensors, based on ndarray.
@@ -24,6 +24,18 @@ use types::Zero;
 /// ```
 #[derive(Debug, Clone, PartialEq)]
 pub struct Array2<T>(ndarray::Array2<T>);
+
+impl<T> Array2<T> {
+    /// Unsafe access to an element.
+    pub unsafe fn at(&self, i: usize, j: usize) -> &T {
+        self.0.uget((i, j))
+    }
+
+    /// Unsafe mutable access to an element.
+    pub unsafe fn at_mut(&mut self, i: usize, j: usize) -> &mut T {
+        self.0.uget_mut((i, j))
+    }
+}
 
 impl<T: Zero + Clone> Array2<T> {
     /// Create a new `Array2` of the specified `size` filled with the
@@ -84,24 +96,6 @@ impl<T: Default> Array2<T> {
     }
 }
 
-impl<T> Index<(usize, usize)> for Array2<T> {
-    type Output = T;
-    fn index(&self, index: (usize, usize)) -> &T {
-        unsafe {
-            // ndarray does the check for us in debug builds
-            self.0.uget(index)
-        }
-    }
-}
-
-impl<T> IndexMut<(usize, usize)> for Array2<T> {
-    fn index_mut(&mut self, index: (usize, usize)) -> &mut T {
-        unsafe {
-            // ndarray does the check for us in debug builds
-            self.0.uget_mut(index)
-        }
-    }
-}
 
 impl<T> Deref for Array2<T> {
     type Target = ndarray::Array2<T>;
@@ -193,26 +187,18 @@ impl<T> Array3<T> {
     pub fn default(size: (usize, usize, usize)) -> Array3<T> where T: Default{
         Array3(ndarray::Array3::default(size))
     }
-}
 
-impl<T> Index<(usize, usize, usize)> for Array3<T> {
-    type Output = T;
-    fn index(&self, index: (usize, usize, usize)) -> &T {
-        unsafe {
-            // ndarray does the check for us in debug builds
-            self.0.uget(index)
-        }
+     /// Unsafe access to an element.
+    pub unsafe fn at(&self, i: usize, j: usize, k: usize) -> &T {
+        self.0.uget((i, j, k))
+    }
+
+    /// Unsafe mutable access to an element.
+    pub unsafe fn at_mut(&mut self, i: usize, j: usize, k: usize) -> &mut T {
+        self.0.uget_mut((i, j, k))
     }
 }
 
-impl<T> IndexMut<(usize, usize, usize)> for Array3<T> {
-    fn index_mut(&mut self, index: (usize, usize, usize)) -> &mut T {
-        unsafe {
-            // ndarray does the check for us in debug builds
-            self.0.uget_mut(index)
-        }
-    }
-}
 
 impl<T> Deref for Array3<T> {
     type Target = ndarray::Array3<T>;
@@ -276,9 +262,13 @@ mod tests {
             let mut a: Array2<f64> = Array2::zeros((3, 4));
 
             assert_eq!(a[(1, 3)], 0.0);
+            assert_eq!(unsafe { *a.at(2, 2) }, 0.0);
 
             a[(1, 3)] = 45.0;
             assert_eq!(a[(1, 3)], 45.0);
+
+            unsafe { *a.at_mut(2, 2) = -98.0; }
+            assert_eq!(unsafe { *a.at(2, 2) }, -98.0);
         }
 
         #[test]
@@ -347,9 +337,12 @@ mod tests {
         fn index() {
             let mut a: Array3<f64> = Array3::zeros((3, 4, 5));
             assert_eq!(a[(1, 3, 2)], 0.0);
+            assert_eq!(unsafe{ *a.at(2, 0, 3) }, 0.0);
 
             a[(1, 3, 2)] = 45.0;
             assert_eq!(a[(1, 3, 2)], 45.0);
+            unsafe { *a.at_mut(2, 0, 3) = 12.36; }
+            assert_eq!(unsafe{ *a.at(2, 0, 3) }, 12.36);
         }
 
         #[test]
