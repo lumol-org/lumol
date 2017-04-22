@@ -117,7 +117,7 @@ def clean_repo():
 def setup_repo(pr_id):
     clean_repo()
     subprocess.call('git remote add _bot_remote {}'.format(BASE_REPO_URL), shell=True)
-    subprocess.call('git fetch _bot_remote master'.format(pr_id), shell=True)
+    subprocess.call('git fetch _bot_remote master', shell=True)
     subprocess.call('git fetch _bot_remote pull/{}/head:_bot_pr'.format(pr_id), shell=True)
     subprocess.call('git checkout _bot_pr', shell=True)
     try:
@@ -189,14 +189,14 @@ class Benchmarker:
 
 
 @click.command()
-@click.argument('pr_id', type=click.INT)
-@click.argument('output_dir', default='./target/benchmarks/')
+@click.argument('pr_ids', type=click.INT, nargs=-1)
+@click.option('--output-dir', '-o', default='./target/benchmarks/', help='output directory')
 @click.option('--n-commits', '-n', type=click.INT, help='maximum number of commits to benchmark')
-def main(pr_id, output_dir, n_commits):
+def main(pr_ids, output_dir, n_commits):
     """
     Run the benchmarks for multiple commits on a PR and compare to master.
 
-    The benchmark results are saved in OUTPUT_DIR, and a comment
+    The benchmark results are saved in --output-dir, and a comment
     with a summary will be automatically added to the PR.
     This script requires the environment variables LUMOL_GH_USERNAME
     and LUMOL_GH_TOKEN to contain respectively the Github username
@@ -207,11 +207,12 @@ def main(pr_id, output_dir, n_commits):
 
     os.makedirs(output_dir, exist_ok=True)
 
-    with setup_repo(pr_id):
-        benchmarker = Benchmarker(n_commits, output_dir)
-        benchmarker.run_warmup()
-        benchmarker.run_all_benches()
-        benchmarker.comment_pr(pr_id)
+    for pr_id in pr_ids:
+        with setup_repo(pr_id):
+            benchmarker = Benchmarker(n_commits, output_dir)
+            benchmarker.run_warmup()
+            benchmarker.run_all_benches()
+            benchmarker.comment_pr(pr_id)
 
 
 if __name__ == '__main__':
