@@ -10,7 +10,8 @@ license = "BSD-3-Clause"
 [workspace]
 members = [
 	"src/core",
-    "src/input"
+    "src/input",
+    "src/macros",
 ]
 
 [[bin]]
