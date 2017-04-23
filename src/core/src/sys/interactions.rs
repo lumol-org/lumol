@@ -95,6 +95,7 @@ type DihedralKind = (Kind, Kind, Kind, Kind);
 /// indexed by particle type.
 #[derive(Clone)]
 pub struct Interactions {
+    pub pairs_bis: BTreeMap<Kind, BTreeMap<Kind, Vec<PairInteraction>>>,
     /// Pair potentials
     pairs: BTreeMap<PairKind, Vec<PairInteraction>>,
     /// Bond potentials
@@ -121,6 +122,7 @@ impl Interactions {
     /// Create a new empty `Interactions`
     pub fn new() -> Interactions {
         Interactions{
+            pairs_bis: BTreeMap::new(),
             pairs: BTreeMap::new(),
             bonds: BTreeMap::new(),
             angles: BTreeMap::new(),
@@ -146,6 +148,10 @@ impl Interactions {
         let (i, j) = (self.get_kind(i), self.get_kind(j));
         let (i, j) = normalize_pair(i, j);
         let pairs = self.pairs.entry((i, j)).or_insert(Vec::new());
+        pairs.push(potential.clone());
+
+        let pairs = self.pairs_bis.entry(i).or_insert(BTreeMap::new())
+                        .entry(j).or_insert(Vec::new());
         pairs.push(potential);
     }
 
@@ -204,6 +210,10 @@ impl Interactions {
             );
             NO_PAIR_INTERACTION
         }
+    }
+
+    pub fn pair_interactions(&self, i: Kind) -> Option<&BTreeMap<Kind, Vec<PairInteraction>>> {
+        self.pairs_bis.get(&i)
     }
 
     /// Get all pair interactions
