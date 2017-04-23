@@ -6,6 +6,10 @@ use consts::K_BOLTZMANN;
 use types::{Matrix3, Vector3D, Zero, One};
 use sys::System;
 use std::f64::consts::PI;
+use std::sync::Mutex;
+
+use rayon::prelude::*;
+use thread_local::CachedThreadLocal;
 
 /// The compute trait allow to compute properties of a system, without
 /// modifying this system. The Output type is the type of the computed
@@ -21,14 +25,21 @@ pub trait Compute {
 /// Compute all the forces acting on the system, and return a vector of
 /// force acting on each particles
 pub struct Forces;
-impl Compute for Forces {
-    type Output = Vec<Vector3D>;
-    fn compute(&self, system: &System) -> Vec<Vector3D> {
-        let natoms = system.size();
-        let mut res = vec![Vector3D::zero(); natoms];
 
-        for i in 0..system.size() {
-            for j in (i+1)..system.size() {
+impl Forces {
+    fn compute_pair_forces(&self, system: &System, forces: &mut [Vector3D]) {
+
+        // To avoid data races, we need local copy of `forces` for each
+        // thread.
+        let local_forces_mutex: CachedThreadLocal<Mutex<Vec<Vector3D>>> = CachedThreadLocal::new();
+
+        (0..system.size()).into_par_iter().for_each(|i| {
+
+            let mut local_forces = local_forces_mutex
+                .get_or(|| Box::new(Mutex::new(vec![Vector3D::zero() ; system.size()])))
+                .lock().unwrap();
+
+            for j in (i + 1)..system.size() {
                 let distance = system.bond_distance(i, j);
                 let d = system.nearest_image(i, j);
                 let dn = d.normalized();
@@ -37,12 +48,32 @@ impl Compute for Forces {
                     let info = potential.restriction().information(distance);
                     if !info.excluded {
                         let force = info.scaling * potential.force(r) * dn;
-                        res[i] += force;
-                        res[j] -= force;
+                        local_forces[i] += force;
+                        local_forces[j] -= force;
                     }
                 }
             }
+        });
+
+
+        // Gather the local forces of each thread
+        for mutex in local_forces_mutex {
+            let local_forces = mutex.into_inner().unwrap();
+            for (f, local_f) in forces.iter_mut().zip(local_forces) {
+                *f += local_f;
+            }
         }
+
+    }
+}
+
+impl Compute for Forces {
+    type Output = Vec<Vector3D>;
+    fn compute(&self, system: &System) -> Vec<Vector3D> {
+        let natoms = system.size();
+        let mut res = vec![Vector3D::zero(); natoms];
+
+        self.compute_pair_forces(system, &mut res);
 
         for molecule in system.molecules() {
             for bond in molecule.bonds() {
@@ -103,6 +134,7 @@ impl Compute for Forces {
 /******************************************************************************/
 /// Compute the potential energy of the system
 pub struct PotentialEnergy;
+
 impl Compute for PotentialEnergy {
     type Output = f64;
     fn compute(&self, system: &System) -> f64 {
@@ -124,6 +156,7 @@ impl Compute for PotentialEnergy {
 /******************************************************************************/
 /// Compute the kinetic energy of the system
 pub struct KineticEnergy;
+
 impl Compute for KineticEnergy {
     type Output = f64;
     fn compute(&self, system: &System) -> f64 {
@@ -139,6 +172,7 @@ impl Compute for KineticEnergy {
 /******************************************************************************/
 /// Compute the total energy of the system
 pub struct TotalEnergy;
+
 impl Compute for TotalEnergy {
     type Output = f64;
     fn compute(&self, system: &System) -> f64 {
@@ -151,18 +185,20 @@ impl Compute for TotalEnergy {
 /******************************************************************************/
 /// Compute the instantaneous temperature of the system
 pub struct Temperature;
+
 impl Compute for Temperature {
     type Output = f64;
     fn compute(&self, system: &System) -> f64 {
         let kinetic = KineticEnergy.compute(system);
         let natoms = system.size() as f64;
-        return 1.0/K_BOLTZMANN * 2.0 * kinetic/(3.0 * natoms);
+        return 1.0 / K_BOLTZMANN * 2.0 * kinetic / (3.0 * natoms);
     }
 }
 
 /******************************************************************************/
 /// Compute the volume of the system
 pub struct Volume;
+
 impl Compute for Volume {
     type Output = f64;
     #[inline]
@@ -175,13 +211,14 @@ impl Compute for Volume {
 /// Compute the virial tensor of the system, defined by
 /// $$ W = \sum_i \sum_{j > i} \vec r_{ij} \otimes \vec f_{ij} $$
 pub struct Virial;
+
 impl Compute for Virial {
     type Output = Matrix3;
     fn compute(&self, system: &System) -> Matrix3 {
         assert!(!system.cell().is_infinite(), "Can not compute virial for infinite cell");
         let mut virial = Matrix3::zero();
         for i in 0..system.size() {
-            for j in (i+1)..system.size() {
+            for j in (i + 1)..system.size() {
                 let distance = system.bond_distance(i, j);
                 for potential in system.pair_potentials(i, j) {
                     let info = potential.restriction().information(distance);
@@ -271,6 +308,7 @@ impl Compute for StressAtTemperature {
 /// Compute the stress tensor of the system, defined by:
 /// $$ \sigma = \frac{1}{V} (\sum_i m_i v_i \otimes v_i + \sum_i \sum_{j > i} \vec r_{ij} \otimes \vec f_{ij}) $$
 pub struct Stress;
+
 impl Compute for Stress {
     type Output = Matrix3;
     fn compute(&self, system: &System) -> Matrix3 {
@@ -292,10 +330,11 @@ impl Compute for Stress {
 /// following formula:
 /// $$ p = \frac{N k_B T}{V} + \frac{1}{3V} \sum_i \vec f_i \cdot \vec r_i $$
 pub struct Pressure;
+
 impl Compute for Pressure {
     type Output = f64;
     fn compute(&self, system: &System) -> f64 {
-        return PressureAtTemperature{temperature: system.temperature()}.compute(system);
+        return PressureAtTemperature { temperature: system.temperature() }.compute(system);
     }
 }
 
@@ -310,13 +349,14 @@ mod test {
     use utils::unit_from;
 
     fn test_pairs_system() -> System {
-        let mut system = System::from_cell(UnitCell::cubic(10.0));;
+        let mut system = System::from_cell(UnitCell::cubic(10.0));
+        ;
         system.add_particle(Particle::new("F"));
         system[0].position = Vector3D::zero();
         system.add_particle(Particle::new("F"));
         system[1].position = Vector3D::new(1.3, 0.0, 0.0);
 
-        let mut interaction = PairInteraction::new(Box::new(Harmonic{
+        let mut interaction = PairInteraction::new(Box::new(Harmonic {
             k: unit_from(300.0, "kJ/mol/A^2"),
             x0: unit_from(1.2, "A")
         }), 5.0);
@@ -329,7 +369,8 @@ mod test {
     }
 
     fn test_molecular_system() -> System {
-        let mut system = System::from_cell(UnitCell::cubic(10.0));;
+        let mut system = System::from_cell(UnitCell::cubic(10.0));
+        ;
         system.add_particle(Particle::new("F"));
         system[0].position = Vector3D::new(0.0, 0.0, 0.0);
         system.add_particle(Particle::new("F"));
@@ -344,26 +385,26 @@ mod test {
         assert!(system.add_bond(2, 3).is_empty());
 
         system.interactions_mut().add_pair("F", "F",
-            PairInteraction::new(Box::new(NullPotential), 0.0)
+                                           PairInteraction::new(Box::new(NullPotential), 0.0)
         );
 
         system.interactions_mut().add_bond("F", "F",
-            Box::new(Harmonic{
-                k: unit_from(100.0, "kJ/mol/A^2"),
-                x0: unit_from(2.0, "A")
-        }));
+                                           Box::new(Harmonic {
+                                               k: unit_from(100.0, "kJ/mol/A^2"),
+                                               x0: unit_from(2.0, "A")
+                                           }));
 
         system.interactions_mut().add_angle("F", "F", "F",
-            Box::new(Harmonic{
-                k: unit_from(100.0, "kJ/mol/deg^2"),
-                x0: unit_from(88.0, "deg")
-        }));
+                                            Box::new(Harmonic {
+                                                k: unit_from(100.0, "kJ/mol/deg^2"),
+                                                x0: unit_from(88.0, "deg")
+                                            }));
 
         system.interactions_mut().add_dihedral("F", "F", "F", "F",
-            Box::new(Harmonic{
-                k: unit_from(100.0, "kJ/mol/deg^2"),
-                x0: unit_from(185.0, "deg")
-        }));
+                                               Box::new(Harmonic {
+                                                   k: unit_from(100.0, "kJ/mol/deg^2"),
+                                                   x0: unit_from(185.0, "deg")
+                                               }));
 
         return system;
     }
@@ -444,7 +485,7 @@ mod test {
 
         let mut expected = Matrix3::zero();
         let force = unit_from(30.0, "kJ/mol/A");
-        expected[(0, 0)] = - force * 1.3;
+        expected[(0, 0)] = -force * 1.3;
 
         assert_ulps_eq!(virial, expected);
         assert_eq!(virial, system.virial());
@@ -454,14 +495,14 @@ mod test {
     #[should_panic]
     fn pressure_at_temperature_negative_temperature() {
         let system = &test_pairs_system();
-        let pressure = PressureAtTemperature{temperature: -4.0};
+        let pressure = PressureAtTemperature { temperature: -4.0 };
         let _ = pressure.compute(system);
     }
 
     #[test]
     #[should_panic]
     fn pressure_at_temperature_infinite_cell() {
-        let pressure = PressureAtTemperature{temperature: -4.0};
+        let pressure = PressureAtTemperature { temperature: -4.0 };
         let _ = pressure.compute(&System::new());
     }
 
@@ -477,16 +518,16 @@ mod test {
 
         // Direct computation
         let expected = natoms * K_BOLTZMANN * temperature / volume + virial / (3.0 * volume);
-        let pressure = PressureAtTemperature{temperature: temperature}.compute(system);
+        let pressure = PressureAtTemperature { temperature: temperature }.compute(system);
         assert_ulps_eq!(pressure, expected);
 
         // Computation with the real system temperature
-        let pressure = PressureAtTemperature{temperature: system.temperature()};
+        let pressure = PressureAtTemperature { temperature: system.temperature() };
         let pressure = pressure.compute(system);
         assert_eq!(pressure, system.pressure());
 
         // Computation with an external temperature for the system
-        let pressure = PressureAtTemperature{temperature: temperature}.compute(system);
+        let pressure = PressureAtTemperature { temperature: temperature }.compute(system);
         system.external_temperature(Some(temperature));
         assert_eq!(pressure, system.pressure());
     }
@@ -495,14 +536,14 @@ mod test {
     #[should_panic]
     fn stress_at_temperature_negative_temperature() {
         let system = &test_pairs_system();
-        let stress = StressAtTemperature{temperature: -4.0};
+        let stress = StressAtTemperature { temperature: -4.0 };
         let _ = stress.compute(system);
     }
 
     #[test]
     #[should_panic]
     fn stress_at_temperature_infinite_cell() {
-        let stress = StressAtTemperature{temperature: 300.0};
+        let stress = StressAtTemperature { temperature: 300.0 };
         let _ = stress.compute(&System::new());
     }
 
@@ -510,8 +551,8 @@ mod test {
     fn stress_at_temperature() {
         let system = &mut test_pairs_system();
         let temperature = 550.0;
-        let stress = StressAtTemperature{temperature: temperature}.compute(system);
-        let pressure = PressureAtTemperature{temperature: temperature}.compute(system);
+        let stress = StressAtTemperature { temperature: temperature }.compute(system);
+        let pressure = PressureAtTemperature { temperature: temperature }.compute(system);
 
         // tail corrections are smaller than 1e-9
         let trace = (stress[(0, 0)] + stress[(1, 1)] + stress[(2, 2)]) / 3.0;
@@ -550,7 +591,7 @@ mod test {
         let pressure = Pressure.compute(system);
 
         let force = unit_from(30.0, "kJ/mol/A");
-        let virial = - force * 1.3;
+        let virial = -force * 1.3;
         let natoms = 2.0;
         let temperature = 300.0;
         let volume = 1000.0;

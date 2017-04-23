@@ -7,6 +7,10 @@ use std::sync::{RwLock, RwLockReadGuard, RwLockWriteGuard};
 use std::f64::consts::{PI, FRAC_2_SQRT_PI};
 use std::f64;
 
+use ndarray::Zip;
+use rayon::prelude::*;
+use ndarray_parallel::prelude::*;
+
 use sys::{System, UnitCell, CellShape};
 use types::{Matrix3, Vector3D, Array3, Complex, Zero};
 use consts::ELCC;
@@ -160,9 +164,9 @@ impl Ewald {
                         continue;
                     }
                     self.expfactors[(ikx, iky, ikz)] = f64::exp(-k2 / (4.0 * self.alpha * self.alpha)) / k2;
-                    if ikx != 0 {self.expfactors[(ikx, iky, ikz)] *= 2.0;}
-                    if iky != 0 {self.expfactors[(ikx, iky, ikz)] *= 2.0;}
-                    if ikz != 0 {self.expfactors[(ikx, iky, ikz)] *= 2.0;}
+                    if ikx != 0 { self.expfactors[(ikx, iky, ikz)] *= 2.0; }
+                    if iky != 0 { self.expfactors[(ikx, iky, ikz)] *= 2.0; }
+                    if ikz != 0 { self.expfactors[(ikx, iky, ikz)] *= 2.0; }
                 }
             }
         }
@@ -201,22 +205,26 @@ impl Ewald {
     /// Real space contribution to the energy
     fn real_space_energy(&self, system: &System) -> f64 {
         let natoms = system.size();
-        let mut energy = 0.0;
-        for i in 0..natoms {
+
+        let energy = (0..natoms).into_par_iter().map(|i| {
+            let mut local_energy = 0.0;
             let qi = system[i].charge;
-            if qi == 0.0 {continue}
-            for j in i+1..natoms {
+            if qi == 0.0 { return 0.0; }
+            for j in i + 1..natoms {
                 let qj = system[j].charge;
-                if qj == 0.0 {continue}
+                if qj == 0.0 { continue }
 
                 let distance = system.bond_distance(i, j);
                 let info = self.restriction.information(distance);
 
                 let r = system.distance(i, j);
-                energy += self.real_space_energy_pair(info, qi, qj, r);
+                local_energy += self.real_space_energy_pair(info, qi, qj, r);
             }
-        }
-        return energy;
+
+            local_energy
+        }).sum();
+
+        energy
     }
 
     /// Real space contribution to the forces
@@ -226,10 +234,10 @@ impl Ewald {
 
         for i in 0..natoms {
             let qi = system[i].charge;
-            if qi == 0.0 {continue}
-            for j in i+1..natoms {
+            if qi == 0.0 { continue }
+            for j in i + 1..natoms {
                 let qj = system[j].charge;
-                if qj == 0.0 {continue}
+                if qj == 0.0 { continue }
 
                 let distance = system.bond_distance(i, j);
                 let info = self.restriction.information(distance);
@@ -248,10 +256,10 @@ impl Ewald {
         let mut virial = Matrix3::zero();
         for i in 0..natoms {
             let qi = system[i].charge;
-            if qi == 0.0 {continue}
-            for j in i+1..natoms {
+            if qi == 0.0 { continue }
+            for j in i + 1..natoms {
                 let qj = system[j].charge;
-                if qj == 0.0 {continue}
+                if qj == 0.0 { continue }
 
                 let distance = system.bond_distance(i, j);
                 let info = self.restriction.information(distance);
@@ -272,10 +280,10 @@ impl Ewald {
         // particle not moved
         for (idx, &i) in idxes.iter().enumerate() {
             let qi = system[i].charge;
-            if qi == 0.0 {continue}
+            if qi == 0.0 { continue }
             for j in (0..system.size()).filter(|x| !idxes.contains(x)) {
                 let qj = system[j].charge;
-                if qi == 0.0 {continue}
+                if qi == 0.0 { continue }
 
                 let r_old = system.distance(i, j);
                 let r_new = system.cell().distance(&newpos[idx], &system[j].position);
@@ -291,10 +299,10 @@ impl Ewald {
         // Iterate over all interactions between two moved particles
         for (idx, &i) in idxes.iter().enumerate() {
             let qi = system[i].charge;
-            if qi == 0.0 {continue}
+            if qi == 0.0 { continue }
             for (jdx, &j) in idxes.iter().enumerate().skip(i + 1) {
                 let qj = system[j].charge;
-                if qj == 0.0 {continue}
+                if qj == 0.0 { continue }
 
                 let r_old = system.distance(i, j);
                 let r_new = system.cell().distance(&newpos[idx], &newpos[jdx]);
@@ -344,40 +352,37 @@ impl Ewald {
             for i in 0..natoms {
                 for j in 0..3 {
                     self.fourier_phases[(k, i, j)] = self.fourier_phases[(k - 1, i, j)]
-                                                   * self.fourier_phases[(1, i, j)];
+                        * self.fourier_phases[(1, i, j)];
                 }
             }
         }
 
-        for ikx in 0..self.kmax {
-            for iky in 0..self.kmax {
-                for ikz in 0..self.kmax {
-                    self.rho[(ikx, iky, ikz)] = Complex::polar(0.0, 0.0);
-                    for j in 0..natoms {
-                        let phi = self.fourier_phases[(ikx, j, 0)] * self.fourier_phases[(iky, j, 1)] * self.fourier_phases[(ikz, j, 2)];
-                        self.rho[(ikx, iky, ikz)] = self.rho[(ikx, iky, ikz)] + system[j].charge * phi;
-                    }
-                }
+        let mut new_rho = Array3::<Complex>::zeros(self.rho.dim());
+
+        Zip::indexed(&mut *new_rho).par_apply(|(ikx, iky, ikz), rho|{
+            for j in 0..natoms {
+                let phi = self.fourier_phases[(ikx, j, 0)] * self.fourier_phases[(iky, j, 1)] * self.fourier_phases[(ikz, j, 2)];
+                *rho = *rho + system[j].charge * phi;
             }
-        }
+        });
+
+        self.rho = new_rho;
     }
 
     /// k-space contribution to the energy
     fn kspace_energy(&mut self, system: &System) -> f64 {
         self.density_fft(system);
-        let mut energy = 0.0;
 
-        for ikx in 0..self.kmax {
-            for iky in 0..self.kmax {
-                for ikz in 0..self.kmax {
-                    // The k = 0 case and the cutoff in k-space are already
-                    // handled in `expfactors`
-                    if self.expfactors[(ikx, iky, ikz)].abs() < f64::EPSILON {continue}
-                    let density = self.rho[(ikx, iky, ikz)].norm();
-                    energy += self.expfactors[(ikx, iky, ikz)] * density * density;
-                }
+        let zip = Zip::from(&*self.expfactors).and(&*self.rho);
+
+        let mut energy = zip.into_par_iter().map(|(expfactor, rho)| {
+            if *expfactor < f64::EPSILON {
+                0.0
+            } else {
+                rho.norm2() * (*expfactor)
             }
-        }
+        }).reduce(|| 0.0, |a, b| a + b);
+
         energy *= 2.0 * PI / (system.cell().volume() * ELCC);
         return energy;
     }
@@ -405,8 +410,8 @@ impl Ewald {
                         let qi = system[i].charge;
 
                         let fourier_i = self.fourier_phases[(ikx, i, 0)] *
-                                        self.fourier_phases[(iky, i, 1)] *
-                                        self.fourier_phases[(ikz, i, 2)];
+                            self.fourier_phases[(iky, i, 1)] *
+                            self.fourier_phases[(ikz, i, 2)];
                         let fourier_i = fourier_i.imag();
 
                         let mut force_i = Vector3D::zero();
@@ -431,12 +436,11 @@ impl Ewald {
     #[allow(too_many_arguments)]
     fn kspace_force_factor(&self, j: usize, ikx: usize, iky: usize, ikz: usize,
                            qi: f64, qj: f64, fourier_i: f64) -> f64 {
-
         // Here the compiler is smart enough to optimize away
         // the useless computation of the last real part.
         let fourier_j = self.fourier_phases[(ikx, j, 0)] *
-                        self.fourier_phases[(iky, j, 1)] *
-                        self.fourier_phases[(ikz, j, 2)];
+            self.fourier_phases[(iky, j, 1)] *
+            self.fourier_phases[(ikz, j, 2)];
         let fourier_j = fourier_j.imag();
 
         return qi * qj * (fourier_i - fourier_j);
@@ -445,43 +449,40 @@ impl Ewald {
     /// k-space contribution to the virial
     fn kspace_virial(&mut self, system: &System) -> Matrix3 {
         self.density_fft(system);
-        let mut virial = Matrix3::zero();
 
         let factor = 4.0 * PI / (system.cell().volume() * ELCC);
         let (rec_kx, rec_ky, rec_kz) = system.cell().reciprocal_vectors();
+        let zip = Zip::indexed(&*self.expfactors).into_par_iter();
 
-        for ikx in 0..self.kmax {
-            for iky in 0..self.kmax {
-                for ikz in 0..self.kmax {
-                    // The k = 0 and the cutoff in k-space are already handled
-                    // in `expfactors`.
-                    let expfactor = self.expfactors[(ikx, iky, ikz)].abs();
-                    if expfactor < f64::EPSILON { continue }
+        zip.map(|((ikx, iky, ikz), expfactor)|{
 
-                    let f = expfactor * factor;
-                    let k = (ikx as f64) * rec_kx + (iky as f64) * rec_ky + (ikz as f64) * rec_kz;
+            // The k = 0 and the cutoff in k-space are already handled
+            // in `expfactors`.
+            if *expfactor < f64::EPSILON { return Matrix3::zero(); }
 
-                    for i in 0..system.size() {
-                        let qi = system[i].charge;
+            let f = *expfactor * factor;
+            let k = (ikx as f64) * rec_kx + (iky as f64) * rec_ky + (ikz as f64) * rec_kz;
 
-                        let fourier_i = self.fourier_phases[(ikx, i, 0)] *
-                                        self.fourier_phases[(iky, i, 1)] *
-                                        self.fourier_phases[(ikz, i, 2)];
-                        let fourier_i = fourier_i.imag();
+            (0..system.size()).into_par_iter().map(|i|{
+                let mut local_virial = Matrix3::zero();
+                let qi = system[i].charge;
 
-                        for j in (i + 1)..system.size() {
-                            let qj = system[j].charge;
-                            let force = f * self.kspace_force_factor(j, ikx, iky, ikz, qi, qj, fourier_i) * k;
-                            let rij = system.nearest_image(i, j);
-                            virial += force.tensorial(&rij);
-                        }
+                let fourier_i = self.fourier_phases[(ikx, i, 0)] *
+                    self.fourier_phases[(iky, i, 1)] *
+                    self.fourier_phases[(ikz, i, 2)];
+                let fourier_i = fourier_i.imag();
 
-                    }
+                for j in (i + 1)..system.size() {
+                    let qj = system[j].charge;
+                    let force = f * self.kspace_force_factor(j, ikx, iky, ikz, qi, qj, fourier_i) * k;
+                    let rij = system.nearest_image(i, j);
+                    local_virial += force.tensorial(&rij);
                 }
-            }
-        }
 
-        virial
+                local_virial
+            }).sum()
+
+        }).sum()
     }
 
     fn compute_delta_rho_move_particles(&mut self, system: &System, idxes: &[usize], newpos: &[Vector3D]) {
@@ -507,10 +508,10 @@ impl Ewald {
             for idx in 0..natoms {
                 for j in 0..3 {
                     old_fourier_phases[(k, idx, j)] = old_fourier_phases[(k - 1, idx, j)]
-                                                    * old_fourier_phases[(1, idx, j)];
+                        * old_fourier_phases[(1, idx, j)];
 
                     new_fourier_phases[(k, idx, j)] = new_fourier_phases[(k - 1, idx, j)]
-                                                    * new_fourier_phases[(1, idx, j)];
+                        * new_fourier_phases[(1, idx, j)];
                 }
             }
         }
@@ -541,7 +542,7 @@ impl Ewald {
                 for ikz in 0..self.kmax {
                     // The k = 0 case and the cutoff in k-space are already
                     // handled in `expfactors`.
-                    if self.expfactors[(ikx, iky, ikz)].abs() < f64::EPSILON {continue}
+                    if self.expfactors[(ikx, iky, ikz)].abs() < f64::EPSILON { continue }
                     let rho = self.rho[(ikx, iky, ikz)] + self.delta_rho[(ikx, iky, ikz)];
                     let density = rho.norm();
                     e_new += self.expfactors[(ikx, iky, ikz)] * density * density;
@@ -564,7 +565,7 @@ impl Ewald {
         assert_eq!(info.scaling, 1.0, "Scaling restriction scheme using Ewald are not implemented");
         assert!(r < self.rc, "Atoms in molecule are separated by more than the cutoff radius of Ewald sum.");
 
-        return - qi * qj / ELCC * f64::erf(self.alpha * r)/r;
+        return -qi * qj / ELCC * f64::erf(self.alpha * r) / r;
     }
 
     /// Get the molecular correction force for the pair with charges `qi` and
@@ -588,18 +589,18 @@ impl Ewald {
 
         for i in 0..natoms {
             let qi = system[i].charge;
-            if qi == 0.0 {continue}
+            if qi == 0.0 { continue }
             // I can not manage to get this work with a loop from (i+1) to N. The finite
             // difference test (testing that the force is the same that the finite difference
             // of the energy) always fail. So let's use it that way for now.
-            for j in i+1..natoms {
+            for j in i + 1..natoms {
                 // Only account for excluded pairs
                 let distance = system.bond_distance(i, j);
                 let info = self.restriction.information(distance);
-                if !info.excluded {continue}
+                if !info.excluded { continue }
 
                 let qj = system[j].charge;
-                if qj == 0.0 {continue}
+                if qj == 0.0 { continue }
 
                 let r = system.distance(i, j);
                 energy += self.molcorrect_energy_pair(info, qi, qj, r);
@@ -615,15 +616,15 @@ impl Ewald {
 
         for i in 0..natoms {
             let qi = system[i].charge;
-            if qi == 0.0 {continue}
-            for j in i+1..natoms {
+            if qi == 0.0 { continue }
+            for j in i + 1..natoms {
                 let distance = system.bond_distance(i, j);
                 let info = self.restriction.information(distance);
                 // Only account for excluded pairs
-                if !info.excluded {continue}
+                if !info.excluded { continue }
 
                 let qj = system[j].charge;
-                if qj == 0.0 {continue}
+                if qj == 0.0 { continue }
 
                 let rij = system.nearest_image(i, j);
                 let force = self.molcorrect_force_pair(info, qi, qj, &rij);
@@ -640,15 +641,15 @@ impl Ewald {
 
         for i in 0..natoms {
             let qi = system[i].charge;
-            if qi == 0.0 {continue}
-            for j in i+1..natoms {
+            if qi == 0.0 { continue }
+            for j in i + 1..natoms {
                 let distance = system.bond_distance(i, j);
                 let info = self.restriction.information(distance);
                 // Only account for excluded pairs
-                if !info.excluded {continue}
+                if !info.excluded { continue }
 
                 let qj = system[j].charge;
-                if qj == 0.0 {continue}
+                if qj == 0.0 { continue }
 
                 let rij = system.nearest_image(i, j);
                 let force = self.molcorrect_force_pair(info, qi, qj, &rij);
@@ -666,14 +667,14 @@ impl Ewald {
         // particle not moved
         for (idx, &i) in idxes.iter().enumerate() {
             let qi = system[i].charge;
-            if qi == 0.0 {continue}
+            if qi == 0.0 { continue }
             for j in (0..system.size()).filter(|x| !idxes.contains(x)) {
                 let qj = system[j].charge;
-                if qi == 0.0 {continue}
+                if qi == 0.0 { continue }
 
                 let distance = system.bond_distance(i, j);
                 let info = self.restriction.information(distance);
-                if !info.excluded {continue}
+                if !info.excluded { continue }
 
                 let r_old = system.distance(i, j);
                 let r_new = system.cell().distance(&newpos[idx], &system[j].position);
@@ -686,14 +687,14 @@ impl Ewald {
         // Iterate over all interactions between two moved particles
         for (idx, &i) in idxes.iter().enumerate() {
             let qi = system[i].charge;
-            if qi == 0.0 {continue}
+            if qi == 0.0 { continue }
             for (jdx, &j) in idxes.iter().enumerate().skip(i + 1) {
                 let qj = system[j].charge;
-                if qj == 0.0 {continue}
+                if qj == 0.0 { continue }
 
                 let distance = system.bond_distance(i, j);
                 let info = self.restriction.information(distance);
-                if !info.excluded {continue}
+                if !info.excluded { continue }
 
                 let r_old = system.distance(i, j);
                 let r_new = system.cell().distance(&newpos[idx], &newpos[jdx]);
@@ -808,7 +809,7 @@ impl GlobalCache for SharedEwald {
             for iky in 0..ewald.kmax {
                 for ikz in 0..ewald.kmax {
                     ewald.rho[(ikx, iky, ikz)] = ewald.rho[(ikx, iky, ikz)]
-                                               + ewald.delta_rho[(ikx, iky, ikz)];
+                        + ewald.delta_rho[(ikx, iky, ikz)];
                 }
             }
         }
