@@ -4,6 +4,7 @@
 //! Complex type
 use std::ops::{Add, Sub, Neg, Mul, Div};
 use std::f64;
+use std::iter;
 
 use types::{Zero, One};
 
@@ -270,6 +271,12 @@ impl Zero for Complex {
 impl One for Complex {
     fn one() -> Complex {
         Complex::cartesian(1.0, 0.0)
+    }
+}
+
+impl iter::Sum for Complex {
+    fn sum<I>(iter: I) -> Self where I: Iterator<Item=Complex> {
+        iter.fold(Complex::zero(), |a, b| a + b)
     }
 }
 

@@ -357,17 +357,16 @@ impl Ewald {
             }
         }
 
-        for ikx in 0..self.kmax {
-            for iky in 0..self.kmax {
-                for ikz in 0..self.kmax {
-                    self.rho[(ikx, iky, ikz)] = Complex::polar(0.0, 0.0);
-                    for j in 0..natoms {
-                        let phi = self.fourier_phases[(ikx, j, 0)] * self.fourier_phases[(iky, j, 1)] * self.fourier_phases[(ikz, j, 2)];
-                        self.rho[(ikx, iky, ikz)] = self.rho[(ikx, iky, ikz)] + system[j].charge * phi;
-                    }
-                }
-            }
-        }
+        let mut new_rho = Array3::zeros(self.rho.dim());
+
+        Zip::indexed(&mut *new_rho).into_par_iter().for_each(|((ikx, iky, ikz), rho)|{
+            *rho = (0..natoms).into_par_iter().map(|j|{
+                let phi = self.fourier_phases[(ikx, j, 0)] * self.fourier_phases[(iky, j, 1)] * self.fourier_phases[(ikz, j, 2)];
+                system[j].charge * phi
+            }).sum();
+        });
+
+        self.rho = new_rho;
     }
 
     /// k-space contribution to the energy
