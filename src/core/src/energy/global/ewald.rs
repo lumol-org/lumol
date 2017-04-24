@@ -8,6 +8,8 @@ use std::f64::consts::{PI, FRAC_2_SQRT_PI};
 use std::f64;
 
 use rayon::prelude::*;
+use ndarray::Zip;
+use ndarray_parallel::prelude::*;
 
 use sys::{System, UnitCell, CellShape};
 use types::{Matrix3, Vector3D, Array3, Complex, Zero};
@@ -371,21 +373,14 @@ impl Ewald {
     /// k-space contribution to the energy
     fn kspace_energy(&mut self, system: &System) -> f64 {
         self.density_fft(system);
-        let mut energy = 0.0;
 
-        for ikx in 0..self.kmax {
-            for iky in 0..self.kmax {
-                for ikz in 0..self.kmax {
-                    // The k = 0 case and the cutoff in k-space are already
-                    // handled in `expfactors`
-                    if self.expfactors[(ikx, iky, ikz)].abs() < f64::EPSILON {continue}
-                    let density = self.rho[(ikx, iky, ikz)].norm();
-                    energy += self.expfactors[(ikx, iky, ikz)] * density * density;
-                }
-            }
-        }
-        energy *= 2.0 * PI / (system.cell().volume() * ELCC);
-        return energy;
+        let iter = Zip::from(&*self.expfactors).and(&*self.rho).into_par_iter();
+        let energy : f64 = iter.map(|(exp_factor, rho)|{
+            if exp_factor.abs() < f64::EPSILON { return 0.0; }
+            *exp_factor *  rho.norm2()
+        }).sum();
+
+        return 2.0 * PI / (system.cell().volume() * ELCC) * energy;
     }
 
     /// k-space contribution to the forces
