@@ -375,9 +375,9 @@ impl Ewald {
         self.density_fft(system);
 
         let iter = Zip::from(&*self.expfactors).and(&*self.rho).into_par_iter();
-        let energy : f64 = iter.map(|(exp_factor, rho)|{
-            if exp_factor.abs() < f64::EPSILON { return 0.0; }
-            *exp_factor *  rho.norm2()
+        let energy : f64 = iter.filter_map(|(exp_factor, rho)|{
+            if exp_factor.abs() < f64::EPSILON { return None; }
+            Some(*exp_factor *  rho.norm2())
         }).sum();
 
         return 2.0 * PI / (system.cell().volume() * ELCC) * energy;
