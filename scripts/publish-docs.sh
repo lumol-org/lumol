@@ -35,4 +35,4 @@ if git diff --cached --exit-code --quiet; then
 fi
 
 git commit -m "[AUTO-COMMIT] Documentation update"
-git push
+git push --force
