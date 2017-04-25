@@ -360,10 +360,10 @@ impl Ewald {
         let mut new_rho = Array3::zeros(self.rho.dim());
 
         Zip::indexed(&mut *new_rho).into_par_iter().for_each(|((ikx, iky, ikz), rho)|{
-            *rho = (0..natoms).into_par_iter().map(|j|{
+            for j in 0..natoms {
                 let phi = self.fourier_phases[(ikx, j, 0)] * self.fourier_phases[(iky, j, 1)] * self.fourier_phases[(ikz, j, 2)];
-                system[j].charge * phi
-            }).sum();
+                *rho = *rho + system[j].charge * phi
+            }
         });
 
         self.rho = new_rho;
