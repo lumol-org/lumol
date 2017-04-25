@@ -19,8 +19,8 @@ cat <<EOF > index.html
 <meta http-equiv=refresh content=0;url=latest/>
 EOF
 
-git config user.name "Travis CI"
-git config user.email "luthaf@luthaf.fr"
+git config user.name "Lumol bot"
+git config user.email "lumol-bot@lumol.org"
 git config push.default simple
 git add --all .
 
