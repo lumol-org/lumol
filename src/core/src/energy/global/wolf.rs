@@ -4,6 +4,8 @@
 use special::Error;
 use std::f64::consts::PI;
 
+use rayon::prelude::*;
+
 use sys::System;
 use types::{Matrix3, Vector3D, Zero};
 use consts::ELCC;
@@ -174,10 +176,13 @@ impl GlobalPotential for Wolf {
 
     fn energy(&self, system: &System) -> f64 {
         let natoms = system.size();
-        let mut res = 0.0;
-        for i in 0..natoms {
+
+        (0..natoms).into_par_iter().map(|i|{
+            
+            let mut energy = 0.0;
             let qi = system[i].charge;
-            if qi == 0.0 {continue}
+            if qi == 0.0 { return 0.0; }
+
             for j in i+1..natoms {
                 let qj = system[j].charge;
                 if qj == 0.0 {continue}
@@ -186,12 +191,11 @@ impl GlobalPotential for Wolf {
                 let info = self.restriction.information(distance);
 
                 let rij = system.distance(i, j);
-                res += self.energy_pair(info, qi, qj, rij);
+                energy  += self.energy_pair(info, qi, qj, rij);
             }
-            // Remove self term
-            res -= self.energy_self(qi);
-        }
-        return res;
+
+            energy - self.energy_self(qi)
+        }).sum()
     }
 
     fn forces(&self, system: &System) -> Vec<Vector3D> {
