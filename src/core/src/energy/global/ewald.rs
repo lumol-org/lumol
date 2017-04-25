@@ -7,6 +7,10 @@ use std::sync::{RwLock, RwLockReadGuard, RwLockWriteGuard};
 use std::f64::consts::{PI, FRAC_2_SQRT_PI};
 use std::f64;
 
+use rayon::prelude::*;
+use ndarray::Zip;
+use ndarray_parallel::prelude::*;
+
 use sys::{System, UnitCell, CellShape};
 use types::{Matrix3, Vector3D, Array3, Complex, Zero};
 use consts::ELCC;
@@ -201,10 +205,13 @@ impl Ewald {
     /// Real space contribution to the energy
     fn real_space_energy(&self, system: &System) -> f64 {
         let natoms = system.size();
-        let mut energy = 0.0;
-        for i in 0..natoms {
+
+        (0..natoms).into_par_iter().map(|i| {
+
             let qi = system[i].charge;
-            if qi == 0.0 {continue}
+            if qi == 0.0 { return 0.0; }
+            let mut energy = 0.0;
+
             for j in i+1..natoms {
                 let qj = system[j].charge;
                 if qj == 0.0 {continue}
@@ -215,8 +222,9 @@ impl Ewald {
                 let r = system.distance(i, j);
                 energy += self.real_space_energy_pair(info, qi, qj, r);
             }
-        }
-        return energy;
+
+            energy
+        }).sum()
     }
 
     /// Real space contribution to the forces
@@ -349,37 +357,29 @@ impl Ewald {
             }
         }
 
-        for ikx in 0..self.kmax {
-            for iky in 0..self.kmax {
-                for ikz in 0..self.kmax {
-                    self.rho[(ikx, iky, ikz)] = Complex::polar(0.0, 0.0);
-                    for j in 0..natoms {
-                        let phi = self.fourier_phases[(ikx, j, 0)] * self.fourier_phases[(iky, j, 1)] * self.fourier_phases[(ikz, j, 2)];
-                        self.rho[(ikx, iky, ikz)] = self.rho[(ikx, iky, ikz)] + system[j].charge * phi;
-                    }
-                }
+        let mut new_rho = Array3::zeros(self.rho.dim());
+
+        Zip::indexed(&mut *new_rho).into_par_iter().for_each(|((ikx, iky, ikz), rho)|{
+            for j in 0..natoms {
+                let phi = self.fourier_phases[(ikx, j, 0)] * self.fourier_phases[(iky, j, 1)] * self.fourier_phases[(ikz, j, 2)];
+                *rho = *rho + system[j].charge * phi
             }
-        }
+        });
+
+        self.rho = new_rho;
     }
 
     /// k-space contribution to the energy
     fn kspace_energy(&mut self, system: &System) -> f64 {
         self.density_fft(system);
-        let mut energy = 0.0;
 
-        for ikx in 0..self.kmax {
-            for iky in 0..self.kmax {
-                for ikz in 0..self.kmax {
-                    // The k = 0 case and the cutoff in k-space are already
-                    // handled in `expfactors`
-                    if self.expfactors[(ikx, iky, ikz)].abs() < f64::EPSILON {continue}
-                    let density = self.rho[(ikx, iky, ikz)].norm();
-                    energy += self.expfactors[(ikx, iky, ikz)] * density * density;
-                }
-            }
-        }
-        energy *= 2.0 * PI / (system.cell().volume() * ELCC);
-        return energy;
+        let iter = Zip::from(&*self.expfactors).and(&*self.rho).into_par_iter();
+        let energy : f64 = iter.filter_map(|(exp_factor, rho)|{
+            if exp_factor.abs() < f64::EPSILON { return None; }
+            Some(*exp_factor *  rho.norm2())
+        }).sum();
+
+        return 2.0 * PI / (system.cell().volume() * ELCC) * energy;
     }
 
     /// k-space contribution to the forces
