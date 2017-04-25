@@ -2,10 +2,13 @@
 // Copyright (C) Lumol's contributors — BSD license
 
 //! Computing properties of a system
+
+use std::f64::consts::PI;
+
 use consts::K_BOLTZMANN;
 use types::{Matrix3, Vector3D, Zero, One};
 use sys::System;
-use std::f64::consts::PI;
+use parallel::prelude::*;
 
 use parallel::prelude::*;
 use parallel::ThreadLocalStore;
@@ -191,19 +194,23 @@ impl Compute for Virial {
     type Output = Matrix3;
     fn compute(&self, system: &System) -> Matrix3 {
         assert!(!system.cell().is_infinite(), "Can not compute virial for infinite cell");
-        let mut virial = Matrix3::zero();
-        for i in 0..system.size() {
+
+        let mut virial = (0..system.size()).par_map(|i| {
+            let mut local_virial = Matrix3::zero();
+
             for j in (i+1)..system.size() {
                 let distance = system.bond_distance(i, j);
                 for potential in system.pair_potentials(i, j) {
                     let info = potential.restriction().information(distance);
                     if !info.excluded {
                         let d = system.nearest_image(i, j);
-                        virial += info.scaling * potential.virial(&d);
+                        local_virial += info.scaling * potential.virial(&d);
                     }
                 }
             }
-        }
+
+            local_virial
+        }).sum();
 
         let volume = system.cell().volume();
         let composition = system.composition();
