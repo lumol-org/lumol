@@ -32,7 +32,7 @@ impl fmt::Display for ParticleKind {
 pub struct Particle {
     /// Particle name. This one is not public, as we always want to get &str,
     /// and to use either `String` of `&str` to set it.
-    name: String,
+    pub name: String,
     /// Particle kind, an index for potentials lookup
     pub kind: ParticleKind,
     /// Particle mass
