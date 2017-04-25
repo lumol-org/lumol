@@ -8,6 +8,8 @@
 use sys::System;
 use std::f64::consts::PI;
 
+use rayon::prelude::*;
+
 /// An helper struct to evaluate energy components of a system.
 pub struct EnergyEvaluator<'a> {
     system: &'a System,
@@ -40,14 +42,16 @@ impl<'a> EnergyEvaluator<'a> {
 
     /// Compute the energy of all the pairs in the system
     pub fn pairs(&self) -> f64 {
-        let mut energy = 0.0;
-        for i in 0..self.system.size() {
+
+        (0..self.system.size()).into_par_iter().map(|i| {
+            let mut energy = 0.0;
+
             for j in (i+1)..self.system.size() {
                 let r = self.system.nearest_image(i, j).norm();
                 energy += self.pair(r, i, j);
             }
-        }
-        return energy;
+            energy
+        }).sum()
     }
 
     /// Compute the energy due to long range corrections for the pairs
