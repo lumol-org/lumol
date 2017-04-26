@@ -59,6 +59,7 @@
 //! [DihedralPotential]: trait.DihedralPotential.html
 //! [GlobalPotential]: trait.GlobalPotential.html
 //! [CoulombicPotential]: trait.CoulombicPotential.html
+use std::any::Any;
 use types::{Matrix3, Vector3D};
 
 /// A potential for force and energy computations.
@@ -169,6 +170,7 @@ impl_box_clone!(PairPotential, BoxClonePair, box_clone_pair);
 /// # Example
 ///
 /// ```
+/// use std::any::Any;
 /// use lumol::energy::{Potential, BondPotential};
 ///
 /// // A no-op potential
@@ -181,9 +183,15 @@ impl_box_clone!(PairPotential, BoxClonePair, box_clone_pair);
 /// }
 ///
 /// // Now we can use the Null potential for bonds
-/// impl BondPotential for Null {}
+/// impl BondPotential for Null {
+///     fn as_any(&self) -> &Any { self }
+/// }
 /// ```
 pub trait BondPotential : Potential + BoxCloneBond {
+    /// Returns `&Any` that can be used to downcast
+    /// the potential to its originial type.
+    fn as_any(&self) -> &Any;
+
     /// Compute the virial contribution corresponding to the distance `r`
     /// between the particles.
     fn virial(&self, r: &Vector3D) -> Matrix3 {
@@ -200,6 +208,7 @@ impl_box_clone!(BondPotential, BoxCloneBond, box_clone_bond);
 /// # Example
 ///
 /// ```
+/// use std::any::Any;
 /// use lumol::energy::{Potential, AnglePotential};
 ///
 /// // A no-op potential
@@ -212,9 +221,16 @@ impl_box_clone!(BondPotential, BoxCloneBond, box_clone_bond);
 /// }
 ///
 /// // Now we can use the Null potential for angles
-/// impl AnglePotential for Null {}
+/// impl AnglePotential for Null {
+///     fn as_any(&self) -> &Any { self }
+/// }
 /// ```
-pub trait AnglePotential : Potential + BoxCloneAngle {}
+pub trait AnglePotential : Potential + BoxCloneAngle {
+    /// Returns `&Any` that can be used to downcast
+    /// the potential to its originial type.
+    fn as_any(&self) -> &Any;
+}
+
 impl_box_clone!(AnglePotential, BoxCloneAngle, box_clone_angle);
 
 /// Marker trait for potentials that can be used for molecular dihedral angles.
