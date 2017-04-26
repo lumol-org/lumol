@@ -41,8 +41,10 @@ install:
           cargo install mdbook
       fi
     # Clean any cached test executable
+    - cd $TRAVIS_BUILD_DIR
     - rm -f target/debug/*-*
 script:
+    - cd $TRAVIS_BUILD_DIR
     # link dead code for better coverage generation
     - export RUSTFLAGS='-C link-dead-code'
     # Run all tests in release mode
@@ -54,9 +56,6 @@ script:
     - cargo bench --no-run
     # Misc style checking
     - python scripts/check-whitespaces.py
-    # Check the links in the docs
-    - mdbook build doc
-    - ./scripts/check-html-book.py doc/book
     # Generate and publish coverage
     - |
       if [[ "${TRAVIS_RUST_VERSION}" == "stable" ]]; then
@@ -65,12 +64,21 @@ script:
           done
           bash <(curl -s https://codecov.io/bash) -s target/kcov
       fi
-    # Generate and publish doc
-    - |
-      if [[ "${TRAVIS_RUST_VERSION}" == "stable" && "${TRAVIS_PULL_REQUEST}" == "false" && "${TRAVIS_BRANCH}" == "master" ]]; then
-          git clone https://${GH_TOKEN}@github.com/lumol-org/lumol.git target/website
-          ./scripts/publish-docs.sh
-      fi
+    # Generate and check doc
+    - ./scripts/generate-docs.sh
+    - ./scripts/check-html-book.py doc/book
+
+deploy:
+  provider: pages
+  skip_cleanup: true
+  github_token: $GH_TOKEN
+  local_dir: target/gh-pages
+  email: lumol-bot@lumol.org
+  name: Lumol Bot
+  on:
+    rust: stable
+    branch: master
+
 cache:
   cargo: true
   directories:
