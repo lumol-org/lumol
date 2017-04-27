@@ -18,3 +18,6 @@ pub use self::complex::Complex;
 
 mod arrays;
 pub use self::arrays::{Array2, Array3};
+
+mod thread_local_store;
+pub use self::thread_local_store::ThreadLocalStore;

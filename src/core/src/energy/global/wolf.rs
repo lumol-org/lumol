@@ -3,13 +3,11 @@
 
 use special::Error;
 use std::f64::consts::PI;
-use std::sync::Mutex;
 
 use rayon::prelude::*;
-use thread_local::CachedThreadLocal;
 
 use sys::System;
-use types::{Matrix3, Vector3D, Zero};
+use types::{Matrix3, Vector3D, Zero, ThreadLocalStore};
 use consts::ELCC;
 use energy::{PairRestriction, RestrictionInfo};
 
@@ -199,21 +197,18 @@ impl GlobalPotential for Wolf {
     fn forces(&self, system: &System) -> Vec<Vector3D> {
         // To avoid race conditions, each thread needs its
         // own local forces Vec
-        let thread_forces_mutex : CachedThreadLocal<Mutex<Vec<Vector3D>>> = CachedThreadLocal::new();
         let natoms = system.size();
+        let thread_forces_store = ThreadLocalStore::new(|| vec![Vector3D::zero(); natoms]);
 
         (0..natoms).into_par_iter().for_each(|i| {
-
             /// Get the thread local forces Vec
-            let mut thread_forces = thread_forces_mutex
-                .get_or(|| Box::new(Mutex::new(vec![Vector3D::zero() ; natoms])))
-                .lock().unwrap();
+            let mut thread_forces = thread_forces_store.get().borrow_mut();
 
             let qi = system[i].charge;
             if qi == 0.0 { return; }
-            for j in i+1..natoms {
+            for j in i + 1..natoms {
                 let qj = system[j].charge;
-                if qj == 0.0 {continue}
+                if qj == 0.0 { continue }
 
                 let distance = system.bond_distance(i, j);
                 let info = self.restriction.information(distance);
@@ -229,12 +224,7 @@ impl GlobalPotential for Wolf {
         // results are scattered across all thread local Vecs,
         // here we gather them.
         let mut forces = vec![Vector3D::zero(); natoms];
-        for mutex in thread_forces_mutex {
-            let thread_forces = mutex.into_inner().unwrap();
-            for (f, thread_f) in forces.iter_mut().zip(thread_forces) {
-                *f += thread_f
-            }
-        }
+        thread_forces_store.add_local_values(&mut forces);
 
         return forces;
     }
