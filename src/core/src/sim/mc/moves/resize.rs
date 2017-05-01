@@ -12,7 +12,7 @@ use super::MCMove;
 use types::{Matrix3, One};
 use sys::{System, EnergyCache};
 
-/// Monte-Carlo move that changes the size of the simulation cell
+/// Monte Carlo move that changes the size of the simulation cell
 pub struct Resize {
     /// Delta for translation of the box length
     delta: f64,

@@ -11,7 +11,7 @@ use std::sync::{Once, ONCE_INIT};
 static START: Once = ONCE_INIT;
 
 
-// This test only run a Monte-Carlo simulation of water, but do not test
+// This test only run a Monte Carlo simulation of water, but do not test
 // anything for now. It should test the g(r) function someday.
 #[test]
 fn wolf() {

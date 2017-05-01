@@ -60,7 +60,7 @@ use energy::PairRestriction;
 /// }
 ///
 /// // Not implementing `GlobalCache` means that we will not be able to use
-/// // `ShiftAll` in Monte-Carlo simulations.
+/// // `ShiftAll` in Monte Carlo simulations.
 /// impl GlobalCache for ShiftAll {
 ///     fn move_particles_cost(&self, _: &System, _: &[usize], _: &[Vector3D]) -> f64 {
 ///         unimplemented!()
@@ -105,9 +105,9 @@ impl_box_clone!(GlobalPotential, BoxCloneGlobal, box_clone_gobal);
 /// Energetic cache for global potentials.
 ///
 /// This trait provide all the functions needed by [EnergyCache][EnergyCache]
-/// to compute partial energy updates in Monte-Carlo simulations. You can use
+/// to compute partial energy updates in Monte Carlo simulations. You can use
 /// a `panic!`ing implementation for all methods if you never need to use a
-/// given [GlobalPotential][GlobalPotential] in Monte-Carlo simulations.
+/// given [GlobalPotential][GlobalPotential] in Monte Carlo simulations.
 ///
 /// All methods take a non-mutable `&self` receiver, which means you may want
 /// to wrap the implemntation in `RwLock` or `Mutex` to allow for inner
@@ -175,7 +175,7 @@ pub trait GlobalCache {
 
     /// Update the cache as needed after a call to `move_particles_cost`.
     ///
-    /// If the Monte-Carlo move is accepted, this function will be called and
+    /// If the Monte Carlo move is accepted, this function will be called and
     /// should update any cached quantity so that further call to
     /// `GlobalPotential::energy` gives the right value.
     fn update(&self);

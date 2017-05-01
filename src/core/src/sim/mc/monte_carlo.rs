@@ -1,7 +1,7 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) 2015-2016 Lumol's contributors — BSD license
 
-//! Metropolis Monte-Carlo propagator implementation
+//! Metropolis Monte Carlo propagator implementation
 use rand::{self, SeedableRng};
 
 use consts::K_BOLTZMANN;
@@ -10,13 +10,13 @@ use sim::{Propagator, TemperatureStrategy};
 
 use super::MCMove;
 
-/// Metropolis Monte-Carlo propagator
+/// Metropolis Monte Carlo propagator
 pub struct MonteCarlo {
     /// Boltzmann factor: beta = 1/(kB * T)
     beta: f64,
-    /// List of possible Monte-Carlo moves
+    /// List of possible Monte Carlo moves
     moves: Vec<(Box<MCMove>, MoveCounter)>,
-    /// Cummulative frequencies of the Monte-Carlo moves
+    /// Cummulative frequencies of the Monte Carlo moves
     frequencies: Vec<f64>,
     /// Specifies the number of moves after which an update of a move's
     /// amplitude is performed.
@@ -32,17 +32,17 @@ pub struct MonteCarlo {
 }
 
 impl MonteCarlo {
-    /// Create a new Monte-Carlo propagator at temperature `T`.
+    /// Create a new Monte Carlo propagator at temperature `T`.
     pub fn new(temperature: f64) -> MonteCarlo {
         let mut rng = Box::new(rand::XorShiftRng::new_unseeded());
         rng.reseed([2015u32, 42u32, 3u32, 12u32]);
         return MonteCarlo::from_rng(temperature, rng);
     }
 
-    /// Create a Monte-Carlo propagator at temperature `T`, using the `rng`
+    /// Create a Monte Carlo propagator at temperature `T`, using the `rng`
     /// random number generator.
     pub fn from_rng(temperature: f64, rng: Box<rand::Rng>) -> MonteCarlo {
-        assert!(temperature >= 0.0, "Monte-Carlo temperature must be positive");
+        assert!(temperature >= 0.0, "Monte Carlo temperature must be positive");
         MonteCarlo {
             beta: 1.0 / (K_BOLTZMANN * temperature),
             moves: Vec::new(),
@@ -54,7 +54,7 @@ impl MonteCarlo {
         }
     }
 
-    /// Add the `mcmove` Monte-Carlo move to this propagator, with frequency
+    /// Add the `mcmove` Monte Carlo move to this propagator, with frequency
     /// `frequency`. All calls to this function should happen before any
     /// simulation run.
     ///
@@ -64,7 +64,7 @@ impl MonteCarlo {
     pub fn add(&mut self, mcmove: Box<MCMove>, frequency: f64) {
         if self.initialized {
             fatal_error!(
-                "Monte-Carlo simulation has already been initialized, \
+                "Monte Carlo simulation has already been initialized, \
                 we can not add new moves."
             );
         }
@@ -72,7 +72,7 @@ impl MonteCarlo {
         self.frequencies.push(frequency);
     }
 
-    /// Add the `mcmove` Monte-Carlo move to the propagator.
+    /// Add the `mcmove` Monte Carlo move to the propagator.
     /// `frequency` describes how frequent a move is called, `target_acceptance`
     /// is the desired acceptance ratio of the move.
     ///
@@ -83,7 +83,7 @@ impl MonteCarlo {
     pub fn add_move_with_acceptance(&mut self, mcmove: Box<MCMove>, frequency: f64, target_acceptance: f64) {
         if self.initialized {
             fatal_error!(
-                "Monte-Carlo simulation has already been initialized, \
+                "Monte Carlo simulation has already been initialized, \
                 we can not add new moves."
             );
         }
@@ -111,14 +111,14 @@ impl MonteCarlo {
         assert_eq!(self.frequencies.len(), self.moves.len());
         if self.frequencies.is_empty() {
             warn!(
-                "No move in the Monte-Carlo simulation, \
+                "No move in the Monte Carlo simulation, \
                 did you forget to specify them?"
             );
             return;
         }
 
         if self.initialized {
-            error!("This Monte-Carlo simulation has already been initialized.");
+            error!("This Monte Carlo simulation has already been initialized.");
             return;
         }
 

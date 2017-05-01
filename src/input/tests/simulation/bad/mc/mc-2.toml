@@ -10,5 +10,5 @@ nsteps = 1
 [simulations.propagator]
 type = "MonteCarlo"
 temperature = true
-#^ 'temperature' must be a string in Monte-Carlo propagator
+#^ 'temperature' must be a string in Monte Carlo propagator
 

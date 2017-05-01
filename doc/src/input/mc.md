@@ -1,7 +1,7 @@
-# Monte-Carlo
+# Monte Carlo
 
-If you want to perform a Monte-Carlo simulation, you have to set the propagator
-`type` to `"MonteCarlo"`. Every Monte-Carlo simulations needs a `temperature`
+If you want to perform a Monte Carlo simulation, you have to set the propagator
+`type` to `"MonteCarlo"`. Every Monte Carlo simulations needs a `temperature`
 and a set of `moves` (this set can consist of a single move).
 
 You can think of a "move" as a specific instruction to generate a new trial
@@ -18,7 +18,7 @@ a molecule.
 center of mass.
 * [Resize](input/mc.html#resize): Change the size of the simulation cell.
 
-Currently, all Monte-Carlo simulations are carried out using Metropolis
+Currently, all Monte Carlo simulations are carried out using Metropolis
 acceptance criteria.
 
 You can add all necessary information after the `[simulations.propagator]` label.
@@ -33,15 +33,15 @@ temperature with unit.
 for this move are updated. Updates use statistics of a moves' acceptance ratio so it
 is recommended to choose a sufficiently high number (>100).
 
-Naturally, Monte-Carlo simulations are carried out at constant
+Naturally, Monte Carlo simulations are carried out at constant
 temperature which is set using the `temperature` key.
 
-Different from Molecular Dynamics, Monte-Carlo simulations don't carry
+Different from Molecular Dynamics, Monte Carlo simulations don't carry
 information about the velocities of particles.
 As a consequence we cannot access temperature from the kinetic energy.
 
 ### Example
-A sample input for a Monte-Carlo simulation (in the NPT ensemble)
+A sample input for a Monte Carlo simulation (in the NPT ensemble)
 can look like so:
 
 ```toml

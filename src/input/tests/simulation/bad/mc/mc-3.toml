@@ -11,5 +11,5 @@ nsteps = 1
 type = "MonteCarlo"
 temperature = "300 K"
 mo = false
-#^ Missing 'moves' key in Monte-Carlo propagator
+#^ Missing 'moves' key in Monte Carlo propagator
 
