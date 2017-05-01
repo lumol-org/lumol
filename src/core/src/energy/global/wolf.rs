@@ -294,4 +294,55 @@ mod tests {
         let force = wolf.forces(&system)[0][0];
         assert_relative_eq!((e - e1) / eps, force, epsilon=1e-6);
     }
+
+    mod cache {
+        use super::*;
+        use sys::System;
+        use types::Vector3D;
+        use energy::{GlobalPotential, PairRestriction, CoulombicPotential, GlobalCache};
+
+        pub fn testing_system() -> System {
+            use utils::system_from_xyz;
+            let mut system = system_from_xyz("6
+            bonds
+            O  0.0  0.0  0.0
+            H -0.7 -0.7  0.3
+            H  0.3 -0.3 -0.8
+            O  2.0  2.0  0.0
+            H  1.3  1.3  0.3
+            H  2.3  1.7 -0.8
+            ");
+            system.set_cell(UnitCell::cubic(20.0));
+            assert!(system.molecules().len() == 2);
+
+            for particle in &mut system {
+                if particle.name() == "O" {
+                    particle.charge = -0.8476;
+                } else if particle.name() == "H" {
+                    particle.charge = 0.4238;
+                }
+            }
+            return system;
+        }
+
+        #[test]
+        fn move_atoms() {
+            let mut system = testing_system();
+            let mut wolf = Wolf::new(8.0);
+            wolf.set_restriction(PairRestriction::InterMolecular);
+
+            let check = wolf.clone();
+
+            let old_e = check.energy(&system);
+            let idxes = &[0, 1];
+            let newpos = &[Vector3D::new(0.0, 0.0, 0.5), Vector3D::new(-0.7, 0.2, 1.5)];
+
+            let cost = wolf.move_particles_cost(&system, idxes, newpos);
+
+            system[0].position = newpos[0];
+            system[1].position = newpos[1];
+            let new_e = check.energy(&system);
+            assert_ulps_eq!(cost, new_e - old_e);
+        }
+    }
 }
