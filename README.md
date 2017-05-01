@@ -8,14 +8,14 @@
 Lumol is a classical molecular simulation engine that provides a solid base for
 developing new algorithms and methods. Using Lumol, you can customize the
 behavior of all the algorithms in a simulation. Adding a new force field,
-customizing Monte-Carlo moves or molecular dynamics integrators is easy and well
+customizing Monte Carlo moves or molecular dynamics integrators is easy and well
 documented.
 
 Lumol goals are to be flexible, reliable and extensible. For us, this means that
 this software should be:
 
 - **flexible**: the code can simulate all kind of systems, from proteins to
-  crystals, using various methods: molecular dynamics, Monte-Carlo, *etc.*
+  crystals, using various methods: molecular dynamics, Monte Carlo, *etc.*
 - **reliable**: the code is well tested, both at the function level; and at the
   simulation level, checking thermodynamic properties of the systems;
 - **extendable**: the code is modular, object-oriented, well documented,
@@ -30,7 +30,7 @@ you are interested, have some questions or want to participate, you can open a
 - Pair, molecular and electrostatic interactions (with Ewald or Wolf methods);
 - Energy minimization;
 - Molecular dynamics simulations in the NVE, NVT and NPT ensembles;
-- Monte-Carlo simulations in the NVT ensemble;
+- Monte Carlo simulations in the NVT ensemble;
 - and many others! Have a look at the [documentation](#documentation) for more
   information
 

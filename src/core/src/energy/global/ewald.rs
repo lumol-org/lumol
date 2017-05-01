@@ -707,7 +707,7 @@ impl Ewald {
 /// Thread-sade wrapper around Ewald implementing `CoulombicPotential`.
 ///
 /// This wrapper allow to share a Ewald solver between threads (make it `Send
-/// + Sync`) while still using caching in Monte-Carlo simulations (with
+/// + Sync`) while still using caching in Monte Carlo simulations (with
 /// interior mutability).
 pub struct SharedEwald(RwLock<Ewald>);
 

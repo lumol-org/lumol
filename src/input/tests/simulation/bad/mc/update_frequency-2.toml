@@ -11,5 +11,5 @@ nsteps = 1
 type = "MonteCarlo"
 temperature = "300 K"
 update_frequency = "3"
-#^ 'update_frequency' must be a positive integer in Monte-Carlo propagator
+#^ 'update_frequency' must be a positive integer in Monte Carlo propagator
 

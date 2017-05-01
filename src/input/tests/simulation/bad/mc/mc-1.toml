@@ -9,5 +9,5 @@ nsteps = 1
 
 [simulations.propagator]
 type = "MonteCarlo"
-#^ Missing 'temperature' key in Monte-Carlo propagator
+#^ Missing 'temperature' key in Monte Carlo propagator
 

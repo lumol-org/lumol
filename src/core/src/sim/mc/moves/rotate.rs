@@ -12,7 +12,7 @@ use super::select_molecule;
 use types::{Matrix3, Vector3D};
 use sys::{System, EnergyCache};
 
-/// Monte-Carlo move for rotating a rigid molecule
+/// Monte Carlo move for rotating a rigid molecule
 pub struct Rotate {
     /// Type of molecule to rotate. `None` means all molecules.
     moltype: Option<u64>,

@@ -142,7 +142,7 @@ velocities = {init = "300 K"}
 
 where the `init` key will take the temperature as *string*. The velocities will
 be initialized from a Boltzmann distribution at the given temperature.
-Monte-Carlo simulations will not make any use of velocities since transition
+Monte Carlo simulations will not make any use of velocities since transition
 probabilities (i.e. how the system evolves) are based on the positions (and the
 underlying interactions) only.
 

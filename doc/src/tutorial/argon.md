@@ -1,8 +1,8 @@
-# Monte-Carlo simulation of Argon
+# Monte Carlo simulation of Argon
 
 So let's run a simulation with Lumol. The easiest system to simulate is a
 Lennard-Jones fluid, which is a good model for noble gases fluids. Here we will
-simulate super-critical argon using Metropolis Monte-Carlo algorithm.
+simulate super-critical argon using Metropolis Monte Carlo algorithm.
 
 For this simulation, you will need the initial configuration available
 [here][argon.xyz]. Download it and save it under the name `argon.xyz`.
@@ -63,7 +63,7 @@ outputs = [
 ```
 
 At the end we define how we propagate the system from one step to another. Here
-we are using a Monte-Carlo simulation at 500 K, and the only Monte-Carlo move is
+we are using a Monte Carlo simulation at 500 K, and the only Monte Carlo move is
 a translation of maximum amplitude of 1 A.
 
 ```toml

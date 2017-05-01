@@ -4,7 +4,7 @@
 - [Installation](installation.md)
 
 - [First simulations](tutorial/intro.md)
-    - [Monte-Carlo of Argon](tutorial/argon.md)
+    - [Monte Carlo of Argon](tutorial/argon.md)
     - [Hello Sodium Chloride](tutorial/nacl.md)
     - [Molecular dynamics of water](tutorial/water.md)
     - [Gibbs simulation of ethane]()
@@ -24,7 +24,7 @@
     - [Potentials](input/potentials.md)
     - [Simulations](input/simulations.md)
     - [Molecular dynamics](input/md.md)
-    - [Monte-Carlo](input/mc.md)
+    - [Monte Carlo](input/mc.md)
     - [Minimization](input/min.md)
     - [Logging configuration](input/log.md)
 
@@ -32,7 +32,7 @@
     - [Adding potentials]()
     - [Adding outputs]()
     - [Extending Molecular dynamics]()
-    - [Extending Monte-Carlo]()
+    - [Extending Monte Carlo]()
     - [Adding propagators]()
 
 - [FAQ](faq.md)

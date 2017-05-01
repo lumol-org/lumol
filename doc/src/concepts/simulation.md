@@ -21,7 +21,7 @@ and output algorithms.
 
 Propagators are at the heart of a Simulation. They have the responsibility to
 update the system at each simulation step. Currently, three propagators exists:
-a molecular dynamics one, a Monte-Carlo one and a minimizer, for energy
+a molecular dynamics one, a Monte Carlo one and a minimizer, for energy
 minimization.
 
 ## Output algorithms

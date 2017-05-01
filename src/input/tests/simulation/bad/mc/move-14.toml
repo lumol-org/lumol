@@ -12,6 +12,6 @@ type = "MonteCarlo"
 temperature = "300 K"
 moves = [
     {type = "Resize", pressure = "5.0 bar", delta = "6 A^3", frequency = "3"}
-    #^ 'frequency' must be a number in Monte-Carlo move
+    #^ 'frequency' must be a number in Monte Carlo move
 ]
 

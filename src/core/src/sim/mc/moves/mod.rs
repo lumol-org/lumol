@@ -1,10 +1,10 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) 2015-2016 G. Fraux — BSD license
 
-//! A Monte-Carlo simulation is based on a set of applicable moves.
+//! A Monte Carlo simulation is based on a set of applicable moves.
 //!
-//! For example, NVT Monte-Carlo will use the `Translate` move only for particles
-//! and add the `Rotate` moves for molecules. NPT Monte-Carlo will add the
+//! For example, NVT Monte Carlo will use the `Translate` move only for particles
+//! and add the `Rotate` moves for molecules. NPT Monte Carlo will add the
 //! `VolumeResize` move.
 //!
 //! In all this module, beta refers to the Boltzmann factor 1/(kB T)
@@ -12,7 +12,7 @@ use rand::Rng;
 
 use sys::{System, EnergyCache};
 
-/// The `MCMove` trait correspond to the set of methods used in Monte-Carlo
+/// The `MCMove` trait correspond to the set of methods used in Monte Carlo
 /// simulations.
 pub trait MCMove {
     /// Give a short description of this move

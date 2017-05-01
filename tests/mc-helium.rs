@@ -2,7 +2,7 @@
 // Copyright (C) 2015-2016 Lumol's contributors — BSD license
 
 //! Testing physical properties of a Lennard-Jones gaz of Helium using
-//! Monte-Carlo simulation
+//! Monte Carlo simulation
 extern crate lumol;
 extern crate lumol_input as input;
 extern crate env_logger;

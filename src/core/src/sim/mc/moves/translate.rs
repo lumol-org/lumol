@@ -13,7 +13,7 @@ use super::select_molecule;
 use types::Vector3D;
 use sys::{System, EnergyCache};
 
-/// Monte-Carlo move for translating a molecule
+/// Monte Carlo move for translating a molecule
 pub struct Translate {
     /// Type of molecule to translate. `None` means all molecules.
     moltype: Option<u64>,

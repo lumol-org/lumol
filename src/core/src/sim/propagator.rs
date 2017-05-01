@@ -5,7 +5,7 @@
 use sys::System;
 
 /// Possible temperature computation strategies. Different propagators needs
-/// different ways to compute the temperature: Monte-Carlo temperature is a
+/// different ways to compute the temperature: Monte Carlo temperature is a
 /// constant of the simulation, whereas for molecular dynamics we use the
 /// instantaneous velocities.
 pub enum TemperatureStrategy {

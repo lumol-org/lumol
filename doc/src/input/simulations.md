@@ -19,7 +19,7 @@ thermostat = {type = "Berendsen", temperature = "400 K", timestep = 100}
 ```
 
 Two propagators are currently implemented: one for [molecular dynamics][MD]; and
-one for [Monte-Carlo][MC].
+one for [Monte Carlo][MC].
 
 [MD]: input/md.html
 [MC]: input/mc.html

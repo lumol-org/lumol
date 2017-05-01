@@ -5,7 +5,7 @@
 //! base for developing new algorithms and methods.
 //!
 //! Using Lumol, you can customize the behavior of all the algorithms in a
-//! simulation (from force fields to barostats and Monte-Carlo moves).
+//! simulation (from force fields to barostats and Monte Carlo moves).
 //!
 //! Lumol goals are to be:
 //!

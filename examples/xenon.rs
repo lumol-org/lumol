@@ -1,7 +1,7 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) 2015-2016 Lumol's contributors — BSD license
 
-//! Monte-Carlo simulation of a Xenon crystal melt.
+//! Monte Carlo simulation of a Xenon crystal melt.
 extern crate lumol;
 
 use lumol::sys::{Trajectory, UnitCell};
@@ -22,7 +22,7 @@ fn main() {
     });
     system.interactions_mut().add_pair("Xe", "Xe", PairInteraction::new(lj, 12.0));
 
-    // Create a Monte-Carlo propagator
+    // Create a Monte Carlo propagator
     let mut mc = MonteCarlo::new(units::from(500.0, "K").unwrap());
     // Add the `Translate` move with 0.5 A amplitude and 1.0 frequency
     mc.add(

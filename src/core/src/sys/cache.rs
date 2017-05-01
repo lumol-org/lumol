@@ -2,9 +2,9 @@
 // Copyright (C) 2015-2016 Lumol's contributors — BSD license
 
 //! Caching energy components for speeding up the energy computation in
-//! Monte-Carlo simulations.
+//! Monte Carlo simulations.
 //!
-//! In most of Monte-Carlo moves, only a very small subset of the system changes.
+//! In most of Monte Carlo moves, only a very small subset of the system changes.
 //! We can use that property to remove the need of recomputing most of the
 //! energy components, by storing them and providing update callbacks.
 use std::mem;
@@ -280,7 +280,7 @@ impl EnergyCache {
     ///
     /// This function is intended for use when all the molecules in the system
     /// are moved rigidly, for example when resizing the system in NPT
-    /// Monte-Carlo. It computes energy changes due to:
+    /// Monte Carlo. It computes energy changes due to:
     ///
     /// - non bonded pairs interactions;
     /// - Coulomb interactions;

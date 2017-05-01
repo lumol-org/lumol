@@ -15,7 +15,7 @@ use simulations::get_input_path;
 impl FromTomlWithData for MonteCarlo {
     type Data = PathBuf;
     fn from_toml(config: &Table, root: PathBuf) -> Result<MonteCarlo> {
-        let temperature = try!(extract::str("temperature", config, "Monte-Carlo propagator"));
+        let temperature = try!(extract::str("temperature", config, "Monte Carlo propagator"));
         let temperature = try!(units::from_str(temperature));
 
         let mut mc = MonteCarlo::new(temperature);
@@ -23,32 +23,32 @@ impl FromTomlWithData for MonteCarlo {
         let has_update_frequency = config.get("update_frequency").is_some();
         if has_update_frequency {
             let update_frequency =
-                try!(extract::uint("update_frequency", config, "Monte-Carlo propagator"));
+                try!(extract::uint("update_frequency", config, "Monte Carlo propagator"));
             mc.set_amplitude_update_frequency(update_frequency);
         }
 
-        let moves = try!(extract::slice("moves", config, "Monte-Carlo propagator"));
+        let moves = try!(extract::slice("moves", config, "Monte Carlo propagator"));
         for mc_move in moves {
             let mc_move = try!(mc_move.as_table()
-                .ok_or(Error::from("All moves must be tables in Monte-Carlo")));
+                .ok_or(Error::from("All moves must be tables in Monte Carlo")));
 
             let frequency = if mc_move.get("frequency").is_some() {
-                try!(extract::number("frequency", mc_move, "Monte-Carlo move"))
+                try!(extract::number("frequency", mc_move, "Monte Carlo move"))
             } else {
                 1.0
             };
 
             let target_acceptance = if mc_move.get("target_acceptance").is_some() {
-                Some(try!(extract::number("target_acceptance", mc_move, "Monte-Carlo move")))
+                Some(try!(extract::number("target_acceptance", mc_move, "Monte Carlo move")))
             } else {
                 None
             };
 
-            let mc_move: Box<MCMove> = match try!(extract::typ(mc_move, "Monte-Carlo move")) {
+            let mc_move: Box<MCMove> = match try!(extract::typ(mc_move, "Monte Carlo move")) {
                 "Translate" => Box::new(try!(Translate::from_toml(mc_move, root.clone()))),
                 "Rotate" => Box::new(try!(Rotate::from_toml(mc_move, root.clone()))),
                 "Resize" => Box::new(try!(Resize::from_toml(mc_move, root.clone()))),
-                other => return Err(Error::from(format!("Unknown Monte-Carlo move '{}'", other))),
+                other => return Err(Error::from(format!("Unknown Monte Carlo move '{}'", other))),
             };
 
             match target_acceptance {
