@@ -833,24 +833,23 @@ mod tests {
     }
 
     pub fn water() -> System {
-        let mut system = System::from_cell(UnitCell::cubic(20.0));
+        use utils::system_from_xyz;
+        let mut system = system_from_xyz("3
+        bonds
+        O  0.0  0.0  0.0
+        H -0.7 -0.7  0.3
+        H  0.3 -0.3 -0.8
+        ");
+        system.set_cell(UnitCell::cubic(20.0));
+        assert!(system.molecules().len() == 1);
 
-        // Using a SPC/E water model
-        system.add_particle(Particle::new("O"));
-        system[0].charge = -0.8476;
-        system[0].position = Vector3D::zero();
-
-        system.add_particle(Particle::new("H"));
-        system[1].charge = 0.4238;
-        system[1].position = Vector3D::new(-0.7, -0.7, 0.3);
-
-        system.add_particle(Particle::new("H"));
-        system[2].charge = 0.4238;
-        system[2].position = Vector3D::new(0.3, -0.3, -0.8);
-
-        let _ = system.add_bond(0, 1);
-        let _ = system.add_bond(1, 2);
-
+        for particle in &mut system {
+            if particle.name() == "O" {
+                particle.charge = -0.8476;
+            } else if particle.name() == "H" {
+                particle.charge = 0.4238;
+            }
+        }
         return system;
     }
 
@@ -1067,17 +1066,27 @@ mod tests {
         use energy::{GlobalPotential, PairRestriction, CoulombicPotential, GlobalCache};
 
         pub fn testing_system() -> System {
-            let mut system = water();
-            let mut copy = system.clone();
-            for mut particle in &mut system {
-                particle.position += Vector3D::new(2.0, 2.0, 0.0);
-                copy.add_particle(particle.clone());
+            use utils::system_from_xyz;
+            let mut system = system_from_xyz("6
+            bonds
+            O  0.0  0.0  0.0
+            H -0.7 -0.7  0.3
+            H  0.3 -0.3 -0.8
+            O  2.0  2.0  0.0
+            H  1.3  1.3  0.3
+            H  2.3  1.7 -0.8
+            ");
+            system.set_cell(UnitCell::cubic(20.0));
+            assert!(system.molecules().len() == 2);
+
+            for particle in &mut system {
+                if particle.name() == "O" {
+                    particle.charge = -0.8476;
+                } else if particle.name() == "H" {
+                    particle.charge = 0.4238;
+                }
             }
-
-            let _ = copy.add_bond(2, 3);
-            let _ = copy.add_bond(3, 4);
-
-            return copy;
+            return system;
         }
 
         #[test]
