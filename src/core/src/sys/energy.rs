@@ -60,9 +60,15 @@ impl<'a> EnergyEvaluator<'a> {
         let volume = self.system.volume();
         let composition = self.system.composition();
         for i in self.system.particle_kinds() {
-            let ni = composition[&i] as f64;
+            let ni = match composition.get(&i) {
+                Some(ni) => *ni as f64,
+                None => continue,
+            };
             for j in self.system.particle_kinds() {
-                let nj = composition[&j] as f64;
+                let nj = match composition.get(&j) {
+                    Some(nj) => *nj as f64,
+                    None => continue,
+                };
                 let potentials = self.system.interactions().pairs(i, j);
                 for potential in potentials {
                     energy += 2.0 * PI * ni * nj * potential.tail_energy() / volume;
@@ -168,7 +174,7 @@ impl<'a> EnergyEvaluator<'a> {
 mod tests {
     use super::*;
     use sys::{System, Particle, UnitCell};
-    use energy::{Harmonic, LennardJones, PairInteraction};
+    use energy::{Harmonic, LennardJones, NullPotential, PairInteraction};
     use types::Vector3D;
     use utils::unit_from;
 
@@ -212,6 +218,11 @@ mod tests {
                 k: unit_from(100.0, "kJ/mol/deg^2"),
                 x0: unit_from(185.0, "deg")
         }));
+
+        /// unused interaction to check that we do handle this right
+        system.interactions_mut().add_pair("H", "O",
+            PairInteraction::new(Box::new(NullPotential), 0.0)
+        );
 
         return system;
     }
