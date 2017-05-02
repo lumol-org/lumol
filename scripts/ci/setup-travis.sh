@@ -10,7 +10,6 @@ else
     export DO_COVERAGE=false
 fi
 
-
 if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
     export CC=gcc-4.9
     export CXX=g++-4.9
