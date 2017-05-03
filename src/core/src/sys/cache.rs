@@ -9,7 +9,7 @@
 //! energy components, by storing them and providing update callbacks.
 use std::mem;
 
-use super::System;
+use sys::System;
 use types::{Vector3D, Array2};
 
 /// Callback for updating a cache. It also take an `&mut System` argument for

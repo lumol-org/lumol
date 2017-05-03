@@ -16,14 +16,14 @@ use energy::PairInteraction;
 use energy::{BondPotential, AnglePotential, DihedralPotential};
 use types::{Vector3D, Matrix3, Zero};
 
-use super::{Particle, ParticleKind};
-use super::Composition;
-use super::Molecule;
-use super::{CONNECT_12, CONNECT_13, CONNECT_14, CONNECT_FAR};
-use super::UnitCell;
-use super::interactions::Interactions;
-use super::EnergyEvaluator;
-use super::molecules::molecule_type;
+use sys::{Particle, ParticleKind};
+use sys::Composition;
+use sys::Molecule;
+use sys::{CONNECT_12, CONNECT_13, CONNECT_14, CONNECT_FAR};
+use sys::molecule_type;
+use sys::UnitCell;
+use sys::interactions::Interactions;
+use sys::EnergyEvaluator;
 
 /// Particles permutations:. Indexes are given in the `(old, new)` form.
 pub type Permutations = Vec<(usize, usize)>;
