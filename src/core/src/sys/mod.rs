@@ -34,3 +34,5 @@ pub use self::chfl::ToChemfiles;
 
 pub mod veloc;
 pub mod compute;
+
+pub use sys2::Configuration;
