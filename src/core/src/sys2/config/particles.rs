@@ -33,6 +33,7 @@ pub struct Particle {
     /// and to use either `String` of `&str` to set it.
     name: String,
     /// Particle kind, an index for potentials lookup
+    // TODO: use pub(super) here to prevent modification from outside
     pub kind: ParticleKind,
     /// Particle mass
     pub mass: f64,
