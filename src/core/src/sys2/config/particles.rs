@@ -12,10 +12,9 @@ use std::fmt;
 #[derive(Clone, Copy, Hash, PartialOrd, Ord, PartialEq, Eq, Debug)]
 pub struct ParticleKind(pub u32);
 
-/// Default implementation of `ParticleKind` returns the invalid value
-/// `u32::max_value()`
-impl Default for ParticleKind {
-    fn default() -> ParticleKind {
+impl ParticleKind {
+    /// Get an invalid value (`u32::max_value()`) to use as a marker
+    pub fn invalid() -> ParticleKind {
         ParticleKind(u32::max_value())
     }
 }
@@ -58,7 +57,7 @@ impl Particle {
             name: name,
             mass: mass as f64,
             charge: 0.0,
-            kind: ParticleKind::default(),
+            kind: ParticleKind::invalid(),
             position: Vector3D::zero(),
             velocity: Vector3D::zero()
         }

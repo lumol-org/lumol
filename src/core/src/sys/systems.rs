@@ -270,7 +270,7 @@ impl System {
     /// Insert a particle at the end of the internal list
     pub fn add_particle(&mut self, p: Particle) {
         let mut part = p;
-        if part.kind == ParticleKind::default() {
+        if part.kind == ParticleKind::invalid() {
             // If no value have been precised, set one from the internal list
             // of particles kinds.
             part.kind = self.interactions.get_kind(part.name());
