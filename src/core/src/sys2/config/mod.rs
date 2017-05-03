@@ -23,3 +23,6 @@ pub use self::connect::{CONNECT_12, CONNECT_13, CONNECT_14, CONNECT_FAR};
 mod molecules;
 pub use self::molecules::Molecule;
 pub use self::molecules::molecule_type;
+
+mod configuration;
+pub use self::configuration::Configuration;
