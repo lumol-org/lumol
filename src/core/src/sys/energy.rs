@@ -60,15 +60,9 @@ impl<'a> EnergyEvaluator<'a> {
         let volume = self.system.volume();
         let composition = self.system.composition();
         for i in self.system.particle_kinds() {
-            let ni = match composition.get(&i) {
-                Some(ni) => *ni as f64,
-                None => continue,
-            };
+            let ni = composition[i] as f64;
             for j in self.system.particle_kinds() {
-                let nj = match composition.get(&j) {
-                    Some(nj) => *nj as f64,
-                    None => continue,
-                };
+                let nj = composition[j] as f64;
                 let potentials = self.system.interactions().pairs(i, j);
                 for potential in potentials {
                     energy += 2.0 * PI * ni * nj * potential.tail_energy() / volume;

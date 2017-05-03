@@ -11,13 +11,13 @@ use std::slice;
 use std::cmp::{min, max};
 use std::iter::IntoIterator;
 use std::i8;
-use std::collections::BTreeMap;
 
 use energy::PairInteraction;
 use energy::{BondPotential, AnglePotential, DihedralPotential};
 use types::{Vector3D, Matrix3, Zero};
 
 use super::{Particle, ParticleKind};
+use super::Composition;
 use super::Molecule;
 use super::{CONNECT_12, CONNECT_13, CONNECT_14, CONNECT_FAR};
 use super::UnitCell;
@@ -448,12 +448,14 @@ impl System {
     }
 
     /// Get the number of particles of each kind in the system
-    pub fn composition(&self) -> BTreeMap<ParticleKind, usize> {
-        let mut map = BTreeMap::new();
+    pub fn composition(&self) -> Composition {
+        let nkinds = self.particle_kinds().len();
+        let mut composition = Composition::new();
+        composition.resize(nkinds);
         for particle in &self.particles {
-            *map.entry(particle.kind).or_insert(0) += 1;
+            composition[particle.kind] += 1;
         }
-        return map;
+        return composition;
     }
 
     /// Get a list of all the particles kinds in the system.
@@ -850,10 +852,10 @@ mod tests {
 
         let compo = system.composition();
         assert_eq!(compo.len(), 4);
-        assert_eq!(compo[&ParticleKind(0)], 3);
-        assert_eq!(compo[&ParticleKind(1)], 2);
-        assert_eq!(compo[&ParticleKind(2)], 1);
-        assert_eq!(compo[&ParticleKind(3)], 1);
+        assert_eq!(compo[ParticleKind(0)], 3);
+        assert_eq!(compo[ParticleKind(1)], 2);
+        assert_eq!(compo[ParticleKind(2)], 1);
+        assert_eq!(compo[ParticleKind(3)], 1);
     }
 
     #[test]

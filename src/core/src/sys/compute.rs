@@ -196,9 +196,9 @@ impl Compute for Virial {
         let volume = system.cell().volume();
         let composition = system.composition();
         for i in system.particle_kinds() {
-            let ni = composition[&i] as f64;
+            let ni = composition[i] as f64;
             for j in system.particle_kinds() {
-                let nj = composition[&j] as f64;
+                let nj = composition[j] as f64;
                 let potentials = system.interactions().pairs(i, j);
                 for potential in potentials {
                     virial += 2.0 * PI * ni * nj * potential.tail_virial() / volume;
@@ -323,6 +323,11 @@ mod test {
         interaction.enable_tail_corrections();
         system.interactions_mut().add_pair("F", "F", interaction);
 
+        /// unused interaction to check that we do handle this right
+        system.interactions_mut().add_pair("H", "O",
+            PairInteraction::new(Box::new(NullPotential), 0.0)
+        );
+
         let mut velocities = BoltzmannVelocities::new(unit_from(300.0, "K"));
         velocities.init(&mut system);
         return system;
@@ -364,6 +369,11 @@ mod test {
                 k: unit_from(100.0, "kJ/mol/deg^2"),
                 x0: unit_from(185.0, "deg")
         }));
+
+        /// unused interaction to check that we do handle this right
+        system.interactions_mut().add_pair("H", "O",
+            PairInteraction::new(Box::new(NullPotential), 0.0)
+        );
 
         return system;
     }
