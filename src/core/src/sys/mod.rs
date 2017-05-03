@@ -5,26 +5,15 @@
 //! These systems are represented by an `System` instance, made of a list of
 //! `Particle`, an enclosing `UnitCell` and some interactions.
 
-mod periodic;
-pub use self::periodic::{PeriodicTable, ElementData};
-
-mod particles;
-pub use self::particles::{Particle, ParticleKind};
-
-mod composition;
-pub use self::composition::Composition;
-
-mod cells;
-pub use self::cells::{UnitCell, CellShape};
-
-mod connect;
-pub use self::connect::{Bond, Angle, Dihedral};
-pub use self::connect::Connectivity;
-pub use self::connect::{CONNECT_12, CONNECT_13, CONNECT_14, CONNECT_FAR};
-
-mod molecules;
-pub use self::molecules::Molecule;
-pub use self::molecules::molecule_type;
+pub use sys2::{PeriodicTable, ElementData};
+pub use sys2::{Particle, ParticleKind};
+pub use sys2::Composition;
+pub use sys2::{UnitCell, CellShape};
+pub use sys2::{Bond, Angle, Dihedral};
+pub use sys2::Connectivity;
+pub use sys2::{CONNECT_12, CONNECT_13, CONNECT_14, CONNECT_FAR};
+pub use sys2::Molecule;
+pub use sys2::molecule_type;
 
 mod interactions;
 
