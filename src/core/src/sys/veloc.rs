@@ -8,7 +8,7 @@ use rand::SeedableRng;
 
 use consts::K_BOLTZMANN;
 use types::Vector3D;
-use super::System;
+use sys::System;
 
 /// Scale all velocities in the `System` such that the `system` temperature
 /// is `temperature`.

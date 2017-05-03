@@ -3,7 +3,7 @@
 
 //! `Particle` type and manipulation.
 use types::{Vector3D, Zero};
-use super::PeriodicTable;
+use sys::PeriodicTable;
 
 use std::fmt;
 
