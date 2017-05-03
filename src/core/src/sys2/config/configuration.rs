@@ -6,13 +6,11 @@
 use std::ops::{Index, IndexMut};
 use std::slice;
 use std::cmp::{min, max};
-use std::iter::IntoIterator;
 use std::i8;
 
 use types::{Vector3D, Zero};
 
 use sys::{Particle, ParticleKind};
-use sys::Composition;
 use sys::Molecule;
 use sys::{CONNECT_12, CONNECT_13, CONNECT_14, CONNECT_FAR};
 use sys::molecule_type;
@@ -53,14 +51,6 @@ impl Configuration {
             molids: Vec::new(),
             cell: UnitCell::new(),
         }
-    }
-
-    /// Create an empty configuration with a specific UnitCell
-    // XXX: rename to with_cell
-    pub fn from_cell(cell: UnitCell) -> Configuration {
-        let mut configuration = Configuration::new();
-        configuration.cell = cell;
-        return configuration;
     }
 }
 
@@ -408,24 +398,6 @@ impl Configuration {
 
         return delta;
     }
-
-    /// Get the number of particles of each kind in the configuration
-    pub fn composition(&self) -> Composition {
-        // XXX: use interactions.all_kinds() again here
-        let mut kinds = self.particles
-                            .iter()
-                            .map(|p| p.kind)
-                            .collect::<Vec<_>>();
-        kinds.sort();
-        kinds.dedup();
-        let nkinds = kinds.len();
-        let mut composition = Composition::new();
-        composition.resize(nkinds);
-        for particle in &self.particles {
-            composition[particle.kind] += 1;
-        }
-        return composition;
-    }
 }
 
 impl<'a> IntoIterator for &'a Configuration {
@@ -642,55 +614,10 @@ mod tests {
         assert_eq!(configuration[2].name(), "H");
     }
 
-    // XXX
-    // #[test]
-    // fn particle_kinds() {
-    //     let mut configuration = Configuration::new();
-    //     configuration.add_particle(Particle::with_kind("H"));
-    //     configuration.add_particle(Particle::with_kind("O"));
-    //     configuration.add_particle(Particle::with_kind("O"));
-    //     configuration.add_particle(Particle::with_kind("H"));
-    //     configuration.add_particle(Particle::with_kind("C"));
-    //     configuration.add_particle(Particle::with_kind("U"));
-    //
-    //     let kinds = configuration.particle_kinds();
-    //     assert_eq!(kinds.len(), 4);
-    //
-    //     assert!(kinds.contains(&ParticleKind(0)));
-    //     assert!(kinds.contains(&ParticleKind(1)));
-    //     assert!(kinds.contains(&ParticleKind(2)));
-    //     assert!(kinds.contains(&ParticleKind(3)));
-    // }
-
-    #[test]
-    fn composition() {
-        let mut particle = Particle::new("");
-        let mut configuration = Configuration::new();
-        particle.kind = ParticleKind(0);
-        configuration.add_particle(particle.clone());
-        particle.kind = ParticleKind(1);
-        configuration.add_particle(particle.clone());
-        configuration.add_particle(particle.clone());
-        particle.kind = ParticleKind(0);
-        configuration.add_particle(particle.clone());
-        particle.kind = ParticleKind(2);
-        configuration.add_particle(particle.clone());
-        particle.kind = ParticleKind(3);
-        configuration.add_particle(particle.clone());
-        particle.kind = ParticleKind(0);
-        configuration.add_particle(particle.clone());
-
-        let composition = configuration.composition();
-        assert_eq!(composition.len(), 4);
-        assert_eq!(composition[ParticleKind(0)], 3);
-        assert_eq!(composition[ParticleKind(1)], 2);
-        assert_eq!(composition[ParticleKind(2)], 1);
-        assert_eq!(composition[ParticleKind(3)], 1);
-    }
-
     #[test]
     fn distances() {
-        let mut configuration = Configuration::from_cell(UnitCell::cubic(5.0));
+        let mut configuration = Configuration::new();
+        configuration.cell = UnitCell::cubic(5.0);
         configuration.add_particle(particle("O"));
         configuration.add_particle(particle("H"));
 
@@ -704,7 +631,8 @@ mod tests {
 
     #[test]
     fn center_of_mass() {
-        let mut configuration = Configuration::from_cell(UnitCell::cubic(5.0));
+        let mut configuration = Configuration::new();
+        configuration.cell = UnitCell::cubic(5.0);
         configuration.add_particle(particle("O"));
         configuration.add_particle(particle("O"));
         let _ = configuration.add_bond(0, 1);
@@ -716,7 +644,8 @@ mod tests {
 
     #[test]
     fn test_wrap_molecule() {
-        let mut configuration = Configuration::from_cell(UnitCell::cubic(5.0));
+        let mut configuration = Configuration::new();
+        configuration.cell = UnitCell::cubic(5.0);
         configuration.add_particle(particle("O"));
         configuration.add_particle(particle("O"));
         let _ = configuration.add_bond(0, 1);
