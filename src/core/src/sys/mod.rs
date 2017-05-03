@@ -11,6 +11,9 @@ pub use self::periodic::{PeriodicTable, ElementData};
 mod particles;
 pub use self::particles::{Particle, ParticleKind};
 
+mod composition;
+pub use self::composition::Composition;
+
 mod cells;
 pub use self::cells::{UnitCell, CellShape};
 
