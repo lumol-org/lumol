@@ -5,6 +5,9 @@
 #[macro_use]
 mod macros;
 
+mod parallel_shortcuts;
+pub use self::parallel_shortcuts::ParallelShortcuts;
+
 #[cfg(test)]
 mod xyz;
 #[cfg(test)]

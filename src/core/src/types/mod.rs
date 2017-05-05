@@ -18,6 +18,3 @@ pub use self::complex::Complex;
 
 mod arrays;
 pub use self::arrays::{Array2, Array3};
-
-mod parallel_shortcuts;
-pub use self::parallel_shortcuts::ParallelShortcuts;
