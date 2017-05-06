@@ -8,3 +8,6 @@ pub use self::config::*;
 
 mod system;
 pub use self::system::System;
+
+mod interactions;
+use self::interactions::Interactions;
