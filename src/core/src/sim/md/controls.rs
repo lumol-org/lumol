@@ -1,5 +1,5 @@
 // Lumol, an extensible molecular simulation engine
-// Copyright (C) 2015-2016 Lumol's contributors — BSD license
+// Copyright (C) Lumol's contributors — BSD license
 
 //! While running a simulation, we often want to have control over some
 //! simulation parameters: the temperature, the pressure, etc. This is the goal

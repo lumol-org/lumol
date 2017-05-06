@@ -1,5 +1,5 @@
 // Lumol, an extensible molecular simulation engine
-// Copyright (C) 2015-2016 Lumol's contributors — BSD license
+// Copyright (C) Lumol's contributors — BSD license
 
 //! Read static string using the XYZ file format, and create the corresponding
 //! system.

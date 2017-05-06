@@ -1,3 +1,6 @@
+// Lumol, an extensible molecular simulation engine
+// Copyright (C) Lumol's contributors — BSD license
+
 use lumol::sys::{System, Trajectory};
 use lumol_input::InteractionsInput;
 use std::path::Path;

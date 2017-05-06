@@ -1,3 +1,6 @@
+// Lumol, an extensible molecular simulation engine
+// Copyright (C) Lumol's contributors — BSD license
+
 use std::cell::RefCell;
 use std::ops::{AddAssign, Deref};
 
@@ -98,5 +101,3 @@ impl<T, F> Deref for ThreadLocalStore<T, F>
         self.inner.get_or(|| Box::new(RefCell::new((self.init)())))
     }
 }
-
-
