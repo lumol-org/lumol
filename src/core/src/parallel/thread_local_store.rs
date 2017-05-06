@@ -1,14 +1,16 @@
 use std::cell::RefCell;
-use std::ops::AddAssign;
+use std::ops::{AddAssign, Deref};
 
 use thread_local::CachedThreadLocal;
 
 /// A simple struct that delivers thread local variables.
 ///
 /// Some computations need thread local copies of the memory
-/// to avoid data races. This is a simple wrapper over
-/// the `thread_local` crate that exposes a simple API
-/// for doing so.
+/// to avoid data races. This is a wrapper over
+/// the `thread_local` crate that exposes a simpler API
+/// for doing so. `ThreadLocalStore` implements `Deref`
+/// to a `RefCell`, which will give access to the thread local
+/// data.
 ///
 /// # Example
 ///
@@ -17,39 +19,34 @@ use thread_local::CachedThreadLocal;
 /// range `(0..100)`.
 ///
 /// ```
-/// extern crate rayon;
-/// extern crate lumol;
 ///
-/// use rayon::prelude::*;
-/// use lumol::types::ThreadLocalStore;
+/// use lumol::parallel::prelude::*;
+/// use lumol::parallel::ThreadLocalStore;
 ///
-/// fn main() {
-///     let store = ThreadLocalStore::new(|| vec![0, 0, 0]);
+/// let store = ThreadLocalStore::new(|| vec![0, 0, 0]);
 ///
-///     (0..100_usize).into_par_iter().for_each(|i| {
-///          let mut thread_local_vec = store.get().borrow_mut();
-///          thread_local_vec[i % 3] += 1;
-///     });
+/// (0..100_usize).into_par_iter().for_each(|i| {
+///     let mut thread_local_vec = store.borrow_mut();
+///     thread_local_vec[i % 3] += 1;
+/// });
 ///
-///     let mut result = vec![0, 0, 0];
-///     store.add_local_values(&mut result);
+/// let mut result = vec![0, 0, 0];
+/// store.sum_local_values(&mut result);
 ///
-///     assert_eq!(result, vec![34, 33, 33]);
-/// }
-///
+/// assert_eq!(result, vec![34, 33, 33]);
 /// ```
 ///
 pub struct ThreadLocalStore<T, F>
-    where T: Sized + Send, F: Fn() -> T {
+    where T: Send, F: Fn() -> T {
     inner: CachedThreadLocal<RefCell<T>>,
     init: F
 }
 
-pub struct IntoIter<T: Sized + Send> {
+pub struct IntoIter<T: Send> {
     inner: <CachedThreadLocal<RefCell<T>> as IntoIterator>::IntoIter
 }
 
-impl<T: Sized + Send> Iterator for IntoIter<T> {
+impl<T: Send> Iterator for IntoIter<T> {
     type Item = T;
 
     #[inline]
@@ -61,7 +58,7 @@ impl<T: Sized + Send> Iterator for IntoIter<T> {
 }
 
 impl<T, F> IntoIterator for ThreadLocalStore<T, F>
-    where T: Sized + Send, F: Fn() -> T {
+    where T: Send, F: Fn() -> T {
     type Item = T;
     type IntoIter = IntoIter<T>;
 
@@ -72,7 +69,7 @@ impl<T, F> IntoIterator for ThreadLocalStore<T, F>
 }
 
 impl<T, F> ThreadLocalStore<T, F>
-    where T: Sized + Send, F: Fn() -> T {
+    where T: Send, F: Fn() -> T {
     /// Create a new `ThreadLocalStore`.
     ///
     /// Takes a closure that returns the initial value
@@ -81,14 +78,9 @@ impl<T, F> ThreadLocalStore<T, F>
         ThreadLocalStore { inner: CachedThreadLocal::new(), init: init }
     }
 
-    /// Get a `RefCell` containing the thread local data.
-    pub fn get(&self) -> &RefCell<T> {
-        self.inner.get_or(|| Box::new(RefCell::new((self.init)())))
-    }
-
     /// Shortcut to sum the local values if the local data
     /// can be iterated into `AddAssign` items.
-    pub fn add_local_values<I>(self, output: &mut [I])
+    pub fn sum_local_values<I>(self, output: &mut [I])
         where T: IntoIterator<Item=I>, I: AddAssign<I> {
         for local_values in self {
             for (o, v) in output.iter_mut().zip(local_values) {
@@ -98,5 +90,13 @@ impl<T, F> ThreadLocalStore<T, F>
     }
 }
 
+impl<T, F> Deref for ThreadLocalStore<T, F>
+    where T: Send, F: Fn() -> T{
+    type Target = RefCell<T>;
+
+    fn deref(&self) -> &Self::Target {
+        self.inner.get_or(|| Box::new(RefCell::new((self.init)())))
+    }
+}
 
 

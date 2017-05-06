@@ -84,3 +84,4 @@ pub mod energy;
 pub mod sys;
 pub mod sim;
 pub mod out;
+pub mod parallel;
