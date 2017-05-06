@@ -1,5 +1,5 @@
 // Lumol, an extensible molecular simulation engine
-// Copyright (C) 2015-2016 Lumol's contributors — BSD license
+// Copyright (C) Lumol's contributors — BSD license
 
 /// A simple macro to implement Clone for Box<Trait>, without requiring that
 /// Trait is Clone. This works by creating a new trait (`BoxCloneTrait`) and

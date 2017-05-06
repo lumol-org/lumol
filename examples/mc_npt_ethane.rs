@@ -1,5 +1,5 @@
 // Lumol, an extensible molecular simulation engine
-// Copyright (C) 2015-2016 Lumol's contributors — BSD license
+// Copyright (C) Lumol's contributors — BSD license
 extern crate lumol;
 extern crate lumol_input as input;
 

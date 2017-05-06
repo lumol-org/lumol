@@ -1,5 +1,5 @@
 // Lumol, an extensible molecular simulation engine
-// Copyright (C) 2015-2016 Lumol's contributors — BSD license
+// Copyright (C) Lumol's contributors — BSD license
 
 //! The periodic module give access to information about "extended" elements.
 //! These elements can be real element like Hydrogen or Carbon, or composed
