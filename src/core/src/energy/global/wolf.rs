@@ -4,12 +4,12 @@
 use special::Error;
 use std::f64::consts::PI;
 
-use rayon::prelude::*;
-
 use sys::System;
-use types::{Matrix3, Vector3D, Zero, ThreadLocalStore};
+use types::{Matrix3, Vector3D, Zero};
 use consts::ELCC;
 use energy::{PairRestriction, RestrictionInfo};
+use parallel::prelude::*;
+use parallel::ThreadLocalStore;
 
 use super::{GlobalPotential, CoulombicPotential, GlobalCache};
 
@@ -202,7 +202,7 @@ impl GlobalPotential for Wolf {
 
         (0..natoms).into_par_iter().for_each(|i| {
             /// Get the thread local forces Vec
-            let mut thread_forces = thread_forces_store.get().borrow_mut();
+            let mut thread_forces = thread_forces_store.borrow_mut();
 
             let qi = system[i].charge;
             if qi == 0.0 { return; }
@@ -224,7 +224,7 @@ impl GlobalPotential for Wolf {
         // results are scattered across all thread local Vecs,
         // here we gather them.
         let mut forces = vec![Vector3D::zero(); natoms];
-        thread_forces_store.add_local_values(&mut forces);
+        thread_forces_store.sum_local_values(&mut forces);
 
         return forces;
     }
