@@ -27,9 +27,16 @@ use sys2::Interactions;
 /// over molecules, and easier molecule removal from the system.
 #[derive(Clone)]
 pub struct System {
+    /// The system configuration
     configuration: Configuration,
+    /// All the interactions in this system
     interactions: Interactions,
+    /// Association particles names to particle kinds
     kinds: BTreeMap<String, ParticleKind>,
+    /// The current simulation step
+    step: u64,
+    /// Externally managed temperature for the system
+    external_temperature: Option<f64>,
 }
 
 impl System {
@@ -51,6 +58,8 @@ impl System {
             configuration: configuration,
             kinds: BTreeMap::new(),
             interactions: Interactions::new(),
+            step: 0,
+            external_temperature: None,
         }
     }
 
@@ -86,6 +95,29 @@ impl System {
     /// Get a list of all the particles kinds in the system.
     pub fn particle_kinds(&self) -> Vec<ParticleKind> {
         self.kinds.values().cloned().collect()
+    }
+
+    /// Get the current step of the system
+    pub fn step(&self) -> u64 {
+        self.step
+    }
+
+    /// Increment the system step
+    pub fn increment_step(&mut self) {
+        self.step += 1;
+    }
+
+    /// Use an external temperature for all the system properties. Calling this
+    /// with `Some(temperature)` will replace all the computation of the
+    /// temperature from the velocities with the given values. Calling it with
+    /// `None` will use the velocities.
+    ///
+    /// The default is to use the velocities unless this function is called.
+    pub fn external_temperature(&mut self, temperature: Option<f64>) {
+        if let Some(temperature) = temperature {
+            assert!(temperature >= 0.0, "External temperature must be positive");
+        }
+        self.external_temperature = temperature;
     }
 }
 
@@ -250,6 +282,24 @@ impl<'a> IntoIterator for &'a mut System {
 mod tests {
     use super::System;
     use sys::*;
+
+    #[test]
+    fn step() {
+        let mut system = System::new();
+        assert_eq!(system.step(), 0);
+
+        system.increment_step();
+        system.increment_step();
+        system.increment_step();
+        assert_eq!(system.step(), 3);
+    }
+
+    #[test]
+    #[should_panic]
+    fn negative_external_temperature() {
+        let mut system = System::new();
+        system.external_temperature(Some(-1.0));
+    }
 
     #[test]
     fn deref() {
