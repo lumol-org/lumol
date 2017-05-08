@@ -72,12 +72,12 @@ use energy::PairRestriction;
 /// }
 ///
 /// // A simple test
-/// let mut system = System::from_cell(UnitCell::cubic(10.0));
+/// let mut system = System::with_cell(UnitCell::cubic(10.0));
 /// system.add_particle(Particle::new("Na"));
 /// system.add_particle(Particle::new("Cl"));
 ///
 /// let shift = ShiftAll{delta: 1.0};
-/// system.interactions_mut().add_global(Box::new(shift));
+/// system.add_global_potential(Box::new(shift));
 ///
 /// assert_eq!(system.potential_energy(), 2.0);
 ///

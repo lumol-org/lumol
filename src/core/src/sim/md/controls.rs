@@ -209,7 +209,7 @@ mod tests {
     use sim::Alternator;
 
     fn testing_system() -> System {
-        let mut system = System::from_cell(UnitCell::cubic(20.0));;
+        let mut system = System::with_cell(UnitCell::cubic(20.0));;
 
         for i in 0..10 {
             for j in 0..10 {
@@ -273,7 +273,7 @@ mod tests {
 
     #[test]
     fn remove_translation() {
-        let mut system = System::from_cell(UnitCell::cubic(20.0));
+        let mut system = System::with_cell(UnitCell::cubic(20.0));
         system.add_particle(Particle::new("Ag"));
         system.add_particle(Particle::new("Ag"));
         system[0].position = Vector3D::zero();
@@ -300,7 +300,7 @@ mod tests {
 
     #[test]
     fn remove_rotation() {
-        let mut system = System::from_cell(UnitCell::cubic(20.0));
+        let mut system = System::with_cell(UnitCell::cubic(20.0));
         system.add_particle(Particle::new("Ag"));
         system.add_particle(Particle::new("Ag"));
         system[0].position = Vector3D::zero();

@@ -200,7 +200,7 @@ impl Integrator for BerendsenBarostat {
             part.position += part.velocity * dt;
         }
 
-        system.cell_mut().scale_mut(self.eta*self.eta*self.eta * Matrix3::one());
+        system.cell.scale_mut(self.eta*self.eta*self.eta * Matrix3::one());
 
         self.eta = f64::cbrt(1.0 - WATER_COMPRESSIBILITY / self.tau * (self.pressure - system.pressure()));
 
@@ -266,7 +266,7 @@ impl Integrator for AnisoBerendsenBarostat {
             part.position += part.velocity * dt;
         }
 
-        system.cell_mut().scale_mut(self.eta);
+        system.cell.scale_mut(self.eta);
 
         let factor = self.timestep * WATER_COMPRESSIBILITY / self.tau;
         self.eta = Matrix3::one() - factor * (self.stress - system.stress());

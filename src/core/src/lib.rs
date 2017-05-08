@@ -82,7 +82,6 @@ pub mod consts;
 pub mod types;
 pub mod energy;
 pub mod sys;
-pub mod sys2;
 pub mod sim;
 pub mod out;
 pub mod parallel;

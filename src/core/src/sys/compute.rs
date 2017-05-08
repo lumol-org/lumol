@@ -8,7 +8,6 @@ use std::f64::consts::PI;
 use consts::K_BOLTZMANN;
 use types::{Matrix3, Vector3D, Zero, One};
 use sys::System;
-use parallel::prelude::*;
 
 use parallel::prelude::*;
 use parallel::ThreadLocalStore;
@@ -96,7 +95,7 @@ impl Compute for Forces {
             }
         }
 
-        if let Some(coulomb) = system.interactions().coulomb() {
+        if let Some(coulomb) = system.coulomb_potential() {
             let coulomb_forces = coulomb.forces(system);
             debug_assert_eq!(coulomb_forces.len(), natoms, "Wrong `forces` size in coulomb potentials");
             for (i, force) in coulomb_forces.iter().enumerate() {
@@ -104,7 +103,7 @@ impl Compute for Forces {
             }
         }
 
-        for global in system.interactions().globals() {
+        for global in system.global_potentials() {
             let global_forces = global.forces(system);
             debug_assert_eq!(global_forces.len(), natoms, "Wrong `forces` size in global potentials");
             for (i, force) in global_forces.iter().enumerate() {
@@ -182,7 +181,7 @@ impl Compute for Volume {
     type Output = f64;
     #[inline]
     fn compute(&self, system: &System) -> f64 {
-        return system.cell().volume();
+        return system.cell.volume();
     }
 }
 
@@ -193,11 +192,10 @@ pub struct Virial;
 impl Compute for Virial {
     type Output = Matrix3;
     fn compute(&self, system: &System) -> Matrix3 {
-        assert!(!system.cell().is_infinite(), "Can not compute virial for infinite cell");
+        assert!(!system.cell.is_infinite(), "Can not compute virial for infinite cell");
 
         let mut virial = (0..system.size()).par_map(|i| {
             let mut local_virial = Matrix3::zero();
-
             for j in (i+1)..system.size() {
                 let distance = system.bond_distance(i, j);
                 for potential in system.pair_potentials(i, j) {
@@ -212,13 +210,13 @@ impl Compute for Virial {
             local_virial
         }).sum();
 
-        let volume = system.cell().volume();
+        let volume = system.cell.volume();
         let composition = system.composition();
         for i in system.particle_kinds() {
             let ni = composition[i] as f64;
             for j in system.particle_kinds() {
                 let nj = composition[j] as f64;
-                let potentials = system.interactions().pairs(i, j);
+                let potentials = system.pair_potentials_for_kinds(i, j);
                 for potential in potentials {
                     virial += 2.0 * PI * ni * nj * potential.tail_virial() / volume;
                 }
@@ -228,11 +226,11 @@ impl Compute for Virial {
         // TODO: implement virial computations for molecular potentials
         // (angles & dihedrals)
 
-        if let Some(coulomb) = system.interactions().coulomb() {
+        if let Some(coulomb) = system.coulomb_potential() {
             virial += coulomb.virial(system);
         }
 
-        for global in system.interactions().globals() {
+        for global in system.global_potentials() {
             virial += global.virial(system);
         }
 
@@ -252,11 +250,11 @@ pub struct PressureAtTemperature {
 impl Compute for PressureAtTemperature {
     type Output = f64;
     fn compute(&self, system: &System) -> f64 {
-        assert!(!system.cell().is_infinite(), "Can not compute pressure for infinite cell");
+        assert!(!system.cell.is_infinite(), "Can not compute pressure for infinite cell");
         assert!(self.temperature >= 0.0);
         let virial_tensor = system.virial();
         let virial = virial_tensor.trace();
-        let volume = system.cell().volume();
+        let volume = system.volume();
         let natoms = system.size() as f64;
         return natoms * K_BOLTZMANN * self.temperature / volume + virial / (3.0 * volume);
     }
@@ -277,9 +275,9 @@ impl Compute for StressAtTemperature {
     type Output = Matrix3;
     fn compute(&self, system: &System) -> Matrix3 {
         assert!(self.temperature >= 0.0);
-        assert!(!system.cell().is_infinite(), "Can not compute stress for infinite cell");
+        assert!(!system.cell.is_infinite(), "Can not compute stress for infinite cell");
         let virial = system.virial();
-        let volume = system.cell().volume();
+        let volume = system.volume();
         let natoms = system.size() as f64;
         let kinetic = natoms * K_BOLTZMANN * self.temperature * Matrix3::one();
         return (kinetic + virial) / volume;
@@ -293,14 +291,14 @@ pub struct Stress;
 impl Compute for Stress {
     type Output = Matrix3;
     fn compute(&self, system: &System) -> Matrix3 {
-        assert!(!system.cell().is_infinite(), "Can not compute stress for infinite cell");
+        assert!(!system.cell.is_infinite(), "Can not compute stress for infinite cell");
         let mut kinetic = Matrix3::zero();
         for particle in system.iter() {
             let velocity = &particle.velocity;
             kinetic += particle.mass * velocity.tensorial(velocity);
         }
 
-        let volume = system.cell().volume();
+        let volume = system.volume();
         let virial = system.virial();
         return (kinetic + virial) / volume;
     }
@@ -329,7 +327,7 @@ mod test {
     use utils::unit_from;
 
     fn test_pairs_system() -> System {
-        let mut system = System::from_cell(UnitCell::cubic(10.0));;
+        let mut system = System::with_cell(UnitCell::cubic(10.0));;
         system.add_particle(Particle::new("F"));
         system[0].position = Vector3D::zero();
         system.add_particle(Particle::new("F"));
@@ -340,10 +338,10 @@ mod test {
             x0: unit_from(1.2, "A")
         }), 5.0);
         interaction.enable_tail_corrections();
-        system.interactions_mut().add_pair("F", "F", interaction);
+        system.add_pair_potential("F", "F", interaction);
 
         /// unused interaction to check that we do handle this right
-        system.interactions_mut().add_pair("H", "O",
+        system.add_pair_potential("H", "O",
             PairInteraction::new(Box::new(NullPotential), 0.0)
         );
 
@@ -353,7 +351,7 @@ mod test {
     }
 
     fn test_molecular_system() -> System {
-        let mut system = System::from_cell(UnitCell::cubic(10.0));;
+        let mut system = System::with_cell(UnitCell::cubic(10.0));;
         system.add_particle(Particle::new("F"));
         system[0].position = Vector3D::new(0.0, 0.0, 0.0);
         system.add_particle(Particle::new("F"));
@@ -367,30 +365,30 @@ mod test {
         assert!(system.add_bond(1, 2).is_empty());
         assert!(system.add_bond(2, 3).is_empty());
 
-        system.interactions_mut().add_pair("F", "F",
+        system.add_pair_potential("F", "F",
             PairInteraction::new(Box::new(NullPotential), 0.0)
         );
 
-        system.interactions_mut().add_bond("F", "F",
+        system.add_bond_potential("F", "F",
             Box::new(Harmonic{
                 k: unit_from(100.0, "kJ/mol/A^2"),
                 x0: unit_from(2.0, "A")
         }));
 
-        system.interactions_mut().add_angle("F", "F", "F",
+        system.add_angle_potential("F", "F", "F",
             Box::new(Harmonic{
                 k: unit_from(100.0, "kJ/mol/deg^2"),
                 x0: unit_from(88.0, "deg")
         }));
 
-        system.interactions_mut().add_dihedral("F", "F", "F", "F",
+        system.add_dihedral_potential("F", "F", "F", "F",
             Box::new(Harmonic{
                 k: unit_from(100.0, "kJ/mol/deg^2"),
                 x0: unit_from(185.0, "deg")
         }));
 
         /// unused interaction to check that we do handle this right
-        system.interactions_mut().add_pair("H", "O",
+        system.add_pair_potential("H", "O",
             PairInteraction::new(Box::new(NullPotential), 0.0)
         );
 

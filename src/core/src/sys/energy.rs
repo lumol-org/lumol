@@ -58,7 +58,7 @@ impl<'a> EnergyEvaluator<'a> {
     /// Compute the energy due to long range corrections for the pairs
     #[inline]
     pub fn pairs_tail(&self) -> f64 {
-        if self.system.cell().is_infinite() {
+        if self.system.cell.is_infinite() {
             return 0.0;
         }
         let mut energy = 0.0;
@@ -68,7 +68,7 @@ impl<'a> EnergyEvaluator<'a> {
             let ni = composition[i] as f64;
             for j in self.system.particle_kinds() {
                 let nj = composition[j] as f64;
-                let potentials = self.system.interactions().pairs(i, j);
+                let potentials = self.system.pair_potentials_for_kinds(i, j);
                 for potential in potentials {
                     energy += 2.0 * PI * ni * nj * potential.tail_energy() / volume;
                 }
@@ -151,7 +151,7 @@ impl<'a> EnergyEvaluator<'a> {
     /// Compute the energy of the electrostatic interactions
     #[inline]
     pub fn coulomb(&self) -> f64 {
-        if let Some(coulomb) = self.system.interactions().coulomb() {
+        if let Some(coulomb) = self.system.coulomb_potential() {
             coulomb.energy(self.system)
         } else {
             0.0
@@ -162,7 +162,7 @@ impl<'a> EnergyEvaluator<'a> {
     #[inline]
     pub fn global(&self) -> f64 {
         let mut energy = 0.0;
-        for global in self.system.interactions().globals() {
+        for global in self.system.global_potentials() {
             energy += global.energy(self.system);
         }
         return energy;
@@ -178,7 +178,7 @@ mod tests {
     use utils::unit_from;
 
     fn testing_system() -> System {
-        let mut system = System::from_cell(UnitCell::cubic(10.0));;
+        let mut system = System::with_cell(UnitCell::cubic(10.0));;
         system.add_particle(Particle::new("F"));
         system[0].position = Vector3D::new(0.0, 0.0, 0.0);
         system.add_particle(Particle::new("F"));
@@ -198,28 +198,28 @@ mod tests {
         }), 5.0);
         pair.enable_tail_corrections();
 
-        system.interactions_mut().add_pair("F", "F", pair);
+        system.add_pair_potential("F", "F", pair);
 
-        system.interactions_mut().add_bond("F", "F",
+        system.add_bond_potential("F", "F",
             Box::new(Harmonic{
                 k: unit_from(100.0, "kJ/mol/A^2"),
                 x0: unit_from(2.0, "A")
         }));
 
-        system.interactions_mut().add_angle("F", "F", "F",
+        system.add_angle_potential("F", "F", "F",
             Box::new(Harmonic{
                 k: unit_from(100.0, "kJ/mol/deg^2"),
                 x0: unit_from(88.0, "deg")
         }));
 
-        system.interactions_mut().add_dihedral("F", "F", "F", "F",
+        system.add_dihedral_potential("F", "F", "F", "F",
             Box::new(Harmonic{
                 k: unit_from(100.0, "kJ/mol/deg^2"),
                 x0: unit_from(185.0, "deg")
         }));
 
         /// unused interaction to check that we do handle this right
-        system.interactions_mut().add_pair("H", "O",
+        system.add_pair_potential("H", "O",
             PairInteraction::new(Box::new(NullPotential), 0.0)
         );
 
@@ -237,7 +237,7 @@ mod tests {
     #[test]
     fn pairs_tail_infinite_cell() {
         let mut system = testing_system();
-        system.set_cell(UnitCell::new());
+        system.cell = UnitCell::new();
 
         let evaluator = EnergyEvaluator::new(&system);
         assert_eq!(evaluator.pairs_tail(), 0.0);

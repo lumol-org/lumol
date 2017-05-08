@@ -489,7 +489,7 @@ impl IndexMut<usize> for Configuration {
 
 #[cfg(test)]
 mod tests {
-    use sys2::*;
+    use sys::*;
     use types::*;
 
     /// Create particles with intialized kind for the tests

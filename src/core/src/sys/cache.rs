@@ -160,7 +160,7 @@ impl EnergyCache {
                 // Exclude interactions inside the sub-system.
                 if idxes.contains(&part_j) {continue}
 
-                let r = system.cell().distance(&system[part_j].position, &newpos[i]);
+                let r = system.cell.distance(&system[part_j].position, &newpos[i]);
                 let energy = evaluator.pair(r, part_i, part_j);
 
                 pairs_delta += energy;
@@ -174,7 +174,7 @@ impl EnergyCache {
         // Interactions within the sub-system being moved
         for (i, &part_i) in idxes.iter().enumerate() {
             for (j, &part_j) in idxes.iter().enumerate().skip(i + 1) {
-                let r = system.cell().distance(&newpos[i], &newpos[j]);
+                let r = system.cell.distance(&newpos[i], &newpos[j]);
                 let energy = evaluator.pair(r, part_i, part_j);
 
                 pairs_delta += energy;
@@ -195,7 +195,7 @@ impl EnergyCache {
                 let (i, j) = (bond.i(), bond.j());
                 let ri = new_position(system, i, &idxes, newpos);
                 let rj = new_position(system, j, &idxes, newpos);
-                let r = system.cell().distance(ri, rj);
+                let r = system.cell.distance(ri, rj);
                 bonds += evaluator.bond(r, i, j);
             }
 
@@ -204,7 +204,7 @@ impl EnergyCache {
                 let ri = new_position(system, i, &idxes, newpos);
                 let rj = new_position(system, j, &idxes, newpos);
                 let rk = new_position(system, k, &idxes, newpos);
-                let theta = system.cell().angle(ri, rj, rk);
+                let theta = system.cell.angle(ri, rj, rk);
                 angles += evaluator.angle(theta, i, j, k);
             }
 
@@ -214,19 +214,19 @@ impl EnergyCache {
                 let rj = new_position(system, j, &idxes, newpos);
                 let rk = new_position(system, k, &idxes, newpos);
                 let rm = new_position(system, m, &idxes, newpos);
-                let phi = system.cell().dihedral(ri, rj, rk, rm);
+                let phi = system.cell.dihedral(ri, rj, rk, rm);
                 dihedrals += evaluator.dihedral(phi, i, j, k, m);
             }
         }
 
-        let coulomb_delta = if let Some(coulomb) = system.interactions().coulomb() {
+        let coulomb_delta = if let Some(coulomb) = system.coulomb_potential() {
             coulomb.move_particles_cost(system, &idxes, newpos)
         } else {
             0.0
         };
 
         let mut global_delta = 0.0;
-        for global in system.interactions().globals() {
+        for global in system.global_potentials() {
             global_delta += global.move_particles_cost(system, &idxes, newpos);
         }
 
@@ -265,11 +265,11 @@ impl EnergyCache {
             }
 
             // Update the cache for the global potentials
-            if let Some(coulomb) = system.interactions().coulomb() {
+            if let Some(coulomb) = system.coulomb_potential() {
                 coulomb.update();
             }
 
-            for global in system.interactions().globals() {
+            for global in system.global_potentials() {
                 global.update();
             }
         }));
@@ -303,9 +303,10 @@ impl EnergyCache {
                 // Loop over all particles in the molecules
                 for pi in mi.iter() {
                     for pj in mj.iter() {
-                        let r = system.cell().distance(
+                        let r = system.cell.distance(
                             &system[pi].position,
-                            &system[pj].position);
+                            &system[pj].position
+                        );
                         let energy = evaluator.pair(r, pi, pj);
                         pairs_delta += energy;
                         new_pairs[(pi, pj)] += energy;
@@ -382,34 +383,34 @@ mod tests {
         O     3.000000     0.000000     1.480000
         H     3.895669     0.000000    -0.316667
         H     2.104330     0.000000     1.796667");
-        system.set_cell(UnitCell::cubic(10.0));
+        system.cell = UnitCell::cubic(10.0);
         assert!(system.molecules().len() == 2);
 
-        system.interactions_mut().add_pair("H", "H", PairInteraction::new(
+        system.add_pair_potential("H", "H", PairInteraction::new(
             Box::new(LennardJones{sigma: 3.0, epsilon: unit_from(0.5, "kJ/mol")}), 3.0
         ));
 
-        system.interactions_mut().add_pair("O", "O", PairInteraction::new(
+        system.add_pair_potential("O", "O", PairInteraction::new(
             Box::new(NullPotential), 3.0
         ));
 
-        system.interactions_mut().add_pair("O", "H", PairInteraction::new(
+        system.add_pair_potential("O", "H", PairInteraction::new(
             Box::new(LennardJones{sigma: 1.0, epsilon: unit_from(0.3, "kJ/mol")}), 3.0
         ));
 
-        system.interactions_mut().add_bond("O", "H",
+        system.add_bond_potential("O", "H",
             Box::new(Harmonic{x0: 3.4, k: unit_from(522.0, "kJ/mol/A^2")})
         );
 
-        system.interactions_mut().add_angle("O", "O", "H",
+        system.add_angle_potential("O", "O", "H",
             Box::new(Harmonic{x0: f64::to_radians(120.0), k: unit_from(150.0, "kJ/mol/deg^2")})
         );
 
-        system.interactions_mut().add_dihedral("H", "O", "O", "H",
+        system.add_dihedral_potential("H", "O", "O", "H",
             Box::new(Harmonic{x0: f64::to_radians(180.0), k: unit_from(800.0, "kJ/mol/deg^2")})
         );
 
-        system.interactions_mut().set_coulomb(Box::new(Wolf::new(8.0)));
+        system.set_coulomb_potential(Box::new(Wolf::new(8.0)));
 
         for atom in &mut system {
             if atom.name() == "O" {
