@@ -78,13 +78,13 @@ mod tests {
     use sim::{Propagator, Minimization};
 
     fn testing_system() -> System {
-        let mut system = System::from_cell(UnitCell::cubic(20.0));;
+        let mut system = System::with_cell(UnitCell::cubic(20.0));;
         system.add_particle(Particle::new("Cl"));
         system[0].position = Vector3D::zero();
         system.add_particle(Particle::new("Cl"));
         system[1].position = Vector3D::new(0.0, 0.0, 2.0);
 
-        system.interactions_mut().add_pair("Cl", "Cl",
+        system.add_pair_potential("Cl", "Cl",
             PairInteraction::new(Box::new(Harmonic{x0: 2.3, k: 0.1}), 10.0)
         );
         return system;

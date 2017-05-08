@@ -33,8 +33,7 @@ use super::{GlobalPotential, CoulombicPotential, GlobalCache};
 /// use lumol::types::Vector3D;
 ///
 /// // Setup a system containing a NaCl pair
-/// let mut system = System::new();
-/// system.set_cell(UnitCell::cubic(10.0));
+/// let mut system = System::with_cell(UnitCell::cubic(10.0));
 ///
 /// let mut na = Particle::new("Na");
 /// na.charge = 1.0;
@@ -48,7 +47,7 @@ use super::{GlobalPotential, CoulombicPotential, GlobalCache};
 /// system.add_particle(cl);
 ///
 /// // Use Wolf summation for electrostatic interactions
-/// system.interactions_mut().set_coulomb(Box::new(wolf));
+/// system.set_coulomb_potential(Box::new(wolf));
 ///
 /// assert_eq!(system.potential_energy(), -0.07292902695393541);
 /// ```
@@ -129,8 +128,8 @@ impl GlobalCache for Wolf {
                 let qj = system[j].charge;
                 if qj == 0.0 {continue;}
 
-                let r_old = system.cell().distance(&system[i].position, &system[j].position);
-                let r_new = system.cell().distance(&newpos[idx], &system[j].position);
+                let r_old = system.cell.distance(&system[i].position, &system[j].position);
+                let r_new = system.cell.distance(&newpos[idx], &system[j].position);
 
                 let distance = system.bond_distance(i, j);
                 let info = self.restriction.information(distance);
@@ -149,7 +148,7 @@ impl GlobalCache for Wolf {
                 if qj == 0.0 {continue;}
 
                 let r_old = system.distance(i, j);
-                let r_new = system.cell().distance(&newpos[idx], &newpos[jdx]);
+                let r_new = system.cell.distance(&newpos[idx], &newpos[jdx]);
 
                 let distance = system.bond_distance(i, j);
                 let info = self.restriction.information(distance);
@@ -273,7 +272,7 @@ mod tests {
     const E_BRUTE_FORCE: f64 = -0.09262397663346732;
 
     pub fn testing_system() -> System {
-        let mut system = System::from_cell(UnitCell::cubic(20.0));
+        let mut system = System::with_cell(UnitCell::cubic(20.0));
 
         system.add_particle(Particle::new("Cl"));
         system[0].charge = -1.0;
@@ -333,7 +332,7 @@ mod tests {
             H  1.3  1.3  0.3
             H  2.3  1.7 -0.8
             ");
-            system.set_cell(UnitCell::cubic(20.0));
+            system.cell = UnitCell::cubic(20.0);
             assert!(system.molecules().len() == 2);
 
             for particle in &mut system {

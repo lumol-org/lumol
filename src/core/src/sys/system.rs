@@ -5,13 +5,13 @@ use std::ops::{Deref, DerefMut};
 use std::slice;
 use std::collections::BTreeMap;
 
+use types::{Vector3D, Matrix3};
+
 use energy::{PairInteraction, BondPotential, AnglePotential, DihedralPotential};
 use energy::{GlobalPotential, CoulombicPotential};
 
 use sys::{Configuration, Particle, ParticleKind, UnitCell};
-use sys::Composition;
-
-use sys2::Interactions;
+use sys::{Composition, Interactions, EnergyEvaluator};
 
 /// The `System` type hold all the data about a simulated system.
 ///
@@ -123,6 +123,11 @@ impl System {
 
 /// Functions related to interactions
 impl System {
+    /// Get an helper struct to evaluate the energy of this system.
+    pub fn energy_evaluator(&self) -> EnergyEvaluator {
+        EnergyEvaluator::new(self)
+    }
+
     /// Add the `potential` pair interaction for the pair `(i, j)`
     pub fn add_pair_potential(&mut self, i: &str, j: &str, potential: PairInteraction) {
         let kind_i = self.get_kind(i);
@@ -178,6 +183,17 @@ impl System {
             );
         }
         return pairs;
+    }
+
+    /// Get the list of pair potential acting on the
+    // TODO: use pub(crate) for interactions instead, this function is only
+    // used for tail corrections.
+    #[doc(hidden)]
+    pub fn pair_potentials_for_kinds(&self, kind_i: ParticleKind, kind_j: ParticleKind) -> &[PairInteraction] {
+        // No warning if there is no potential. This shoud be fine because
+        // most of the time, this function should be called after
+        // `pair_potentials`.
+        return self.interactions.pairs(kind_i, kind_j);
     }
 
     /// Get the list of bonded potential acting between the particles at indexes
@@ -241,6 +257,63 @@ impl System {
     /// Get maximum cutoff from `coulomb`, `pairs` and `global` interactions.
     pub fn maximum_cutoff(&self) -> Option<f64> {
         self.interactions.maximum_cutoff()
+    }
+}
+
+use sys::compute::Compute;
+use sys::compute::{PotentialEnergy, KineticEnergy, TotalEnergy};
+use sys::compute::Forces;
+use sys::compute::Temperature;
+use sys::compute::Volume;
+use sys::compute::{Virial, Stress, Pressure};
+use sys::compute::{StressAtTemperature, PressureAtTemperature};
+
+/// Functions to get physical properties of a system.
+impl System {
+    /// Get the kinetic energy of the system.
+    pub fn kinetic_energy(&self) -> f64 {KineticEnergy.compute(self)}
+    /// Get the potential energy of the system.
+    pub fn potential_energy(&self) -> f64 {PotentialEnergy.compute(self)}
+    /// Get the total energy of the system.
+    pub fn total_energy(&self) -> f64 {TotalEnergy.compute(self)}
+
+    /// Get the temperature of the system.
+    pub fn temperature(&self) -> f64 {
+        match self.external_temperature {
+            Some(value) => value,
+            None => Temperature.compute(self)
+        }
+    }
+
+    /// Get the volume of the system.
+    pub fn volume(&self) -> f64 {Volume.compute(self)}
+
+    /// Get the virial of the system as a tensor
+    pub fn virial(&self) -> Matrix3 {Virial.compute(self)}
+    /// Get the pressure of the system from the virial equation, at the system
+    /// instantaneous temperature.
+    pub fn pressure(&self) -> f64 {
+        match self.external_temperature {
+            Some(temperature) => {
+                PressureAtTemperature{temperature: temperature}.compute(self)
+            }
+            None => Pressure.compute(self)
+        }
+    }
+    /// Get the stress tensor of the system from the virial equation.
+    pub fn stress(&self) -> Matrix3 {
+        match self.external_temperature {
+            Some(temperature) => {
+                StressAtTemperature{temperature: temperature}.compute(self)
+            }
+            None => Stress.compute(self)
+        }
+
+    }
+
+    /// Get the forces acting on all the particles in the system
+    pub fn forces(&self) -> Vec<Vector3D> {
+        Forces.compute(self)
     }
 }
 

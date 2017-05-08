@@ -42,8 +42,7 @@ use super::{GlobalPotential, CoulombicPotential, GlobalCache};
 /// use lumol::types::Vector3D;
 ///
 /// // Setup a system containing a NaCl pair
-/// let mut system = System::new();
-/// system.set_cell(UnitCell::cubic(10.0));
+/// let mut system = System::with_cell(UnitCell::cubic(10.0));
 ///
 /// let mut na = Particle::new("Na");
 /// na.charge = 1.0;
@@ -57,7 +56,7 @@ use super::{GlobalPotential, CoulombicPotential, GlobalCache};
 /// system.add_particle(cl);
 ///
 /// // Use Ewald summation for electrostatic interactions
-/// system.interactions_mut().set_coulomb(Box::new(ewald));
+/// system.set_coulomb_potential(Box::new(ewald));
 ///
 /// assert_eq!(system.potential_energy(), -0.07042996180522723);
 /// ```
@@ -281,7 +280,7 @@ impl Ewald {
                 if qi == 0.0 {continue}
 
                 let r_old = system.distance(i, j);
-                let r_new = system.cell().distance(&newpos[idx], &system[j].position);
+                let r_new = system.cell.distance(&newpos[idx], &system[j].position);
 
                 let distance = system.bond_distance(i, j);
                 let info = self.restriction.information(distance);
@@ -300,7 +299,7 @@ impl Ewald {
                 if qj == 0.0 {continue}
 
                 let r_old = system.distance(i, j);
-                let r_new = system.cell().distance(&newpos[idx], &newpos[jdx]);
+                let r_new = system.cell.distance(&newpos[idx], &newpos[jdx]);
 
                 let distance = system.bond_distance(i, j);
                 let info = self.restriction.information(distance);
@@ -335,7 +334,7 @@ impl Ewald {
 
         // Do the k=0, 1 cases first
         for i in 0..natoms {
-            let ri = system.cell().fractional(&system[i].position);
+            let ri = system.cell.fractional(&system[i].position);
             for j in 0..3 {
                 self.fourier_phases[(0, i, j)] = Complex::polar(1.0, 0.0);
                 self.fourier_phases[(1, i, j)] = Complex::polar(1.0, -2.0 * PI * ri[j]);
@@ -381,7 +380,7 @@ impl Ewald {
                 }
             }
         }
-        energy *= 2.0 * PI / (system.cell().volume() * ELCC);
+        energy *= 2.0 * PI / (system.cell.volume() * ELCC);
         return energy;
     }
 
@@ -390,8 +389,8 @@ impl Ewald {
         assert_eq!(forces.len(), system.size());
         self.density_fft(system);
 
-        let factor = 4.0 * PI / (system.cell().volume() * ELCC);
-        let (rec_kx, rec_ky, rec_kz) = system.cell().reciprocal_vectors();
+        let factor = 4.0 * PI / (system.cell.volume() * ELCC);
+        let (rec_kx, rec_ky, rec_kz) = system.cell.reciprocal_vectors();
 
         for ikx in 0..self.kmax {
             for iky in 0..self.kmax {
@@ -449,8 +448,8 @@ impl Ewald {
     fn kspace_virial(&mut self, system: &System) -> Matrix3 {
         self.density_fft(system);
 
-        let factor = 4.0 * PI / (system.cell().volume() * ELCC);
-        let (rec_kx, rec_ky, rec_kz) = system.cell().reciprocal_vectors();
+        let factor = 4.0 * PI / (system.cell.volume() * ELCC);
+        let (rec_kx, rec_ky, rec_kz) = system.cell.reciprocal_vectors();
 
         Zip::indexed(&*self.expfactors).par_map(|((ikx, iky, ikz), expfactor)| {
 
@@ -487,8 +486,8 @@ impl Ewald {
 
         // Do the k=0, 1 cases first
         for (idx, &i) in idxes.iter().enumerate() {
-            let old_ri = system.cell().fractional(&system[i].position);
-            let new_ri = system.cell().fractional(&newpos[idx]);
+            let old_ri = system.cell.fractional(&system[i].position);
+            let new_ri = system.cell.fractional(&newpos[idx]);
             for j in 0..3 {
                 old_fourier_phases[(0, idx, j)] = Complex::polar(1.0, 0.0);
                 old_fourier_phases[(1, idx, j)] = Complex::polar(1.0, -2.0 * PI * old_ri[j]);
@@ -544,7 +543,7 @@ impl Ewald {
                 }
             }
         }
-        e_new *= 2.0 * PI / (system.cell().volume() * ELCC);
+        e_new *= 2.0 * PI / (system.cell.volume() * ELCC);
 
         return e_new - e_old;
     }
@@ -672,7 +671,7 @@ impl Ewald {
                 if !info.excluded {continue}
 
                 let r_old = system.distance(i, j);
-                let r_new = system.cell().distance(&newpos[idx], &system[j].position);
+                let r_new = system.cell.distance(&newpos[idx], &system[j].position);
 
                 e_old += self.molcorrect_energy_pair(info, qi, qj, r_old);
                 e_new += self.molcorrect_energy_pair(info, qi, qj, r_new);
@@ -692,7 +691,7 @@ impl Ewald {
                 if !info.excluded {continue}
 
                 let r_old = system.distance(i, j);
-                let r_new = system.cell().distance(&newpos[idx], &newpos[jdx]);
+                let r_new = system.cell.distance(&newpos[idx], &newpos[jdx]);
 
                 e_old += self.molcorrect_energy_pair(info, qi, qj, r_old);
                 e_new += self.molcorrect_energy_pair(info, qi, qj, r_new);
@@ -751,7 +750,7 @@ impl GlobalPotential for SharedEwald {
 
     fn energy(&self, system: &System) -> f64 {
         let mut ewald = self.write();
-        ewald.precompute(system.cell());
+        ewald.precompute(&system.cell);
         let real = ewald.real_space_energy(system);
         let self_e = ewald.self_energy(system);
         let kspace = ewald.kspace_energy(system);
@@ -761,7 +760,7 @@ impl GlobalPotential for SharedEwald {
 
     fn forces(&self, system: &System) -> Vec<Vector3D> {
         let mut ewald = self.write();
-        ewald.precompute(system.cell());
+        ewald.precompute(&system.cell);
         let mut forces = vec![Vector3D::zero(); system.size()];
         ewald.real_space_forces(system, &mut forces);
         /* No self force */
@@ -772,7 +771,7 @@ impl GlobalPotential for SharedEwald {
 
     fn virial(&self, system: &System) -> Matrix3 {
         let mut ewald = self.write();
-        ewald.precompute(system.cell());
+        ewald.precompute(&system.cell);
         let real = ewald.real_space_virial(system);
         /* No self virial */
         let kspace = ewald.kspace_virial(system);
@@ -790,7 +789,7 @@ impl CoulombicPotential for SharedEwald {
 impl GlobalCache for SharedEwald {
     fn move_particles_cost(&self, system: &System, idxes: &[usize], newpos: &[Vector3D]) -> f64 {
         let mut ewald = self.write();
-        ewald.precompute(system.cell());
+        ewald.precompute(&system.cell);
         let real = ewald.real_space_move_particles_cost(system, idxes, newpos);
         /* No self cost */
         let kspace = ewald.kspace_move_particles_cost(system, idxes, newpos);
@@ -818,7 +817,7 @@ mod tests {
     use types::{Vector3D, Zero};
 
     pub fn nacl_pair() -> System {
-        let mut system = System::from_cell(UnitCell::cubic(20.0));
+        let mut system = System::with_cell(UnitCell::cubic(20.0));
 
         system.add_particle(Particle::new("Cl"));
         system[0].charge = -1.0;
@@ -839,7 +838,7 @@ mod tests {
         H -0.7 -0.7  0.3
         H  0.3 -0.3 -0.8
         ");
-        system.set_cell(UnitCell::cubic(20.0));
+        system.cell = UnitCell::cubic(20.0);
         assert!(system.molecules().len() == 1);
 
         for particle in &mut system {
@@ -861,7 +860,7 @@ mod tests {
         #[should_panic]
         fn infinite_cell() {
             let mut system = nacl_pair();
-            system.set_cell(UnitCell::new());
+            system.cell = UnitCell::new();
             let ewald = SharedEwald::new(Ewald::new(8.0, 10));
             let _ = ewald.energy(&system);
         }
@@ -870,7 +869,7 @@ mod tests {
         #[should_panic]
         fn triclinic_cell() {
             let mut system = nacl_pair();
-            system.set_cell(UnitCell::triclinic(10.0, 10.0, 10.0, 90.0, 90.0, 90.0));
+            system.cell = UnitCell::triclinic(10.0, 10.0, 10.0, 90.0, 90.0, 90.0);
             let ewald = SharedEwald::new(Ewald::new(8.0, 10));
             let _ = ewald.energy(&system);
         }
@@ -1075,7 +1074,7 @@ mod tests {
             H  1.3  1.3  0.3
             H  2.3  1.7 -0.8
             ");
-            system.set_cell(UnitCell::cubic(20.0));
+            system.cell = UnitCell::cubic(20.0);
             assert!(system.molecules().len() == 2);
 
             for particle in &mut system {

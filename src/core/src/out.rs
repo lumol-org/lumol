@@ -88,7 +88,7 @@ impl Output for CellOutput {
     }
 
     fn write(&mut self, system: &System) {
-        let cell = system.cell();
+        let cell = &system.cell;
         if let Err(err) = writeln!(
             &mut self.file, "{} {} {} {} {} {} {}",
             system.step(), cell.a(), cell.b(), cell.c(), cell.alpha(), cell.beta(), cell.gamma()
@@ -196,7 +196,7 @@ mod tests {
     use utils::unit_from;
 
     fn testing_system() -> System {
-        let mut system = System::from_cell(UnitCell::cubic(10.0));;
+        let mut system = System::with_cell(UnitCell::cubic(10.0));;
 
         system.add_particle(Particle::new("F"));
         system[0].position = Vector3D::zero();
@@ -208,7 +208,7 @@ mod tests {
             k: unit_from(300.0, "kJ/mol/A^2"),
             x0: unit_from(1.2, "A")}
         );
-        system.interactions_mut().add_pair("F", "F",
+        system.add_pair_potential("F", "F",
             PairInteraction::new(harmonic, 5.0)
         );
         return system;

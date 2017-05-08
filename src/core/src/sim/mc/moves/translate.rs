@@ -22,37 +22,37 @@ pub struct Translate {
     /// New positions of the atom in the translated molecule
     newpos: Vec<Vector3D>,
     /// Maximum displacement value
-    dr: f64,
-    /// The maximum value must not exceed this value
-    dr_max: f64,
+    delta: f64,
+    /// The maximum value must not exceed this value, if set
+    maximum_cutoff: Option<f64>,
     /// Translation range for random number generation
     range: Range<f64>,
 }
 
 impl Translate {
-    /// Create a new `Translate` move, with maximum displacement of `dr`.
+    /// Create a new `Translate` move, with maximum displacement of `delta`.
     /// Translating all the molecules in the system.
-    pub fn new(dr: f64) -> Translate {
-        Translate::create(dr, None)
+    pub fn new(delta: f64) -> Translate {
+        Translate::create(delta, None)
     }
 
-    /// Create a new `Translate` move, with maximum displacement of `dr`.
+    /// Create a new `Translate` move, with maximum displacement of `delta`.
     /// Translating only molecules with `moltype` type.
-    pub fn with_moltype(dr: f64, moltype: u64) -> Translate {
-        Translate::create(dr, Some(moltype))
+    pub fn with_moltype(delta: f64, moltype: u64) -> Translate {
+        Translate::create(delta, Some(moltype))
     }
 
     /// Factorizing the constructors
-    fn create(dr: f64, moltype: Option<u64>) -> Translate {
-        assert!(dr > 0.0, "dr must be positive in Translate move");
-        let dr = dr / f64::sqrt(3.0);
+    fn create(delta: f64, moltype: Option<u64>) -> Translate {
+        assert!(delta > 0.0, "delta must be positive in Translate move");
+        let delta = delta / f64::sqrt(3.0);
         Translate {
             moltype: moltype,
             molid: usize::MAX,
             newpos: Vec::new(),
-            dr: dr,
-            dr_max: 0.0,
-            range: Range::new(-dr, dr),
+            delta: delta,
+            maximum_cutoff: None,
+            range: Range::new(-delta, delta),
         }
     }
 }
@@ -70,13 +70,15 @@ impl MCMove for Translate {
 
     fn setup(&mut self, system: &System) {
         // Limit the displacement range to the maximum cutoff
-        self.dr_max = system.interactions()
-                            .all_pairs()
-                            .iter()
-                            .map(|i| i.cutoff())
-                            .fold(f64::NAN, f64::max);
-        if self.dr > self.dr_max {
-            self.dr = self.dr_max
+        self.maximum_cutoff = system.maximum_cutoff();
+        if let Some(max) = self.maximum_cutoff {
+            if self.delta > max {
+                warn!(
+                    "Changing the maximal displacement for Translate, \
+                    because the interactions cutoff is too low."
+                );
+                self.delta = max
+            }
         }
     }
 
@@ -131,14 +133,18 @@ impl MCMove for Translate {
 
     fn update_amplitude(&mut self, scaling_factor: Option<f64>) {
         if let Some(s) = scaling_factor {
-            if (self.dr * s) < self.dr_max {
-                self.dr *= s;
-                self.range = Range::new(-self.dr, self.dr);
-            } else {
-                warn_once!(
-                    "Tried to increase the maximum amplitude for translations to more than the set maximum."
-                );
+            if let Some(max) = self.maximum_cutoff {
+                if (self.delta * s) < max {
+                    warn_once!(
+                        "Tried to increase the maximum amplitude for \
+                        translations to more than the maximum cutoff -- ignoring."
+                    );
+                    return;
+                }
             }
+
+            self.delta *= s;
+            self.range = Range::new(-self.delta, self.delta);
         };
     }
 }

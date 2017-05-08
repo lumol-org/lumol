@@ -78,7 +78,7 @@ impl ToLumol for chemfiles::Frame {
     fn to_lumol(self) -> TrajectoryResult<System> {
         let cell = try!(self.cell());
         let cell = try!(cell.to_lumol());
-        let mut system = System::from_cell(cell);
+        let mut system = System::with_cell(cell);
         let topology = try!(self.topology());
         let natoms = try!(self.natoms()) as usize;
 
@@ -209,7 +209,7 @@ impl ToChemfiles for System {
         }
 
         try!(frame.set_topology(&topology));
-        let cell = try!(self.cell().to_chemfiles());
+        let cell = try!(self.cell.to_chemfiles());
         try!(frame.set_cell(&cell));
         Ok(frame)
     }

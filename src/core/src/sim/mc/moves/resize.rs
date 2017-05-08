@@ -48,13 +48,13 @@ impl MCMove for Resize {
 
     fn setup(&mut self, system: &System) {
         // check if the cell is infinite
-        if system.cell().is_infinite() {
+        if system.cell.is_infinite() {
             fatal_error!("Cannot use `Resize` move with infinite simulation cell.")
         }
 
         // Get the largest cutoff of all intermolecular interactions in the
         // system.
-        self.maximum_cutoff = system.interactions().maximum_cutoff()
+        self.maximum_cutoff = system.maximum_cutoff()
     }
 
     fn prepare(&mut self, system: &mut System, rng: &mut Box<Rng>) -> bool {
@@ -68,19 +68,20 @@ impl MCMove for Resize {
         let volume = system.volume();
         let scaling_factor = f64::cbrt((volume + delta) / volume);
         // Change the simulation cell
-        self.new_system.cell_mut().scale_mut(Matrix3::one() * scaling_factor);
+        self.new_system.cell.scale_mut(Matrix3::one() * scaling_factor);
         // Check the radius of the smallest inscribed sphere and compare to the
         // cut off distance.
         // Abort simulation when box gets smaller than twice the cutoff radius.
         if let Some(maximum_cutoff) = self.maximum_cutoff {
-            if self.new_system.cell()
-                    .lengths()
-                    .iter()
-                    .any(|&d| 0.5 * d <= maximum_cutoff) {
-                    fatal_error!("Tried to decrease the cell size but new size
-                        conflicts with the cut off radius. \
-                        Increase the number of particles to get rid of this problem.")
-                    }
+            if self.new_system.cell.lengths()
+                                   .iter()
+                                   .any(|&d| 0.5 * d <= maximum_cutoff) {
+                fatal_error!(
+                    "Tried to decrease the cell size but new size
+                    conflicts with the cut off radius. \
+                    Increase the number of particles to get rid of this problem."
+                );
+            }
         };
 
         // Loop over all molecules in the system.
@@ -98,10 +99,10 @@ impl MCMove for Resize {
             .iter()
             .enumerate() {
             let old_com = system.molecule_com(mi);
-            let frac_com = system.cell().fractional(&old_com);
+            let frac_com = system.cell.fractional(&old_com);
             // compute translation vector
             let delta_com =
-                self.new_system.cell().cartesian(&frac_com) - old_com;
+                self.new_system.cell.cartesian(&frac_com) - old_com;
             // loop over all particles (indices) in the molecule
             for pi in molecule.iter() {
                 self.new_system[pi].position += delta_com;
