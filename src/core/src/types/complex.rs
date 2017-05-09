@@ -153,21 +153,6 @@ impl Complex {
             imag: -self.imag
         }
     }
-
-    /// Get only the imaginary part of the multiplication.
-    /// # Examples
-    /// ```
-    /// # use lumol::types::Complex;
-    /// let a = Complex::cartesian(3.0, -2.0);
-    /// let b = Complex::cartesian(1.5, -3.0);
-    ///
-    /// assert_eq!(a.imag_mul(b), (a * b).imag());
-    /// assert_eq!(b.imag_mul(a), (a * b).imag());
-    /// ```
-    #[inline]
-    pub fn imag_mul(self, other: Complex) -> f64 {
-        self.real() * other.imag() + self.imag() * other.real()
-    }
 }
 
 impl Add<Complex> for Complex {
