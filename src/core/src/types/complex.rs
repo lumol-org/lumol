@@ -161,8 +161,8 @@ impl Complex {
     /// let a = Complex::cartesian(3.0, -2.0);
     /// let b = Complex::cartesian(1.5, -3.0);
     ///
-    /// assert_eq!(a.imag_mul(b), (a*b).imag());
-    /// assert_eq!(b.imag_mul(a), (a*b).imag());
+    /// assert_eq!(a.imag_mul(b), (a * b).imag());
+    /// assert_eq!(b.imag_mul(a), (a * b).imag());
     /// ```
     #[inline]
     pub fn imag_mul(self, other: Complex) -> f64 {
@@ -439,11 +439,11 @@ mod tests {
         assert_eq!(c.phase(), a.phase() - b.phase());
 
         let c = a / 3.0;
-        assert_eq!(c.norm(), a.norm()/3.0);
+        assert_eq!(c.norm(), a.norm() / 3.0);
         assert_ulps_eq!(c.phase(), a.phase());
 
         let c = a / (-2.0);
-        assert_eq!(c.norm(), a.norm()/2.0);
+        assert_eq!(c.norm(), a.norm() / 2.0);
         assert_ulps_eq!(c.phase(), a.phase() - consts::PI);
     }
 }

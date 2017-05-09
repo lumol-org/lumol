@@ -73,7 +73,7 @@ pub struct UniformVelocities {
 impl UniformVelocities {
     /// Create a new `UniformVelocities` at the given `temperature`.
     pub fn new(temperature: f64) -> UniformVelocities {
-        let factor = f64::sqrt(3.0*K_BOLTZMANN * temperature);
+        let factor = f64::sqrt(3.0 * K_BOLTZMANN * temperature);
         UniformVelocities{
             temperature: temperature,
             dist: Range::new(-factor, factor),

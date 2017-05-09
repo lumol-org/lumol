@@ -43,5 +43,5 @@ fn constant_energy() {
     let e_initial = config.system.total_energy();
     config.simulation.run(&mut config.system, config.nsteps);
     let e_final = config.system.total_energy();
-    assert!(f64::abs((e_initial - e_final)/e_final) < 1e-3);
+    assert!(f64::abs((e_initial - e_final) / e_final) < 1e-3);
 }

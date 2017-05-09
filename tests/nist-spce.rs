@@ -90,7 +90,7 @@ mod cutoff_9 {
 
         let energy = system.potential_energy() / K_BOLTZMANN;
         let expected = -4.88608e5;
-        assert!(f64::abs((energy - expected)/expected) < 1e-3);
+        assert!(f64::abs((energy - expected) / expected) < 1e-3);
     }
 
     #[test]
@@ -99,7 +99,7 @@ mod cutoff_9 {
 
         let energy = system.potential_energy() / K_BOLTZMANN;
         let expected = -1.06602e6;
-        assert!(f64::abs((energy - expected)/expected) < 1e-3);
+        assert!(f64::abs((energy - expected) / expected) < 1e-3);
     }
 
     #[test]
@@ -108,7 +108,7 @@ mod cutoff_9 {
 
         let energy = system.potential_energy() / K_BOLTZMANN;
         let expected = -1.71488e6;
-        assert!(f64::abs((energy - expected)/expected) < 1e-3);
+        assert!(f64::abs((energy - expected) / expected) < 1e-3);
     }
 
     #[test]
@@ -117,7 +117,7 @@ mod cutoff_9 {
 
         let energy = system.potential_energy() / K_BOLTZMANN;
         let expected = -3.08010e6;
-        assert!(f64::abs((energy - expected)/expected) < 1e-3);
+        assert!(f64::abs((energy - expected) / expected) < 1e-3);
     }
 }
 
@@ -131,7 +131,7 @@ mod cutoff_10 {
 
         let energy = system.potential_energy() / K_BOLTZMANN;
         let expected = -4.88604e5;
-        assert!(f64::abs((energy - expected)/expected) < 1e-3);
+        assert!(f64::abs((energy - expected) / expected) < 1e-3);
     }
 
     #[test]
@@ -140,7 +140,7 @@ mod cutoff_10 {
 
         let energy = system.potential_energy() / K_BOLTZMANN;
         let expected = -1.06590e6;
-        assert!(f64::abs((energy - expected)/expected) < 1e-3);
+        assert!(f64::abs((energy - expected) / expected) < 1e-3);
     }
 
     #[test]
@@ -149,7 +149,7 @@ mod cutoff_10 {
 
         let energy = system.potential_energy() / K_BOLTZMANN;
         let expected = -1.71488e6;
-        assert!(f64::abs((energy - expected)/expected) < 1e-3);
+        assert!(f64::abs((energy - expected) / expected) < 1e-3);
     }
 
     #[test]
@@ -158,6 +158,6 @@ mod cutoff_10 {
 
         let energy = system.potential_energy() / K_BOLTZMANN;
         let expected = -3.20501e6;
-        assert!(f64::abs((energy - expected)/expected) < 1e-3);
+        assert!(f64::abs((energy - expected) / expected) < 1e-3);
     }
 }

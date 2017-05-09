@@ -26,10 +26,10 @@ fn constant_energy_ewald() {
     config.simulation.run(&mut config.system, config.nsteps);
     let e_final = config.system.total_energy();
 
-    println!("{} {} {}", e_initial, e_final, f64::abs((e_initial - e_final)/e_final));
+    println!("{} {} {}", e_initial, e_final, f64::abs((e_initial - e_final) / e_final));
 
     // FIXME? This thresold is really bad
-    assert!(f64::abs((e_initial - e_final)/e_final) < 1e-1);
+    assert!(f64::abs((e_initial - e_final) / e_final) < 1e-1);
 }
 
 #[test]
@@ -44,5 +44,5 @@ fn constant_energy_wolf() {
     let e_initial = config.system.total_energy();
     config.simulation.run(&mut config.system, config.nsteps);
     let e_final = config.system.total_energy();
-    assert!(f64::abs((e_initial - e_final)/e_final) < 3e-2);
+    assert!(f64::abs((e_initial - e_final) / e_final) < 3e-2);
 }

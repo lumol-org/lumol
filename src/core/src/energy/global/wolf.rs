@@ -71,9 +71,10 @@ impl Wolf {
     /// Create a new Wolf summation, using a real-space cutoff of `cutoff`.
     pub fn new(cutoff: f64) -> Wolf {
         assert!(cutoff > 0.0, "Got a negative cutoff in Wolf summation");
-        let alpha = PI/cutoff;
-        let e_cst = f64::erfc(alpha*cutoff)/cutoff;
-        let f_cst = f64::erfc(alpha*cutoff)/(cutoff*cutoff) + 2.0*alpha/f64::sqrt(PI) * f64::exp(-alpha*alpha*cutoff*cutoff)/cutoff;
+        let alpha = PI / cutoff;
+        let e_cst = f64::erfc(alpha * cutoff) / cutoff;
+        let f_cst = f64::erfc(alpha * cutoff) / (cutoff * cutoff)
+                    + 2.0 * alpha / f64::sqrt(PI) * f64::exp(-alpha * alpha * cutoff * cutoff) / cutoff;
         Wolf{
             alpha: alpha,
             cutoff: cutoff,
@@ -91,13 +92,13 @@ impl Wolf {
         if rij > self.cutoff || info.excluded {
             return 0.0;
         }
-        info.scaling * qi * qj * (f64::erfc(self.alpha*rij)/rij - self.energy_cst) / ELCC
+        info.scaling * qi * qj * (f64::erfc(self.alpha * rij) / rij - self.energy_cst) / ELCC
     }
 
     /// Compute the energy for self interaction of a particle with charge `qi`
     #[inline]
     fn energy_self(&self, qi: f64) -> f64 {
-        qi * qi * (self.energy_cst/2.0 + self.alpha/f64::sqrt(PI)) / ELCC
+        qi * qi * (self.energy_cst / 2.0 + self.alpha / f64::sqrt(PI)) / ELCC
     }
 
     /// Compute the force for self the pair of particles with charge `qi` and
@@ -109,7 +110,8 @@ impl Wolf {
         if d > self.cutoff || info.excluded {
             return Vector3D::zero();
         }
-        let factor = f64::erfc(self.alpha*d)/(d*d) + 2.0*self.alpha/f64::sqrt(PI) * f64::exp(-self.alpha*self.alpha*d*d)/d;
+        let factor = f64::erfc(self.alpha * d) / (d * d)
+                     + 2.0 * self.alpha / f64::sqrt(PI) * f64::exp(-self.alpha * self.alpha * d * d) / d;
         return info.scaling * qi * qj * (factor - self.force_cst) * rij.normalized() / ELCC;
     }
 }

@@ -20,9 +20,9 @@ fn main() {
     system.add_particle(Particle::new("O"));
     system[0].position = Vector3D::zero();
     system.add_particle(Particle::new("H"));
-    system[1].position = Vector3D::new(1.2*f64::cos(alpha), 1.2*f64::sin(alpha), 0.0);
+    system[1].position = Vector3D::new(1.2 * f64::cos(alpha), 1.2 * f64::sin(alpha), 0.0);
     system.add_particle(Particle::new("H"));
-    system[2].position = Vector3D::new(1.2*f64::cos(-alpha), 1.2*f64::sin(-alpha), 0.0);
+    system[2].position = Vector3D::new(1.2 * f64::cos(-alpha), 1.2 * f64::sin(-alpha), 0.0);
 
     system.add_bond(0, 1);
     system.add_bond(0, 2);
