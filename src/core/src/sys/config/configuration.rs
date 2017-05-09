@@ -36,12 +36,6 @@ pub struct Configuration {
     molids: Vec<usize>,
 }
 
-impl Default for Configuration {
-    fn default() -> Configuration {
-        Configuration::new()
-    }
-}
-
 impl Configuration {
     /// Create a new empty `Configuration`
     pub fn new() -> Configuration {

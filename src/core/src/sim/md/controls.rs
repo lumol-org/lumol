@@ -125,12 +125,6 @@ impl RemoveTranslation {
     }
 }
 
-impl Default for RemoveTranslation {
-    fn default() -> RemoveTranslation {
-        RemoveTranslation::new()
-    }
-}
-
 impl Control for RemoveTranslation {
     fn control(&mut self, system: &mut System) {
         let total_mass = system.iter().fold(0.0, |total_mass, particle| total_mass + particle.mass);
@@ -154,12 +148,6 @@ impl RemoveRotation {
     /// Create a new `RemoveRotation` control.
     pub fn new() -> RemoveRotation {
         RemoveRotation
-    }
-}
-
-impl Default for RemoveRotation {
-    fn default() -> RemoveRotation {
-        RemoveRotation::new()
     }
 }
 

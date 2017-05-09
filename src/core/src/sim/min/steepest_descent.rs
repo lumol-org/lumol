@@ -16,12 +16,6 @@ pub struct SteepestDescent {
     gamma: f64,
 }
 
-impl Default for SteepestDescent {
-    fn default() -> SteepestDescent {
-        SteepestDescent::new()
-    }
-}
-
 impl SteepestDescent {
     /// Create a new `SteepestDescent` minimizer
     pub fn new() -> SteepestDescent {
