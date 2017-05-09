@@ -386,6 +386,7 @@ impl_inplace_arithmetic!(
     Matrix3, f64, MulAssign, mul_assign,
     self, other,
     {
+        #[allow(clone_on_copy)]
         let other = other.clone();
         self[0][0] *= other; self[0][1] *= other; self[0][2] *= other;
         self[1][0] *= other; self[1][1] *= other; self[1][2] *= other;
@@ -405,6 +406,7 @@ impl_inplace_arithmetic!(
     Matrix3, f64, DivAssign, div_assign,
     self, other,
     {
+        #[allow(clone_on_copy)]
         let other = other.clone();
         self[0][0] /= other; self[0][1] /= other; self[0][2] /= other;
         self[1][0] /= other; self[1][1] /= other; self[1][2] /= other;

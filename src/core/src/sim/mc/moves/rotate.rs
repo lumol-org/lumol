@@ -134,7 +134,7 @@ impl MCMove for Rotate {
 fn rotate_around_axis(positions: &mut [Vector3D], com: Vector3D, axis: Vector3D, angle: f64) {
     let rotation = Matrix3::rotation(&axis, angle);
     for position in positions {
-        let oldpos = position.clone() - com;
+        let oldpos = *position - com;
         *position = com + rotation * oldpos;
     }
 }

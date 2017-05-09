@@ -32,7 +32,6 @@ lazy_static!(
         let mut map = BTreeMap::new();
         // Distances units.
         assert!(map.insert("A", 1.0).is_none());
-        assert!(map.insert("Å", 1.0).is_none());
         assert!(map.insert("nm", 10.0).is_none());
         assert!(map.insert("pm", 1e-2).is_none());
         assert!(map.insert("fm", 1e-5).is_none());
@@ -451,7 +450,7 @@ mod test {
 
     #[test]
     fn eval() {
-        assert_eq!(UnitExpr::parse("Å").unwrap(), UnitExpr::Val(1.0));
+        assert_eq!(UnitExpr::parse("A").unwrap(), UnitExpr::Val(1.0));
         assert_eq!(UnitExpr::parse("nm").unwrap(), UnitExpr::Val(10.0));
 
         assert_eq!(UnitExpr::parse("bohr/fs").unwrap().eval(), 0.52917720859);

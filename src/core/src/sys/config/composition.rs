@@ -53,6 +53,21 @@ impl Composition {
         self.0.len()
     }
 
+    /// Check if the composition is empty, *i.e.* if it contains no particle
+    /// kind. A composition with only zero entries (`0 => 0, 2 => 0, 3 => 0`)
+    /// is not empty.
+    ///
+    /// # Examples
+    /// ```
+    /// # use lumol::sys::Composition;
+    /// let mut composition = Composition::new();
+    /// assert_eq!(composition.len(), 0);
+    /// assert!(composition.is_empty());
+    /// ```
+    pub fn is_empty(&self) -> bool {
+        self.0.is_empty()
+    }
+
     /// Resize the composition to hold `size` items. The new particles kinds
     /// start with no associated particles.
     ///
@@ -96,6 +111,7 @@ mod tests {
     fn len() {
         let mut composition = Composition::new();
         assert_eq!(composition.len(), 0);
+        assert!(composition.is_empty());
 
         composition.resize(10);
         assert_eq!(composition.len(), 10);

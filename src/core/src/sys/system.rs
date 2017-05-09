@@ -64,13 +64,12 @@ impl System {
     }
 
     fn get_kind(&mut self, name: &str) -> ParticleKind {
-        match self.kinds.get(name).cloned() {
-            Some(kind) => kind,
-            None => {
-                let kind = ParticleKind(self.kinds.len() as u32);
-                let _ = self.kinds.insert(String::from(name), kind);
-                kind
-            }
+        if let Some(&kind) = self.kinds.get(name) {
+            return kind;
+        } else {
+            let kind = ParticleKind(self.kinds.len() as u32);
+            let _ = self.kinds.insert(String::from(name), kind);
+            kind
         }
     }
 

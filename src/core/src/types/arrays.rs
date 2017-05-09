@@ -172,7 +172,7 @@ impl<T> Array3<T> {
     /// assert_eq!(a[(3, 3, 3)], 0.0);
     /// ```
     pub fn resize_if_different(&mut self, size: (usize, usize, usize)) where T: Zero + Clone {
-        if self.0.shape() != &[size.0, size.1, size.2] {
+        if self.0.shape() != [size.0, size.1, size.2] {
             *self = Array3::zeros(size);
         }
     }

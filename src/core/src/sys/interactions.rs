@@ -114,25 +114,25 @@ impl Interactions {
     /// Get all pair interactions corresponding to the pair `(i, j)`
     pub fn pairs(&self, i: Kind, j: Kind) -> &[PairInteraction] {
         let (i, j) = normalize_pair(i, j);
-        self.pairs.get(&(i, j)).map(|pairs| &**pairs).unwrap_or(&[])
+        self.pairs.get(&(i, j)).map_or(&[], |pairs| &**pairs)
     }
 
     /// Get all bonded interactions corresponding to the pair `(i, j)`
     pub fn bonds(&self, i: Kind, j: Kind) -> &[Box<BondPotential>] {
         let (i, j) = normalize_pair(i, j);
-        self.bonds.get(&(i, j)).map(|bonds| &**bonds).unwrap_or(&[])
+        self.bonds.get(&(i, j)).map_or(&[], |bonds| &**bonds)
     }
 
     /// Get all angle interactions corresponding to the angle `(i, j, k)`
     pub fn angles(&self, i: Kind, j: Kind, k: Kind) -> &[Box<AnglePotential>] {
         let (i, j, k) = normalize_angle(i, j, k);
-        self.angles.get(&(i, j, k)).map(|angles| &**angles).unwrap_or(&[])
+        self.angles.get(&(i, j, k)).map_or(&[], |angles| &**angles)
     }
 
     /// Get all dihedral interactions corresponding to the dihedral `(i, j, k, m)`
     pub fn dihedrals(&self, i: Kind, j: Kind, k: Kind, m: Kind) -> &[Box<DihedralPotential>] {
         let (i, j, k, m) = normalize_dihedral(i, j, k, m);
-        self.dihedrals.get(&(i, j, k, m)).map(|dihedrals| &**dihedrals).unwrap_or(&[])
+        self.dihedrals.get(&(i, j, k, m)).map_or(&[], |dihedrals| &**dihedrals)
     }
 
     /// Get maximum cutoff from `coulomb`, `pairs` and `global` interactons.

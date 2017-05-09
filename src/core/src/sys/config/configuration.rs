@@ -220,7 +220,7 @@ impl Configuration {
     /// Insert a particle at the end of the internal list. The new particle
     /// must have a valid particle kind.
     pub fn add_particle(&mut self, particle: Particle) {
-        assert!(particle.kind != ParticleKind::invalid());
+        assert_ne!(particle.kind, ParticleKind::invalid());
         self.particles.push(particle);
         self.molecules.push(Molecule::new(self.particles.len() - 1));
         self.molids.push(self.molecules.len() - 1);
