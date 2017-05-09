@@ -37,12 +37,6 @@ pub struct UnitCell {
     shape: CellShape,
 }
 
-impl Default for UnitCell {
-    fn default() -> UnitCell {
-        UnitCell::new()
-    }
-}
-
 impl UnitCell {
     /// Create an infinite unit cell
     pub fn new() -> UnitCell {

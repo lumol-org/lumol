@@ -268,10 +268,6 @@ impl MoveCounter {
     }
 }
 
-impl Default for MoveCounter {
-    fn default() -> MoveCounter { MoveCounter::new(None) }
-}
-
 #[cfg(test)]
 mod tests {
     use sim::mc::{MonteCarlo, MCMove, MoveCounter};
