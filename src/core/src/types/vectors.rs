@@ -187,7 +187,13 @@ rhs_scal_arithmetic!(
 impl_inplace_arithmetic!(
     Vector3D, f64, MulAssign, mul_assign,
     self, other,
-    {let other = other.clone(); self[0] *= other; self[1] *= other; self[2] *= other}
+    {
+        #[allow(clone_on_copy)]
+        let other = other.clone();
+        self[0] *= other;
+        self[1] *= other;
+        self[2] *= other;
+    }
 );
 
 lsh_scal_arithmetic!(
@@ -199,7 +205,13 @@ lsh_scal_arithmetic!(
 impl_inplace_arithmetic!(
     Vector3D, f64, DivAssign, div_assign,
     self, other,
-    {let other = other.clone(); self[0] /= other; self[1] /= other; self[2] /= other}
+    {
+        #[allow(clone_on_copy)]
+        let other = other.clone();
+        self[0] /= other;
+        self[1] /= other;
+        self[2] /= other;
+    }
 );
 
 /******************************************************************************/
