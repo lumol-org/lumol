@@ -88,8 +88,8 @@ impl UnitCell {
         let b_y = b * sin_gamma;
 
         let c_x = c * cos_beta;
-        let c_y = c * (cos_alpha - cos_beta*cos_gamma)/sin_gamma;
-        let c_z = f64::sqrt(c*c - c_y*c_y - c_x*c_x);
+        let c_y = c * (cos_alpha - cos_beta * cos_gamma) / sin_gamma;
+        let c_z = f64::sqrt(c * c - c_y * c_y - c_x * c_x);
 
         let cell = Matrix3::new(a,   b_x, c_x,
                                 0.0, b_y, c_y,
@@ -173,9 +173,9 @@ impl UnitCell {
         let nb = (c ^ a).normalized();
         let nc = (a ^ b).normalized();
 
-        let x = f64::abs(na[0]*a[0] + na[1]*a[1] + na[2]*a[2]);
-        let y = f64::abs(nb[0]*b[0] + nb[1]*b[1] + nb[2]*b[2]);
-        let z = f64::abs(nc[0]*c[0] + nc[1]*c[1] + nc[2]*c[2]);
+        let x = f64::abs(na[0] * a[0] + na[1] * a[1] + na[2] * a[2]);
+        let y = f64::abs(nb[0] * b[0] + nb[1] * b[1] + nb[2] * b[2]);
+        let z = f64::abs(nc[0] * c[0] + nc[1] * c[1] + nc[2] * c[2]);
 
         [x, y, z]
     }
@@ -321,7 +321,7 @@ impl UnitCell {
 
     /// Periodic boundary conditions distance between the point `u` and the point `v`
     pub fn distance(&self, u: &Vector3D, v: &Vector3D) -> f64 {
-        let mut d = *v - *u;
+        let mut d = v - u;
         self.vector_image(&mut d);
         return d.norm();
     }
@@ -329,9 +329,9 @@ impl UnitCell {
     /// Get the angle formed by the points at `a`, `b` and `c` using periodic
     /// boundary conditions.
     pub fn angle(&self, a: &Vector3D, b: &Vector3D, c: &Vector3D) -> f64 {
-        let mut x = *a - *b;
+        let mut x = a - b;
         self.vector_image(&mut x);
-        let mut y = *c - *b;
+        let mut y = c - b;
         self.vector_image(&mut y);
 
         let xn = x.normalized();
@@ -342,9 +342,9 @@ impl UnitCell {
     /// Get the angle formed by the points at `a`, `b` and `c` using periodic
     /// boundary conditions and its derivatives.
     pub fn angle_and_derivatives(&self, a: &Vector3D, b: &Vector3D, c: &Vector3D) -> (f64, Vector3D, Vector3D, Vector3D) {
-        let mut x = *a - *b;
+        let mut x = a - b;
         self.vector_image(&mut x);
-        let mut y = *c - *b;
+        let mut y = c - b;
         self.vector_image(&mut y);
 
         let x_norm = x.norm();
@@ -353,7 +353,7 @@ impl UnitCell {
         let yn = y.normalized();
 
         let cos = xn * yn;
-        let sin_inv = 1.0 / f64::sqrt(1.0 - cos*cos);
+        let sin_inv = 1.0 / f64::sqrt(1.0 - cos * cos);
 
         let d1 = sin_inv * (cos * xn - yn) / x_norm;
         let d3 = sin_inv * (cos * yn - xn) / y_norm;
@@ -366,11 +366,11 @@ impl UnitCell {
     /// Get the dihedral angle formed by the points at `a`, `b`, `c`, `d` using
     /// periodic boundary conditions.
     pub fn dihedral(&self, a: &Vector3D, b: &Vector3D, c: &Vector3D, d: &Vector3D) -> f64 {
-        let mut r12 = *b - *a;
+        let mut r12 = b - a;
         self.vector_image(&mut r12);
-        let mut r23 = *c - *b;
+        let mut r23 = c - b;
         self.vector_image(&mut r23);
-        let mut r34 = *d - *c;
+        let mut r34 = d - c;
         self.vector_image(&mut r34);
 
         let u = r12 ^ r23;
@@ -382,11 +382,11 @@ impl UnitCell {
     /// `a`, `b`, `c` and `d` using periodic boundary conditions.
     pub fn dihedral_and_derivatives(&self, a: &Vector3D, b: &Vector3D, c: &Vector3D, d: &Vector3D)
     -> (f64, Vector3D, Vector3D, Vector3D , Vector3D) {
-        let mut r12 = *b - *a;
+        let mut r12 = b - a;
         self.vector_image(&mut r12);
-        let mut r23 = *c - *b;
+        let mut r23 = c - b;
         self.vector_image(&mut r23);
-        let mut r34 = *d - *c;
+        let mut r34 = d - c;
         self.vector_image(&mut r34);
 
         let x = r12 ^ r23;
@@ -414,7 +414,7 @@ impl UnitCell {
 fn angle(u: Vector3D, v: Vector3D) -> f64 {
     let un = u.normalized();
     let vn = v.normalized();
-    f64::acos(un*vn)
+    f64::acos(un * vn)
 }
 
 #[cfg(test)]
@@ -481,7 +481,7 @@ mod tests {
         assert_eq!(cell.beta(), 90.0);
         assert_eq!(cell.gamma(), 90.0);
 
-        assert_eq!(cell.volume(), 3.0*3.0*3.0);
+        assert_eq!(cell.volume(), 3.0 * 3.0 * 3.0);
     }
 
     #[test]
@@ -502,7 +502,7 @@ mod tests {
         assert_eq!(cell.beta(), 90.0);
         assert_eq!(cell.gamma(), 90.0);
 
-        assert_eq!(cell.volume(), 3.0*4.0*5.0);
+        assert_eq!(cell.volume(), 3.0 * 4.0 * 5.0);
     }
 
     #[test]

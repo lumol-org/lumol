@@ -101,7 +101,7 @@ impl MCMove for Rotate {
     fn cost(&self, system: &System, beta: f64, cache: &mut EnergyCache) -> f64 {
         let idxes = system.molecule(self.molid).iter().collect::<Vec<_>>();
         let cost = cache.move_particles_cost(system, idxes, &self.newpos);
-        return cost*beta;
+        return cost * beta;
     }
 
     fn apply(&mut self, system: &mut System) {
@@ -134,7 +134,7 @@ impl MCMove for Rotate {
 fn rotate_around_axis(positions: &mut [Vector3D], com: Vector3D, axis: Vector3D, angle: f64) {
     let rotation = Matrix3::rotation(&axis, angle);
     for position in positions {
-        let oldpos = *position - com;
+        let oldpos = position.clone() - com;
         *position = com + rotation * oldpos;
     }
 }

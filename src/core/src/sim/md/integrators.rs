@@ -95,7 +95,7 @@ impl Integrator for Verlet {
             // Save positions at t
             let tmp = part.position;
             // Update positions at t + ∆t
-            let position = 2.0 * tmp - self.prevpos[i] + dt2/part.mass * forces[i];
+            let position = 2.0 * tmp - self.prevpos[i] + dt2 / part.mass * forces[i];
             // Update velocities at t
             let velocity = (position - self.prevpos[i]) / (2.0 * dt);
 
@@ -142,8 +142,8 @@ impl Integrator for LeapFrog {
         let forces = system.forces();
         for (i, part) in system.iter_mut().enumerate() {
             let mass = part.mass;
-            let acceleration = forces[i]/mass;
-            part.velocity += 0.5 * (self.accelerations[i] + acceleration)* dt;
+            let acceleration = forces[i] / mass;
+            part.velocity += 0.5 * (self.accelerations[i] + acceleration) * dt;
             self.accelerations[i] = acceleration;
         }
     }
@@ -200,7 +200,7 @@ impl Integrator for BerendsenBarostat {
             part.position += part.velocity * dt;
         }
 
-        system.cell.scale_mut(self.eta*self.eta*self.eta * Matrix3::one());
+        system.cell.scale_mut(self.eta * self.eta * self.eta * Matrix3::one());
 
         self.eta = f64::cbrt(1.0 - WATER_COMPRESSIBILITY / self.tau * (self.pressure - system.pressure()));
 

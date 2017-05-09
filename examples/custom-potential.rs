@@ -39,12 +39,12 @@ impl Potential for LJ {
 impl PairPotential for LJ {
     // The long-range correction to the energy at the given cutoff
     fn tail_energy(&self, cutoff: f64) -> f64 {
-        - (1.0/9.0 * self.a / cutoff.powi(9) - 1.0/3.0 * self.b / cutoff.powi(3))
+        - (1.0 / 9.0 * self.a / cutoff.powi(9) - 1.0 / 3.0 * self.b / cutoff.powi(3))
     }
 
     // The long-range correction to the virial at the given cutoff
     fn tail_virial(&self, cutoff: f64) -> f64 {
-        - (12.0/9.0 * self.a / cutoff.powi(9) - 6.0/3.0 * self.b / cutoff.powi(3))
+        - (12.0 / 9.0 * self.a / cutoff.powi(9) - 6.0 / 3.0 * self.b / cutoff.powi(3))
     }
 }
 

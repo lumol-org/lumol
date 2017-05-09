@@ -67,13 +67,13 @@ pub struct LennardJones {
 impl Potential for LennardJones {
     #[inline]
     fn energy(&self, r: f64) -> f64 {
-        let s6 = f64::powi(self.sigma/r, 6);
+        let s6 = f64::powi(self.sigma / r, 6);
         4.0 * self.epsilon * (f64::powi(s6, 2) - s6)
     }
 
     #[inline]
     fn force(&self, r: f64) -> f64 {
-        let s6 = f64::powi(self.sigma/r, 6);
+        let s6 = f64::powi(self.sigma / r, 6);
         -24.0 * self.epsilon * (s6 - 2.0 * f64::powi(s6, 2)) / r
     }
 }
@@ -413,7 +413,7 @@ mod tests {
         assert_eq!(lj.tail_virial(2.0), -17.06666666666667);
         assert_eq!(lj.tail_virial(14.42), -0.1366035877536718);
 
-        assert!(lj.force(f64::powf(2.0, 1.0/6.0) * 2.0).abs() < 1e-15);
+        assert!(lj.force(f64::powf(2.0, 1.0 / 6.0) * 2.0).abs() < 1e-15);
         assert_ulps_eq!(lj.force(2.5), -0.95773475733504);
 
         let e0 = lj.energy(4.0);

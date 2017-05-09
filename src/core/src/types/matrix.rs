@@ -103,7 +103,7 @@ impl Matrix3 {
     /// let e3 = Vector3D::new(0.0f64, 0.0, 1.0);
     /// let angle = 90f64.to_radians();
     ///
-    /// let rotation = Matrix3::rotation(&(e1*2.0), angle);
+    /// let rotation = Matrix3::rotation(&(e1 * 2.0), angle);
     /// let mut rot_vec = rotation * e3;
     /// for i in 0..3 {
     ///     rot_vec[i] = (rot_vec[i] * 1.0e8).round() / 1.0e8

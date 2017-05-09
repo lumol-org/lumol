@@ -424,7 +424,7 @@ mod tests {
         let b = Vector3D::new(6.1, -8.5, 7.3);
 
         let c = a ^ b;
-        assert_eq!(c*a, 0.0);
+        assert_eq!(c * a, 0.0);
 
         let mut a = Vector3D::new(1.0, 0.0, 0.0);
         let mut b = Vector3D::new(0.0, 1.0, 0.0);

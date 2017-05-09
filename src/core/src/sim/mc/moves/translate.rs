@@ -112,7 +112,7 @@ impl MCMove for Translate {
     fn cost(&self, system: &System, beta: f64, cache: &mut EnergyCache) -> f64 {
         let idxes = system.molecule(self.molid).iter().collect::<Vec<_>>();
         let cost = cache.move_particles_cost(system, idxes, &self.newpos);
-        return cost*beta;
+        return cost * beta;
     }
 
     fn apply(&mut self, system: &mut System) {

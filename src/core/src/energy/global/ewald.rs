@@ -559,7 +559,7 @@ impl Ewald {
         assert_eq!(info.scaling, 1.0, "Scaling restriction scheme using Ewald are not implemented");
         assert!(r < self.rc, "Atoms in molecule are separated by more than the cutoff radius of Ewald sum.");
 
-        return - qi * qj / ELCC * f64::erf(self.alpha * r)/r;
+        return - qi * qj / ELCC * f64::erf(self.alpha * r) / r;
     }
 
     /// Get the molecular correction force for the pair with charges `qi` and
