@@ -3,7 +3,7 @@
 
 //! [Chemfiles][Chemfiles] conversion for Lumol.
 //!
-//! [Chemfiles]: https://Chemfiles.github.io/
+//! [Chemfiles]: https://chemfiles.org/
 use sys::{System, Particle, Molecule, UnitCell, CellShape};
 use types::Vector3D;
 use chemfiles;
