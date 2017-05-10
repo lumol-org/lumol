@@ -27,13 +27,23 @@ impl Compute for Forces {
         let natoms = system.size();
         let mut res = vec![Vector3D::zero(); natoms];
 
+        let interactions = system.interactions();
+
         for i in 0..system.size() {
+            let i_kind = system[i].kind;
+            let i_interactions = match interactions.pair_interactions(i_kind) {
+                Some(v) => v,
+                None => continue,
+            };
+
+
             for j in (i+1)..system.size() {
                 let distance = system.bond_distance(i, j);
                 let d = system.nearest_image(i, j);
                 let dn = d.normalized();
                 let r = d.norm();
-                for potential in system.pair_potentials(i, j) {
+                let j_kind = system[j].kind;
+                for potential in i_interactions.get(&j_kind).unwrap_or(&Vec::new()) {
                     let info = potential.restriction().information(distance);
                     if !info.excluded {
                         let force = info.scaling * potential.force(r) * dn;
