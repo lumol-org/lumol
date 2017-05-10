@@ -85,7 +85,7 @@ fn virial_wolf(bencher: &mut Bencher) {
 
 fn cache_move_particles_wolf(bencher: &mut Bencher) {
     let mut system = utils::get_system("water");
-    system.interactions_mut().set_coulomb(Box::new(get_wolf()));
+    system.set_coulomb_potential(Box::new(get_wolf()));
 
     let mut cache = EnergyCache::new();
     cache.init(&system);
@@ -106,7 +106,7 @@ fn cache_move_particles_wolf(bencher: &mut Bencher) {
 
 fn cache_move_particles_ewald(bencher: &mut Bencher) {
     let mut system = utils::get_system("water");
-    system.interactions_mut().set_coulomb(Box::new(get_ewald()));
+    system.set_coulomb_potential(Box::new(get_ewald()));
 
     let mut cache = EnergyCache::new();
     cache.init(&system);
@@ -127,7 +127,7 @@ fn cache_move_particles_ewald(bencher: &mut Bencher) {
 
 fn cache_move_all_rigid_molecules_wolf(bencher: &mut Bencher) {
     let mut system = utils::get_system("water");
-    system.interactions_mut().set_coulomb(Box::new(get_wolf()));
+    system.set_coulomb_potential(Box::new(get_wolf()));
 
     let mut cache = EnergyCache::new();
     cache.init(&system);
@@ -147,7 +147,7 @@ fn cache_move_all_rigid_molecules_wolf(bencher: &mut Bencher) {
 
 fn cache_move_all_rigid_molecules_ewald(bencher: &mut Bencher) {
     let mut system = utils::get_system("water");
-    system.interactions_mut().set_coulomb(Box::new(get_ewald()));
+    system.set_coulomb_potential(Box::new(get_ewald()));
 
     let mut cache = EnergyCache::new();
     cache.init(&system);

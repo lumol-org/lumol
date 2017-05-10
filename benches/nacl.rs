@@ -73,7 +73,7 @@ fn virial_wolf(bencher: &mut Bencher) {
 
 fn cache_move_particle_ewald(bencher: &mut Bencher) {
     let mut system = utils::get_system("nacl");
-    system.interactions_mut().set_coulomb(
+    system.set_coulomb_potential(
         Box::new(SharedEwald::new(Ewald::new(9.5, 7)))
     );
 
@@ -93,7 +93,7 @@ fn cache_move_particle_ewald(bencher: &mut Bencher) {
 
 fn cache_move_particle_wolf(bencher: &mut Bencher) {
     let mut system = utils::get_system("nacl");
-    system.interactions_mut().set_coulomb(Box::new(Wolf::new(12.0)));
+    system.set_coulomb_potential(Box::new(Wolf::new(12.0)));
 
     let mut cache = EnergyCache::new();
     cache.init(&system);
