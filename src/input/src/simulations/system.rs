@@ -50,7 +50,7 @@ impl Input {
         try!(self.read_potentials(&mut system));
         try!(self.init_velocities(&mut system));
 
-        if !with_cell && system.cell().is_infinite() {
+        if !with_cell && system.cell.is_infinite() {
             warn!(
                 "No unit cell in the system, using an infinite unit cell.\n\
                 You can get rid of this warning by using `cell = []` in the \

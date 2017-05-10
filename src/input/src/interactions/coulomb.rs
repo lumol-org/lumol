@@ -52,7 +52,7 @@ impl InteractionsInput {
                 potential.set_restriction(restriction);
             }
 
-            system.interactions_mut().set_coulomb(potential);
+            system.set_coulomb_potential(potential);
             Ok(())
         } else {
             Err(

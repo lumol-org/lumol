@@ -142,7 +142,7 @@ impl InteractionsInput {
                 interaction.set_restriction(restriction);
             }
 
-            system.interactions_mut().add_pair(a, b, interaction);
+            system.add_pair_potential(a, b, interaction);
         }
         Ok(())
     }
@@ -177,7 +177,7 @@ impl InteractionsInput {
             let b = try!(atoms[1].as_str().ok_or(Error::from("The second atom name is not a string in pair potential")));
 
             let potential = try!(read_bond_potential(bond));
-            system.interactions_mut().add_bond(a, b, potential);
+            system.add_bond_potential(a, b, potential);
         }
         Ok(())
     }
