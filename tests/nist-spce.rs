@@ -40,7 +40,7 @@ pub fn get_system(path: &str, cutoff: f64) -> System {
     let c: f64 = splited.next().expect("Missing 'c' cell parameter")
                         .parse().expect("'c' cell parameter is not a float");
 
-    system.set_cell(UnitCell::ortho(a, b, c));
+    system.cell = UnitCell::ortho(a, b, c);
 
     for i in 0..system.size() {
         if i % 3 == 0 {
@@ -62,12 +62,12 @@ pub fn get_system(path: &str, cutoff: f64) -> System {
         sigma: 3.16555789
     }), cutoff);
     lj.enable_tail_corrections();
-    system.interactions_mut().add_pair("O", "O", lj);
+    system.add_pair_potential("O", "O", lj);
 
-    system.interactions_mut().add_pair("O", "H",
+    system.add_pair_potential("O", "H",
         PairInteraction::new(Box::new(NullPotential), cutoff)
     );
-    system.interactions_mut().add_pair("H", "H",
+    system.add_pair_potential("H", "H",
         PairInteraction::new(Box::new(NullPotential), cutoff)
     );
 
@@ -75,7 +75,7 @@ pub fn get_system(path: &str, cutoff: f64) -> System {
     ewald.set_alpha(5.6 / f64::min(f64::min(a, b), c));
     let mut ewald = SharedEwald::new(ewald);
     ewald.set_restriction(PairRestriction::InterMolecular);
-    system.interactions_mut().set_coulomb(Box::new(ewald));
+    system.set_coulomb_potential(Box::new(ewald));
 
     return system;
 }
