@@ -16,7 +16,7 @@ use lumol::types::Vector3D;
 use lumol::units;
 
 fn main() {
-    let mut system = System::from_cell(UnitCell::cubic(17.0));
+    let mut system = System::with_cell(UnitCell::cubic(17.0));
 
     // Create a cubic crystal of Argon by hand.
     for i in 0..5 {
@@ -37,7 +37,7 @@ fn main() {
         sigma: units::from(3.4, "A").unwrap(),
         epsilon: units::from(1.0, "kJ/mol").unwrap()
     });
-    system.interactions_mut().add_pair("Ar", "Ar",
+    system.add_pair_potential("Ar", "Ar",
         PairInteraction::new(lj, units::from(8.5, "A").unwrap())
     );
 

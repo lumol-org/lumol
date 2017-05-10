@@ -27,22 +27,19 @@ fn main() {
     system.add_bond(0, 1);
     system.add_bond(0, 2);
 
-    {
-        let interactions = system.interactions_mut();
-        let null_interaction = PairInteraction::new(Box::new(NullPotential), 10.0);
-        interactions.add_pair("O", "H", null_interaction.clone());
-        interactions.add_pair("O", "O", null_interaction.clone());
-        interactions.add_pair("H", "H", null_interaction.clone());
+    let null_interaction = PairInteraction::new(Box::new(NullPotential), 10.0);
+    system.add_pair_potential("O", "H", null_interaction.clone());
+    system.add_pair_potential("O", "O", null_interaction.clone());
+    system.add_pair_potential("H", "H", null_interaction.clone());
 
-        interactions.add_bond("O", "H", Box::new(Harmonic{
-            x0: units::from(1.1, "A").unwrap(),
-            k: units::from(100.0, "kJ/mol/A^2").unwrap(),
-        }));
-        interactions.add_angle("H", "O", "H", Box::new(Harmonic{
-            x0: units::from(109.0, "deg").unwrap(),
-            k: units::from(30.0, "kJ/mol/deg").unwrap(),
-        }));
-    }
+    system.add_bond_potential("O", "H", Box::new(Harmonic{
+        x0: units::from(1.1, "A").unwrap(),
+        k: units::from(100.0, "kJ/mol/A^2").unwrap(),
+    }));
+    system.add_angle_potential("H", "O", "H", Box::new(Harmonic{
+        x0: units::from(109.0, "deg").unwrap(),
+        k: units::from(30.0, "kJ/mol/deg").unwrap(),
+    }));
 
 
     let mut simulation = Simulation::new(

@@ -18,7 +18,7 @@ fn get_system() -> System {
     let mut system = Trajectory::open(configuration)
                                 .and_then(|mut traj| traj.read_guess_bonds())
                                 .unwrap();
-    system.set_cell(UnitCell::cubic(100.0));
+    system.cell = UnitCell::cubic(100.0);
 
     // Add intermolecular interactions
     // TraPPE parameters for CH3
@@ -30,14 +30,14 @@ fn get_system() -> System {
     // Restrict interactions to act only between different molecules.
     pairs.set_restriction(PairRestriction::InterMolecular);
     pairs.enable_tail_corrections();
-    system.interactions_mut().add_pair("C", "C", pairs);
+    system.add_pair_potential("C", "C", pairs);
 
     // Add bonds: we use fixed bond lengths assuming
     // the equilibrium bond length. This means that both
     // energy as well as virial for the bond potential are
     // zero. Hence, we use a `NullPotential`.
     let bond = Box::new(NullPotential{});
-    system.interactions_mut().add_bond("C", "C", bond);
+    system.add_bond_potential("C", "C", bond);
 
     // Check if bonds are guessed correctly.
     assert_eq!(system.size() as f64 / system.molecules().len() as f64, 2.0);

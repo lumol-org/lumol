@@ -20,7 +20,7 @@ fn get_system() -> System {
     let mut system = Trajectory::open(configuration)
                                 .and_then(|mut traj| traj.read_guess_bonds())
                                 .unwrap();
-    system.set_cell(UnitCell::cubic(20.0));
+    system.cell = UnitCell::cubic(20.0);
 
     // Add intermolecular interactions
     let lj = Box::new(LennardJones{
@@ -31,16 +31,16 @@ fn get_system() -> System {
     // Restrict interactions to act only between different molecules.
     pairs.set_restriction(PairRestriction::InterMolecular);
     pairs.enable_tail_corrections();
-    system.interactions_mut().add_pair("O", "O", pairs);
+    system.add_pair_potential("O", "O", pairs);
 
     // Add bonds: we use fixed bond lengths assuming
     // the equilibrium bond length. This means that both
     // energy as well as virial for the bond potential are
     // zero. Hence, we use a `NullPotential`.
     let bond = Box::new(NullPotential{});
-    system.interactions_mut().add_bond("O", "H", bond);
+    system.add_bond_potential("O", "H", bond);
     let angle = Box::new(NullPotential{});
-    system.interactions_mut().add_angle("H", "O", "H", angle);
+    system.add_angle_potential("H", "O", "H", angle);
 
     // Set charges
     let h = 0.42380;
@@ -55,7 +55,7 @@ fn get_system() -> System {
 
     // Add ewald summation method.
     let ewald = Ewald::new(6.0, 7);
-    system.interactions_mut().set_coulomb(Box::new(SharedEwald::new(ewald)));
+    system.set_coulomb_potential(Box::new(SharedEwald::new(ewald)));
 
     // Check if bonds are guessed correctly.
     assert_eq!(system.size() as f64 / system.molecules().len() as f64, 3.0);

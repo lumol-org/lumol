@@ -14,13 +14,13 @@ use lumol::units;
 fn main() {
     let mut trajectory = Trajectory::open("data/xenon.xyz").unwrap();
     let mut system = trajectory.read().unwrap();
-    system.set_cell(UnitCell::cubic(units::from(21.65, "A").unwrap()));
+    system.cell = UnitCell::cubic(units::from(21.65, "A").unwrap());
 
     let lj = Box::new(LennardJones{
         sigma: units::from(4.57, "A").unwrap(),
         epsilon: units::from(1.87, "kJ/mol").unwrap()
     });
-    system.interactions_mut().add_pair("Xe", "Xe", PairInteraction::new(lj, 12.0));
+    system.add_pair_potential("Xe", "Xe", PairInteraction::new(lj, 12.0));
 
     // Create a Monte Carlo propagator
     let mut mc = MonteCarlo::new(units::from(500.0, "K").unwrap());
