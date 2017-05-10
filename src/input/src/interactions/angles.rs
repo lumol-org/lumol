@@ -43,7 +43,7 @@ impl InteractionsInput {
             let c = try!(atoms[2].as_str().ok_or(Error::from("The third atom name is not a string in angle potential")));
 
             let potential = try!(read_angle_potential(angle));
-            system.interactions_mut().add_angle(a, b, c, potential);
+            system.add_angle_potential(a, b, c, potential);
         }
         Ok(())
     }
@@ -80,7 +80,7 @@ impl InteractionsInput {
             let d = try!(atoms[3].as_str().ok_or(Error::from("The fourth atom name is not a string in dihedral potential")));
 
             let potential = try!(read_dihedral_potential(dihedral));
-            system.interactions_mut().add_dihedral(a, b, c, d, potential);
+            system.add_dihedral_potential(a, b, c, d, potential);
         }
         Ok(())
     }
