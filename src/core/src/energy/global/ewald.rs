@@ -8,13 +8,12 @@ use std::f64::consts::{PI, FRAC_2_SQRT_PI};
 use std::f64;
 
 use ndarray::Zip;
-use rayon::prelude::*;
-use ndarray_parallel::prelude::*;
 
 use sys::{System, UnitCell, CellShape};
 use types::{Matrix3, Vector3D, Array3, Complex, Zero};
 use consts::ELCC;
 use energy::{PairRestriction, RestrictionInfo};
+use parallel::prelude::*;
 
 use super::{GlobalPotential, CoulombicPotential, GlobalCache};
 
@@ -453,14 +452,14 @@ impl Ewald {
         let factor = 4.0 * PI / (system.cell().volume() * ELCC);
         let (rec_kx, rec_ky, rec_kz) = system.cell().reciprocal_vectors();
 
-        Zip::indexed(&*self.expfactors).into_par_iter()
-        .map(|((ikx, iky, ikz), expfactor)| {
+        Zip::indexed(&*self.expfactors).par_map(|((ikx, iky, ikz), expfactor)| {
+
             if *expfactor < f64::EPSILON { return Matrix3::zero(); }
 
             let f = *expfactor * factor;
             let k = (ikx as f64) * rec_kx + (iky as f64) * rec_ky + (ikz as f64) * rec_kz;
 
-            (0..system.size()).into_par_iter().map(|i| {
+            (0..system.size()).par_map(|i| {
                 let qi = system[i].charge;
                 let mut local_virial = Matrix3::zero();
 
