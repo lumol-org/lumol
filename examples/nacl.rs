@@ -19,7 +19,7 @@ fn main() {
     let mut trajectory = Trajectory::open("data/NaCl.xyz").unwrap();
     let mut system = trajectory.read().unwrap();
     // Set the unit cell, as there is no unit cell data in XYZ files
-    system.set_cell(UnitCell::cubic(units::from(22.5608, "A").unwrap()));
+    system.cell = UnitCell::cubic(units::from(22.5608, "A").unwrap());
     // Read the interactions from the `data/NaCl.toml` TOML file
     let input = InteractionsInput::new("data/NaCl.toml").unwrap();
     input.read(&mut system).unwrap();

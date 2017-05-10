@@ -23,7 +23,7 @@ fn main() {
         system.add_bond(3 * i + 1, 3 * i + 2);
     }
 
-    system.set_cell(UnitCell::cubic(25.0));
+    system.cell = UnitCell::cubic(25.0);
     let input = InteractionsInput::new("data/binary.toml").unwrap();
     input.read(&mut system).unwrap();
 

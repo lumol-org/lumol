@@ -22,7 +22,7 @@ fn get_system() -> System {
                                .and_then(|mut traj| traj.read())
                                .unwrap();
 
-    system.set_cell(UnitCell::cubic(31.0));
+    system.cell = UnitCell::cubic(31.0);
 
     // add LJ cut + tail corrections
     let lj = Box::new(LennardJones{
@@ -32,7 +32,7 @@ fn get_system() -> System {
 
     let mut pairs = PairInteraction::new(lj, 10.215);
     pairs.enable_tail_corrections();
-    system.interactions_mut().add_pair("Ar", "Ar", pairs);
+    system.add_pair_potential("Ar", "Ar", pairs);
     system
 }
 
