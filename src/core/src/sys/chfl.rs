@@ -178,7 +178,7 @@ impl ToChemfiles for System {
 
         {
             let positions = try!(frame.positions_mut());
-            for (i, particle) in self.iter().enumerate() {
+            for (i, particle) in self.particles().enumerate() {
                 positions[i][0] = particle.position[0];
                 positions[i][1] = particle.position[1];
                 positions[i][2] = particle.position[2];
@@ -188,7 +188,7 @@ impl ToChemfiles for System {
         {
             try!(frame.add_velocities());
             let velocities = try!(frame.velocities_mut());
-            for (i, particle) in self.iter().enumerate() {
+            for (i, particle) in self.particles().enumerate() {
                 velocities[i][0] = particle.velocity[0];
                 velocities[i][1] = particle.velocity[1];
                 velocities[i][2] = particle.velocity[2];
@@ -196,11 +196,10 @@ impl ToChemfiles for System {
         }
 
         let mut topology = try!(chemfiles::Topology::new());
-        for particle in self {
+        for particle in self.particles() {
             let atom = try!(particle.to_chemfiles());
             try!(topology.add_atom(&atom));
         }
-
 
         for molecule in self.molecules() {
             for bond in molecule.bonds() {

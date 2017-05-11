@@ -337,7 +337,7 @@ mod tests {
             system.cell = UnitCell::cubic(20.0);
             assert!(system.molecules().len() == 2);
 
-            for particle in &mut system {
+            for particle in system.particles_mut() {
                 if particle.name() == "O" {
                     particle.charge = -0.8476;
                 } else if particle.name() == "H" {

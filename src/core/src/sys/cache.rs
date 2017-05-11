@@ -406,7 +406,7 @@ mod tests {
 
         system.set_coulomb_potential(Box::new(Wolf::new(8.0)));
 
-        for atom in &mut system {
+        for atom in system.particles_mut() {
             if atom.name() == "O" {
                 atom.charge = -0.5;
             } else if atom.name() == "H" {

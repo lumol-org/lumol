@@ -28,7 +28,7 @@ impl SteepestDescent {
 impl Minimizer for SteepestDescent {
     fn minimize(&mut self, system: &mut System) -> Tolerance {
         // Store the current coordinates
-        let positions = system.iter()
+        let positions = system.particles()
                               .map(|particle| particle.position)
                               .collect::<Vec<_>>();
 
@@ -39,7 +39,7 @@ impl Minimizer for SteepestDescent {
         // Update coordinates, reducing gamma until we find a configuration of
         // lower energy
         loop {
-            for (i, particle) in system.iter_mut().enumerate() {
+            for (i, particle) in system.particles_mut().enumerate() {
                 particle.position = positions[i] + self.gamma * forces[i];
             }
             energy = system.potential_energy();

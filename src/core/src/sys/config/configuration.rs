@@ -261,14 +261,12 @@ impl Configuration {
     /// that all particles of a molecule are adjacent.
     pub fn center_of_mass(&self) -> Vector3D {
         // iterate over all particles in the configuration
-        let total_mass = self
-            .iter()
-            .fold(0.0, |total_mass, particle| total_mass + particle.mass);
-        let com: Vector3D = self
-            .iter()
-            .fold(Vector3D::zero(), |com, particle| {
-                com + particle.position * particle.mass
-            });
+        let total_mass = self.particles()
+                             .fold(0.0, |total, particle| total + particle.mass);
+        let com: Vector3D = self.particles()
+                                .fold(Vector3D::zero(), |com, particle| {
+                                    com + particle.position * particle.mass
+                                });
         com / total_mass
     }
 
@@ -292,12 +290,12 @@ impl Configuration {
     }
 
     /// Get an iterator over the `Particle` in this configuration
-    #[inline] pub fn iter(&self) -> slice::Iter<Particle> {
+    #[inline] pub fn particles(&self) -> slice::Iter<Particle> {
         self.particles.iter()
     }
 
     /// Get a mutable iterator over the `Particle` in this configuration
-    #[inline] pub fn iter_mut(&mut self) -> slice::IterMut<Particle> {
+    #[inline] pub fn particles_mut(&mut self) -> slice::IterMut<Particle> {
         self.particles.iter_mut()
     }
 
@@ -391,26 +389,6 @@ impl Configuration {
         }
 
         return delta;
-    }
-}
-
-impl<'a> IntoIterator for &'a Configuration {
-    type Item = &'a Particle;
-    type IntoIter = slice::Iter<'a, Particle>;
-
-    #[inline]
-    fn into_iter(self) -> slice::Iter<'a, Particle> {
-        self.iter()
-    }
-}
-
-impl<'a> IntoIterator for &'a mut Configuration {
-    type Item = &'a mut Particle;
-    type IntoIter = slice::IterMut<'a, Particle>;
-
-    #[inline]
-    fn into_iter(self) -> slice::IterMut<'a, Particle> {
-        self.iter_mut()
     }
 }
 

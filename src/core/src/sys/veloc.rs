@@ -15,7 +15,7 @@ use sys::System;
 pub fn scale(system: &mut System, temperature: f64) {
     let instant_temperature = system.temperature();
     let factor = f64::sqrt(temperature / instant_temperature);
-    for particle in system {
+    for particle in system.particles_mut() {
         particle.velocity *= factor;
     }
 }
@@ -48,7 +48,7 @@ impl BoltzmannVelocities {
 
 impl InitVelocities for BoltzmannVelocities {
     fn init(&mut self, system: &mut System) {
-        for particle in system.iter_mut() {
+        for particle in system.particles_mut() {
             let m_inv = 1.0 / particle.mass;
             let x = f64::sqrt(m_inv) * self.dist.sample(&mut self.rng);
             let y = f64::sqrt(m_inv) * self.dist.sample(&mut self.rng);
@@ -84,7 +84,7 @@ impl UniformVelocities {
 
 impl InitVelocities for UniformVelocities {
     fn init(&mut self, system: &mut System) {
-        for particle in system.iter_mut() {
+        for particle in system.particles_mut() {
             let m_inv = 1.0 / particle.mass;
             let x = f64::sqrt(m_inv) * self.dist.sample(&mut self.rng);
             let y = f64::sqrt(m_inv) * self.dist.sample(&mut self.rng);

@@ -2,7 +2,6 @@
 // Copyright (C) 2015-2016 Lumol's contributors — BSD license
 
 use std::ops::{Deref, DerefMut};
-use std::slice;
 use std::collections::BTreeMap;
 
 use types::{Vector3D, Matrix3};
@@ -85,7 +84,7 @@ impl System {
     pub fn composition(&self) -> Composition {
         let mut composition = Composition::new();
         composition.resize(self.kinds.len());
-        for particle in self {
+        for particle in self.particles() {
             composition[particle.kind] += 1;
         }
         return composition;
@@ -327,26 +326,6 @@ impl Deref for System {
 impl DerefMut for System {
     fn deref_mut(&mut self) -> &mut Configuration {
         &mut self.configuration
-    }
-}
-
-impl<'a> IntoIterator for &'a System {
-    type Item = &'a Particle;
-    type IntoIter = slice::Iter<'a, Particle>;
-
-    #[inline]
-    fn into_iter(self) -> slice::Iter<'a, Particle> {
-        self.configuration.iter()
-    }
-}
-
-impl<'a> IntoIterator for &'a mut System {
-    type Item = &'a mut Particle;
-    type IntoIter = slice::IterMut<'a, Particle>;
-
-    #[inline]
-    fn into_iter(self) -> slice::IterMut<'a, Particle> {
-        self.configuration.iter_mut()
     }
 }
 
