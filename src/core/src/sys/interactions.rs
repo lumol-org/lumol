@@ -12,12 +12,12 @@ use energy::{PairInteraction, BondPotential, AnglePotential, DihedralPotential};
 use energy::{GlobalPotential, CoulombicPotential};
 use sys::ParticleKind as Kind;
 
-/// Sort pair indexes to get a canonical representation
+/// Normalize pair indexes to get a canonical representation
 #[inline] fn normalize_pair(i: Kind, j: Kind) -> (Kind, Kind) {
     if i < j { (i, j) } else { (j, i) }
 }
 
-/// Sort angle indexes to get a canonical representation
+/// Normalize angle indexes to get a canonical representation
 #[inline] fn normalize_angle(i: Kind, j: Kind, k: Kind) -> (Kind, Kind, Kind) {
     if i < k {
         (i, j, k)
@@ -26,7 +26,7 @@ use sys::ParticleKind as Kind;
     }
 }
 
-/// Sort dihedral indexes to get a canonical representation
+/// Normalize dihedral indexes to get a canonical representation
 #[inline] fn normalize_dihedral(i: Kind, j: Kind, k: Kind, m: Kind) -> (Kind, Kind, Kind, Kind) {
     let max_ij = max(i, j);
     let max_km = max(k, m);
@@ -177,7 +177,7 @@ mod test {
     use sys::ParticleKind as Kind;
 
     #[test]
-    fn sorting_pairs() {
+    fn normalizing_pairs() {
         assert_eq!(normalize_pair(Kind(0), Kind(1)),
                    normalize_pair(Kind(1), Kind(0)));
         assert_eq!(normalize_pair(Kind(125), Kind(0)),
@@ -188,7 +188,7 @@ mod test {
     }
 
     #[test]
-    fn sorting_angles() {
+    fn normalizing_angles() {
         // Checking that equivalent angles are normalized to the same tuple
         assert_eq!(normalize_angle(Kind(1), Kind(0), Kind(2)),
                    normalize_angle(Kind(2), Kind(0), Kind(1)));
@@ -211,7 +211,7 @@ mod test {
     }
 
     #[test]
-    fn sorting_dihedrals() {
+    fn normalizing_dihedrals() {
         // Checking that equivalent dihedrals are normalized to the same tuple
         assert_eq!(normalize_dihedral(Kind(1), Kind(0), Kind(2), Kind(3)),
                    normalize_dihedral(Kind(3), Kind(2), Kind(0), Kind(1)));
