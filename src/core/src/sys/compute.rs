@@ -142,7 +142,7 @@ impl Compute for KineticEnergy {
     type Output = f64;
     fn compute(&self, system: &System) -> f64 {
         let mut energy = 0.0;
-        for particle in system {
+        for particle in system.particles() {
             energy += 0.5 * particle.mass * particle.velocity.norm2();
         }
         assert!(energy.is_finite(), "Kinetic energy is infinite!");
@@ -293,7 +293,7 @@ impl Compute for Stress {
     fn compute(&self, system: &System) -> Matrix3 {
         assert!(!system.cell.is_infinite(), "Can not compute stress for infinite cell");
         let mut kinetic = Matrix3::zero();
-        for particle in system.iter() {
+        for particle in system.particles() {
             let velocity = &particle.velocity;
             kinetic += particle.mass * velocity.tensorial(velocity);
         }

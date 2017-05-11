@@ -119,7 +119,7 @@ impl Simulation {
 
     /// Perform some sanity checks on the system
     fn sanity_check(&self, system: &System) {
-        for particle in system {
+        for particle in system.particles() {
             // The value of 1e6 A should be a good enough threshold. Even with
             // big boxes (100 A), and going through the boxes multiple time,
             // the particles positions should stay bellow this point.

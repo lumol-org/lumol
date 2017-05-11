@@ -49,7 +49,7 @@ pub fn get_system(path: &str, cutoff: f64) -> System {
         }
     }
 
-    for particle in &mut system {
+    for particle in system.particles_mut() {
         particle.charge = match particle.name() {
             "H" => 0.42380,
             "O" => -2.0 * 0.42380,

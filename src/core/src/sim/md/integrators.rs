@@ -42,14 +42,14 @@ impl Integrator for VelocityVerlet {
         let dt = self.timestep;
 
         // Update velocities at t + ∆t/2 and positions at t + ∆t
-        for (i, part) in system.iter_mut().enumerate() {
+        for (i, part) in system.particles_mut().enumerate() {
             part.velocity += 0.5 * dt * self.accelerations[i];
             part.position += part.velocity * dt;
         }
 
         let forces = system.forces();
         // Update accelerations at t + ∆t and velocities at t + ∆t
-        for (i, part) in system.iter_mut().enumerate() {
+        for (i, part) in system.particles_mut().enumerate() {
             self.accelerations[i] = forces[i] / part.mass;
             part.velocity += 0.5 * dt * self.accelerations[i];
         }
@@ -81,7 +81,7 @@ impl Integrator for Verlet {
 
         let dt = self.timestep;
         // Approximate the positions at t - ∆t
-        for (i, part) in system.iter().enumerate() {
+        for (i, part) in system.particles().enumerate() {
             self.prevpos[i] = part.position - part.velocity * dt;
         }
     }
@@ -91,7 +91,7 @@ impl Integrator for Verlet {
         let dt2 = self.timestep * self.timestep;
 
         let forces = system.forces();
-        for (i, part) in system.iter_mut().enumerate() {
+        for (i, part) in system.particles_mut().enumerate() {
             // Save positions at t
             let tmp = part.position;
             // Update positions at t + ∆t
@@ -135,12 +135,12 @@ impl Integrator for LeapFrog {
         let dt = self.timestep;
         let dt2 = self.timestep * self.timestep;
 
-        for (i, part) in system.iter_mut().enumerate() {
+        for (i, part) in system.particles_mut().enumerate() {
             part.position += part.velocity * dt + 0.5 * self.accelerations[i] * dt2;
         }
 
         let forces = system.forces();
-        for (i, part) in system.iter_mut().enumerate() {
+        for (i, part) in system.particles_mut().enumerate() {
             let mass = part.mass;
             let acceleration = forces[i] / mass;
             part.velocity += 0.5 * (self.accelerations[i] + acceleration) * dt;
@@ -193,7 +193,7 @@ impl Integrator for BerendsenBarostat {
         let dt = self.timestep;
 
         // Update velocities at t + ∆t/2 and positions at t + ∆t
-        for (i, part) in system.iter_mut().enumerate() {
+        for (i, part) in system.particles_mut().enumerate() {
             part.velocity += 0.5 * dt * self.accelerations[i];
             // Scale all positions
             part.position *= self.eta;
@@ -206,7 +206,7 @@ impl Integrator for BerendsenBarostat {
 
         let forces = system.forces();
         // Update accelerations at t + ∆t and velocities at t + ∆t
-        for (i, part) in system.iter_mut().enumerate() {
+        for (i, part) in system.particles_mut().enumerate() {
             self.accelerations[i] = forces[i] / part.mass;
             part.velocity += 0.5 * dt * self.accelerations[i];
         }
@@ -259,7 +259,7 @@ impl Integrator for AnisoBerendsenBarostat {
         let dt = self.timestep;
 
         // Update velocities at t + ∆t/2 and positions at t + ∆t
-        for (i, part) in system.iter_mut().enumerate() {
+        for (i, part) in system.particles_mut().enumerate() {
             part.velocity += 0.5 * dt * self.accelerations[i];
             // Scale all positions
             part.position = self.eta * part.position;
@@ -281,7 +281,7 @@ impl Integrator for AnisoBerendsenBarostat {
 
         let forces = system.forces();
         // Update accelerations at t + ∆t and velocities at t + ∆t
-        for (i, part) in system.iter_mut().enumerate() {
+        for (i, part) in system.particles_mut().enumerate() {
             self.accelerations[i] = forces[i] / part.mass;
             part.velocity += 0.5 * dt * self.accelerations[i];
         }
