@@ -5,7 +5,7 @@
 //! system.
 
 use types::Vector3D;
-use sys::{System, Particle};
+use sys::{System, Particle, UnitCell};
 use sys::guess_bonds;
 
 /// Read the `content` string, assuming XYZ format, and create the corresponding
@@ -14,6 +14,9 @@ use sys::guess_bonds;
 ///
 /// If the comment line contains `bonds`, Chemfiles will be used to guess the
 /// bonds in the system.
+///
+/// If the comment line contains `cell: <a>`, the system will have a cubic unit
+/// cell of size a.
 pub fn system_from_xyz(content: &str) -> System {
     let mut system = System::new();
 
@@ -27,7 +30,20 @@ pub fn system_from_xyz(content: &str) -> System {
         let z = splitted[3].parse::<f64>().expect("Could not parse float");
         let mut particle = Particle::new(name);
         particle.position = Vector3D::new(x, y, z);
+        if splitted.len() == 7 {
+            let vx = splitted[4].parse::<f64>().expect("Could not parse float");
+            let vy = splitted[5].parse::<f64>().expect("Could not parse float");
+            let vz = splitted[6].parse::<f64>().expect("Could not parse float");
+            particle.velocity = Vector3D::new(vx, vy, vz);
+        }
         system.add_particle(particle);
+    }
+
+    if lines[1].contains("cell:") {
+        let cell = lines[1].split("cell:").nth(1).expect("Missing cell size");
+        let cell = cell.split_whitespace().nth(0).expect("Missing cell size");
+        let cell = UnitCell::cubic(cell.parse().expect("Could not parse float"));
+        system.cell = cell;
     }
 
     if lines[1].contains("bonds") {
@@ -40,26 +56,22 @@ pub fn system_from_xyz(content: &str) -> System {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use types::{Vector3D, Zero};
+    use types::Vector3D;
 
     #[test]
     fn bonds() {
-        let file = "3
+        let system = system_from_xyz("3
         bonds
         O 0 0 -1.5
         C 0 0 0
-        O 0 0 1.5";
-
-        let system = system_from_xyz(file);
+        O 0 0 1.5");
         assert_eq!(system.size(), 3);
         assert_eq!(system[0].name(), "O");
         assert_eq!(system[1].name(), "C");
         assert_eq!(system[2].name(), "O");
 
         assert_eq!(system[0].position, Vector3D::new(0.0, 0.0, -1.5));
-
-        assert_eq!(system[1].position, Vector3D::zero());
-
+        assert_eq!(system[1].position, Vector3D::new(0.0, 0.0, 0.0));
         assert_eq!(system[2].position, Vector3D::new(0.0, 0.0, 1.5));
 
         assert_eq!(system.molecules().len(), 1);
@@ -67,16 +79,44 @@ mod tests {
     }
 
     #[test]
-    fn no_bonds() {
-        let file = "4
-
+    fn cell() {
+        let system = system_from_xyz("4
+        cell: 67
         He 0 0 0
         He 1 0 0
         He 0 1 0
-        He 0 0 1";
-
-        let system = system_from_xyz(file);
+        He 0 0 1");
         assert_eq!(system.size(), 4);
         assert_eq!(system.molecules().len(), 4);
+        assert_eq!(system.cell, UnitCell::cubic(67.0));
+
+        assert_eq!(system[0].position, Vector3D::new(0.0, 0.0, 0.0));
+        assert_eq!(system[1].position, Vector3D::new(1.0, 0.0, 0.0));
+        assert_eq!(system[2].position, Vector3D::new(0.0, 1.0, 0.0));
+        assert_eq!(system[3].position, Vector3D::new(0.0, 0.0, 1.0));
+    }
+
+    #[test]
+    fn velocities() {
+        let system = system_from_xyz("4
+        cell: 67
+        He 0 0 0 0 0 0
+        He 1 0 0 1 2 3
+        He 0 1 0 0 1 0
+        He 0 0 1 2 2 3
+        ");
+        assert_eq!(system.size(), 4);
+        assert_eq!(system.molecules().len(), 4);
+        assert_eq!(system.cell, UnitCell::cubic(67.0));
+
+        assert_eq!(system[0].position, Vector3D::new(0.0, 0.0, 0.0));
+        assert_eq!(system[1].position, Vector3D::new(1.0, 0.0, 0.0));
+        assert_eq!(system[2].position, Vector3D::new(0.0, 1.0, 0.0));
+        assert_eq!(system[3].position, Vector3D::new(0.0, 0.0, 1.0));
+
+        assert_eq!(system[0].velocity, Vector3D::new(0.0, 0.0, 0.0));
+        assert_eq!(system[1].velocity, Vector3D::new(1.0, 2.0, 3.0));
+        assert_eq!(system[2].velocity, Vector3D::new(0.0, 1.0, 0.0));
+        assert_eq!(system[3].velocity, Vector3D::new(2.0, 2.0, 3.0));
     }
 }
