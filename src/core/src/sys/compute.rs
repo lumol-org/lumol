@@ -7,6 +7,9 @@ use types::{Matrix3, Vector3D, Zero, One};
 use sys::System;
 use std::f64::consts::PI;
 
+use parallel::prelude::*;
+use parallel::ThreadLocalStore;
+
 /// The compute trait allow to compute properties of a system, without
 /// modifying this system. The Output type is the type of the computed
 /// property.
@@ -25,9 +28,12 @@ impl Compute for Forces {
     type Output = Vec<Vector3D>;
     fn compute(&self, system: &System) -> Vec<Vector3D> {
         let natoms = system.size();
-        let mut res = vec![Vector3D::zero(); natoms];
+        let thread_forces_store = ThreadLocalStore::new(|| vec![Vector3D::zero(); natoms]);
 
-        for i in 0..system.size() {
+        (0..natoms).into_par_iter().for_each(|i| {
+
+            let mut thread_forces = thread_forces_store.borrow_mut();
+
             for j in (i+1)..system.size() {
                 let distance = system.bond_distance(i, j);
                 let d = system.nearest_image(i, j);
@@ -37,12 +43,18 @@ impl Compute for Forces {
                     let info = potential.restriction().information(distance);
                     if !info.excluded {
                         let force = info.scaling * potential.force(r) * dn;
-                        res[i] += force;
-                        res[j] -= force;
+                        thread_forces[i] += force;
+                        thread_forces[j] -= force;
                     }
                 }
             }
-        }
+        });
+
+        // At this point all the forces are computed, but the
+        // results are scattered across all thread local Vecs,
+        // here we gather them.
+        let mut forces = vec![Vector3D::zero(); natoms];
+        thread_forces_store.sum_local_values(&mut forces);
 
         for molecule in system.molecules() {
             for bond in molecule.bonds() {
@@ -52,8 +64,8 @@ impl Compute for Forces {
                 let r = d.norm();
                 for potential in system.bond_potentials(i, j) {
                     let force = potential.force(r) * dn;
-                    res[i] += force;
-                    res[j] -= force;
+                    forces[i] += force;
+                    forces[j] -= force;
                 }
             }
 
@@ -62,9 +74,9 @@ impl Compute for Forces {
                 let (theta, d1, d2, d3) = system.angle_and_derivatives(i, j, k);
                 for potential in system.angle_potentials(i, j, k) {
                     let force = potential.force(theta);
-                    res[i] += force * d1;
-                    res[j] += force * d2;
-                    res[k] += force * d3;
+                    forces[i] += force * d1;
+                    forces[j] += force * d2;
+                    forces[k] += force * d3;
                 }
             }
 
@@ -73,30 +85,30 @@ impl Compute for Forces {
                 let (phi, d1, d2, d3, d4) = system.dihedral_and_derivatives(i, j, k, m);
                 for potential in system.dihedral_potentials(i, j, k, m) {
                     let force = potential.force(phi);
-                    res[i] += force * d1;
-                    res[j] += force * d2;
-                    res[k] += force * d3;
-                    res[m] += force * d4;
+                    forces[i] += force * d1;
+                    forces[j] += force * d2;
+                    forces[k] += force * d3;
+                    forces[m] += force * d4;
                 }
             }
         }
 
         if let Some(coulomb) = system.interactions().coulomb() {
-            let forces = coulomb.forces(system);
-            debug_assert_eq!(forces.len(), natoms, "Wrong `forces` size in coulomb potentials");
-            for (i, force) in forces.iter().enumerate() {
-                res[i] += force;
+            let coulomb_forces = coulomb.forces(system);
+            debug_assert_eq!(coulomb_forces.len(), natoms, "Wrong `forces` size in coulomb potentials");
+            for (i, force) in coulomb_forces.iter().enumerate() {
+                forces[i] += force;
             }
         }
 
         for global in system.interactions().globals() {
-            let forces = global.forces(system);
-            debug_assert_eq!(forces.len(), natoms, "Wrong `forces` size in global potentials");
-            for (i, force) in forces.iter().enumerate() {
-                res[i] += force;
+            let global_forces = global.forces(system);
+            debug_assert_eq!(global_forces.len(), natoms, "Wrong `forces` size in global potentials");
+            for (i, force) in global_forces.iter().enumerate() {
+                forces[i] += force;
             }
         }
-        return res;
+        return forces;
     }
 }
 
