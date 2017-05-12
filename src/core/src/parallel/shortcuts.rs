@@ -23,22 +23,18 @@ pub trait ParallelShortcuts: Sized {
     /// The iterator type
     type Iter: ParallelIterator;
 
-    /// Dummy function to make it work
-    fn _into_par_iter(self) -> Self::Iter;
-
     /// Shortcut for `into_par_iter().map()`
     fn par_map<F, R>(self, map_op: F) -> Map<Self::Iter, MapFn<F>>
-        where F: Fn(<Self::Iter as ParallelIterator>::Item) -> R + Sync, R: Send {
-        self._into_par_iter().map(map_op)
-    }
+        where F: Fn(<Self::Iter as ParallelIterator>::Item) -> R + Sync, R: Send;
 }
 
 impl<T> ParallelShortcuts for Range<T>
     where Range<T>: IntoParallelIterator {
     type Iter = <Range<T> as IntoParallelIterator>::Iter;
 
-    fn _into_par_iter(self) -> Self::Iter {
-        self.into_par_iter()
+    fn par_map<F, R>(self, map_op: F) -> Map<Self::Iter, MapFn<F>>
+        where F: Fn(<Self::Iter as ParallelIterator>::Item) -> R + Sync, R: Send {
+        self.into_par_iter().map(map_op)
     }
 }
 
@@ -46,7 +42,8 @@ impl<Parts, D> ParallelShortcuts for Zip<Parts, D>
     where Zip<Parts, D>: NdarrayIntoParallelIterator {
     type Iter = <Zip<Parts, D> as NdarrayIntoParallelIterator>::Iter;
 
-    fn _into_par_iter(self) -> Self::Iter {
-        self.into_par_iter()
+    fn par_map<F, R>(self, map_op: F) -> Map<Self::Iter, MapFn<F>>
+        where F: Fn(<Self::Iter as ParallelIterator>::Item) -> R + Sync, R: Send {
+        self.into_par_iter().map(map_op)
     }
 }
