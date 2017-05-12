@@ -198,11 +198,8 @@ mod tests {
     fn testing_system() -> System {
         let mut system = System::with_cell(UnitCell::cubic(10.0));;
 
-        system.add_particle(Particle::new("F"));
-        system[0].position = Vector3D::zero();
-
-        system.add_particle(Particle::new("F"));
-        system[1].position = Vector3D::new(1.3, 0.0, 0.0);
+        system.add_particle(Particle::with_position("F", Vector3D::zero()));
+        system.add_particle(Particle::with_position("F", Vector3D::new(1.3, 0.0, 0.0)));
 
         let harmonic = Box::new(Harmonic{
             k: unit_from(300.0, "kJ/mol/A^2"),

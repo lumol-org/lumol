@@ -93,7 +93,7 @@ impl ToLumol for chemfiles::Frame {
                 positions[i][1],
                 positions[i][2]
             );
-            system[i].position = position;
+            system.particle_mut(i).position = position;
         }
 
         let mut bonds = try!(topology.bonds());
@@ -286,7 +286,7 @@ pub fn read_molecule<P: AsRef<Path>>(path: P) -> TrajectoryResult<(Molecule, Vec
     let molecule = system.molecule(0).clone();
     let mut particles = Vec::new();
     for i in &molecule {
-        particles.push(system[i].clone());
+        particles.push(system.particle(i).clone());
     }
     return Ok((molecule, particles));
 }

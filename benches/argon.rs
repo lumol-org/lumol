@@ -44,12 +44,12 @@ fn cache_move_particle(bencher: &mut Bencher) {
 
     let mut rng = utils::get_rng(654646);
 
-    let particle: usize = rng.gen_range(0, system.size());
-    let mut delta = system[particle].position;
+    let i: usize = rng.gen_range(0, system.size());
+    let mut delta = system.particle(i).position;
     delta += Vector3D::new(rng.gen(), rng.gen(), rng.gen());
 
     bencher.iter(||{
-        cache.move_particles_cost(&system, vec![particle], &[delta])
+        cache.move_particles_cost(&system, vec![i], &[delta])
     })
 }
 

@@ -105,7 +105,7 @@ impl MCMove for Resize {
                 self.new_system.cell.cartesian(&frac_com) - old_com;
             // loop over all particles (indices) in the molecule
             for pi in molecule.iter() {
-                self.new_system[pi].position += delta_com;
+                self.new_system.particle_mut(pi).position += delta_com;
             }
         }
         true

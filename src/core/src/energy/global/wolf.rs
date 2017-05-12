@@ -124,14 +124,14 @@ impl GlobalCache for Wolf {
         // Iterate over all interactions between a moved particle and a
         // particle not moved
         for (idx, &i) in idxes.iter().enumerate() {
-            let qi = system[i].charge;
+            let qi = system.particle(i).charge;
             if qi == 0.0 {continue;}
             for j in (0..system.size()).filter(|x| !idxes.contains(x)) {
-                let qj = system[j].charge;
+                let qj = system.particle(j).charge;
                 if qj == 0.0 {continue;}
 
-                let r_old = system.cell.distance(&system[i].position, &system[j].position);
-                let r_new = system.cell.distance(&newpos[idx], &system[j].position);
+                let r_old = system.cell.distance(&system.particle(i).position, &system.particle(j).position);
+                let r_new = system.cell.distance(&newpos[idx], &system.particle(j).position);
 
                 let distance = system.bond_distance(i, j);
                 let info = self.restriction.information(distance);
@@ -143,10 +143,10 @@ impl GlobalCache for Wolf {
 
         // Iterate over all interactions between two moved particles
         for (idx, &i) in idxes.iter().enumerate() {
-            let qi = system[i].charge;
+            let qi = system.particle(i).charge;
             if qi == 0.0 {continue;}
             for (jdx, &j) in idxes.iter().enumerate().skip(idx + 1) {
-                let qj = system[j].charge;
+                let qj = system.particle(j).charge;
                 if qj == 0.0 {continue;}
 
                 let r_old = system.distance(i, j);
@@ -179,11 +179,11 @@ impl GlobalPotential for Wolf {
         (0..natoms).par_map(|i|{
 
             let mut local_energy = 0.0;
-            let qi = system[i].charge;
+            let qi = system.particle(i).charge;
             if qi == 0.0 { return 0.0; }
 
             for j in i+1..natoms {
-                let qj = system[j].charge;
+                let qj = system.particle(j).charge;
                 if qj == 0.0 {continue}
 
                 let distance = system.bond_distance(i, j);
@@ -207,10 +207,10 @@ impl GlobalPotential for Wolf {
             /// Get the thread local forces Vec
             let mut thread_forces = thread_forces_store.borrow_mut();
 
-            let qi = system[i].charge;
+            let qi = system.particle(i).charge;
             if qi == 0.0 { return; }
             for j in i + 1..natoms {
-                let qj = system[j].charge;
+                let qj = system.particle(j).charge;
                 if qj == 0.0 { continue }
 
                 let distance = system.bond_distance(i, j);
@@ -237,12 +237,12 @@ impl GlobalPotential for Wolf {
 
         (0..natoms).par_map(|i| {
 
-            let qi = system[i].charge;
+            let qi = system.particle(i).charge;
             if qi == 0.0 { return Matrix3::zero(); }
             let mut local_virial = Matrix3::zero();
 
             for j in i+1..natoms {
-                let qj = system[j].charge;
+                let qj = system.particle(j).charge;
                 if qj == 0.0 {continue}
 
                 let distance = system.bond_distance(i, j);
@@ -267,23 +267,20 @@ impl CoulombicPotential for Wolf {
 #[cfg(test)]
 mod tests {
     pub use super::*;
-    use sys::{System, UnitCell, Particle};
-    use types::{Vector3D, Zero};
+    use sys::System;
     use energy::GlobalPotential;
+    use utils::system_from_xyz;
 
     const E_BRUTE_FORCE: f64 = -0.09262397663346732;
 
     pub fn testing_system() -> System {
-        let mut system = System::with_cell(UnitCell::cubic(20.0));
-
-        system.add_particle(Particle::new("Cl"));
-        system[0].charge = -1.0;
-        system[0].position = Vector3D::zero();
-
-        system.add_particle(Particle::new("Na"));
-        system[1].charge = 1.0;
-        system[1].position = Vector3D::new(1.5, 0.0, 0.0);
-
+        let mut system = system_from_xyz("2
+        cell: 20.0
+        Cl 0.0 0.0 0.0
+        Na 1.5 0.0 0.0
+        ");
+        system.particle_mut(0).charge = -1.0;
+        system.particle_mut(1).charge = 1.0;
         return system;
     }
 
@@ -310,7 +307,7 @@ mod tests {
         // Finite difference computation of the force
         let e = wolf.energy(&system);
         let eps = 1e-9;
-        system[0].position[0] += eps;
+        system.particle_mut(0).position[0] += eps;
 
         let e1 = wolf.energy(&system);
         let force = wolf.forces(&system)[0][0];
@@ -360,8 +357,8 @@ mod tests {
 
             let cost = wolf.move_particles_cost(&system, idxes, newpos);
 
-            system[0].position = newpos[0];
-            system[1].position = newpos[1];
+            system.particle_mut(0).position = newpos[0];
+            system.particle_mut(1).position = newpos[1];
             let new_e = check.energy(&system);
             assert_ulps_eq!(cost, new_e - old_e);
         }

@@ -205,10 +205,10 @@ impl Ewald {
         let natoms = system.size();
         let mut energy = 0.0;
         for i in 0..natoms {
-            let qi = system[i].charge;
+            let qi = system.particle(i).charge;
             if qi == 0.0 {continue}
             for j in i+1..natoms {
-                let qj = system[j].charge;
+                let qj = system.particle(j).charge;
                 if qj == 0.0 {continue}
 
                 let distance = system.bond_distance(i, j);
@@ -227,10 +227,10 @@ impl Ewald {
         assert_eq!(forces.len(), system.size());
 
         for i in 0..natoms {
-            let qi = system[i].charge;
+            let qi = system.particle(i).charge;
             if qi == 0.0 {continue}
             for j in i+1..natoms {
-                let qj = system[j].charge;
+                let qj = system.particle(j).charge;
                 if qj == 0.0 {continue}
 
                 let distance = system.bond_distance(i, j);
@@ -249,10 +249,10 @@ impl Ewald {
         let natoms = system.size();
         let mut virial = Matrix3::zero();
         for i in 0..natoms {
-            let qi = system[i].charge;
+            let qi = system.particle(i).charge;
             if qi == 0.0 {continue}
             for j in i+1..natoms {
-                let qj = system[j].charge;
+                let qj = system.particle(j).charge;
                 if qj == 0.0 {continue}
 
                 let distance = system.bond_distance(i, j);
@@ -273,14 +273,14 @@ impl Ewald {
         // Iterate over all interactions between a moved particle and a
         // particle not moved
         for (idx, &i) in idxes.iter().enumerate() {
-            let qi = system[i].charge;
+            let qi = system.particle(i).charge;
             if qi == 0.0 {continue}
             for j in (0..system.size()).filter(|x| !idxes.contains(x)) {
-                let qj = system[j].charge;
+                let qj = system.particle(j).charge;
                 if qi == 0.0 {continue}
 
                 let r_old = system.distance(i, j);
-                let r_new = system.cell.distance(&newpos[idx], &system[j].position);
+                let r_new = system.cell.distance(&newpos[idx], &system.particle(j).position);
 
                 let distance = system.bond_distance(i, j);
                 let info = self.restriction.information(distance);
@@ -292,10 +292,10 @@ impl Ewald {
 
         // Iterate over all interactions between two moved particles
         for (idx, &i) in idxes.iter().enumerate() {
-            let qi = system[i].charge;
+            let qi = system.particle(i).charge;
             if qi == 0.0 {continue}
             for (jdx, &j) in idxes.iter().enumerate().skip(i + 1) {
-                let qj = system[j].charge;
+                let qj = system.particle(j).charge;
                 if qj == 0.0 {continue}
 
                 let r_old = system.distance(i, j);
@@ -319,7 +319,7 @@ impl Ewald {
     fn self_energy(&self, system: &System) -> f64 {
         let mut q2 = 0.0;
         for i in 0..system.size() {
-            q2 += system[i].charge * system[i].charge;
+            q2 += system.particle(i).charge * system.particle(i).charge;
         }
         return -self.alpha / f64::sqrt(PI) * q2 / ELCC;
     }
@@ -334,7 +334,7 @@ impl Ewald {
 
         // Do the k=0, 1 cases first
         for i in 0..natoms {
-            let ri = system.cell.fractional(&system[i].position);
+            let ri = system.cell.fractional(&system.particle(i).position);
             for j in 0..3 {
                 self.fourier_phases[(0, i, j)] = Complex::polar(1.0, 0.0);
                 self.fourier_phases[(1, i, j)] = Complex::polar(1.0, -2.0 * PI * ri[j]);
@@ -357,7 +357,7 @@ impl Ewald {
                     self.rho[(ikx, iky, ikz)] = Complex::polar(0.0, 0.0);
                     for j in 0..natoms {
                         let phi = self.fourier_phases[(ikx, j, 0)] * self.fourier_phases[(iky, j, 1)] * self.fourier_phases[(ikz, j, 2)];
-                        self.rho[(ikx, iky, ikz)] = self.rho[(ikx, iky, ikz)] + system[j].charge * phi;
+                        self.rho[(ikx, iky, ikz)] = self.rho[(ikx, iky, ikz)] + system.particle(j).charge * phi;
                     }
                 }
             }
@@ -404,7 +404,7 @@ impl Ewald {
                     let k = (ikx as f64) * rec_kx + (iky as f64) * rec_ky + (ikz as f64) * rec_kz;
 
                     for i in 0..system.size() {
-                        let qi = system[i].charge;
+                        let qi = system.particle(i).charge;
 
                         let fourier_i = self.fourier_phases[(ikx, i, 0)] *
                                         self.fourier_phases[(iky, i, 1)] *
@@ -414,7 +414,7 @@ impl Ewald {
                         let mut force_i = Vector3D::zero();
 
                         for j in (i + 1)..system.size() {
-                            let qj = system[j].charge;
+                            let qj = system.particle(j).charge;
                             let force = f * self.kspace_force_factor(j, ikx, iky, ikz, qi, qj, fourier_i) * k;
                             force_i -= force;
                             forces[j] += force;
@@ -459,7 +459,7 @@ impl Ewald {
             let k = (ikx as f64) * rec_kx + (iky as f64) * rec_ky + (ikz as f64) * rec_kz;
 
             (0..system.size()).par_map(|i| {
-                let qi = system[i].charge;
+                let qi = system.particle(i).charge;
                 let mut local_virial = Matrix3::zero();
 
                 let fourier_i = self.fourier_phases[(ikx, i, 0)] *
@@ -468,7 +468,7 @@ impl Ewald {
                 let fourier_i = fourier_i.imag();
 
                 for j in (i + 1)..system.size() {
-                    let qj = system[j].charge;
+                    let qj = system.particle(j).charge;
                     let force = f * self.kspace_force_factor(j, ikx, iky, ikz, qi, qj, fourier_i) * k;
                     let rij = system.nearest_image(i, j);
                     local_virial += force.tensorial(&rij);
@@ -486,7 +486,7 @@ impl Ewald {
 
         // Do the k=0, 1 cases first
         for (idx, &i) in idxes.iter().enumerate() {
-            let old_ri = system.cell.fractional(&system[i].position);
+            let old_ri = system.cell.fractional(&system.particle(i).position);
             let new_ri = system.cell.fractional(&newpos[idx]);
             for j in 0..3 {
                 old_fourier_phases[(0, idx, j)] = Complex::polar(1.0, 0.0);
@@ -518,8 +518,8 @@ impl Ewald {
                         let old_phi = old_fourier_phases[(ikx, idx, 0)] * old_fourier_phases[(iky, idx, 1)] * old_fourier_phases[(ikz, idx, 2)];
                         let new_phi = new_fourier_phases[(ikx, idx, 0)] * new_fourier_phases[(iky, idx, 1)] * new_fourier_phases[(ikz, idx, 2)];
 
-                        self.delta_rho[(ikx, iky, ikz)] = self.delta_rho[(ikx, iky, ikz)] - system[i].charge * old_phi;
-                        self.delta_rho[(ikx, iky, ikz)] = self.delta_rho[(ikx, iky, ikz)] + system[i].charge * new_phi;
+                        self.delta_rho[(ikx, iky, ikz)] = self.delta_rho[(ikx, iky, ikz)] - system.particle(i).charge * old_phi;
+                        self.delta_rho[(ikx, iky, ikz)] = self.delta_rho[(ikx, iky, ikz)] + system.particle(i).charge * new_phi;
                     }
                 }
             }
@@ -582,7 +582,7 @@ impl Ewald {
         let mut energy = 0.0;
 
         for i in 0..natoms {
-            let qi = system[i].charge;
+            let qi = system.particle(i).charge;
             if qi == 0.0 {continue}
             // I can not manage to get this work with a loop from (i+1) to N. The finite
             // difference test (testing that the force is the same that the finite difference
@@ -593,7 +593,7 @@ impl Ewald {
                 let info = self.restriction.information(distance);
                 if !info.excluded {continue}
 
-                let qj = system[j].charge;
+                let qj = system.particle(j).charge;
                 if qj == 0.0 {continue}
 
                 let r = system.distance(i, j);
@@ -609,7 +609,7 @@ impl Ewald {
         assert_eq!(forces.len(), natoms);
 
         for i in 0..natoms {
-            let qi = system[i].charge;
+            let qi = system.particle(i).charge;
             if qi == 0.0 {continue}
             for j in i+1..natoms {
                 let distance = system.bond_distance(i, j);
@@ -617,7 +617,7 @@ impl Ewald {
                 // Only account for excluded pairs
                 if !info.excluded {continue}
 
-                let qj = system[j].charge;
+                let qj = system.particle(j).charge;
                 if qj == 0.0 {continue}
 
                 let rij = system.nearest_image(i, j);
@@ -634,7 +634,7 @@ impl Ewald {
         let mut virial = Matrix3::zero();
 
         for i in 0..natoms {
-            let qi = system[i].charge;
+            let qi = system.particle(i).charge;
             if qi == 0.0 {continue}
             for j in i+1..natoms {
                 let distance = system.bond_distance(i, j);
@@ -642,7 +642,7 @@ impl Ewald {
                 // Only account for excluded pairs
                 if !info.excluded {continue}
 
-                let qj = system[j].charge;
+                let qj = system.particle(j).charge;
                 if qj == 0.0 {continue}
 
                 let rij = system.nearest_image(i, j);
@@ -660,10 +660,10 @@ impl Ewald {
         // Iterate over all interactions between a moved particle and a
         // particle not moved
         for (idx, &i) in idxes.iter().enumerate() {
-            let qi = system[i].charge;
+            let qi = system.particle(i).charge;
             if qi == 0.0 {continue}
             for j in (0..system.size()).filter(|x| !idxes.contains(x)) {
-                let qj = system[j].charge;
+                let qj = system.particle(j).charge;
                 if qi == 0.0 {continue}
 
                 let distance = system.bond_distance(i, j);
@@ -671,7 +671,7 @@ impl Ewald {
                 if !info.excluded {continue}
 
                 let r_old = system.distance(i, j);
-                let r_new = system.cell.distance(&newpos[idx], &system[j].position);
+                let r_new = system.cell.distance(&newpos[idx], &system.particle(j).position);
 
                 e_old += self.molcorrect_energy_pair(info, qi, qj, r_old);
                 e_new += self.molcorrect_energy_pair(info, qi, qj, r_new);
@@ -680,10 +680,10 @@ impl Ewald {
 
         // Iterate over all interactions between two moved particles
         for (idx, &i) in idxes.iter().enumerate() {
-            let qi = system[i].charge;
+            let qi = system.particle(i).charge;
             if qi == 0.0 {continue}
             for (jdx, &j) in idxes.iter().enumerate().skip(i + 1) {
-                let qj = system[j].charge;
+                let qj = system.particle(j).charge;
                 if qj == 0.0 {continue}
 
                 let distance = system.bond_distance(i, j);
@@ -813,20 +813,17 @@ impl GlobalCache for SharedEwald {
 #[cfg(test)]
 mod tests {
     pub use super::*;
-    use sys::{System, UnitCell, Particle};
-    use types::{Vector3D, Zero};
+    use sys::System;
+    use utils::system_from_xyz;
 
     pub fn nacl_pair() -> System {
-        let mut system = System::with_cell(UnitCell::cubic(20.0));
-
-        system.add_particle(Particle::new("Cl"));
-        system[0].charge = -1.0;
-        system[0].position = Vector3D::zero();
-
-        system.add_particle(Particle::new("Na"));
-        system[1].charge = 1.0;
-        system[1].position = Vector3D::new(1.5, 0.0, 0.0);
-
+        let mut system = system_from_xyz("2
+        cell: 20.0
+        Cl 0.0 0.0 0.0
+        Na 1.5 0.0 0.0
+        ");
+        system.particle_mut(0).charge = -1.0;
+        system.particle_mut(1).charge = 1.0;
         return system;
     }
 
@@ -915,7 +912,7 @@ mod tests {
             // Finite difference computation of the force
             let e = ewald.energy(&system);
             let eps = 1e-9;
-            system[0].position[0] += eps;
+            system.particle_mut(0).position[0] += eps;
 
             let e1 = ewald.energy(&system);
             let force = ewald.forces(&system)[0][0];
@@ -961,7 +958,7 @@ mod tests {
             let molcorrect_energy = ewald.read().molcorrect_energy(&system);
 
             let eps = 1e-9;
-            system[0].position[0] += eps;
+            system.particle_mut(0).position[0] += eps;
 
             let energy_1 = ewald.energy(&system);
             let real_energy_1 = ewald.read().real_space_energy(&system);
@@ -1099,8 +1096,8 @@ mod tests {
 
             let cost = ewald.move_particles_cost(&system, idxes, newpos);
 
-            system[0].position = newpos[0];
-            system[1].position = newpos[1];
+            system.particle_mut(0).position = newpos[0];
+            system.particle_mut(1).position = newpos[1];
             let new_e = ewald_check.energy(&system);
             assert_ulps_eq!(cost, new_e - old_e);
         }
@@ -1119,8 +1116,8 @@ mod tests {
 
             let cost = ewald.read().real_space_move_particles_cost(&system, idxes, newpos);
 
-            system[0].position = newpos[0];
-            system[1].position = newpos[1];
+            system.particle_mut(0).position = newpos[0];
+            system.particle_mut(1).position = newpos[1];
             let new_e = ewald_check.read().real_space_energy(&system);
             assert_ulps_eq!(cost, new_e - old_e);
         }
@@ -1139,8 +1136,8 @@ mod tests {
 
             let cost = ewald.write().kspace_move_particles_cost(&system, idxes, newpos);
 
-            system[0].position = newpos[0];
-            system[1].position = newpos[1];
+            system.particle_mut(0).position = newpos[0];
+            system.particle_mut(1).position = newpos[1];
             let new_e = ewald_check.write().kspace_energy(&system);
             assert_ulps_eq!(cost, new_e - old_e);
         }
@@ -1159,8 +1156,8 @@ mod tests {
 
             let cost = ewald.write().molcorrect_move_particles_cost(&system, idxes, newpos);
 
-            system[0].position = newpos[0];
-            system[1].position = newpos[1];
+            system.particle_mut(0).position = newpos[0];
+            system.particle_mut(1).position = newpos[1];
             let new_e = ewald_check.read().molcorrect_energy(&system);
             assert_ulps_eq!(cost, new_e - old_e);
         }

@@ -5,7 +5,7 @@
 extern crate lumol;
 
 use lumol::sys::{System, Particle};
-use lumol::types::{Vector3D, Zero};
+use lumol::types::Vector3D;
 use lumol::energy::{PairInteraction, NullPotential, Harmonic};
 use lumol::sim::{Simulation, Minimization};
 use lumol::sim::min::SteepestDescent;
@@ -16,13 +16,11 @@ fn main() {
     let mut system = System::new();
 
     let alpha = units::from(50.0, "deg").unwrap();
-
-    system.add_particle(Particle::new("O"));
-    system[0].position = Vector3D::zero();
-    system.add_particle(Particle::new("H"));
-    system[1].position = Vector3D::new(1.2 * f64::cos(alpha), 1.2 * f64::sin(alpha), 0.0);
-    system.add_particle(Particle::new("H"));
-    system[2].position = Vector3D::new(1.2 * f64::cos(-alpha), 1.2 * f64::sin(-alpha), 0.0);
+    let a_cos = 1.2 * f64::cos(alpha);
+    let a_sin = 1.2 * f64::sin(alpha);
+    system.add_particle(Particle::with_position("O", Vector3D::new(0.0, 0.0, 0.0)));
+    system.add_particle(Particle::with_position("H", Vector3D::new(a_cos, a_sin, 0.0)));
+    system.add_particle(Particle::with_position("H", Vector3D::new(a_cos, -a_sin, 0.0)));
 
     system.add_bond(0, 1);
     system.add_bond(0, 2);
@@ -40,7 +38,6 @@ fn main() {
         x0: units::from(109.0, "deg").unwrap(),
         k: units::from(30.0, "kJ/mol/deg").unwrap(),
     }));
-
 
     let mut simulation = Simulation::new(
         Box::new(Minimization::new(

@@ -195,6 +195,7 @@ mod tests {
     use sys::veloc::{BoltzmannVelocities, InitVelocities};
     use types::*;
     use sim::Alternator;
+    use utils::system_from_xyz;
 
     fn testing_system() -> System {
         let mut system = System::with_cell(UnitCell::cubic(20.0));;
@@ -261,55 +262,51 @@ mod tests {
 
     #[test]
     fn remove_translation() {
-        let mut system = System::with_cell(UnitCell::cubic(20.0));
-        system.add_particle(Particle::new("Ag"));
-        system.add_particle(Particle::new("Ag"));
-        system[0].position = Vector3D::zero();
-        system[1].position = Vector3D::new(1.0, 1.0, 1.0);
-        system[0].velocity = Vector3D::new(1.0, 2.0, 0.0);
-        system[1].velocity = Vector3D::new(1.0, 0.0, 0.0);
+        let mut system = system_from_xyz("2
+        cell: 20.0
+        Ag 0 0 0 1 2 0
+        Ag 1 1 1 1 0 0
+        ");
 
         let mut control = Alternator::new(4, RemoveTranslation::new());
 
         // The three first controls do nothing
-        let vel_0 = system[0].velocity;
-        let vel_1 = system[1].velocity;
+        let vel_0 = system.particle(0).velocity;
+        let vel_1 = system.particle(1).velocity;
         for _ in 0..3 {
             control.control(&mut system);
-            assert_ulps_eq!(system[0].velocity, vel_0);
-            assert_ulps_eq!(system[1].velocity, vel_1);
+            assert_ulps_eq!(system.particle(0).velocity, vel_0);
+            assert_ulps_eq!(system.particle(1).velocity, vel_1);
         }
 
         // The fourth one removes global translation
         control.control(&mut system);
-        assert_ulps_eq!(system[0].velocity, Vector3D::new(0.0, 1.0, 0.0));
-        assert_ulps_eq!(system[1].velocity, Vector3D::new(0.0, -1.0, 0.0));
+        assert_ulps_eq!(system.particle(0).velocity, Vector3D::new(0.0, 1.0, 0.0));
+        assert_ulps_eq!(system.particle(1).velocity, Vector3D::new(0.0, -1.0, 0.0));
     }
 
     #[test]
     fn remove_rotation() {
-        let mut system = System::with_cell(UnitCell::cubic(20.0));
-        system.add_particle(Particle::new("Ag"));
-        system.add_particle(Particle::new("Ag"));
-        system[0].position = Vector3D::zero();
-        system[1].position = Vector3D::new(1.0, 0.0, 0.0);
-        system[0].velocity = Vector3D::new(0.0, 1.0, 0.0);
-        system[1].velocity = Vector3D::new(0.0, -1.0, 2.0);
+        let mut system = system_from_xyz("2
+        cell: 20.0
+        Ag 0 0 0 0 1 0
+        Ag 1 0 0 0 -1 2
+        ");
 
         let mut control = Alternator::new(4, RemoveRotation::new());
 
         // The three first controls do nothing
-        let vel_0 = system[0].velocity;
-        let vel_1 = system[1].velocity;
+        let vel_0 = system.particle(0).velocity;
+        let vel_1 = system.particle(1).velocity;
         for _ in 0..3 {
             control.control(&mut system);
-            assert_ulps_eq!(system[0].velocity, vel_0);
-            assert_ulps_eq!(system[1].velocity, vel_1);
+            assert_ulps_eq!(system.particle(0).velocity, vel_0);
+            assert_ulps_eq!(system.particle(1).velocity, vel_1);
         }
 
         // The fourth one removes global rotation
         control.control(&mut system);
-        assert_ulps_eq!(system[0].velocity, Vector3D::new(0.0, 0.0, 1.0));
-        assert_ulps_eq!(system[1].velocity, Vector3D::new(0.0, 0.0, 1.0));
+        assert_ulps_eq!(system.particle(0).velocity, Vector3D::new(0.0, 0.0, 1.0));
+        assert_ulps_eq!(system.particle(1).velocity, Vector3D::new(0.0, 0.0, 1.0));
     }
 }

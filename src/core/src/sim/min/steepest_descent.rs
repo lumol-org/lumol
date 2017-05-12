@@ -66,17 +66,17 @@ impl Minimizer for SteepestDescent {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use sys::{System, UnitCell, Particle};
-    use types::{Vector3D, Zero};
+    use sys::System;
     use energy::*;
     use sim::{Propagator, Minimization};
+    use utils::system_from_xyz;
 
     fn testing_system() -> System {
-        let mut system = System::with_cell(UnitCell::cubic(20.0));;
-        system.add_particle(Particle::new("Cl"));
-        system[0].position = Vector3D::zero();
-        system.add_particle(Particle::new("Cl"));
-        system[1].position = Vector3D::new(0.0, 0.0, 2.0);
+        let mut system = system_from_xyz("2
+        cell: 20.0
+        Cl 0.0 0.0 0.0
+        Cl 0.0 0.0 2.0
+        ");
 
         system.add_pair_potential("Cl", "Cl",
             PairInteraction::new(Box::new(Harmonic{x0: 2.3, k: 0.1}), 10.0)

@@ -90,7 +90,7 @@ impl MCMove for Rotate {
         // store positions of selected molecule
         self.newpos.clear();
         for pi in molecule.iter() {
-            self.newpos.push(system[pi].position);
+            self.newpos.push(system.particle(pi).position);
         }
         // get center-of-mass of molecule
         let com = system.molecule_com(self.molid);
@@ -106,7 +106,7 @@ impl MCMove for Rotate {
 
     fn apply(&mut self, system: &mut System) {
         for (i, pi) in system.molecule(self.molid).iter().enumerate() {
-            system[pi].position = self.newpos[i];
+            system.particle_mut(pi).position = self.newpos[i];
         }
     }
 

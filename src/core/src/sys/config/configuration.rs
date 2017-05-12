@@ -3,7 +3,6 @@
 
 //! The Configuration type definition
 
-use std::ops::{Index, IndexMut};
 use std::slice;
 use std::cmp::{min, max};
 use std::i8;
@@ -243,11 +242,11 @@ impl Configuration {
         // iterate over all particles of molecule(molid)
         let total_mass = self.molecule(molid)
             .iter()
-            .fold(0.0, |total_mass, pi| total_mass + self[pi].mass);
+            .fold(0.0, |total_mass, i| total_mass + self.particle(i).mass);
         let com = self.molecule(molid)
             .iter()
-            .fold(Vector3D::zero(), |com , pi| {
-                com + self[pi].mass * self[pi].position
+            .fold(Vector3D::zero(), |com , i| {
+                com + self.particle(i).mass * self.particle(i).position
             });
         com / total_mass
     }
@@ -284,8 +283,8 @@ impl Configuration {
         self.cell.wrap_vector(&mut com_wrapped);
         let delta = com_wrapped - com;
         // iterate over all positions and move them accordingly
-        for pi in self.molecule(molid) {
-            self[pi].position += delta;
+        for i in self.molecule(molid) {
+            self.particle_mut(i).position += delta;
         }
     }
 
@@ -297,6 +296,16 @@ impl Configuration {
     /// Get a mutable iterator over the `Particle` in this configuration
     #[inline] pub fn particles_mut(&mut self) -> slice::IterMut<Particle> {
         self.particles.iter_mut()
+    }
+
+    /// Get a reference to the `i`'th particle in this configuration
+    #[inline] pub fn particle(&self, i: usize) -> &Particle {
+        &self.particles[i]
+    }
+
+    /// Get a mutable reference to the `i`'th particle in this configuration
+    #[inline] pub fn particle_mut(&mut self, i: usize) -> &mut Particle {
+        &mut self.particles[i]
     }
 
     /// Merge the molecules at indexes `first` and `second` into one
@@ -444,21 +453,6 @@ impl Configuration {
     }
 }
 
-impl Index<usize> for Configuration {
-    type Output = Particle;
-    #[inline]
-    fn index(&self, index: usize) -> &Particle {
-        &self.particles[index]
-    }
-}
-
-impl IndexMut<usize> for Configuration {
-    #[inline]
-    fn index_mut(&mut self, index: usize) -> &mut Particle {
-        &mut self.particles[index]
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use sys::*;
@@ -581,9 +575,9 @@ mod tests {
         configuration.add_particle(particle("H"));
 
         assert_eq!(configuration.size(), 3);
-        assert_eq!(configuration[0].name(), "O");
-        assert_eq!(configuration[1].name(), "H");
-        assert_eq!(configuration[2].name(), "H");
+        assert_eq!(configuration.particle(0).name(), "O");
+        assert_eq!(configuration.particle(1).name(), "H");
+        assert_eq!(configuration.particle(2).name(), "H");
     }
 
     #[test]
@@ -593,8 +587,8 @@ mod tests {
         configuration.add_particle(particle("O"));
         configuration.add_particle(particle("H"));
 
-        configuration[0].position = Vector3D::new(9.0, 0.0, 0.0);
-        configuration[1].position = Vector3D::zero();
+        configuration.particle_mut(0).position = Vector3D::new(9.0, 0.0, 0.0);
+        configuration.particle_mut(1).position = Vector3D::zero();
         assert_eq!(configuration.distance(0, 1), 1.0);
 
         configuration.cell = UnitCell::new();
@@ -608,8 +602,8 @@ mod tests {
         configuration.add_particle(particle("O"));
         configuration.add_particle(particle("O"));
         let _ = configuration.add_bond(0, 1);
-        configuration[0].position = Vector3D::new(1.0, 0.0, 0.0);
-        configuration[1].position = Vector3D::zero();
+        configuration.particle_mut(0).position = Vector3D::new(1.0, 0.0, 0.0);
+        configuration.particle_mut(1).position = Vector3D::zero();
         assert_eq!(configuration.molecule_com(0), Vector3D::new(0.5, 0.0, 0.0));
         assert_eq!(configuration.center_of_mass(), Vector3D::new(0.5, 0.0, 0.0));
     }
@@ -621,11 +615,11 @@ mod tests {
         configuration.add_particle(particle("O"));
         configuration.add_particle(particle("O"));
         let _ = configuration.add_bond(0, 1);
-        configuration[0].position = Vector3D::new(-2.0, 0.0, 0.0);
-        configuration[1].position = Vector3D::zero();
+        configuration.particle_mut(0).position = Vector3D::new(-2.0, 0.0, 0.0);
+        configuration.particle_mut(1).position = Vector3D::zero();
         configuration.wrap_molecule(0);
-        assert_eq!(configuration[0].position, Vector3D::new(3.0, 0.0, 0.0));
-        assert_eq!(configuration[1].position, Vector3D::new(5.0, 0.0, 0.0));
+        assert_eq!(configuration.particle(0).position, Vector3D::new(3.0, 0.0, 0.0));
+        assert_eq!(configuration.particle(1).position, Vector3D::new(5.0, 0.0, 0.0));
         assert_eq!(configuration.molecule_com(0), Vector3D::new(4.0, 0.0, 0.0))
     }
 
