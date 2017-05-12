@@ -12,6 +12,7 @@ use sys::{Configuration, UnitCell, CellShape};
 use types::{Matrix3, Vector3D, Array3, Complex, Zero};
 use consts::ELCC;
 use energy::{PairRestriction, RestrictionInfo};
+use parallel::ThreadLocalStore;
 use parallel::prelude::*;
 
 use super::{GlobalPotential, CoulombicPotential, GlobalCache};
@@ -403,6 +404,7 @@ impl Ewald {
         let charges = configuration.particles().charge;
         let factor = 4.0 * PI / (configuration.cell.volume() * ELCC);
         let (rec_kx, rec_ky, rec_kz) = configuration.cell.reciprocal_vectors();
+        let thread_forces_store = ThreadLocalStore::new(|| vec![Vector3D::zero(); configuration.size()]);
 
         for ikx in 0..self.kmax {
             for iky in 0..self.kmax {
@@ -415,7 +417,7 @@ impl Ewald {
                     let f = expfactor * factor;
                     let k = (ikx as f64) * rec_kx + (iky as f64) * rec_ky + (ikz as f64) * rec_kz;
 
-                    for i in 0..configuration.size() {
+                    (0..configuration.size()).into_par_iter().for_each(|i| {
                         let qi = charges[i];
 
                         let fourier_i = self.fourier_phases[(ikx, i, 0)] *
@@ -423,20 +425,24 @@ impl Ewald {
                                         self.fourier_phases[(ikz, i, 2)];
                         let fourier_i = fourier_i.imag();
 
+                        let mut thread_forces = thread_forces_store.borrow_mut();
                         let mut force_i = Vector3D::zero();
 
                         for j in (i + 1)..configuration.size() {
                             let qj = charges[j];
                             let force = f * self.kspace_force_factor(j, ikx, iky, ikz, qi, qj, fourier_i) * k;
                             force_i -= force;
-                            forces[j] += force;
+                            thread_forces[j] += force;
                         }
 
-                        forces[i] += force_i;
-                    }
+                        thread_forces[i] += force_i;
+                    });
                 }
             }
         }
+
+        thread_forces_store.sum_local_values(forces);
+
     }
 
     /// Get the force factor for particles `i` and `j` with charges `qi` and
