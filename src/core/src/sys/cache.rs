@@ -368,7 +368,7 @@ mod tests {
 
     fn testing_system() -> System {
         let mut system = system_from_xyz("8
-        bonds
+        bonds cell: 10.0
         O     0.000000     0.000000     0.000000
         O     0.000000     0.000000     1.480000
         H     0.895669     0.000000    -0.316667

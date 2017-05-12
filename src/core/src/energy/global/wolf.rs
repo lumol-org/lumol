@@ -326,7 +326,7 @@ mod tests {
         pub fn testing_system() -> System {
             use utils::system_from_xyz;
             let mut system = system_from_xyz("6
-            bonds
+            bonds cell: 20.0
             O  0.0  0.0  0.0
             H -0.7 -0.7  0.3
             H  0.3 -0.3 -0.8
@@ -334,7 +334,6 @@ mod tests {
             H  1.3  1.3  0.3
             H  2.3  1.7 -0.8
             ");
-            system.cell = UnitCell::cubic(20.0);
             assert!(system.molecules().len() == 2);
 
             for particle in system.particles_mut() {
