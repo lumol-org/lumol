@@ -11,7 +11,7 @@ use types::{Vector3D, Zero};
 
 use sys::{Particle, ParticleKind};
 use sys::Molecule;
-use sys::{CONNECT_12, CONNECT_13, CONNECT_14, CONNECT_FAR};
+use sys::{BONDED_12, BONDED_13, BONDED_14, BONDED_FAR};
 use sys::molecule_type;
 use sys::UnitCell;
 
@@ -101,14 +101,14 @@ impl Configuration {
         } else if i == j {
             0
         } else {
-            let connect = self.molecule(self.molid(i)).connectivity(i, j);
-            if connect.contains(CONNECT_12) {
+            let connect = self.molecule(self.molid(i)).bond_distance(i, j);
+            if connect.contains(BONDED_12) {
                 1
-            } else if connect.contains(CONNECT_13) {
+            } else if connect.contains(BONDED_13) {
                 2
-            } else if connect.contains(CONNECT_14) {
+            } else if connect.contains(BONDED_14) {
                 3
-            } else if connect.contains(CONNECT_FAR) {
+            } else if connect.contains(BONDED_FAR) {
                 i8::MAX
             } else {
                 unreachable!();
