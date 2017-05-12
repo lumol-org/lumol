@@ -57,11 +57,11 @@ impl Particle {
         let name = name.into();
         let mass = PeriodicTable::mass(&name).unwrap_or_else(||{
             warn_once!("Could not find the mass for the {} particle", name);
-            0.0f32
+            return 0.0;
         });
         Particle {
             name: name,
-            mass: mass as f64,
+            mass: mass,
             charge: 0.0,
             kind: ParticleKind::invalid(),
             position: position,
@@ -88,7 +88,7 @@ mod tests {
     #[test]
     fn mass_initialization() {
         let particle = Particle::new("O");
-        assert_eq!(particle.mass, 15.999f32 as f64);
+        assert_eq!(particle.mass, 15.999);
     }
 
     #[test]
