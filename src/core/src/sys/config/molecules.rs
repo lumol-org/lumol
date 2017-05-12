@@ -10,7 +10,7 @@ use std::collections::hash_map::DefaultHasher;
 
 use types::Array2;
 use sys::{Particle, Bond, Angle, Dihedral};
-use sys::{Connectivity, CONNECT_12, CONNECT_13, CONNECT_14};
+use sys::{BondDistance, BONDED_12, BONDED_13, BONDED_14};
 
 #[derive(Debug, Clone)]
 /// A molecule is the basic building block for a topology. It contains data
@@ -24,10 +24,10 @@ pub struct Molecule {
     /// All the dihedral angles in the molecule. This is rebuilt as needed from
     /// the bond list.
     dihedrals: HashSet<Dihedral>,
-    /// Matrix of connectivity in the molecule. The item at index `i, j` encode
-    /// the connectivity between the particles `i + self.first` and
+    /// Matrix of bond distances in the molecule. The item at index `i, j`
+    /// encode the bond distance between the particles `i + self.first` and
     /// `j + self.first`
-    connections: Array2<Connectivity>,
+    distances: Array2<BondDistance>,
     /// Range of atomic indexes in this molecule.
     range: Range<usize>,
     /// Hashed value of the set of bonds in the system
@@ -47,7 +47,7 @@ impl Molecule {
             bonds: HashSet::new(),
             angles: HashSet::new(),
             dihedrals: HashSet::new(),
-            connections: Array2::default((1, 1)),
+            distances: Array2::default((1, 1)),
             range: i..i+1,
             cached_hash: 0
         }
@@ -151,29 +151,28 @@ impl Molecule {
     /// in the system.
     fn rebuild_connections(&mut self) {
         let n = self.size();
-        self.connections = Array2::default((n, n));
+        self.distances = Array2::default((n, n));
 
-        // Getting needed variables for the `add_connect_term` closure
         let first = self.start();
-        let connections = &mut self.connections;
-        let mut add_connect_term = |i, j, term| {
-            let old_connect = connections[(i - first, j - first)];
-            connections[(i - first, j - first)] = old_connect | term;
+        let distances = &mut self.distances;
+        let mut add_distance_term = |i, j, term| {
+            let old_distance = distances[(i - first, j - first)];
+            distances[(i - first, j - first)] = old_distance | term;
         };
 
         for bond in &self.bonds {
-            add_connect_term(bond.i(), bond.j(), CONNECT_12);
-            add_connect_term(bond.j(), bond.i(), CONNECT_12);
+            add_distance_term(bond.i(), bond.j(), BONDED_12);
+            add_distance_term(bond.j(), bond.i(), BONDED_12);
         }
 
         for angle in &self.angles {
-            add_connect_term(angle.i(), angle.k(), CONNECT_13);
-            add_connect_term(angle.k(), angle.i(), CONNECT_13);
+            add_distance_term(angle.i(), angle.k(), BONDED_13);
+            add_distance_term(angle.k(), angle.i(), BONDED_13);
         }
 
         for dihedral in &self.dihedrals {
-            add_connect_term(dihedral.i(), dihedral.m(), CONNECT_14);
-            add_connect_term(dihedral.m(), dihedral.i(), CONNECT_14);
+            add_distance_term(dihedral.i(), dihedral.m(), BONDED_14);
+            add_distance_term(dihedral.m(), dihedral.i(), BONDED_14);
         }
     }
 
@@ -297,10 +296,10 @@ impl Molecule {
         &self.dihedrals
     }
 
-    /// Get the connectivity between the particles `i` and `j`
-    #[inline] pub fn connectivity(&self, i: usize, j: usize) -> Connectivity {
+    /// Get the bond distance between the particles `i` and `j`
+    #[inline] pub fn bond_distance(&self, i: usize, j: usize) -> BondDistance {
         assert!(self.contains(i) && self.contains(j));
-        return self.connections[(i - self.start(), j - self.start())];
+        return self.distances[(i - self.start(), j - self.start())];
     }
 
     /// Get an iterator over the particles in the molecule
@@ -344,7 +343,7 @@ impl<'a> IntoIterator for &'a Molecule {
 mod test {
     use super::*;
     use sys::{Bond, Angle, Dihedral};
-    use sys::{CONNECT_12, CONNECT_13, CONNECT_14};
+    use sys::{BONDED_12, BONDED_13, BONDED_14};
 
     #[test]
     fn translate() {
@@ -438,14 +437,14 @@ mod test {
         }
 
         /**********************************************************************/
-        assert!(molecule.connectivity(0, 1).contains(CONNECT_12));
-        assert!(molecule.connectivity(1, 0).contains(CONNECT_12));
+        assert!(molecule.bond_distance(0, 1).contains(BONDED_12));
+        assert!(molecule.bond_distance(1, 0).contains(BONDED_12));
 
-        assert!(molecule.connectivity(0, 7).contains(CONNECT_13));
-        assert!(molecule.connectivity(7, 0).contains(CONNECT_13));
+        assert!(molecule.bond_distance(0, 7).contains(BONDED_13));
+        assert!(molecule.bond_distance(7, 0).contains(BONDED_13));
 
-        assert!(molecule.connectivity(3, 5).contains(CONNECT_14));
-        assert!(molecule.connectivity(5, 3).contains(CONNECT_14));
+        assert!(molecule.bond_distance(3, 5).contains(BONDED_14));
+        assert!(molecule.bond_distance(5, 3).contains(BONDED_14));
 
         /**********************************************************************/
 
@@ -470,8 +469,8 @@ mod test {
         molecule.add_bond(2, 3);
         molecule.add_bond(3, 0);
 
-        assert!(molecule.connectivity(0, 3).contains(CONNECT_12));
-        assert!(molecule.connectivity(0, 3).contains(CONNECT_14));
+        assert!(molecule.bond_distance(0, 3).contains(BONDED_12));
+        assert!(molecule.bond_distance(0, 3).contains(BONDED_14));
 
         assert!(molecule.angles.contains(&Angle::new(0, 3, 2)));
         assert!(molecule.angles.contains(&Angle::new(0, 1, 2)));
