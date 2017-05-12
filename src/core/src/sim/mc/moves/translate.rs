@@ -104,7 +104,7 @@ impl MCMove for Translate {
         // If the move is accepted, we have to wrap the
         // com such that it lies inside the cell.
         for i in system.molecule(self.molid) {
-            self.newpos.push(system[i].position + delta);
+            self.newpos.push(system.particle(i).position + delta);
         }
         return true;
     }
@@ -118,7 +118,7 @@ impl MCMove for Translate {
     fn apply(&mut self, system: &mut System) {
         // Update positions.
         for (i, pi) in system.molecule(self.molid).iter().enumerate() {
-            system[pi].position = self.newpos[i];
+            system.particle_mut(pi).position = self.newpos[i];
         }
         // Move molecule such that its center-of-mass
         // is inside the simulation cell.

@@ -172,22 +172,18 @@ impl<'a> EnergyEvaluator<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use sys::{System, Particle, UnitCell};
+    use sys::{System, UnitCell};
     use energy::{Harmonic, LennardJones, NullPotential, PairInteraction};
-    use types::Vector3D;
-    use utils::unit_from;
+    use utils::{unit_from, system_from_xyz};
 
     fn testing_system() -> System {
-        let mut system = System::with_cell(UnitCell::cubic(10.0));;
-        system.add_particle(Particle::new("F"));
-        system[0].position = Vector3D::new(0.0, 0.0, 0.0);
-        system.add_particle(Particle::new("F"));
-        system[1].position = Vector3D::new(1.0, 0.0, 0.0);
-        system.add_particle(Particle::new("F"));
-        system[2].position = Vector3D::new(1.0, 1.0, 0.0);
-        system.add_particle(Particle::new("F"));
-        system[3].position = Vector3D::new(2.0, 1.0, 0.0);
-
+        let mut system = system_from_xyz("4
+        cell: 10.0
+        F 0.0 0.0 0.0
+        F 1.0 0.0 0.0
+        F 1.0 1.0 0.0
+        F 2.0 1.0 0.0
+        ");
         assert!(system.add_bond(0, 1).is_empty());
         assert!(system.add_bond(1, 2).is_empty());
         assert!(system.add_bond(2, 3).is_empty());

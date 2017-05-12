@@ -319,19 +319,18 @@ impl Compute for Pressure {
 #[cfg(test)]
 mod test {
     use super::*;
-    use types::*;
-    use sys::{System, Particle, UnitCell};
+    use sys::System;
     use sys::veloc::{InitVelocities, BoltzmannVelocities};
     use energy::{Harmonic, NullPotential, PairInteraction};
     use consts::K_BOLTZMANN;
-    use utils::unit_from;
+    use utils::{unit_from, system_from_xyz};
 
     fn test_pairs_system() -> System {
-        let mut system = System::with_cell(UnitCell::cubic(10.0));;
-        system.add_particle(Particle::new("F"));
-        system[0].position = Vector3D::zero();
-        system.add_particle(Particle::new("F"));
-        system[1].position = Vector3D::new(1.3, 0.0, 0.0);
+        let mut system = system_from_xyz("2
+        cell: 10.0
+        F 0.0 0.0 0.0
+        F 1.3 0.0 0.0
+        ");
 
         let mut interaction = PairInteraction::new(Box::new(Harmonic{
             k: unit_from(300.0, "kJ/mol/A^2"),
@@ -351,16 +350,13 @@ mod test {
     }
 
     fn test_molecular_system() -> System {
-        let mut system = System::with_cell(UnitCell::cubic(10.0));;
-        system.add_particle(Particle::new("F"));
-        system[0].position = Vector3D::new(0.0, 0.0, 0.0);
-        system.add_particle(Particle::new("F"));
-        system[1].position = Vector3D::new(1.0, 0.0, 0.0);
-        system.add_particle(Particle::new("F"));
-        system[2].position = Vector3D::new(1.0, 1.0, 0.0);
-        system.add_particle(Particle::new("F"));
-        system[3].position = Vector3D::new(2.0, 1.0, 0.0);
-
+        let mut system = system_from_xyz("4
+        cell: 10.0
+        F 0.0 0.0 0.0
+        F 1.0 0.0 0.0
+        F 1.0 1.0 0.0
+        F 2.0 1.0 0.0
+        ");
         assert!(system.add_bond(0, 1).is_empty());
         assert!(system.add_bond(1, 2).is_empty());
         assert!(system.add_bond(2, 3).is_empty());

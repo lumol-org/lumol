@@ -154,7 +154,7 @@ impl EnergyCache {
                 // Exclude interactions inside the sub-system.
                 if idxes.contains(&part_j) {continue}
 
-                let r = system.cell.distance(&system[part_j].position, &newpos[i]);
+                let r = system.cell.distance(&system.particle(part_j).position, &newpos[i]);
                 let energy = evaluator.pair(r, part_i, part_j);
 
                 pairs_delta += energy;
@@ -298,8 +298,8 @@ impl EnergyCache {
                 for pi in mi.iter() {
                     for pj in mj.iter() {
                         let r = system.cell.distance(
-                            &system[pi].position,
-                            &system[pj].position
+                            &system.particle(pi).position,
+                            &system.particle(pj).position
                         );
                         let energy = evaluator.pair(r, pi, pj);
                         pairs_delta += energy;
@@ -355,13 +355,13 @@ fn new_position<'a>(system: &'a System, i: usize, idxes: &[usize], newpos: &'a[V
             return &newpos[idx];
         }
     }
-    return &system[i].position;
+    return &system.particle(i).position;
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use sys::{System, UnitCell};
+    use sys::System;
     use energy::*;
     use utils::{system_from_xyz, unit_from};
     use types::Vector3D;
@@ -377,7 +377,6 @@ mod tests {
         O     3.000000     0.000000     1.480000
         H     3.895669     0.000000    -0.316667
         H     2.104330     0.000000     1.796667");
-        system.cell = UnitCell::cubic(10.0);
         assert!(system.molecules().len() == 2);
 
         system.add_pair_potential("H", "H", PairInteraction::new(
@@ -437,8 +436,8 @@ mod tests {
 
         let cost = cache.move_particles_cost(&system, idxes, newpos);
 
-        system[0].position = newpos[0];
-        system[3].position = newpos[1];
+        system.particle_mut(0).position = newpos[0];
+        system.particle_mut(3).position = newpos[1];
         let new_e = system.potential_energy();
         assert_ulps_eq!(cost, new_e - old_e);
 
@@ -450,8 +449,8 @@ mod tests {
         let idxes = vec![2, 3];
         let newpos = &[Vector3D::new(0.9, 0.2, -0.4), Vector3D::new(-0.9, 0.0, 1.8)];
         let cost = cache.move_particles_cost(&system, idxes, newpos);
-        system[2].position = newpos[0];
-        system[3].position = newpos[1];
+        system.particle_mut(2).position = newpos[0];
+        system.particle_mut(3).position = newpos[1];
         let new_e = system.potential_energy();
         assert_ulps_eq!(cost, new_e - old_e);
     }
@@ -467,8 +466,8 @@ mod tests {
 
         let mut new_system = system.clone();
         // translate the center of mass
-        for pi in system.molecule(0) {
-            new_system[pi].position += delta
+        for i in system.molecule(0) {
+            new_system.particle_mut(i).position += delta
         }
         let cost = cache.move_all_rigid_molecules_cost(&new_system);
         let new_e = new_system.potential_energy();
@@ -482,8 +481,8 @@ mod tests {
         let delta = Vector3D::new(-0.9, 0.0, 1.8);
         let mut new_system = system.clone();
         // translate the center of mass
-        for pi in &system.molecules()[1] {
-            new_system[pi].position += delta
+        for i in &system.molecules()[1] {
+            new_system.particle_mut(i).position += delta
         }
         let cost = cache.move_all_rigid_molecules_cost(&new_system);
         let new_e = new_system.potential_energy();
