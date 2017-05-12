@@ -190,21 +190,21 @@ mod tests {
     use std::fs::File;
 
     use super::*;
-    use sys::*;
-    use types::*;
-    use energy::*;
-    use utils::unit_from;
+    use sys::System;
+    use energy::{PairInteraction, Harmonic};
+    use utils::{unit_from, system_from_xyz};
 
     fn testing_system() -> System {
-        let mut system = System::with_cell(UnitCell::cubic(10.0));;
-
-        system.add_particle(Particle::with_position("F", Vector3D::zero()));
-        system.add_particle(Particle::with_position("F", Vector3D::new(1.3, 0.0, 0.0)));
+        let mut system = system_from_xyz("2
+        cell: 10
+        F 0.0 0.0 0.0
+        F 1.3 0.0 0.0
+        ");
 
         let harmonic = Box::new(Harmonic{
             k: unit_from(300.0, "kJ/mol/A^2"),
-            x0: unit_from(1.2, "A")}
-        );
+            x0: unit_from(1.2, "A")
+        });
         system.add_pair_potential("F", "F",
             PairInteraction::new(harmonic, 5.0)
         );

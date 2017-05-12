@@ -67,7 +67,7 @@ impl Minimizer for SteepestDescent {
 mod tests {
     use super::*;
     use sys::System;
-    use energy::*;
+    use energy::{PairInteraction, Harmonic};
     use sim::{Propagator, Minimization};
     use utils::system_from_xyz;
 

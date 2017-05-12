@@ -97,7 +97,7 @@ impl PairRestriction {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use sys::*;
+    use sys::{System, Particle};
 
     fn testing_system() -> System {
         // Creating 2 pentane molecule

@@ -334,7 +334,7 @@ impl DerefMut for System {
 #[cfg(test)]
 mod tests {
     use super::System;
-    use sys::*;
+    use sys::{Particle, ParticleKind};
 
     #[test]
     fn step() {
