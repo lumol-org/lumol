@@ -429,7 +429,7 @@ mod test {
         let total = TotalEnergy.compute(system);
 
         assert_eq!(kinetic + potential, total);
-        assert_eq!(kinetic, 0.0007483016557453699);
+        assert_ulps_eq!(kinetic, 0.0007483016557453698);
 
         assert_eq!(kinetic, system.kinetic_energy());
         assert_eq!(potential, system.potential_energy());
