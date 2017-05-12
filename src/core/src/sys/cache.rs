@@ -362,7 +362,8 @@ fn new_position<'a>(system: &'a System, i: usize, idxes: &[usize], newpos: &'a[V
 mod tests {
     use super::*;
     use sys::System;
-    use energy::*;
+    use energy::PairInteraction;
+    use energy::{LennardJones, NullPotential, Harmonic, Wolf};
     use utils::{system_from_xyz, unit_from};
     use types::Vector3D;
 

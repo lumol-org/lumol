@@ -414,7 +414,7 @@ fn angle(u: Vector3D, v: Vector3D) -> f64 {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use types::*;
+    use types::{Matrix3, One};
     use std::f64;
     use std::f64::consts::PI;
 

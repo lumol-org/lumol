@@ -455,8 +455,9 @@ impl Configuration {
 
 #[cfg(test)]
 mod tests {
-    use sys::*;
-    use types::*;
+    use super::*;
+    use sys::{Bond, Angle, Dihedral};
+    use types::Vector3D;
 
     /// Create particles with intialized kind for the tests
     fn particle(name: &str) -> Particle {

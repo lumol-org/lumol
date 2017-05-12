@@ -191,9 +191,9 @@ impl Control for RemoveRotation {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use sys::*;
+    use sys::{System, UnitCell, Particle};
     use sys::veloc::{BoltzmannVelocities, InitVelocities};
-    use types::*;
+    // use types::*;
     use sim::Alternator;
     use utils::system_from_xyz;
 
@@ -203,11 +203,11 @@ mod tests {
         for i in 0..10 {
             for j in 0..10 {
                 for k in 0..10 {
-                    let mut p = Particle::new("Cl");
-                    p.position = Vector3D::new(
+                    let mut particle = Particle::new("Cl");
+                    particle.position = Vector3D::new(
                         i as f64 * 2.0, j as f64 * 2.0, k as f64 * 2.0
                     );
-                    system.add_particle(p);
+                    system.add_particle(particle);
                 }
             }
         }
