@@ -47,19 +47,24 @@ pub struct Particle {
 
 
 impl Particle {
-    /// Create a new `Particle` from a name
+    /// Create a new `Particle` from a `name`
     pub fn new<S: Into<String>>(name: S) -> Particle {
+        Particle::with_position(name, Vector3D::zero())
+    }
+
+    /// Create a new `Particle` from a `name` and a `position`
+    pub fn with_position<S: Into<String>>(name: S, position: Vector3D) -> Particle {
         let name = name.into();
-        let mass = PeriodicTable::mass(&name).unwrap_or_default();
-        if mass == 0.0f32 {
-            warn!("Could not find the mass for the {} particle", name);
-        }
+        let mass = PeriodicTable::mass(&name).unwrap_or_else(||{
+            warn_once!("Could not find the mass for the {} particle", name);
+            0.0f32
+        });
         Particle {
             name: name,
             mass: mass as f64,
             charge: 0.0,
             kind: ParticleKind::invalid(),
-            position: Vector3D::zero(),
+            position: position,
             velocity: Vector3D::zero()
         }
     }
@@ -78,19 +83,38 @@ impl Particle {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use types::Vector3D;
 
     #[test]
     fn mass_initialization() {
-        let part = Particle::new("O");
-        assert_eq!(part.mass, 15.999f32 as f64);
+        let particle = Particle::new("O");
+        assert_eq!(particle.mass, 15.999f32 as f64);
     }
 
     #[test]
     fn name() {
-        let mut part = Particle::new("O");
-        assert_eq!(part.name(), "O");
+        let mut particle = Particle::new("");
+        assert_eq!(particle.name(), "");
 
-        part.set_name("H");
-        assert_eq!(part.name(), "H");
+        assert_eq!(particle.mass, 0.0);
+        assert_eq!(particle.charge, 0.0);
+        assert_eq!(particle.kind, ParticleKind::invalid());
+        assert_eq!(particle.position, Vector3D::new(0.0, 0.0, 0.0));
+        assert_eq!(particle.velocity, Vector3D::new(0.0, 0.0, 0.0));
+
+        particle.set_name("H");
+        assert_eq!(particle.name(), "H");
+    }
+
+    #[test]
+    fn with_position() {
+        let particle = Particle::with_position("", Vector3D::new(1.0, 2.0, 3.0));
+        assert_eq!(particle.name(), "");
+        assert_eq!(particle.position, Vector3D::new(1.0, 2.0, 3.0));
+
+        assert_eq!(particle.mass, 0.0);
+        assert_eq!(particle.charge, 0.0);
+        assert_eq!(particle.kind, ParticleKind::invalid());
+        assert_eq!(particle.velocity, Vector3D::new(0.0, 0.0, 0.0));
     }
 }
