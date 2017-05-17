@@ -759,15 +759,15 @@ impl GlobalPotential for SharedEwald {
         return real + self_e + kspace + molecular;
     }
 
-    fn forces(&self, configuration: &Configuration) -> Vec<Vector3D> {
+    fn forces(&self, configuration: &Configuration, forces: &mut [Vector3D])  {
+        assert_eq!(forces.len(), configuration.size());
         let mut ewald = self.write();
         ewald.precompute(&configuration.cell);
-        let mut forces = vec![Vector3D::zero(); configuration.size()];
-        ewald.real_space_forces(configuration, &mut forces);
+
+        ewald.real_space_forces(configuration, forces);
         /* No self force */
-        ewald.kspace_forces(configuration, &mut forces);
-        ewald.molcorrect_forces(configuration, &mut forces);
-        return forces;
+        ewald.kspace_forces(configuration, forces);
+        ewald.molcorrect_forces(configuration, forces);
     }
 
     fn virial(&self, configuration: &Configuration) -> Matrix3 {
@@ -899,7 +899,8 @@ mod tests {
             let mut system = nacl_pair();
             let ewald = SharedEwald::new(Ewald::new(8.0, 10));
 
-            let forces = ewald.forces(&system);
+            let mut forces = vec![Vector3D::zero(); 2];
+            ewald.forces(&system, &mut forces);
             let norm = (forces[0] + forces[1]).norm();
             // Total force should be null
             assert_ulps_eq!(norm, 0.0);
@@ -916,8 +917,9 @@ mod tests {
             system.particle_mut(0).position[0] += eps;
 
             let e1 = ewald.energy(&system);
-            let force = ewald.forces(&system)[0][0];
-            assert_relative_eq!((e - e1) / eps, force, epsilon=1e-6);
+            let mut forces = vec![Vector3D::zero(); 2];
+            ewald.forces(&system, &mut forces);
+            assert_relative_eq!((e - e1) / eps, forces[0][0], epsilon=1e-6);
         }
     }
 
@@ -947,7 +949,8 @@ mod tests {
             let mut ewald = SharedEwald::new(Ewald::new(8.0, 10));
             ewald.set_restriction(PairRestriction::InterMolecular);
 
-            let forces = ewald.forces(&system);
+            let mut forces = vec![Vector3D::zero(); 3];
+            ewald.forces(&system, &mut forces);
             let norm = (forces[0] + forces[1]).norm();
             // Total force should be null
             assert!(norm.abs() < 1e-3);
@@ -966,7 +969,9 @@ mod tests {
             let kspace_energy_1 = ewald.write().kspace_energy(&system);
             let molcorrect_energy_1 = ewald.read().molcorrect_energy(&system);
 
-            let force = ewald.forces(&system)[0][0];
+            let mut forces = vec![Vector3D::zero(); 3];
+            ewald.forces(&system, &mut forces);
+            let force = forces[0][0];
 
             let mut forces_buffer = vec![Vector3D::zero(); system.size()];
             ewald.read().real_space_forces(&system, &mut forces_buffer);
@@ -1046,10 +1051,11 @@ mod tests {
         fn total() {
             let system = nacl_pair();
             let ewald = SharedEwald::new(Ewald::new(8.0, 10));
+            let mut forces = vec![Vector3D::zero(); 2];
 
             let virial = ewald.virial(&system);
-            let force = ewald.forces(&system)[0];
-            let expected = force.tensorial(&Vector3D::new(1.5, 0.0, 0.0));
+            ewald.forces(&system, &mut forces);
+            let expected = forces[0].tensorial(&Vector3D::new(1.5, 0.0, 0.0));
             assert_ulps_eq!(virial, expected, max_ulps=25);
         }
     }

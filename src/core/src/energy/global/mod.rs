@@ -48,9 +48,8 @@ use energy::PairRestriction;
 ///         self.delta * configuration.size() as f64
 ///     }
 ///
-///     fn forces(&self, configuration: &Configuration) -> Vec<Vector3D> {
+///     fn forces(&self, configuration: &Configuration, forces: &mut [Vector3D]) {
 ///         // this potential does not changes the forces
-///         vec![Vector3D::zero(); configuration.size()]
 ///     }
 ///
 ///     fn virial(&self, configuration: &Configuration) -> Matrix3 {
@@ -95,7 +94,7 @@ pub trait GlobalPotential: GlobalCache + BoxCloneGlobal + Send + Sync {
     /// Compute the force contribution of this potential. This function should
     /// return a vector containing the force acting on each particle in the
     /// configuration.
-    fn forces(&self, configuration: &Configuration) -> Vec<Vector3D>;
+    fn forces(&self, configuration: &Configuration, forces: &mut [Vector3D]);
     /// Compute the total virial contribution of this potential
     fn virial(&self, configuration: &Configuration) -> Matrix3;
 }
@@ -139,9 +138,8 @@ impl_box_clone!(GlobalPotential, BoxCloneGlobal, box_clone_gobal);
 ///         self.delta * configuration.size() as f64
 ///     }
 ///
-///     fn forces(&self, configuration: &Configuration) -> Vec<Vector3D> {
+///     fn forces(&self, configuration: &Configuration, forces: &mut [Vector3D]) {
 ///         // this potential does not changes the forces
-///         vec![Vector3D::zero(); configuration.size()]
 ///     }
 ///
 ///     fn virial(&self, configuration: &Configuration) -> Matrix3 {

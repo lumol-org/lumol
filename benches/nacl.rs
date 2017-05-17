@@ -12,7 +12,7 @@ use rand::Rng;
 
 use lumol::energy::{Ewald, SharedEwald, Wolf, GlobalPotential};
 use lumol::sys::EnergyCache;
-use lumol::types::Vector3D;
+use lumol::types::{Vector3D, Zero};
 
 #[macro_use]
 mod utils;
@@ -29,9 +29,10 @@ fn energy_ewald(bencher: &mut Bencher) {
 fn forces_ewald(bencher: &mut Bencher) {
     let system = utils::get_system("nacl");
     let ewald = SharedEwald::new(Ewald::new(9.5, 7));
+    let mut forces = vec![Vector3D::zero(); system.size()];
 
     bencher.iter(||{
-        let _ = ewald.forces(&system);
+        let _ = ewald.forces(&system, &mut forces);
     })
 }
 
@@ -56,9 +57,10 @@ fn energy_wolf(bencher: &mut Bencher) {
 fn forces_wolf(bencher: &mut Bencher) {
     let system = utils::get_system("nacl");
     let wolf = Wolf::new(12.0);
+    let mut forces = vec![Vector3D::zero(); system.size()];
 
     bencher.iter(||{
-        let _ = wolf.forces(&system);
+        let _ = wolf.forces(&system, &mut forces);
     })
 }
 
