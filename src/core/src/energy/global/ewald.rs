@@ -396,7 +396,7 @@ impl Ewald {
         let (rec_kx, rec_ky, rec_kz) = system.cell().reciprocal_vectors();
         let thread_forces_store = ThreadLocalStore::new(|| vec![Vector3D::zero(); system.size()]);
 
-        Zip::indexed(&*self.expfactors).par_apply(|(ikx, iky, ikz), expfactor| {
+        Zip::indexed(&*self.expfactors).apply(|(ikx, iky, ikz), expfactor| {
             // The k = 0 and the cutoff in k-space are already handled
             // in `expfactors`.
             let expfactor = expfactor.abs();
@@ -405,7 +405,7 @@ impl Ewald {
             let f = expfactor * factor;
             let k = (ikx as f64) * rec_kx + (iky as f64) * rec_ky + (ikz as f64) * rec_kz;
 
-            (0..system.size()).into_par_iter().for_each(|i| {
+            for i in 0..system.size() {
                 let qi = system[i].charge;
 
                 let fourier_i = self.fourier_phases[(ikx, i, 0)] *
@@ -424,7 +424,7 @@ impl Ewald {
                 }
 
                 thread_forces[i] += force_i;
-            });
+            }
         });
 
         thread_forces_store.sum_local_values(forces);
