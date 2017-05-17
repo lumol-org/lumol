@@ -197,7 +197,9 @@ impl GlobalPotential for Wolf {
         }).sum()
     }
 
-    fn forces(&self, configuration: &Configuration) -> Vec<Vector3D> {
+    fn forces(&self, configuration: &Configuration, forces: &mut [Vector3D])  {
+        assert_eq!(forces.len(), configuration.size());
+
         // To avoid race conditions, each thread needs its
         // own local forces Vec
         let natoms = configuration.size();
@@ -226,10 +228,7 @@ impl GlobalPotential for Wolf {
         // At this point all the forces are computed, but the
         // results are scattered across all thread local Vecs,
         // here we gather them.
-        let mut forces = vec![Vector3D::zero(); natoms];
-        thread_forces_store.sum_local_values(&mut forces);
-
-        return forces;
+        thread_forces_store.sum_local_values(forces);
     }
 
     fn virial(&self, configuration: &Configuration) -> Matrix3 {
@@ -299,7 +298,8 @@ mod tests {
         let mut system = testing_system();
         let wolf = Wolf::new(8.0);
 
-        let forces = wolf.forces(&system);
+        let mut forces = vec![Vector3D::zero(); system.size()];
+        wolf.forces(&system, &mut forces);
         let norm = (forces[0] + forces[1]).norm();
         // Total force should be null
         assert_ulps_eq!(norm, 0.0);
@@ -310,8 +310,9 @@ mod tests {
         system.particle_mut(0).position[0] += eps;
 
         let e1 = wolf.energy(&system);
-        let force = wolf.forces(&system)[0][0];
-        assert_relative_eq!((e - e1) / eps, force, epsilon=1e-6);
+        let mut forces = vec![Vector3D::zero(); system.size()];
+        wolf.forces(&system, &mut forces);
+        assert_relative_eq!((e - e1) / eps, forces[0][0], epsilon=1e-6);
     }
 
     mod cache {

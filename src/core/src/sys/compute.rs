@@ -8,7 +8,6 @@ use std::f64::consts::PI;
 use consts::K_BOLTZMANN;
 use types::{Matrix3, Vector3D, Zero, One};
 use sys::System;
-
 use parallel::prelude::*;
 use parallel::ThreadLocalStore;
 
@@ -96,19 +95,11 @@ impl Compute for Forces {
         }
 
         if let Some(coulomb) = system.coulomb_potential() {
-            let coulomb_forces = coulomb.forces(system);
-            debug_assert_eq!(coulomb_forces.len(), natoms, "Wrong `forces` size in coulomb potentials");
-            for (i, force) in coulomb_forces.iter().enumerate() {
-                forces[i] += force;
-            }
+            coulomb.forces(system, &mut forces);
         }
 
         for global in system.global_potentials() {
-            let global_forces = global.forces(system);
-            debug_assert_eq!(global_forces.len(), natoms, "Wrong `forces` size in global potentials");
-            for (i, force) in global_forces.iter().enumerate() {
-                forces[i] += force;
-            }
+            global.forces(system, &mut forces);
         }
         return forces;
     }
