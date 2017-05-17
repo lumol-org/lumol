@@ -38,6 +38,8 @@ mod systems;
 pub use self::systems::System;
 pub use self::systems::Permutations;
 
+mod new_system;
+
 mod chfl;
 pub use self::chfl::{Trajectory, TrajectoryError};
 pub use self::chfl::{guess_bonds, read_molecule};
