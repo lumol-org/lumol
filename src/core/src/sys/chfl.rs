@@ -155,7 +155,7 @@ impl ToChemfiles for UnitCell {
             CellShape::Infinite => {
                 try!(chemfiles::UnitCell::infinite())
             }
-            CellShape::Orthorombic => {
+            CellShape::Orthorhombic => {
                 let (a, b, c) = (self.a(), self.b(), self.c());
                 try!(chemfiles::UnitCell::new(a, b, c))
             },
