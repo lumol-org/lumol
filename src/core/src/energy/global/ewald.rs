@@ -130,7 +130,7 @@ impl Ewald {
             CellShape::Triclinic => {
                 fatal_error!("Can not (yet) use Ewald sum with Triclinic cell.");
             },
-            CellShape::Orthorombic => {
+            CellShape::Orthorhombic => {
                 // All good!
             },
         }

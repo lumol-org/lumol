@@ -14,8 +14,8 @@ use types::{Matrix3, Vector3D, Zero};
 pub enum CellShape {
     /// Infinite unit cell, with no boundaries
     Infinite,
-    /// Orthorombic unit cell, with cuboid shape
-    Orthorombic,
+    /// Orthorhombic unit cell, with cuboid shape
+    Orthorhombic,
     /// Triclinic unit cell, with arbitrary parallelepipedic shape
     Triclinic,
 }
@@ -61,7 +61,7 @@ impl UnitCell {
         UnitCell{
             cell: cell,
             inv: cell.inverse(),
-            shape: CellShape::Orthorombic
+            shape: CellShape::Orthorhombic
         }
     }
     /// Create a cubic unit cell, with side lengths `length, length, length`.
@@ -73,7 +73,7 @@ impl UnitCell {
         UnitCell{
             cell: cell,
             inv: cell.inverse(),
-            shape: CellShape::Orthorombic
+            shape: CellShape::Orthorhombic
         }
     }
     /// Create a triclinic unit cell, with side lengths `a, b, c` and angles
@@ -125,7 +125,7 @@ impl UnitCell {
     pub fn a(&self) -> f64 {
         match self.shape {
             CellShape::Triclinic => self.vect_a().norm(),
-            CellShape::Orthorombic | CellShape::Infinite => self.cell[(0, 0)],
+            CellShape::Orthorhombic | CellShape::Infinite => self.cell[(0, 0)],
         }
     }
 
@@ -142,7 +142,7 @@ impl UnitCell {
     pub fn b(&self) -> f64 {
         match self.shape {
             CellShape::Triclinic => self.vect_b().norm(),
-            CellShape::Orthorombic | CellShape::Infinite => self.cell[(1, 1)],
+            CellShape::Orthorhombic | CellShape::Infinite => self.cell[(1, 1)],
         }
     }
 
@@ -159,7 +159,7 @@ impl UnitCell {
     pub fn c(&self) -> f64 {
         match self.shape {
             CellShape::Triclinic => self.vect_c().norm(),
-            CellShape::Orthorombic | CellShape::Infinite => self.cell[(2, 2)],
+            CellShape::Orthorhombic | CellShape::Infinite => self.cell[(2, 2)],
         }
     }
 
@@ -188,7 +188,7 @@ impl UnitCell {
                 let c = self.vect_c();
                 angle(b, c).to_degrees()
             },
-            CellShape::Orthorombic | CellShape::Infinite => 90.0,
+            CellShape::Orthorhombic | CellShape::Infinite => 90.0,
         }
     }
 
@@ -200,7 +200,7 @@ impl UnitCell {
                 let c = self.vect_c();
                 angle(a, c).to_degrees()
             },
-            CellShape::Orthorombic | CellShape::Infinite => 90.0,
+            CellShape::Orthorhombic | CellShape::Infinite => 90.0,
         }
     }
 
@@ -212,7 +212,7 @@ impl UnitCell {
                 let b = self.vect_b();
                 angle(a, b).to_degrees()
             },
-            CellShape::Orthorombic | CellShape::Infinite => 90.0,
+            CellShape::Orthorhombic | CellShape::Infinite => 90.0,
         }
     }
 
@@ -220,7 +220,7 @@ impl UnitCell {
     pub fn volume(&self) -> f64 {
         let volume = match self.shape {
             CellShape::Infinite => 0.0,
-            CellShape::Orthorombic => self.a()*self.b()*self.c(),
+            CellShape::Orthorhombic => self.a() * self.b() * self.c(),
             CellShape::Triclinic => {
                 // The volume is the mixed product of the three cell vectors
                 let a = self.vect_a();
@@ -270,7 +270,7 @@ impl UnitCell {
     pub fn wrap_vector(&self, vect: &mut Vector3D) {
         match self.shape {
             CellShape::Infinite => (),
-            CellShape::Orthorombic => {
+            CellShape::Orthorhombic => {
                 vect[0] -= f64::floor(vect[0] / self.a()) * self.a();
                 vect[1] -= f64::floor(vect[1] / self.b()) * self.b();
                 vect[2] -= f64::floor(vect[2] / self.c()) * self.c();
@@ -291,7 +291,7 @@ impl UnitCell {
     pub fn vector_image(&self, vect: &mut Vector3D) {
         match self.shape {
             CellShape::Infinite => (),
-            CellShape::Orthorombic => {
+            CellShape::Orthorhombic => {
                 vect[0] -= f64::round(vect[0] / self.a()) * self.a();
                 vect[1] -= f64::round(vect[1] / self.b()) * self.b();
                 vect[2] -= f64::round(vect[2] / self.c()) * self.c();
@@ -466,7 +466,7 @@ mod tests {
     #[test]
     fn cubic() {
         let cell = UnitCell::cubic(3.0);
-        assert_eq!(cell.shape(), CellShape::Orthorombic);
+        assert_eq!(cell.shape(), CellShape::Orthorhombic);
         assert!(!cell.is_infinite());
 
         assert_eq!(cell.vect_a(), Vector3D::new(3.0, 0.0, 0.0));
@@ -485,9 +485,9 @@ mod tests {
     }
 
     #[test]
-    fn orthorombic() {
+    fn orthorhombic() {
         let cell = UnitCell::ortho(3.0, 4.0, 5.0);
-        assert_eq!(cell.shape(), CellShape::Orthorombic);
+        assert_eq!(cell.shape(), CellShape::Orthorhombic);
         assert!(!cell.is_infinite());
 
         assert_eq!(cell.vect_a(), Vector3D::new(3.0, 0.0, 0.0));
