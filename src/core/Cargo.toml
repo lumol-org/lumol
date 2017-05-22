@@ -23,6 +23,7 @@ lazy_static = "0.2"
 num-traits = "0.1"
 rayon = "0.7"
 thread_local = "0.3"
+smallvec = "0.4"
 
 [dev-dependencies]
 tempfile = "2.1"

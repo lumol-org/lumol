@@ -91,18 +91,24 @@ type BondKind = (Kind, Kind);
 type AngleKind = (Kind, Kind, Kind);
 type DihedralKind = (Kind, Kind, Kind, Kind);
 
+// Store one potentials on the stack, and only allocate a full vector if there
+// are more than one potential. Most of the time, there will only be one
+// potential for a given set of particle types. It is better not to put
+// everything on the heap to prevent pointer chasing.
+type SmallVec<T> = ::smallvec::SmallVec<[T; 1]>;
+
 /// The Interaction type hold all data about the potentials in the system,
 /// indexed by particle type.
 #[derive(Clone)]
 pub struct Interactions {
     /// Pair potentials
-    pairs: BTreeMap<PairKind, Vec<PairInteraction>>,
+    pairs: BTreeMap<PairKind, SmallVec<PairInteraction>>,
     /// Bond potentials
-    bonds: BTreeMap<BondKind, Vec<Box<BondPotential>>>,
+    bonds: BTreeMap<BondKind, SmallVec<Box<BondPotential>>>,
     /// Angle potentials
-    angles: BTreeMap<AngleKind, Vec<Box<AnglePotential>>>,
+    angles: BTreeMap<AngleKind, SmallVec<Box<AnglePotential>>>,
     /// Dihedral angles potentials
-    dihedrals: BTreeMap<DihedralKind, Vec<Box<DihedralPotential>>>,
+    dihedrals: BTreeMap<DihedralKind, SmallVec<Box<DihedralPotential>>>,
     /// Coulombic potential solver
     coulomb: Option<Box<CoulombicPotential>>,
     /// Global potentials
@@ -145,7 +151,7 @@ impl Interactions {
     pub fn add_pair(&mut self, i: &str, j: &str, potential: PairInteraction) {
         let (i, j) = (self.get_kind(i), self.get_kind(j));
         let (i, j) = normalize_pair(i, j);
-        let pairs = self.pairs.entry((i, j)).or_insert(Vec::new());
+        let pairs = self.pairs.entry((i, j)).or_insert(SmallVec::new());
         pairs.push(potential);
     }
 
@@ -153,7 +159,7 @@ impl Interactions {
     pub fn add_bond(&mut self, i: &str, j: &str, potential: Box<BondPotential>) {
         let (i, j) = (self.get_kind(i), self.get_kind(j));
         let (i, j) = normalize_pair(i, j);
-        let bonds = self.bonds.entry((i, j)).or_insert(Vec::new());
+        let bonds = self.bonds.entry((i, j)).or_insert(SmallVec::new());
         bonds.push(potential);
     }
 
@@ -161,7 +167,7 @@ impl Interactions {
     pub fn add_angle(&mut self, i: &str, j: &str, k: &str, potential: Box<AnglePotential>) {
         let (i, j, k) = (self.get_kind(i), self.get_kind(j), self.get_kind(k));
         let (i, j, k) = normalize_angle(i, j, k);
-        let angles = self.angles.entry((i, j, k)).or_insert(Vec::new());
+        let angles = self.angles.entry((i, j, k)).or_insert(SmallVec::new());
         angles.push(potential);
     }
 
@@ -170,7 +176,7 @@ impl Interactions {
     pub fn add_dihedral(&mut self, i: &str, j: &str, k: &str, m: &str, potential: Box<DihedralPotential>) {
         let (i, j, k, m) = (self.get_kind(i), self.get_kind(j), self.get_kind(k), self.get_kind(m));
         let (i, j, k, m) = normalize_dihedral(i, j, k, m);
-        let dihedrals = self.dihedrals.entry((i, j, k, m)).or_insert(Vec::new());
+        let dihedrals = self.dihedrals.entry((i, j, k, m)).or_insert(SmallVec::new());
         dihedrals.push(potential);
     }
 
