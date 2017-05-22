@@ -8,6 +8,8 @@ use std::f64;
 use std::collections::BTreeMap;
 use std::cmp::{min, max};
 
+use ordermap::OrderMap;
+
 use energy::{PairInteraction, BondPotential, AnglePotential, DihedralPotential};
 use energy::{GlobalPotential, CoulombicPotential};
 
@@ -96,13 +98,13 @@ type DihedralKind = (Kind, Kind, Kind, Kind);
 #[derive(Clone)]
 pub struct Interactions {
     /// Pair potentials
-    pairs: BTreeMap<PairKind, Vec<PairInteraction>>,
+    pairs: OrderMap<PairKind, Vec<PairInteraction>>,
     /// Bond potentials
-    bonds: BTreeMap<BondKind, Vec<Box<BondPotential>>>,
+    bonds: OrderMap<BondKind, Vec<Box<BondPotential>>>,
     /// Angle potentials
-    angles: BTreeMap<AngleKind, Vec<Box<AnglePotential>>>,
+    angles: OrderMap<AngleKind, Vec<Box<AnglePotential>>>,
     /// Dihedral angles potentials
-    dihedrals: BTreeMap<DihedralKind, Vec<Box<DihedralPotential>>>,
+    dihedrals: OrderMap<DihedralKind, Vec<Box<DihedralPotential>>>,
     /// Coulombic potential solver
     coulomb: Option<Box<CoulombicPotential>>,
     /// Global potentials
@@ -121,10 +123,10 @@ impl Interactions {
     /// Create a new empty `Interactions`
     pub fn new() -> Interactions {
         Interactions{
-            pairs: BTreeMap::new(),
-            bonds: BTreeMap::new(),
-            angles: BTreeMap::new(),
-            dihedrals: BTreeMap::new(),
+            pairs: OrderMap::new(),
+            bonds: OrderMap::new(),
+            angles: OrderMap::new(),
+            dihedrals: OrderMap::new(),
             coulomb: None,
             globals: Vec::new(),
             kinds: ParticleKinds::new(),
