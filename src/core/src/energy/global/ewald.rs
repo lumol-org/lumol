@@ -9,6 +9,7 @@ use std::f64;
 
 use ndarray::Zip;
 
+use parallel::ThreadLocalStore;
 use sys::{System, UnitCell, CellShape};
 use types::{Matrix3, Vector3D, Array3, Complex, Zero};
 use consts::ELCC;
@@ -392,40 +393,41 @@ impl Ewald {
 
         let factor = 4.0 * PI / (system.cell().volume() * ELCC);
         let (rec_kx, rec_ky, rec_kz) = system.cell().reciprocal_vectors();
+        let thread_forces_store = ThreadLocalStore::new(|| vec![Vector3D::zero(); system.size()]);
 
-        for ikx in 0..self.kmax {
-            for iky in 0..self.kmax {
-                for ikz in 0..self.kmax {
-                    // The k = 0 and the cutoff in k-space are already handled
-                    // in `expfactors`.
-                    let expfactor = self.expfactors[(ikx, iky, ikz)].abs();
-                    if expfactor < f64::EPSILON { continue }
+        Zip::indexed(&*self.expfactors).apply(|(ikx, iky, ikz), expfactor| {
+            // The k = 0 and the cutoff in k-space are already handled
+            // in `expfactors`.
+            let expfactor = expfactor.abs();
+            if expfactor < f64::EPSILON { return; }
 
-                    let f = expfactor * factor;
-                    let k = (ikx as f64) * rec_kx + (iky as f64) * rec_ky + (ikz as f64) * rec_kz;
+            let f = expfactor * factor;
+            let k = (ikx as f64) * rec_kx + (iky as f64) * rec_ky + (ikz as f64) * rec_kz;
 
-                    for i in 0..system.size() {
-                        let qi = system[i].charge;
+            for i in 0..system.size() {
+                let qi = system[i].charge;
 
-                        let fourier_i = self.fourier_phases[(ikx, i, 0)] *
-                                        self.fourier_phases[(iky, i, 1)] *
-                                        self.fourier_phases[(ikz, i, 2)];
-                        let fourier_i = fourier_i.imag();
+                let fourier_i = self.fourier_phases[(ikx, i, 0)] *
+                    self.fourier_phases[(iky, i, 1)] *
+                    self.fourier_phases[(ikz, i, 2)];
+                let fourier_i = fourier_i.imag();
 
-                        let mut force_i = Vector3D::zero();
+                let mut thread_forces = thread_forces_store.borrow_mut();
+                let mut force_i = Vector3D::zero();
 
-                        for j in (i + 1)..system.size() {
-                            let qj = system[j].charge;
-                            let force = f * self.kspace_force_factor(j, ikx, iky, ikz, qi, qj, fourier_i) * k;
-                            force_i -= force;
-                            forces[j] += force;
-                        }
-
-                        forces[i] += force_i;
-                    }
+                for j in (i + 1)..system.size() {
+                    let qj = system[j].charge;
+                    let force = f * self.kspace_force_factor(j, ikx, iky, ikz, qi, qj, fourier_i) * k;
+                    force_i -= force;
+                    thread_forces[j] += force;
                 }
+
+                thread_forces[i] += force_i;
             }
-        }
+        });
+
+        thread_forces_store.sum_local_values(forces);
+
     }
 
     /// Get the force factor for particles `i` and `j` with charges `qi` and
