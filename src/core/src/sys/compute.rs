@@ -8,7 +8,6 @@ use std::f64::consts::PI;
 use consts::K_BOLTZMANN;
 use types::{Matrix3, Vector3D, Zero, One};
 use sys::System;
-use parallel::prelude::*;
 
 use parallel::prelude::*;
 use parallel::ThreadLocalStore;
