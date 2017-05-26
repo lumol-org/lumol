@@ -6,6 +6,7 @@ use special::Error;
 use std::sync::{RwLock, RwLockReadGuard, RwLockWriteGuard};
 use std::f64::consts::{PI, FRAC_2_SQRT_PI};
 use std::f64;
+use std::mem;
 
 use ndarray::Zip;
 
@@ -354,13 +355,13 @@ impl Ewald {
         let mut new_rho : Array3<Complex> = Array3::zeros((0,0,0));
         mem::swap(&mut self.rho, &mut new_rho);
 
-       for ((ikx, iky, ikz), rho) in Zip::indexed(&mut *new_rho) {
+        Zip::indexed(&mut *new_rho).into_par_iter().for_each(|((ikx, iky, ikz), rho)|{
             *rho = Complex::polar(0.0, 0.0);
             for j in 0..natoms {
                 let phi = self.fourier_phases[(ikx, j, 0)] * self.fourier_phases[(iky, j, 1)] * self.fourier_phases[(ikz, j, 2)];
                 *rho = *rho + system.particle(j).charge * phi;
             }
-        };
+        });
 
         mem::swap(&mut self.rho, &mut new_rho);
     }
