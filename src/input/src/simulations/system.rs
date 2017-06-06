@@ -21,7 +21,7 @@ impl Input {
 
         let file = try!(extract::str("file", config, "system"));
         let file = get_input_path(&self.path, file);
-        let mut trajectory = try!(Trajectory::open(file));
+        let mut trajectory = try!(TrajectoryBuilder::new().open(file));
 
         let mut with_cell = false;
         if let Some(cell) = try!(self.read_cell()) {

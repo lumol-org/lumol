@@ -9,7 +9,7 @@ extern crate lumol;
 extern crate lumol_input as input;
 
 use lumol::sys::{System, UnitCell};
-use lumol::sys::Trajectory;
+use lumol::sys::TrajectoryBuilder;
 use lumol::energy::{PairInteraction, LennardJones, NullPotential};
 use lumol::energy::{Ewald, SharedEwald, PairRestriction, CoulombicPotential};
 use lumol::consts::K_BOLTZMANN;
@@ -23,9 +23,10 @@ pub fn get_system(path: &str, cutoff: f64) -> System {
                                  .join("data")
                                  .join("nist-spce")
                                  .join(path);
-    let mut system = Trajectory::open(&path)
-                                .and_then(|mut traj| traj.read())
-                                .unwrap();
+    let mut system = TrajectoryBuilder::new()
+                                       .open(&path)
+                                       .and_then(|mut traj| traj.read())
+                                       .unwrap();
 
     let mut file = File::open(path).unwrap();
     let mut buffer = String::new();

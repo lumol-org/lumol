@@ -3,7 +3,7 @@
 extern crate lumol;
 extern crate lumol_input as input;
 
-use lumol::sys::{UnitCell, System, Trajectory};
+use lumol::sys::{UnitCell, System, TrajectoryBuilder};
 use lumol::units;
 use lumol::sim::Simulation;
 use lumol::energy::{LennardJones, PairInteraction, PairRestriction, NullPotential};
@@ -15,9 +15,10 @@ use std::path::Path;
 fn get_system() -> System {
     let data_dir = Path::new(file!()).parent().unwrap().join("data");
     let configuration = data_dir.join("ethane.xyz");
-    let mut system = Trajectory::open(configuration)
-                                .and_then(|mut traj| traj.read_guess_bonds())
-                                .unwrap();
+    let mut system = TrajectoryBuilder::new()
+                                       .open(configuration)
+                                       .and_then(|mut traj| traj.read_guess_bonds())
+                                       .unwrap();
     system.cell = UnitCell::cubic(100.0);
 
     // Add intermolecular interactions

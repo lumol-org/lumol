@@ -6,7 +6,7 @@
 extern crate lumol;
 extern crate lumol_input as input;
 
-use lumol::sys::{System, Trajectory, UnitCell};
+use lumol::sys::{System, TrajectoryBuilder, UnitCell};
 use lumol::energy::{LennardJones, PairInteraction};
 use lumol::sim::Simulation;
 use lumol::sim::mc::{MonteCarlo, Translate, Resize};
@@ -18,9 +18,10 @@ use std::path::Path;
 fn get_system() -> System {
     let data_dir = Path::new(file!()).parent().unwrap();
     let configuration = data_dir.join("data").join("argon.xyz");
-    let mut system = Trajectory::open(configuration)
-                               .and_then(|mut traj| traj.read())
-                               .unwrap();
+    let mut system = TrajectoryBuilder::new()
+                                       .open(configuration)
+                                       .and_then(|mut traj| traj.read())
+                                       .unwrap();
 
     system.cell = UnitCell::cubic(31.0);
 
