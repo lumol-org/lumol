@@ -51,7 +51,7 @@ impl System {
         System::with_configuration(configuration)
     }
 
-    /// Create a system with the specified `configuration`
+    /// Create a system with the specified `configuration`, and no interactions.
     fn with_configuration(configuration: Configuration) -> System {
         System {
             configuration: configuration,
@@ -116,6 +116,26 @@ impl System {
             assert!(temperature >= 0.0, "External temperature must be positive");
         }
         self.external_temperature = temperature;
+    }
+
+
+
+    /// Guess the bonds in the configuration using the chemfiles algorithm.
+    ///
+    /// This function removes any existing bond, and tries to guess them using
+    /// a distance criteria. Because this function does a round trip to
+    /// chemfiles, it might be costly when dealing with big systems.
+    pub fn guess_bonds(&mut self) {
+        use ::sys::chfl::{ToChemfiles, ToLumol};
+        let mut frame = self.to_chemfiles().expect(
+            "can not convert the configuration to a chemfiles frame"
+        );
+        frame.guess_topology().expect(
+            "can not guess system topology in chemfiles"
+        );
+        *self = frame.to_lumol().expect(
+            "can not convert the chemfiles frame to a configuration"
+        );
     }
 }
 

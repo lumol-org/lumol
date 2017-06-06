@@ -6,7 +6,6 @@
 
 use types::Vector3D;
 use sys::{System, Particle, UnitCell};
-use sys::guess_bonds;
 
 /// Read the `content` string, assuming XYZ format, and create the corresponding
 /// system. This function is intended for testing purposes only, and will
@@ -47,7 +46,7 @@ pub fn system_from_xyz(content: &str) -> System {
     }
 
     if lines[1].contains("bonds") {
-        return guess_bonds(&system).expect("Could not guess the bonds");
+        system.guess_bonds();
     }
 
     return system;
