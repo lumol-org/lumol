@@ -4,7 +4,7 @@
 //! Monte Carlo simulation of a Xenon crystal melt.
 extern crate lumol;
 
-use lumol::sys::{Trajectory, UnitCell};
+use lumol::sys::{TrajectoryBuilder, UnitCell};
 use lumol::energy::{PairInteraction, LennardJones};
 use lumol::sim::Simulation;
 use lumol::sim::mc::{MonteCarlo, Translate};
@@ -12,8 +12,10 @@ use lumol::out::TrajectoryOutput;
 use lumol::units;
 
 fn main() {
-    let mut trajectory = Trajectory::open("data/xenon.xyz").unwrap();
-    let mut system = trajectory.read().unwrap();
+    let mut system = TrajectoryBuilder::new()
+                                       .open("data/xenon.xyz")
+                                       .and_then(|mut traj| traj.read())
+                                       .unwrap();
     system.cell = UnitCell::cubic(units::from(21.65, "A").unwrap());
 
     let lj = Box::new(LennardJones{

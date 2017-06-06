@@ -216,26 +216,146 @@ impl ToChemfiles for System {
 
 /******************************************************************************/
 
-/// A Trajectory is a file containing one or more successive simulation steps
+/// A Trajectory is a file containing one or more successive simulation steps.
+///
+/// One should use the [`TrajectoryBuilder`](struct.TrajectoryBuilder.html) to
+/// create a new trajectory.
+///
+/// # Examples
+///
+/// ```no_run
+/// # use lumol::sys::TrajectoryBuilder;
+/// let mut trajectory = TrajectoryBuilder::new()
+///                                       .open("file.xyz")
+///                                       .unwrap();
+///
+/// let system = trajectory.read().unwrap();
+/// ```
 pub struct Trajectory(chemfiles::Trajectory);
 
 /// Result type for all Trajectory operations
-pub type TrajectoryResult<T> = Result<T, TrajectoryError>;
+type TrajectoryResult<T> = Result<T, TrajectoryError>;
+
+/// Possible modes when opening a [`Trajectory`](struct.Trajectory.html).
+pub enum OpenMode {
+    /// Open the file as read-only
+    Read,
+    /// Open the file as write-only, and overwrite any existing file
+    Write,
+    /// Open the file as read-write, keeping existing files
+    Append,
+}
+
+/// A [`Trajectory`](struct.Trajectory.html) builder, to set some options
+/// before opening a trajectory.
+///
+/// # Examples
+///
+/// ```no_run
+/// # use lumol::sys::{TrajectoryBuilder, OpenMode};
+/// let trajectory = TrajectoryBuilder::new()
+///                                    .mode(OpenMode::Read)
+///                                    .open("file.xyz")
+///                                    .unwrap();
+/// ```
+pub struct TrajectoryBuilder<'a> {
+    mode: OpenMode,
+    format: &'a str,
+}
+
+impl<'a> TrajectoryBuilder<'a> {
+    /// Create a new builder in read mode and with automatic format detection.
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// # use lumol::sys::{TrajectoryBuilder, OpenMode};
+    /// let trajectory = TrajectoryBuilder::new()
+    ///                                    .open("file.xyz")
+    ///                                    .unwrap();
+    /// ```
+    pub fn new() -> TrajectoryBuilder<'a> {
+        TrajectoryBuilder {
+            mode: OpenMode::Read,
+            format: "",
+        }
+    }
+
+    /// Use a specific `format` when opening a file. See the [chemfiles]
+    /// documentation for a format list.
+    ///
+    /// [chemfiles]: http://chemfiles.org/chemfiles/latest/formats.html#list-of-supported-formats
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// # use lumol::sys::TrajectoryBuilder;
+    /// let trajectory = TrajectoryBuilder::new()
+    ///                                    .format("PDB")
+    ///                                    .open("file.mol")
+    ///                                    .unwrap();
+    /// ```
+    pub fn format(self, format: &'a str) -> TrajectoryBuilder<'a> {
+        TrajectoryBuilder {
+            format: format,
+            mode: self.mode,
+        }
+    }
+
+    /// Use a specific `mode` when opening a file.
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// # use lumol::sys::{TrajectoryBuilder, OpenMode};
+    /// let trajectory = TrajectoryBuilder::new()
+    ///                                    .mode(OpenMode::Write)
+    ///                                    .open("file.nc")
+    ///                                    .unwrap();
+    /// ```
+    pub fn mode(self, mode: OpenMode) -> TrajectoryBuilder<'a> {
+        TrajectoryBuilder {
+            mode: mode,
+            format: self.format,
+        }
+    }
+
+    /// Open the trajectory at the given `path`.
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// # use lumol::sys::TrajectoryBuilder;
+    /// let trajectory = TrajectoryBuilder::new()
+    ///                                    .open("file.nc")
+    ///                                    .unwrap();
+    /// ```
+    pub fn open<P: AsRef<Path>>(self, path: P) -> TrajectoryResult<Trajectory> {
+        let mode = match self.mode {
+            OpenMode::Read => 'r',
+            OpenMode::Write => 'w',
+            OpenMode::Append => 'a',
+        };
+        let trajectory = try!(chemfiles::Trajectory::open_with_format(
+            path, mode, self.format
+        ));
+        return Ok(Trajectory(trajectory));
+    }
+}
 
 impl Trajectory {
-    /// Open an existing file at `path` for reading.
-    pub fn open<P: AsRef<Path>>(path: P) -> TrajectoryResult<Trajectory> {
-        let trajectory = try!(chemfiles::Trajectory::open(path, 'r'));
-        return Ok(Trajectory(trajectory));
-    }
-
-    /// Create a new file at `path` for writing, overwrite any existing file.
-    pub fn create<P: AsRef<Path>>(path: P) -> TrajectoryResult<Trajectory> {
-        let trajectory = try!(chemfiles::Trajectory::open(path, 'w'));
-        return Ok(Trajectory(trajectory));
-    }
-
     /// Read the next step of the trajectory
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// # use lumol::sys::TrajectoryBuilder;
+    /// let mut trajectory = TrajectoryBuilder::new()
+    ///                                       .open("file.nc")
+    ///                                       .unwrap();
+    ///
+    /// let system = trajectory.read().unwrap();
+    /// ```
     pub fn read(&mut self) -> TrajectoryResult<System> {
         let mut frame = try!(chemfiles::Frame::new());
         try!(self.0.read(&mut frame));
@@ -243,7 +363,18 @@ impl Trajectory {
     }
 
     /// Read the next step of the trajectory, and guess the bonds of the
-    /// resulting System.
+    /// resulting [`System`][struct.System.html].
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// # use lumol::sys::TrajectoryBuilder;
+    /// let mut trajectory = TrajectoryBuilder::new()
+    ///                                       .open("file.nc")
+    ///                                       .unwrap();
+    ///
+    /// let system = trajectory.read_guess_bonds().unwrap();
+    /// ```
     pub fn read_guess_bonds(&mut self) -> TrajectoryResult<System> {
         let mut frame = try!(chemfiles::Frame::new());
         try!(self.0.read(&mut frame));
@@ -252,6 +383,19 @@ impl Trajectory {
     }
 
     /// Write the system to the trajectory.
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// # use lumol::sys::{System, TrajectoryBuilder, OpenMode};
+    /// # let system = System::new();
+    /// let mut trajectory = TrajectoryBuilder::new()
+    ///                                       .mode(OpenMode::Write)
+    ///                                       .open("file.xyz")
+    ///                                       .unwrap();
+    ///
+    /// trajectory.write(&system).unwrap();
+    /// ```
     pub fn write(&mut self, system: &System) -> TrajectoryResult<()> {
         let frame = try!(system.to_chemfiles());
         try!(self.0.write(&frame));
@@ -260,6 +404,7 @@ impl Trajectory {
 
     /// Get access to the Chemfiles trajectory, and the associated features
     // TODO: use partial privacy for this function
+    #[doc(hidden)]
     pub fn as_chemfiles(&mut self) -> &mut chemfiles::Trajectory {
         &mut self.0
     }
@@ -267,6 +412,14 @@ impl Trajectory {
 
 /// Read a the first molecule from the file at `path`. If no bond information
 /// exists in the file, bonds are guessed.
+///
+/// # Examples
+///
+/// ```no_run
+/// # use lumol::sys::read_molecule;
+/// let (molecule, particles) = read_molecule("file.xyz").unwrap();
+/// assert_eq!(molecule.size(), particles.len());
+/// ```
 pub fn read_molecule<P: AsRef<Path>>(path: P) -> TrajectoryResult<(Molecule, Vec<Particle>)> {
     let mut trajectory = try!(chemfiles::Trajectory::open(&path, 'r'));
     let mut frame = try!(chemfiles::Frame::new());

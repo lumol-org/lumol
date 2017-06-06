@@ -5,7 +5,7 @@
 extern crate lumol;
 extern crate lumol_input as input;
 
-use lumol::sys::{Molecule, Particle, Trajectory, UnitCell};
+use lumol::sys::{Molecule, Particle, TrajectoryBuilder, UnitCell};
 use lumol::sys::{read_molecule, molecule_type};
 use lumol::sim::Simulation;
 use lumol::sim::mc::{MonteCarlo, Translate, Rotate};
@@ -14,9 +14,9 @@ use lumol::units;
 use input::InteractionsInput;
 
 fn main() {
-    let mut system = Trajectory::open("data/binary.xyz")
-                                .and_then(|mut traj| traj.read())
-                                .unwrap();
+    let mut system = TrajectoryBuilder::new().open("data/binary.xyz")
+                                             .and_then(|mut traj| traj.read())
+                                             .unwrap();
     // Add bonds in the system
     for i in 0..system.molecules().len() / 3 {
         system.add_bond(3 * i,     3 * i + 1);
