@@ -20,7 +20,7 @@ pub use self::cache::EnergyCache;
 
 mod chfl;
 pub use self::chfl::{Trajectory, TrajectoryError, TrajectoryBuilder, OpenMode};
-pub use self::chfl::{guess_bonds, read_molecule};
+pub use self::chfl::read_molecule;
 pub use self::chfl::ToChemfiles;
 
 pub mod veloc;

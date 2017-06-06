@@ -444,13 +444,6 @@ pub fn read_molecule<P: AsRef<Path>>(path: P) -> TrajectoryResult<(Molecule, Vec
     return Ok((molecule, particles));
 }
 
-/// Guess the bonds in a system using Chemfiles algorithm
-pub fn guess_bonds(system: &System) -> TrajectoryResult<System> {
-    let mut frame = try!(system.to_chemfiles());
-    try!(frame.guess_topology());
-    return frame.to_lumol();
-}
-
 
 #[cfg(test)]
 mod tests {
