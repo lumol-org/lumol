@@ -354,11 +354,12 @@ impl Ewald {
         for ikx in 0..self.kmax {
             for iky in 0..self.kmax {
                 for ikz in 0..self.kmax {
-                    self.rho[(ikx, iky, ikz)] = Complex::polar(0.0, 0.0);
+                    let mut rho = Complex::polar(0.0, 0.0);
                     for j in 0..natoms {
                         let phi = self.fourier_phases[(ikx, j, 0)] * self.fourier_phases[(iky, j, 1)] * self.fourier_phases[(ikz, j, 2)];
-                        self.rho[(ikx, iky, ikz)] = self.rho[(ikx, iky, ikz)] + system.particle(j).charge * phi;
+                        rho = rho + system.particle(j).charge * phi;
                     }
+                    self.rho[(ikx, iky, ikz)] = rho;
                 }
             }
         }
