@@ -6,8 +6,10 @@ use special::Error;
 use std::sync::{RwLock, RwLockReadGuard, RwLockWriteGuard};
 use std::f64::consts::{PI, FRAC_2_SQRT_PI};
 use std::f64;
+use std::mem;
 
 use ndarray::Zip;
+use ndrange::Range3;
 
 use sys::{System, UnitCell, CellShape};
 use types::{Matrix3, Vector3D, Array3, Complex, Zero};
@@ -351,17 +353,19 @@ impl Ewald {
             }
         }
 
-        for ikx in 0..self.kmax {
-            for iky in 0..self.kmax {
-                for ikz in 0..self.kmax {
-                    self.rho[(ikx, iky, ikz)] = Complex::polar(0.0, 0.0);
-                    for j in 0..natoms {
-                        let phi = self.fourier_phases[(ikx, j, 0)] * self.fourier_phases[(iky, j, 1)] * self.fourier_phases[(ikz, j, 2)];
-                        self.rho[(ikx, iky, ikz)] = self.rho[(ikx, iky, ikz)] + system.particle(j).charge * phi;
-                    }
-                }
+        let mut new_rho : Array3<Complex> = Array3::zeros((0,0,0));
+        mem::swap(&mut self.rho, &mut new_rho);
+
+        let range = Range3::new((0, 0, 0), new_rho.dim());
+        range.into_par_iter().zip(new_rho.as_slice_mut().unwrap()).with_max_len(1).for_each(|((ikx, iky, ikz), rho)|{
+            *rho = Complex::polar(0.0, 0.0);
+            for j in 0..natoms {
+                let phi = self.fourier_phases[(ikx, j, 0)] * self.fourier_phases[(iky, j, 1)] * self.fourier_phases[(ikz, j, 2)];
+                *rho = *rho + system.particle(j).charge * phi;
             }
-        }
+        });
+
+        mem::swap(&mut self.rho, &mut new_rho);
     }
 
     /// k-space contribution to the energy

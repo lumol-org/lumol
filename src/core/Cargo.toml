@@ -23,6 +23,7 @@ lazy_static = "0.2"
 num-traits = "0.1"
 rayon = "0.7"
 thread_local = "0.3"
+ndrange = { git = "https://github.com/antoinewdg/rust-ndrange" }
 
 [dev-dependencies]
 tempfile = "2.1"
