@@ -72,13 +72,6 @@ def request_api(endpoint, data=None):
     return r.json()
 
 
-def get_master_commit():
-    cmd = 'git log --oneline _bot_remote/master -n 1'
-    out = subprocess.check_output(cmd, shell=True).decode('utf-8')
-    sha, _, title = out.rstrip().partition(' ')
-    return sha, title
-
-
 def get_commit_descriptions(n_commits=None):
     """
     Get hash and title of the `n_commits` latest commits on the PR.
@@ -90,20 +83,18 @@ def get_commit_descriptions(n_commits=None):
     :param n_commits:
     :return:
     """
-    cmd = 'git log --oneline  _bot_remote/master.._bot_pr'.format(n_commits)
-    out = subprocess.check_output(cmd, shell=True).decode('utf-8')
+    cmd = 'git log --format="%h"  _bot_remote/master^.._bot_pr'
+    sha = subprocess.check_output(cmd, shell=True).decode('utf-8')
 
-    descriptions = []
-    for line in out.split('\n'):
-        if line.rstrip() == '':
-            continue
-        sha, _, title = line.partition(' ')
-        descriptions.append((sha, title))
+    cmd = 'git log --format="%s"  _bot_remote/master^.._bot_pr'
+    titles = subprocess.check_output(cmd, shell=True).decode('utf-8')
 
+    descriptions = list(zip(sha.split('\n'), titles.split('\n')))
     if n_commits is not None:
+        n_commits = n_commits - 1  # Always keep the commit from master
+        assert(n_commits > 0)
         descriptions = descriptions[:min(len(descriptions), n_commits)]
 
-    descriptions.append(get_master_commit())
     return descriptions
 
 
