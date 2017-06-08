@@ -4,7 +4,7 @@
 use special::Error;
 use std::f64::consts::PI;
 
-use sys::System;
+use sys::{System, Configuration};
 use types::{Matrix3, Vector3D, Zero};
 use consts::ELCC;
 use energy::{PairRestriction, RestrictionInfo};
@@ -173,23 +173,23 @@ impl GlobalPotential for Wolf {
         Some(self.cutoff)
     }
 
-    fn energy(&self, system: &System) -> f64 {
-        let natoms = system.size();
+    fn energy(&self, configuration: &Configuration) -> f64 {
+        let natoms = configuration.size();
 
         (0..natoms).par_map(|i|{
 
             let mut local_energy = 0.0;
-            let qi = system.particle(i).charge;
+            let qi = configuration.particle(i).charge;
             if qi == 0.0 { return 0.0; }
 
             for j in i+1..natoms {
-                let qj = system.particle(j).charge;
+                let qj = configuration.particle(j).charge;
                 if qj == 0.0 {continue}
 
-                let distance = system.bond_distance(i, j);
+                let distance = configuration.bond_distance(i, j);
                 let info = self.restriction.information(distance);
 
-                let rij = system.distance(i, j);
+                let rij = configuration.distance(i, j);
                 local_energy  += self.energy_pair(info, qi, qj, rij);
             }
 
@@ -197,26 +197,26 @@ impl GlobalPotential for Wolf {
         }).sum()
     }
 
-    fn forces(&self, system: &System) -> Vec<Vector3D> {
+    fn forces(&self, configuration: &Configuration) -> Vec<Vector3D> {
         // To avoid race conditions, each thread needs its
         // own local forces Vec
-        let natoms = system.size();
+        let natoms = configuration.size();
         let thread_forces_store = ThreadLocalStore::new(|| vec![Vector3D::zero(); natoms]);
 
         (0..natoms).into_par_iter().for_each(|i| {
             /// Get the thread local forces Vec
             let mut thread_forces = thread_forces_store.borrow_mut();
 
-            let qi = system.particle(i).charge;
+            let qi = configuration.particle(i).charge;
             if qi == 0.0 { return; }
             for j in i + 1..natoms {
-                let qj = system.particle(j).charge;
+                let qj = configuration.particle(j).charge;
                 if qj == 0.0 { continue }
 
-                let distance = system.bond_distance(i, j);
+                let distance = configuration.bond_distance(i, j);
                 let info = self.restriction.information(distance);
 
-                let rij = system.nearest_image(i, j);
+                let rij = configuration.nearest_image(i, j);
                 let force = self.force_pair(info, qi, qj, rij);
                 thread_forces[i] += force;
                 thread_forces[j] -= force;
@@ -232,23 +232,23 @@ impl GlobalPotential for Wolf {
         return forces;
     }
 
-    fn virial(&self, system: &System) -> Matrix3 {
-        let natoms = system.size();
+    fn virial(&self, configuration: &Configuration) -> Matrix3 {
+        let natoms = configuration.size();
 
         (0..natoms).par_map(|i| {
 
-            let qi = system.particle(i).charge;
+            let qi = configuration.particle(i).charge;
             if qi == 0.0 { return Matrix3::zero(); }
             let mut local_virial = Matrix3::zero();
 
             for j in i+1..natoms {
-                let qj = system.particle(j).charge;
+                let qj = configuration.particle(j).charge;
                 if qj == 0.0 {continue}
 
-                let distance = system.bond_distance(i, j);
+                let distance = configuration.bond_distance(i, j);
                 let info = self.restriction.information(distance);
 
-                let rij = system.nearest_image(i, j);
+                let rij = configuration.nearest_image(i, j);
                 let force = self.force_pair(info, qi, qj, rij);
                 local_virial += force.tensorial(&rij);
             }
