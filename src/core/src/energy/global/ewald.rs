@@ -9,7 +9,7 @@ use std::f64;
 
 use ndarray::Zip;
 
-use sys::{System, Configuration, UnitCell, CellShape};
+use sys::{Configuration, UnitCell, CellShape};
 use types::{Matrix3, Vector3D, Array3, Complex, Zero};
 use consts::ELCC;
 use energy::{PairRestriction, RestrictionInfo};
@@ -266,23 +266,23 @@ impl Ewald {
         return virial;
     }
 
-    fn real_space_move_particles_cost(&self, system: &System, idxes: &[usize], newpos: &[Vector3D]) -> f64 {
+    fn real_space_move_particles_cost(&self, configuration: &Configuration, idxes: &[usize], newpos: &[Vector3D]) -> f64 {
         let mut e_old = 0.0;
         let mut e_new = 0.0;
 
         // Iterate over all interactions between a moved particle and a
         // particle not moved
         for (idx, &i) in idxes.iter().enumerate() {
-            let qi = system.particle(i).charge;
+            let qi = configuration.particle(i).charge;
             if qi == 0.0 {continue}
-            for j in (0..system.size()).filter(|x| !idxes.contains(x)) {
-                let qj = system.particle(j).charge;
+            for j in (0..configuration.size()).filter(|x| !idxes.contains(x)) {
+                let qj = configuration.particle(j).charge;
                 if qi == 0.0 {continue}
 
-                let r_old = system.distance(i, j);
-                let r_new = system.cell.distance(&newpos[idx], &system.particle(j).position);
+                let r_old = configuration.distance(i, j);
+                let r_new = configuration.cell.distance(&newpos[idx], &configuration.particle(j).position);
 
-                let distance = system.bond_distance(i, j);
+                let distance = configuration.bond_distance(i, j);
                 let info = self.restriction.information(distance);
 
                 e_old += self.real_space_energy_pair(info, qi, qj, r_old);
@@ -292,16 +292,16 @@ impl Ewald {
 
         // Iterate over all interactions between two moved particles
         for (idx, &i) in idxes.iter().enumerate() {
-            let qi = system.particle(i).charge;
+            let qi = configuration.particle(i).charge;
             if qi == 0.0 {continue}
             for (jdx, &j) in idxes.iter().enumerate().skip(i + 1) {
-                let qj = system.particle(j).charge;
+                let qj = configuration.particle(j).charge;
                 if qj == 0.0 {continue}
 
-                let r_old = system.distance(i, j);
-                let r_new = system.cell.distance(&newpos[idx], &newpos[jdx]);
+                let r_old = configuration.distance(i, j);
+                let r_new = configuration.cell.distance(&newpos[idx], &newpos[jdx]);
 
-                let distance = system.bond_distance(i, j);
+                let distance = configuration.bond_distance(i, j);
                 let info = self.restriction.information(distance);
 
                 e_old += self.real_space_energy_pair(info, qi, qj, r_old);
@@ -480,15 +480,15 @@ impl Ewald {
         }).sum()
     }
 
-    fn compute_delta_rho_move_particles(&mut self, system: &System, idxes: &[usize], newpos: &[Vector3D]) {
+    fn compute_delta_rho_move_particles(&mut self, configuration: &Configuration, idxes: &[usize], newpos: &[Vector3D]) {
         let natoms = idxes.len();
         let mut new_fourier_phases = Array3::zeros((self.kmax, natoms, 3));
         let mut old_fourier_phases = Array3::zeros((self.kmax, natoms, 3));
 
         // Do the k=0, 1 cases first
         for (idx, &i) in idxes.iter().enumerate() {
-            let old_ri = system.cell.fractional(&system.particle(i).position);
-            let new_ri = system.cell.fractional(&newpos[idx]);
+            let old_ri = configuration.cell.fractional(&configuration.particle(i).position);
+            let new_ri = configuration.cell.fractional(&newpos[idx]);
             for j in 0..3 {
                 old_fourier_phases[(0, idx, j)] = Complex::polar(1.0, 0.0);
                 old_fourier_phases[(1, idx, j)] = Complex::polar(1.0, -2.0 * PI * old_ri[j]);
@@ -519,19 +519,19 @@ impl Ewald {
                         let old_phi = old_fourier_phases[(ikx, idx, 0)] * old_fourier_phases[(iky, idx, 1)] * old_fourier_phases[(ikz, idx, 2)];
                         let new_phi = new_fourier_phases[(ikx, idx, 0)] * new_fourier_phases[(iky, idx, 1)] * new_fourier_phases[(ikz, idx, 2)];
 
-                        self.delta_rho[(ikx, iky, ikz)] = self.delta_rho[(ikx, iky, ikz)] - system.particle(i).charge * old_phi;
-                        self.delta_rho[(ikx, iky, ikz)] = self.delta_rho[(ikx, iky, ikz)] + system.particle(i).charge * new_phi;
+                        self.delta_rho[(ikx, iky, ikz)] = self.delta_rho[(ikx, iky, ikz)] - configuration.particle(i).charge * old_phi;
+                        self.delta_rho[(ikx, iky, ikz)] = self.delta_rho[(ikx, iky, ikz)] + configuration.particle(i).charge * new_phi;
                     }
                 }
             }
         }
     }
 
-    fn kspace_move_particles_cost(&mut self, system: &System, idxes: &[usize], newpos: &[Vector3D]) -> f64 {
-        let e_old = self.kspace_energy(system);
+    fn kspace_move_particles_cost(&mut self, configuration: &Configuration, idxes: &[usize], newpos: &[Vector3D]) -> f64 {
+        let e_old = self.kspace_energy(configuration);
 
         let mut e_new = 0.0;
-        self.compute_delta_rho_move_particles(system, idxes, newpos);
+        self.compute_delta_rho_move_particles(configuration, idxes, newpos);
         for ikx in 0..self.kmax {
             for iky in 0..self.kmax {
                 for ikz in 0..self.kmax {
@@ -544,7 +544,7 @@ impl Ewald {
                 }
             }
         }
-        e_new *= 2.0 * PI / (system.cell.volume() * ELCC);
+        e_new *= 2.0 * PI / (configuration.cell.volume() * ELCC);
 
         return e_new - e_old;
     }
@@ -654,25 +654,25 @@ impl Ewald {
         return virial;
     }
 
-    fn molcorrect_move_particles_cost(&mut self, system: &System, idxes: &[usize], newpos: &[Vector3D]) -> f64 {
+    fn molcorrect_move_particles_cost(&mut self, configuration: &Configuration, idxes: &[usize], newpos: &[Vector3D]) -> f64 {
         let mut e_old = 0.0;
         let mut e_new = 0.0;
 
         // Iterate over all interactions between a moved particle and a
         // particle not moved
         for (idx, &i) in idxes.iter().enumerate() {
-            let qi = system.particle(i).charge;
+            let qi = configuration.particle(i).charge;
             if qi == 0.0 {continue}
-            for j in (0..system.size()).filter(|x| !idxes.contains(x)) {
-                let qj = system.particle(j).charge;
+            for j in (0..configuration.size()).filter(|x| !idxes.contains(x)) {
+                let qj = configuration.particle(j).charge;
                 if qi == 0.0 {continue}
 
-                let distance = system.bond_distance(i, j);
+                let distance = configuration.bond_distance(i, j);
                 let info = self.restriction.information(distance);
                 if !info.excluded {continue}
 
-                let r_old = system.distance(i, j);
-                let r_new = system.cell.distance(&newpos[idx], &system.particle(j).position);
+                let r_old = configuration.distance(i, j);
+                let r_new = configuration.cell.distance(&newpos[idx], &configuration.particle(j).position);
 
                 e_old += self.molcorrect_energy_pair(info, qi, qj, r_old);
                 e_new += self.molcorrect_energy_pair(info, qi, qj, r_new);
@@ -681,18 +681,18 @@ impl Ewald {
 
         // Iterate over all interactions between two moved particles
         for (idx, &i) in idxes.iter().enumerate() {
-            let qi = system.particle(i).charge;
+            let qi = configuration.particle(i).charge;
             if qi == 0.0 {continue}
             for (jdx, &j) in idxes.iter().enumerate().skip(i + 1) {
-                let qj = system.particle(j).charge;
+                let qj = configuration.particle(j).charge;
                 if qj == 0.0 {continue}
 
-                let distance = system.bond_distance(i, j);
+                let distance = configuration.bond_distance(i, j);
                 let info = self.restriction.information(distance);
                 if !info.excluded {continue}
 
-                let r_old = system.distance(i, j);
-                let r_new = system.cell.distance(&newpos[idx], &newpos[jdx]);
+                let r_old = configuration.distance(i, j);
+                let r_new = configuration.cell.distance(&newpos[idx], &newpos[jdx]);
 
                 e_old += self.molcorrect_energy_pair(info, qi, qj, r_old);
                 e_new += self.molcorrect_energy_pair(info, qi, qj, r_new);
@@ -788,13 +788,13 @@ impl CoulombicPotential for SharedEwald {
 }
 
 impl GlobalCache for SharedEwald {
-    fn move_particles_cost(&self, system: &System, idxes: &[usize], newpos: &[Vector3D]) -> f64 {
+    fn move_particles_cost(&self, configuration: &Configuration, idxes: &[usize], newpos: &[Vector3D]) -> f64 {
         let mut ewald = self.write();
-        ewald.precompute(&system.cell);
-        let real = ewald.real_space_move_particles_cost(system, idxes, newpos);
+        ewald.precompute(&configuration.cell);
+        let real = ewald.real_space_move_particles_cost(configuration, idxes, newpos);
         /* No self cost */
-        let kspace = ewald.kspace_move_particles_cost(system, idxes, newpos);
-        let molecular = ewald.molcorrect_move_particles_cost(system, idxes, newpos);
+        let kspace = ewald.kspace_move_particles_cost(configuration, idxes, newpos);
+        let molecular = ewald.molcorrect_move_particles_cost(configuration, idxes, newpos);
         return real + kspace + molecular;
     }
 

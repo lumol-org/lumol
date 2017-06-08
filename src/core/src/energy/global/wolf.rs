@@ -4,7 +4,7 @@
 use special::Error;
 use std::f64::consts::PI;
 
-use sys::{System, Configuration};
+use sys::Configuration;
 use types::{Matrix3, Vector3D, Zero};
 use consts::ELCC;
 use energy::{PairRestriction, RestrictionInfo};
@@ -117,23 +117,23 @@ impl Wolf {
 }
 
 impl GlobalCache for Wolf {
-    fn move_particles_cost(&self, system: &System, idxes: &[usize], newpos: &[Vector3D]) -> f64 {
+    fn move_particles_cost(&self, config: &Configuration, idxes: &[usize], newpos: &[Vector3D]) -> f64 {
         let mut e_old = 0.0;
         let mut e_new = 0.0;
 
         // Iterate over all interactions between a moved particle and a
         // particle not moved
         for (idx, &i) in idxes.iter().enumerate() {
-            let qi = system.particle(i).charge;
+            let qi = config.particle(i).charge;
             if qi == 0.0 {continue;}
-            for j in (0..system.size()).filter(|x| !idxes.contains(x)) {
-                let qj = system.particle(j).charge;
+            for j in (0..config.size()).filter(|x| !idxes.contains(x)) {
+                let qj = config.particle(j).charge;
                 if qj == 0.0 {continue;}
 
-                let r_old = system.cell.distance(&system.particle(i).position, &system.particle(j).position);
-                let r_new = system.cell.distance(&newpos[idx], &system.particle(j).position);
+                let r_old = config.cell.distance(&config.particle(i).position, &config.particle(j).position);
+                let r_new = config.cell.distance(&newpos[idx], &config.particle(j).position);
 
-                let distance = system.bond_distance(i, j);
+                let distance = config.bond_distance(i, j);
                 let info = self.restriction.information(distance);
 
                 e_old += self.energy_pair(info, qi, qj, r_old);
@@ -143,16 +143,16 @@ impl GlobalCache for Wolf {
 
         // Iterate over all interactions between two moved particles
         for (idx, &i) in idxes.iter().enumerate() {
-            let qi = system.particle(i).charge;
+            let qi = config.particle(i).charge;
             if qi == 0.0 {continue;}
             for (jdx, &j) in idxes.iter().enumerate().skip(idx + 1) {
-                let qj = system.particle(j).charge;
+                let qj = config.particle(j).charge;
                 if qj == 0.0 {continue;}
 
-                let r_old = system.distance(i, j);
-                let r_new = system.cell.distance(&newpos[idx], &newpos[jdx]);
+                let r_old = config.distance(i, j);
+                let r_new = config.cell.distance(&newpos[idx], &newpos[jdx]);
 
-                let distance = system.bond_distance(i, j);
+                let distance = config.bond_distance(i, j);
                 let info = self.restriction.information(distance);
 
                 e_old += self.energy_pair(info, qi, qj, r_old);
