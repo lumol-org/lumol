@@ -312,7 +312,6 @@ impl EnergyCache {
         }
 
         // temporarily, recompute all interactions
-        // TODO: make this more efficient
         let new_coulomb = evaluator.coulomb();
         let new_global = evaluator.global();
 

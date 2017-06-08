@@ -109,7 +109,6 @@ impl Ewald {
 
     /// Set the value of the alpha parameter for ewald computation. The default is to use
     /// `alpha = 3 * π / (4 * rc)`.
-    // TODO: add a way to set alpha ensuring O(n^3/2) behavior, and a given precision
     pub fn set_alpha(&mut self, alpha: f64) {
         assert!(alpha > 0.0, "Ewald parameter alpha must be positive");
         self.alpha = alpha;
