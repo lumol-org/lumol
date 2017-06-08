@@ -8,10 +8,7 @@ use extract;
 use super::Input;
 
 impl Input {
-    /// Get the the simulation. This is an internal function, public because of
-    /// the code organization.
-    // TODO: use restricted privacy here
-    #[doc(hidden)]
+    /// Get the the simulation.
     pub fn read_simulation(&self) -> Result<Simulation> {
         let propagator = try!(self.read_propagator());
         let mut simulation = Simulation::new(propagator);
@@ -22,11 +19,8 @@ impl Input {
         Ok(simulation)
     }
 
-    /// Get the number of steps in the simulation. This is an internal function,
-    /// public because of the code organization.
-    // TODO: use restricted privacy here
-    #[doc(hidden)]
-    pub fn read_nsteps(&self) -> Result<usize> {
+    /// Get the number of steps in the simulation.
+    pub(crate) fn read_nsteps(&self) -> Result<usize> {
         let simulation = try!(self.simulation_table());
         let nsteps = try!(simulation.get("nsteps").ok_or(
             Error::from("Missing 'nsteps' key in simulation")
@@ -39,11 +33,8 @@ impl Input {
         Ok(nsteps as usize)
     }
 
-    /// Get the simulation TOML table. This is an internal function, public
-    /// because of the code organization.
-    // TODO: use restricted privacy here
-    #[doc(hidden)]
-    pub fn simulation_table(&self) -> Result<&Table> {
+    /// Get the simulation TOML table.
+    pub(crate) fn simulation_table(&self) -> Result<&Table> {
         let simulations = try!(extract::slice("simulations", &self.config, "input file"));
         if simulations.len() != 1 {
             return Err(Error::from(

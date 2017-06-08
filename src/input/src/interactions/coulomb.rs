@@ -11,11 +11,8 @@ use super::read_restriction;
 use super::InteractionsInput;
 
 impl InteractionsInput {
-    /// Read the "coulomb" section from the potential configuration. This is an
-    /// internal function, public because of the code organization.
-    // TODO: use restricted privacy here
-    #[doc(hidden)]
-    pub fn read_coulomb(&self, system: &mut System) -> Result<()> {
+    /// Read the "coulomb" section from the potential configuration.
+    pub(crate) fn read_coulomb(&self, system: &mut System) -> Result<()> {
         let coulomb = match self.config.get("coulomb") {
             Some(coulomb) => coulomb,
             None => return Ok(())
@@ -61,11 +58,8 @@ impl InteractionsInput {
         }
     }
 
-    /// Read the "charges" from the potential configuration. This is an internal
-    /// function, public because of the code organization.
-    // TODO: use restricted privacy here
-    #[doc(hidden)]
-    pub fn read_charges(&self, system: &mut System) -> Result<()> {
+    /// Read the "charges" from the potential configuration.
+    pub(crate) fn read_charges(&self, system: &mut System) -> Result<()> {
         let charges = match self.config.get("charges") {
             Some(charges) => charges,
             None => return Ok(())

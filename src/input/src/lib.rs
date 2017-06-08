@@ -89,7 +89,7 @@ mod simulations;
 
 pub use self::error::{Error, Result};
 pub use self::interactions::InteractionsInput;
-pub use self::simulations::Input;
+pub use self::simulations::{Input, Config};
 
 /// Convert a TOML table to a Rust type.
 pub trait FromToml: Sized {

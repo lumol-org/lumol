@@ -53,9 +53,7 @@ impl Input {
     }
 
     /// Read the `Input` from a TOML formatted string.
-    // TODO: use restricted privacy here
-    #[doc(hidden)]
-    pub fn from_str(path: PathBuf, string: &str) -> Result<Input> {
+    pub(crate) fn from_str(path: PathBuf, string: &str) -> Result<Input> {
         let config = try!(parse(string).map_err(|err| {
             Error::TOML(Box::new(err))
         }));

@@ -73,9 +73,7 @@ impl Drop for EnsureLogger {
 
 impl Input {
     /// Setup the logger from the input file or to stdout as a default.
-    // TODO: use restricted privacy here
-    #[doc(hidden)]
-    pub fn setup_logging(&self) -> Result<(), Error> {
+    pub(crate) fn setup_logging(&self) -> Result<(), Error> {
         let _guard = EnsureLogger;
         if let Some(loggers) = self.config.get("log") {
             let loggers = try!(loggers.as_table().ok_or(

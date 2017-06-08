@@ -35,9 +35,7 @@ impl InteractionsInput {
     }
 
     /// Read the interactions from a TOML formatted string.
-    // TODO: use restricted privacy here
-    #[doc(hidden)]
-    pub fn from_string(string: &str) -> Result<InteractionsInput> {
+    pub(crate) fn from_string(string: &str) -> Result<InteractionsInput> {
         let config = try!(parse(string).map_err(|err| {
             Error::TOML(Box::new(err))
         }));
@@ -45,11 +43,8 @@ impl InteractionsInput {
         return InteractionsInput::from_toml(config.clone());
     }
 
-    /// Read the interactions from a TOML table. This is an internal function,
-    /// public because of the code organization.
-    // TODO: use restricted privacy here
-    #[doc(hidden)]
-    pub fn from_toml(config: Table) -> Result<InteractionsInput> {
+    /// Read the interactions from a TOML table.
+    pub(crate) fn from_toml(config: Table) -> Result<InteractionsInput> {
         Ok(InteractionsInput{
             config: config
         })

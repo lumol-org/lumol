@@ -8,11 +8,8 @@ use extract;
 use super::Input;
 
 impl Input {
-    /// Get the the simulation propagator. This is an internal function, public
-    /// because of the code organization.
-    // TODO: use restricted privacy here
-    #[doc(hidden)]
-    pub fn read_propagator(&self) -> Result<Box<Propagator>> {
+    /// Get the the simulation propagator.
+    pub(crate) fn read_propagator(&self) -> Result<Box<Propagator>> {
         let config = try!(self.simulation_table());
         let propagator = try!(extract::table("propagator", config, "simulation"));
         match try!(extract::typ(propagator, "propagator")) {
