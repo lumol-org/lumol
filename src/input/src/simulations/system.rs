@@ -20,16 +20,16 @@ impl Input {
         let file = get_input_path(&self.path, file);
         let mut trajectory = try!(TrajectoryBuilder::new().open(file));
 
-        let mut with_cell = false;
-        if let Some(cell) = try!(self.read_cell()) {
-            let cell = try!(cell.to_chemfiles());
-            try!(trajectory.as_chemfiles().set_cell(&cell));
-            with_cell = true;
-        }
+        let with_cell = if let Some(cell) = try!(self.read_cell()) {
+            try!(trajectory.set_cell(&cell));
+            true
+        } else {
+            false
+        };
 
         if config.get("topology").is_some() {
             let topology = try!(extract::str("topology", config, "system"));
-            try!(trajectory.as_chemfiles().set_topology_file(topology));
+            try!(trajectory.set_topology_file(topology));
         }
 
         let guess_bonds = if let Some(guess_bonds) = config.get("guess_bonds") {

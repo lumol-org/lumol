@@ -402,11 +402,49 @@ impl Trajectory {
         Ok(())
     }
 
-    /// Get access to the Chemfiles trajectory, and the associated features
-    // TODO: use partial privacy for this function
-    #[doc(hidden)]
-    pub fn as_chemfiles(&mut self) -> &mut chemfiles::Trajectory {
-        &mut self.0
+    /// Set the unit cell associated with a trajectory. This cell will be used
+    /// when reading and writing the files, replacing any unit cell in the
+    /// frames or files.
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// # use lumol::sys::{TrajectoryBuilder, UnitCell};
+    /// let mut trajectory = TrajectoryBuilder::new()
+    ///                                       .open("file.xyz")
+    ///                                       .unwrap();
+    ///
+    /// trajectory.set_cell(&UnitCell::cubic(10.0)).unwrap();
+    /// let system = trajectory.read().unwrap();
+    ///
+    /// assert_eq!(system.cell, UnitCell::cubic(10.0));
+    /// ```
+    pub fn set_cell(&mut self, cell: &UnitCell) -> TrajectoryResult<()> {
+        let cell = try!(cell.to_chemfiles());
+        try!(self.0.set_cell(&cell));
+        Ok(())
+    }
+
+    /// Set the topology associated with this trajectory by reading the first
+    /// frame of the file at the given `path` and extracting the topology of
+    /// this frame. This topology will be used to replace any existing topology
+    /// when reading or writing with this trajectory.
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// # use lumol::sys::TrajectoryBuilder;
+    /// let mut trajectory = TrajectoryBuilder::new()
+    ///                                       .open("file.xyz")
+    ///                                       .unwrap();
+    ///
+    /// trajectory.set_topology_file("topology.pdb").unwrap();
+    /// // The system will contain the topology from topology.pdb
+    /// let system = trajectory.read().unwrap();
+    /// ```
+    pub fn set_topology_file(&mut self, path: &str) -> TrajectoryResult<()> {
+        try!(self.0.set_topology_file(path));
+        Ok(())
     }
 }
 
