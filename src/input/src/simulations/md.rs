@@ -132,7 +132,6 @@ impl FromTomlWithData for BerendsenBarostat {
 impl FromTomlWithData for AnisoBerendsenBarostat {
     type Data = f64;
     fn from_toml(config: &Table, timestep: f64) -> Result<AnisoBerendsenBarostat> {
-        // TODO: implement a way to give the stress matrix
         let pressure = try!(extract::str("pressure", config, "anisotropic Berendsen barostat"));
         let pressure = try!(units::from_str(pressure));
         let tau = try!(extract::number("timestep", config, "anisotropic Berendsen barostat"));

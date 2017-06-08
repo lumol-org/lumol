@@ -70,7 +70,6 @@ impl Molecule {
 
     /// Does this molecule contains the particle `i`
     pub fn contains(&self, i: usize) -> bool {
-        // TODO: use Range::contains when stable
         self.range.start <= i && i < self.range.end
     }
 
@@ -135,8 +134,8 @@ impl Molecule {
                     } else if angle.i() == bond3.i() && angle.j() != bond3.j() {
                         Dihedral::new(bond3.j(), angle.i(), angle.j(), angle.k())
                     } else {
-                        // TODO: (angle.k == bond3.i || angle.k == bond3.j)
-                        // is an improper dihedral.
+                        // (angle.k == bond3.i || angle.k == bond3.j) is an
+                        // improper dihedral.
                         continue;
                     };
                     self.dihedrals.insert(dihedral);

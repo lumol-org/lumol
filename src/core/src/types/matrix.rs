@@ -441,8 +441,6 @@ impl iter::Sum for Matrix3 {
 
 #[cfg(test)]
 mod tests {
-    // TODO: remove most of these when we can generate coverage from doc tests
-    // see https://github.com/rust-lang/rust/issues/36956
     use super::*;
     use types::{Vector3D, Zero, One};
 
