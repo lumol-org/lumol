@@ -5,7 +5,7 @@
 //!
 //! They can be coulombic potentials, or external provided potential function
 //! for example.
-use sys::System;
+use sys::{System, Configuration};
 use types::{Matrix3, Vector3D};
 use energy::PairRestriction;
 
@@ -30,7 +30,7 @@ use energy::PairRestriction;
 /// ```
 /// use lumol::energy::{GlobalPotential, GlobalCache};
 /// use lumol::types::{Vector3D, Matrix3, Zero};
-/// use lumol::sys::{System, Particle, UnitCell};
+/// use lumol::sys::{System, Configuration, Particle, UnitCell};
 ///
 /// /// Shift the energy of all the particles by a given delta.
 /// #[derive(Clone)]
@@ -43,17 +43,17 @@ use energy::PairRestriction;
 ///         None
 ///     }
 ///
-///     fn energy(&self, system: &System) -> f64 {
+///     fn energy(&self, configuration: &Configuration) -> f64 {
 ///         // shift all particles by delta
-///         self.delta * system.size() as f64
+///         self.delta * configuration.size() as f64
 ///     }
 ///
-///     fn forces(&self, system: &System) -> Vec<Vector3D> {
+///     fn forces(&self, configuration: &Configuration) -> Vec<Vector3D> {
 ///         // this potential does not changes the forces
-///         vec![Vector3D::zero(); system.size()]
+///         vec![Vector3D::zero(); configuration.size()]
 ///     }
 ///
-///     fn virial(&self, system: &System) -> Matrix3 {
+///     fn virial(&self, configuration: &Configuration) -> Matrix3 {
 ///         // the virial is null as all the forces are null
 ///         Matrix3::zero()
 ///     }
@@ -91,13 +91,13 @@ pub trait GlobalPotential: GlobalCache + BoxCloneGlobal + Send + Sync {
     /// Return the cut off radius.
     fn cutoff(&self) -> Option<f64>;
     /// Compute the energetic contribution of this potential
-    fn energy(&self, system: &System) -> f64;
+    fn energy(&self, configuration: &Configuration) -> f64;
     /// Compute the force contribution of this potential. This function should
     /// return a vector containing the force acting on each particle in the
-    /// system.
-    fn forces(&self, system: &System) -> Vec<Vector3D>;
+    /// configuration.
+    fn forces(&self, configuration: &Configuration) -> Vec<Vector3D>;
     /// Compute the total virial contribution of this potential
-    fn virial(&self, system: &System) -> Matrix3;
+    fn virial(&self, configuration: &Configuration) -> Matrix3;
 }
 
 impl_box_clone!(GlobalPotential, BoxCloneGlobal, box_clone_gobal);
@@ -121,7 +121,7 @@ impl_box_clone!(GlobalPotential, BoxCloneGlobal, box_clone_gobal);
 /// ```
 /// use lumol::energy::{GlobalPotential, GlobalCache};
 /// use lumol::types::{Vector3D, Matrix3, Zero};
-/// use lumol::sys::{System, Particle};
+/// use lumol::sys::{System, Configuration, Particle};
 ///
 /// /// Shift the energy of all the particles by a given delta.
 /// #[derive(Clone)]
@@ -134,17 +134,17 @@ impl_box_clone!(GlobalPotential, BoxCloneGlobal, box_clone_gobal);
 ///         None
 ///     }
 ///
-///     fn energy(&self, system: &System) -> f64 {
+///     fn energy(&self, configuration: &Configuration) -> f64 {
 ///         // shift all particles by delta
-///         self.delta * system.size() as f64
+///         self.delta * configuration.size() as f64
 ///     }
 ///
-///     fn forces(&self, system: &System) -> Vec<Vector3D> {
+///     fn forces(&self, configuration: &Configuration) -> Vec<Vector3D> {
 ///         // this potential does not changes the forces
-///         vec![Vector3D::zero(); system.size()]
+///         vec![Vector3D::zero(); configuration.size()]
 ///     }
 ///
-///     fn virial(&self, system: &System) -> Matrix3 {
+///     fn virial(&self, configuration: &Configuration) -> Matrix3 {
 ///         // the virial is null as all the forces are null
 ///         Matrix3::zero()
 ///     }
