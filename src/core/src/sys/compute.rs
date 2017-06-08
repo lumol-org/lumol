@@ -217,8 +217,7 @@ impl Compute for Virial {
             let ni = composition[i] as f64;
             for j in system.particle_kinds() {
                 let nj = composition[j] as f64;
-                let potentials = system.pair_potentials_for_kinds(i, j);
-                for potential in potentials {
+                for potential in system.interactions().pairs(i, j) {
                     virial += 2.0 * PI * ni * nj * potential.tail_virial() / volume;
                 }
             }

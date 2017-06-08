@@ -203,15 +203,9 @@ impl System {
         return pairs;
     }
 
-    /// Get the list of pair potential acting on the
-    // TODO: use pub(crate) for interactions instead, this function is only
-    // used for tail corrections.
-    #[doc(hidden)]
-    pub fn pair_potentials_for_kinds(&self, kind_i: ParticleKind, kind_j: ParticleKind) -> &[PairInteraction] {
-        // No warning if there is no potential. This shoud be fine because
-        // most of the time, this function should be called after
-        // `pair_potentials`.
-        return self.interactions.pairs(kind_i, kind_j);
+    /// Get read-only access to the interactions for this system
+    pub(crate) fn interactions(&self) -> &Interactions {
+        &self.interactions
     }
 
     /// Get the list of bonded potential acting between the particles at indexes
