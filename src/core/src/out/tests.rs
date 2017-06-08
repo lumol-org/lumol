@@ -30,7 +30,7 @@ pub fn test_output<F>(function: F, expected: &str) where F: Fn(&Path) -> Box<Out
     check_file_content(file, expected);
 }
 
-fn testing_system() -> System {
+pub fn testing_system() -> System {
     let mut system = system_from_xyz("2
     cell: 10
     F 0.0 0.0 0.0 0.1 0.0 0.0
