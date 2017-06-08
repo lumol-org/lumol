@@ -10,7 +10,7 @@ use std::mem;
 use super::MCMove;
 
 use types::{Matrix3, One};
-use sys::{System, EnergyCache};
+use sys::{System, Configuration, EnergyCache};
 
 /// Monte Carlo move that changes the size of the simulation cell
 pub struct Resize {
@@ -18,8 +18,8 @@ pub struct Resize {
     delta: f64,
     /// Sampling range for volume scaling
     range: Range<f64>,
-    /// System after applying changes to the simulation cell
-    new_system: System,
+    /// Configuration before applying changes to the simulation cell
+    previous: Configuration,
     /// target pressure
     pressure: f64,
     /// largest cutoff diameter of potentials in `Interactions`
@@ -34,7 +34,7 @@ impl Resize {
         Resize {
             delta: delta,
             range: Range::new(-delta, delta),
-            new_system: System::new(),
+            previous: Configuration::new(),
             pressure: pressure,
             maximum_cutoff: None,
         }
@@ -60,22 +60,18 @@ impl MCMove for Resize {
     fn prepare(&mut self, system: &mut System, rng: &mut Box<Rng>) -> bool {
         let delta = self.range.sample(rng);
 
-        // Copy the system: the proposed state will be stored here
-        // TODO: we only need to store positions and the cell; all
-        // other information stays the same.
-        self.new_system = system.clone();
+        // Store the previous configuration
+        self.previous = (**system).clone();
 
         let volume = system.volume();
         let scaling_factor = f64::cbrt((volume + delta) / volume);
         // Change the simulation cell
-        self.new_system.cell.scale_mut(Matrix3::one() * scaling_factor);
+        system.cell.scale_mut(Matrix3::one() * scaling_factor);
         // Check the radius of the smallest inscribed sphere and compare to the
         // cut off distance.
         // Abort simulation when box gets smaller than twice the cutoff radius.
         if let Some(maximum_cutoff) = self.maximum_cutoff {
-            if self.new_system.cell.lengths()
-                                   .iter()
-                                   .any(|&d| 0.5 * d <= maximum_cutoff) {
+            if system.cell.lengths().iter().any(|&d| 0.5 * d <= maximum_cutoff) {
                 fatal_error!(
                     "Tried to decrease the cell size but new size
                     conflicts with the cut off radius. \
@@ -94,41 +90,36 @@ impl MCMove for Resize {
         // TODO: Check if system.size == system.molecules().len
         // if that is the case, skip com computation since it is a
         // system without molecules.
-        for (mi, molecule) in system
-            .molecules()
-            .iter()
-            .enumerate() {
+        for (mi, molecule) in self.previous.molecules().iter().enumerate() {
             let old_com = system.molecule_com(mi);
             let frac_com = system.cell.fractional(&old_com);
             // compute translation vector
-            let delta_com =
-                self.new_system.cell.cartesian(&frac_com) - old_com;
+            let delta_com = system.cell.cartesian(&frac_com) - old_com;
             // loop over all particles (indices) in the molecule
             for pi in molecule.iter() {
-                self.new_system.particle_mut(pi).position += delta_com;
+                system.particle_mut(pi).position += delta_com;
             }
         }
         true
     }
 
     fn cost(&self, system: &System, beta: f64, cache: &mut EnergyCache) -> f64 {
-        let delta_energy = cache.move_all_rigid_molecules_cost(&self.new_system);
-        let new_volume = self.new_system.volume();
-        let old_volume = system.volume();
+        let delta_energy = cache.move_all_rigid_molecules_cost(system);
+        let new_volume = system.volume();
+        let old_volume = self.previous.cell.volume();
         let delta_volume = new_volume - old_volume;
         // Build and return the cost function.
         beta * (delta_energy + self.pressure * delta_volume) -
         (system.molecules().len() as f64) * f64::ln(new_volume / old_volume)
     }
 
-    fn apply(&mut self, system: &mut System) {
-        // Exchange systems: This will effectively update
-        // new positions and cell.
-        mem::swap(system, &mut self.new_system)
+    fn apply(&mut self, _: &mut System) {
+        // Nothing to do.
     }
 
-    fn restore(&mut self, _: &mut System) {
-        // Do nothing.
+    fn restore(&mut self, system: &mut System) {
+        // Exchange configurations
+        mem::swap(&mut **system, &mut self.previous)
     }
 
     fn update_amplitude(&mut self, scaling_factor: Option<f64>) {
