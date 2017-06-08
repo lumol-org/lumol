@@ -194,6 +194,7 @@ impl Compute for Virial {
     fn compute(&self, system: &System) -> Matrix3 {
         assert!(!system.cell.is_infinite(), "Can not compute virial for infinite cell");
 
+        // Pair potentials contributions
         let mut virial = (0..system.size()).par_map(|i| {
             let mut local_virial = Matrix3::zero();
             for j in (i+1)..system.size() {
@@ -206,10 +207,10 @@ impl Compute for Virial {
                     }
                 }
             }
-
-            local_virial
+            return local_virial;
         }).sum();
 
+        // Tail correction for pair potentials contribution
         let volume = system.cell.volume();
         let composition = system.composition();
         for i in system.particle_kinds() {
@@ -223,8 +224,20 @@ impl Compute for Virial {
             }
         }
 
-        // TODO: implement virial computations for molecular potentials
-        // (angles & dihedrals)
+        // Bond potentials contributions
+        for molecule in system.molecules() {
+            for bond in molecule.bonds() {
+                let (i, j) = (bond.i(), bond.j());
+                let r = system.nearest_image(i, j);
+                for potential in system.bond_potentials(i, j) {
+                    virial += potential.virial(&r);
+                }
+            }
+        }
+
+        // Angles and dihedrals potentials do not contribute as they only have
+        // an angular part (see DL_POLY 4 manual page 18, or Smith, W., 1993,
+        // CCP5 Information Quarterly, 39, 14. 18, 21, 24).
 
         if let Some(coulomb) = system.coulomb_potential() {
             virial += coulomb.virial(system);
@@ -360,6 +373,8 @@ mod test {
         assert!(system.add_bond(0, 1).is_empty());
         assert!(system.add_bond(1, 2).is_empty());
         assert!(system.add_bond(2, 3).is_empty());
+        assert_eq!(system.molecules().len(), 1);
+        assert_eq!(system.molecule(0).bonds().len(), 3);
 
         system.add_pair_potential("F", "F",
             PairInteraction::new(Box::new(NullPotential), 0.0)
@@ -461,13 +476,27 @@ mod test {
     }
 
     #[test]
-    fn virial() {
+    fn virial_pairs() {
         let system = &test_pairs_system();
         let virial = Virial.compute(system);
 
         let mut expected = Matrix3::zero();
-        let force = unit_from(30.0, "kJ/mol/A");
+        let force = unit_from(30.0, "kJ/mol/A^2");
         expected[(0, 0)] = - force * 1.3;
+
+        assert_ulps_eq!(virial, expected);
+        assert_eq!(virial, system.virial());
+    }
+
+    #[test]
+    fn virial_molecular() {
+        let system = &test_molecular_system();
+        let virial = Virial.compute(system);
+
+        let mut expected = Matrix3::zero();
+        let w = unit_from(100.0, "kJ/mol/A");
+        expected[(0, 0)] = 2.0 * w;
+        expected[(1, 1)] = 1.0 * w;
 
         assert_ulps_eq!(virial, expected);
         assert_eq!(virial, system.virial());
