@@ -23,10 +23,12 @@ pub trait Output {
 mod tests;
 mod cell;
 mod energy;
+mod custom;
 mod properties;
 mod trajectory;
 
 pub use self::cell::CellOutput;
 pub use self::energy::EnergyOutput;
+pub use self::custom::{CustomOutput, CustomOutputError};
 pub use self::properties::PropertiesOutput;
 pub use self::trajectory::TrajectoryOutput;

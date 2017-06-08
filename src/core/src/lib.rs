@@ -55,6 +55,7 @@ extern crate rand;
 extern crate special;
 extern crate rayon;
 extern crate thread_local;
+extern crate caldyn;
 
 /// Log a fatal error, and then panic with the same message
 macro_rules! fatal_error {
