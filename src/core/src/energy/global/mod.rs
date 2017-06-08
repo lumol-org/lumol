@@ -5,7 +5,7 @@
 //!
 //! They can be coulombic potentials, or external provided potential function
 //! for example.
-use sys::{System, Configuration};
+use sys::Configuration;
 use types::{Matrix3, Vector3D};
 use energy::PairRestriction;
 
@@ -62,7 +62,7 @@ use energy::PairRestriction;
 /// // Not implementing `GlobalCache` means that we will not be able to use
 /// // `ShiftAll` in Monte Carlo simulations.
 /// impl GlobalCache for ShiftAll {
-///     fn move_particles_cost(&self, _: &System, _: &[usize], _: &[Vector3D]) -> f64 {
+///     fn move_particles_cost(&self, _: &Configuration, _: &[usize], _: &[Vector3D]) -> f64 {
 ///         unimplemented!()
 ///     }
 ///
@@ -121,7 +121,7 @@ impl_box_clone!(GlobalPotential, BoxCloneGlobal, box_clone_gobal);
 /// ```
 /// use lumol::energy::{GlobalPotential, GlobalCache};
 /// use lumol::types::{Vector3D, Matrix3, Zero};
-/// use lumol::sys::{System, Configuration, Particle};
+/// use lumol::sys::{Configuration, Particle};
 ///
 /// /// Shift the energy of all the particles by a given delta.
 /// #[derive(Clone)]
@@ -151,7 +151,7 @@ impl_box_clone!(GlobalPotential, BoxCloneGlobal, box_clone_gobal);
 /// }
 ///
 /// impl GlobalCache for ShiftAll {
-///     fn move_particles_cost(&self, _: &System, _: &[usize], _: &[Vector3D]) -> f64 {
+///     fn move_particles_cost(&self, _: &Configuration, _: &[usize], _: &[Vector3D]) -> f64 {
 ///         // The cost of moving particles is null, because all the particles
 ///         // get the same energy shift whatever there position are.
 ///         return 0.0
@@ -171,7 +171,7 @@ pub trait GlobalCache {
     /// the first moved particle is a call to `system[idxes[0]]`); and `newpos`
     /// contains the new positions of the particles. The previous positions of
     /// the particles are still in the system.
-    fn move_particles_cost(&self, system: &System, idxes: &[usize], newpos: &[Vector3D]) -> f64;
+    fn move_particles_cost(&self, configuration: &Configuration, idxes: &[usize], newpos: &[Vector3D]) -> f64;
 
     /// Update the cache as needed after a call to `move_particles_cost`.
     ///
