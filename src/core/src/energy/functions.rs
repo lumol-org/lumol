@@ -26,8 +26,8 @@ use energy::{PairPotential, BondPotential, AnglePotential, DihedralPotential};
 #[derive(Clone, Copy)]
 pub struct NullPotential;
 impl Potential for NullPotential {
-    #[inline] fn energy(&self, _: f64) -> f64 {0.0}
-    #[inline] fn force(&self, _: f64) -> f64 {0.0}
+    fn energy(&self, _: f64) -> f64 {0.0}
+    fn force(&self, _: f64) -> f64 {0.0}
 }
 
 impl PairPotential for NullPotential {
@@ -65,13 +65,11 @@ pub struct LennardJones {
 }
 
 impl Potential for LennardJones {
-    #[inline]
     fn energy(&self, r: f64) -> f64 {
         let s6 = f64::powi(self.sigma / r, 6);
         4.0 * self.epsilon * (f64::powi(s6, 2) - s6)
     }
 
-    #[inline]
     fn force(&self, r: f64) -> f64 {
         let s6 = f64::powi(self.sigma / r, 6);
         -24.0 * self.epsilon * (s6 - 2.0 * f64::powi(s6, 2)) / r
@@ -123,13 +121,11 @@ pub struct Harmonic {
 }
 
 impl Potential for Harmonic {
-    #[inline]
     fn energy(&self, x: f64) -> f64 {
         let dx = x - self.x0;
         0.5 * self.k * dx * dx
     }
-
-    #[inline]
+    
     fn force(&self, x: f64) -> f64 {
         self.k * (self.x0 - x)
     }
@@ -182,13 +178,11 @@ impl CosineHarmonic {
 }
 
 impl Potential for CosineHarmonic {
-    #[inline]
     fn energy(&self, x: f64) -> f64 {
         let dr = f64::cos(x) - self.cos_x0;
         0.5 * self.k * dr * dr
     }
 
-    #[inline]
     fn force(&self, x: f64) -> f64 {
         self.k * (f64::cos(x) - self.cos_x0) * f64::sin(x)
     }
@@ -230,14 +224,12 @@ pub struct Torsion {
 }
 
 impl Potential for Torsion {
-    #[inline]
     fn energy(&self, phi: f64) -> f64 {
         let n = self.n as f64;
         let cos = f64::cos(n * phi - self.delta);
         self.k * (1.0 + cos)
     }
 
-    #[inline]
     fn force(&self, phi: f64) -> f64 {
         let n = self.n as f64;
         let sin = f64::sin(n * phi - self.delta);
@@ -274,7 +266,6 @@ pub struct Buckingham {
 }
 
 impl Potential for Buckingham {
-    #[inline]
     fn energy(&self, r: f64) -> f64 {
         let r3 = r * r * r;
         let r6 = r3 * r3;
@@ -282,7 +273,6 @@ impl Potential for Buckingham {
         self.a * exp - self.c / r6
     }
 
-    #[inline]
     fn force(&self, r: f64) -> f64 {
         let r3 = r * r * r;
         let r7 = r3 * r3 * r;
@@ -341,7 +331,6 @@ pub struct BornMayerHuggins {
 }
 
 impl Potential for BornMayerHuggins {
-    #[inline]
     fn energy(&self, r: f64) -> f64 {
         let r2 = r * r;
         let r6 = r2 * r2 * r2;
@@ -349,7 +338,6 @@ impl Potential for BornMayerHuggins {
         self.a * exp - self.c / r6 + self.d / (r6 * r2)
     }
 
-    #[inline]
     fn force(&self, r: f64) -> f64 {
         let r2 = r * r;
         let r7 = r2 * r2 * r2 * r;
