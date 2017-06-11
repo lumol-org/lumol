@@ -150,14 +150,14 @@ impl System {
     pub fn add_pair_potential(&mut self, i: &str, j: &str, potential: PairInteraction) {
         let kind_i = self.get_kind(i);
         let kind_j = self.get_kind(j);
-        self.interactions.add_pair(kind_i, kind_j, potential)
+        self.interactions.local.add_pair(kind_i, kind_j, potential)
     }
 
     /// Add the `potential` bonded interaction for the pair `(i, j)`
     pub fn add_bond_potential(&mut self, i: &str, j: &str, potential: Box<BondPotential>) {
         let kind_i = self.get_kind(i);
         let kind_j = self.get_kind(j);
-        self.interactions.add_bond(kind_i, kind_j, potential)
+        self.interactions.local.add_bond(kind_i, kind_j, potential)
     }
 
     /// Add the `potential` angle interaction for the angle `(i, j, k)`
@@ -165,7 +165,7 @@ impl System {
         let kind_i = self.get_kind(i);
         let kind_j = self.get_kind(j);
         let kind_k = self.get_kind(k);
-        self.interactions.add_angle(kind_i, kind_j, kind_k, potential)
+        self.interactions.local.add_angle(kind_i, kind_j, kind_k, potential)
     }
 
     /// Add the `potential` dihedral interaction for the dihedral angle `(i, j,
@@ -175,7 +175,7 @@ impl System {
         let kind_j = self.get_kind(j);
         let kind_k = self.get_kind(k);
         let kind_m = self.get_kind(m);
-        self.interactions.add_dihedral(kind_i, kind_j, kind_k, kind_m, potential)
+        self.interactions.local.add_dihedral(kind_i, kind_j, kind_k, kind_m, potential)
     }
 
     /// Set the coulombic interaction for all pairs to `potential`
@@ -193,7 +193,7 @@ impl System {
     pub fn pair_potentials(&self, i: usize, j: usize) -> &[PairInteraction] {
         let kind_i = self.particle(i).kind;
         let kind_j = self.particle(j).kind;
-        let pairs = self.interactions.pairs(kind_i, kind_j);
+        let pairs = self.interactions.local.pairs(kind_i, kind_j);
         if pairs.is_empty() {
             warn_once!(
                 "No potential defined for the pair ({}, {})",
@@ -213,7 +213,7 @@ impl System {
     pub fn bond_potentials(&self, i: usize, j: usize) -> &[Box<BondPotential>] {
         let kind_i = self.particle(i).kind;
         let kind_j = self.particle(j).kind;
-        let bonds = self.interactions.bonds(kind_i, kind_j);
+        let bonds = self.interactions.local.bonds(kind_i, kind_j);
         if bonds.is_empty() {
             warn_once!(
                 "No potential defined for the bond ({}, {})",
@@ -229,7 +229,7 @@ impl System {
         let kind_i = self.particle(i).kind;
         let kind_j = self.particle(j).kind;
         let kind_k = self.particle(k).kind;
-        let angles = self.interactions.angles(kind_i, kind_j, kind_k);
+        let angles = self.interactions.local.angles(kind_i, kind_j, kind_k);
         if angles.is_empty() {
             warn_once!(
                 "No potential defined for the angle ({}, {}, {})",

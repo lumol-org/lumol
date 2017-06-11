@@ -48,11 +48,8 @@ type BondKind = (Kind, Kind);
 type AngleKind = (Kind, Kind, Kind);
 type DihedralKind = (Kind, Kind, Kind, Kind);
 
-/// The `Interaction` type hold all data about the potentials in the system.
-///
-/// Its main role is to store and provide access
 #[derive(Clone)]
-pub struct Interactions {
+pub struct LocalInteractions {
     /// Pair potentials
     pairs: BTreeMap<PairKind, Vec<PairInteraction>>,
     /// Bond potentials
@@ -61,22 +58,28 @@ pub struct Interactions {
     angles: BTreeMap<AngleKind, Vec<Box<AnglePotential>>>,
     /// Dihedral angles potentials
     dihedrals: BTreeMap<DihedralKind, Vec<Box<DihedralPotential>>>,
+}
+
+/// The `Interaction` type hold all data about the potentials in the system.
+///
+/// Its main role is to store and provide access
+#[derive(Clone)]
+pub struct Interactions {
+    /// Local intreactions
+    pub local: LocalInteractions,
     /// Coulombic potential solver
     pub coulomb: Option<Box<CoulombicPotential>>,
     /// Global potentials
     pub globals: Vec<Box<GlobalPotential>>,
 }
 
-impl Interactions {
-    /// Create a new empty `Interactions`
-    pub fn new() -> Interactions {
-        Interactions{
+impl LocalInteractions {
+    pub fn new() -> LocalInteractions {
+        LocalInteractions {
             pairs: BTreeMap::new(),
             bonds: BTreeMap::new(),
             angles: BTreeMap::new(),
             dihedrals: BTreeMap::new(),
-            coulomb: None,
-            globals: Vec::new(),
         }
     }
 
@@ -111,6 +114,17 @@ impl Interactions {
 }
 
 impl Interactions {
+    /// Create a new empty `Interactions`
+    pub fn new() -> Interactions {
+        Interactions{
+            local: LocalInteractions::new(),
+            coulomb: None,
+            globals: Vec::new(),
+        }
+    }
+}
+
+impl LocalInteractions {
     /// Get all pair interactions corresponding to the pair `(i, j)`
     pub fn pairs(&self, i: Kind, j: Kind) -> &[PairInteraction] {
         let (i, j) = normalize_pair(i, j);
@@ -135,6 +149,16 @@ impl Interactions {
         self.dihedrals.get(&(i, j, k, m)).map_or(&[], |dihedrals| &**dihedrals)
     }
 
+    fn maximum_cutoff(&self) -> f64 {
+        // Pair interactions, return maximum cutoff
+        self.pairs
+           .values()
+           .flat_map(|i| i.iter().map(|pair| pair.cutoff()))
+           .fold(f64::NAN, f64::max)
+    }
+}
+
+impl Interactions {
     /// Get maximum cutoff from `coulomb`, `pairs` and `global` interactons.
     pub fn maximum_cutoff(&self) -> Option<f64> {
         // Coulomb potential, return cutoff
@@ -152,20 +176,17 @@ impl Interactions {
                                         .filter_map(|rc| rc)
                                         .fold(f64::NAN, f64::max);
 
-        let mut maximum_cutoff = f64::max(global_cutoff, coulomb_cutoff);
+        let maximum_cutoff = f64::max(
+            f64::max(global_cutoff, coulomb_cutoff),
+            self.local.maximum_cutoff()
+        );
 
-        // Pair interactions, return maximum cutoff
-        let pairs_cutoff = self.pairs
-                               .values()
-                               .flat_map(|i| i.iter().map(|pair| pair.cutoff()))
-                               .fold(f64::NAN, f64::max);
-
-        maximum_cutoff = f64::max(maximum_cutoff, pairs_cutoff);
         if maximum_cutoff.is_nan() {
             None
         } else {
             Some(maximum_cutoff)
         }
+
     }
 }
 
@@ -259,7 +280,7 @@ mod test {
 
     #[test]
     fn pairs() {
-        let mut interactions = Interactions::new();
+        let mut interactions = LocalInteractions::new();
         let pair = PairInteraction::new(Box::new(NullPotential), 0.0);
         interactions.add_pair(Kind(0), Kind(1), pair.clone());
         assert_eq!(interactions.pairs(Kind(0), Kind(1)).len(), 1);
@@ -275,7 +296,7 @@ mod test {
 
     #[test]
     fn bonds() {
-        let mut interactions = Interactions::new();
+        let mut interactions = LocalInteractions::new();
 
         interactions.add_bond(Kind(0), Kind(1), Box::new(NullPotential));
         assert_eq!(interactions.bonds(Kind(0), Kind(1)).len(), 1);
@@ -292,7 +313,7 @@ mod test {
 
     #[test]
     fn angles() {
-        let mut interactions = Interactions::new();
+        let mut interactions = LocalInteractions::new();
 
         interactions.add_angle(Kind(0), Kind(1), Kind(2), Box::new(NullPotential));
         assert_eq!(interactions.angles(Kind(0), Kind(1), Kind(2)).len(), 1);
@@ -312,7 +333,7 @@ mod test {
 
     #[test]
     fn dihedrals() {
-        let mut interactions = Interactions::new();
+        let mut interactions = LocalInteractions::new();
 
         interactions.add_dihedral(Kind(0), Kind(1), Kind(2), Kind(3),Box::new(NullPotential));
         assert_eq!(interactions.dihedrals(Kind(0), Kind(1), Kind(2), Kind(3)).len(), 1);
@@ -342,7 +363,7 @@ mod test {
 
         // Only pairs
         let pair = PairInteraction::new(Box::new(NullPotential), 10.0);
-        interactions.add_pair(Kind(0), Kind(1), pair.clone());
+        interactions.local.add_pair(Kind(0), Kind(1), pair.clone());
         assert_eq!(interactions.maximum_cutoff(), Some(10.0));
 
         // Only globals
@@ -359,7 +380,7 @@ mod test {
         assert_eq!(interactions.maximum_cutoff(), Some(1.0));
 
         // All potentials
-        interactions.add_pair(Kind(0), Kind(1), pair.clone());
+        interactions.local.add_pair(Kind(0), Kind(1), pair.clone());
         assert_eq!(interactions.maximum_cutoff(), Some(10.0));
         interactions.globals.push(Box::new(Wolf::new(15.0)));
         assert_eq!(interactions.maximum_cutoff(), Some(15.0));
