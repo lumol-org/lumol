@@ -10,7 +10,7 @@ mod system;
 pub use self::system::System;
 
 mod interactions;
-use self::interactions::Interactions;
+use self::interactions::{Interactions, LocalInteractions};
 
 mod energy;
 pub use self::energy::EnergyEvaluator;
