@@ -3,9 +3,9 @@
 
 use special::Error;
 
-use std::sync::{RwLock, RwLockReadGuard, RwLockWriteGuard};
 use std::f64::consts::{PI, FRAC_2_SQRT_PI};
 use std::f64;
+use std::cell::{RefCell, Ref, RefMut};
 
 use ndarray::Zip;
 
@@ -707,7 +707,7 @@ impl Ewald {
 /// This wrapper allow to share a Ewald solver between threads (make it `Send
 /// + Sync`) while still using caching in Monte Carlo simulations (with
 /// interior mutability).
-pub struct SharedEwald(RwLock<Ewald>);
+pub struct SharedEwald(RefCell<Ewald>);
 
 impl SharedEwald {
     /// Wrap `ewald` in a thread-safe structure.
@@ -719,21 +719,21 @@ impl SharedEwald {
     /// let boxed: Box<CoulombicPotential> = Box::new(ewald);
     /// ```
     pub fn new(ewald: Ewald) -> SharedEwald {
-        SharedEwald(RwLock::new(ewald))
+        SharedEwald(RefCell::new(ewald))
     }
 
     /// Get read access to the underlying Ewald solver
-    fn read(&self) -> RwLockReadGuard<Ewald> {
+    fn read(&self) -> Ref<Ewald> {
         // The lock should never be poisonned, because any panic will unwind
         // and finish the simulation.
-        self.0.read().expect("Ewald lock is poisonned")
+        self.0.borrow()
     }
 
     /// Get write access to the underlying Ewald solver
-    fn write(&self) -> RwLockWriteGuard<Ewald> {
+    fn write(&self) -> RefMut<Ewald> {
         // The lock should never be poisonned, because any panic will unwind
         // and finish the simulation.
-        self.0.write().expect("Ewald lock is poisonned")
+        self.0.borrow_mut()
     }
 }
 

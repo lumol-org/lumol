@@ -38,6 +38,10 @@ pub struct System {
     external_temperature: Option<f64>,
 }
 
+
+/// Struct that can be used to query the
+/// local interactions. As opposed to the `System`,
+/// it is `Sync`.
 #[derive(Copy, Clone)]
 pub struct LocalPotentials<'a>(&'a Configuration, &'a LocalInteractions);
 

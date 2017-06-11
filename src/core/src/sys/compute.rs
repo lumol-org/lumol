@@ -4,6 +4,7 @@
 //! Computing properties of a system
 
 use std::f64::consts::PI;
+use std::ops::Deref;
 
 use consts::K_BOLTZMANN;
 use types::{Matrix3, Vector3D, Zero, One};
@@ -30,17 +31,19 @@ impl Compute for Forces {
     fn compute(&self, system: &System) -> Vec<Vector3D> {
         let natoms = system.size();
         let thread_forces_store = ThreadLocalStore::new(|| vec![Vector3D::zero(); natoms]);
+        let local_potentials = system.local_potentials();
+        let configuration = system.deref();
 
         (0..natoms).into_par_iter().for_each(|i| {
 
             let mut thread_forces = thread_forces_store.borrow_mut();
 
-            for j in (i+1)..system.size() {
-                let distance = system.bond_distance(i, j);
-                let d = system.nearest_image(i, j);
+            for j in (i+1)..configuration.size() {
+                let distance = configuration.bond_distance(i, j);
+                let d = configuration.nearest_image(i, j);
                 let dn = d.normalized();
                 let r = d.norm();
-                for potential in system.pair_potentials(i, j) {
+                for potential in local_potentials.pairs(i, j) {
                     let info = potential.restriction().information(distance);
                     if !info.excluded {
                         let force = info.scaling * potential.force(r) * dn;
@@ -185,15 +188,18 @@ impl Compute for Virial {
     fn compute(&self, system: &System) -> Matrix3 {
         assert!(!system.cell.is_infinite(), "Can not compute virial for infinite cell");
 
+        let configuration = system.deref();
+        let local_potentials = system.local_potentials();
+
         // Pair potentials contributions
-        let mut virial = (0..system.size()).par_map(|i| {
+        let mut virial = (0..configuration.size()).par_map(|i| {
             let mut local_virial = Matrix3::zero();
-            for j in (i+1)..system.size() {
-                let distance = system.bond_distance(i, j);
-                for potential in system.pair_potentials(i, j) {
+            for j in (i+1)..configuration.size() {
+                let distance = configuration.bond_distance(i, j);
+                for potential in local_potentials.pairs(i, j) {
                     let info = potential.restriction().information(distance);
                     if !info.excluded {
-                        let d = system.nearest_image(i, j);
+                        let d = configuration.nearest_image(i, j);
                         local_virial += info.scaling * potential.virial(&d);
                     }
                 }
@@ -208,7 +214,7 @@ impl Compute for Virial {
             let ni = composition[i] as f64;
             for j in system.particle_kinds() {
                 let nj = composition[j] as f64;
-                for potential in system.interactions().pairs(i, j) {
+                for potential in system.interactions().local.pairs(i, j) {
                     virial += 2.0 * PI * ni * nj * potential.tail_virial() / volume;
                 }
             }
