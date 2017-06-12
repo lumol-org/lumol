@@ -7,8 +7,9 @@
 //! potential energy of an `System`.
 
 use std::f64::consts::PI;
+use std::ops::Deref;
 
-use sys::System;
+use sys::{System, Configuration, LocalPotentials};
 use parallel::prelude::*;
 
 /// An helper struct to evaluate energy components of a system.
@@ -29,10 +30,10 @@ impl<'a> EnergyEvaluator<'a> {
     /// Compute the energy associated with the pair of particles `i, j` at
     /// distance `r`
     #[inline]
-    pub fn pair(&self, r: f64, i: usize, j: usize) -> f64 {
-        let distance = self.system.bond_distance(i, j);
+    pub fn pair(configuration: &Configuration, potentials: LocalPotentials, r: f64, i: usize, j: usize) -> f64 {
+        let distance = configuration.bond_distance(i, j);
         let mut energy = 0.0;
-        for potential in self.system.pair_potentials(i, j) {
+        for potential in potentials.pairs(i, j) {
             let info = potential.restriction().information(distance);
             if !info.excluded {
                 energy += info.scaling * potential.energy(r);
@@ -44,12 +45,15 @@ impl<'a> EnergyEvaluator<'a> {
     /// Compute the energy of all the pairs in the system
     pub fn pairs(&self) -> f64 {
 
-        (0..self.system.size()).par_map(|i| {
+        let configuration = self.system.deref();
+        let local_potentials = self.system.local_potentials();
+
+        (0..configuration.size()).par_map(|i| {
             let mut local_energy = 0.0;
 
-            for j in (i+1)..self.system.size() {
-                let r = self.system.nearest_image(i, j).norm();
-                local_energy += self.pair(r, i, j);
+            for j in (i+1)..configuration.size() {
+                let r = configuration.nearest_image(i, j).norm();
+                local_energy += Self::pair(configuration, local_potentials, r, i, j);
             }
             local_energy
         }).sum()
@@ -68,7 +72,7 @@ impl<'a> EnergyEvaluator<'a> {
             let ni = composition[i] as f64;
             for j in self.system.particle_kinds() {
                 let nj = composition[j] as f64;
-                for potential in self.system.interactions().pairs(i, j) {
+                for potential in self.system.interactions().local.pairs(i, j) {
                     energy += 2.0 * PI * ni * nj * potential.tail_energy() / volume;
                 }
             }

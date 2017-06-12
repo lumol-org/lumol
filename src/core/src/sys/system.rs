@@ -10,7 +10,7 @@ use energy::{PairInteraction, BondPotential, AnglePotential, DihedralPotential};
 use energy::{GlobalPotential, CoulombicPotential};
 
 use sys::{Configuration, Particle, ParticleKind, UnitCell};
-use sys::{Composition, Interactions, EnergyEvaluator};
+use sys::{Composition, Interactions, LocalInteractions, EnergyEvaluator};
 
 /// The `System` type hold all the data about a simulated system.
 ///
@@ -37,6 +37,13 @@ pub struct System {
     /// Externally managed temperature for the system
     external_temperature: Option<f64>,
 }
+
+
+/// Struct that can be used to query the
+/// local interactions. As opposed to the `System`,
+/// it is `Sync`.
+#[derive(Copy, Clone)]
+pub struct LocalPotentials<'a>(&'a Configuration, &'a LocalInteractions);
 
 impl System {
     /// Create a new empty `System`
@@ -119,7 +126,6 @@ impl System {
     }
 
 
-
     /// Guess the bonds in the configuration using the chemfiles algorithm.
     ///
     /// This function removes any existing bond, and tries to guess them using
@@ -150,14 +156,14 @@ impl System {
     pub fn add_pair_potential(&mut self, i: &str, j: &str, potential: PairInteraction) {
         let kind_i = self.get_kind(i);
         let kind_j = self.get_kind(j);
-        self.interactions.add_pair(kind_i, kind_j, potential)
+        self.interactions.local.add_pair(kind_i, kind_j, potential)
     }
 
     /// Add the `potential` bonded interaction for the pair `(i, j)`
     pub fn add_bond_potential(&mut self, i: &str, j: &str, potential: Box<BondPotential>) {
         let kind_i = self.get_kind(i);
         let kind_j = self.get_kind(j);
-        self.interactions.add_bond(kind_i, kind_j, potential)
+        self.interactions.local.add_bond(kind_i, kind_j, potential)
     }
 
     /// Add the `potential` angle interaction for the angle `(i, j, k)`
@@ -165,7 +171,7 @@ impl System {
         let kind_i = self.get_kind(i);
         let kind_j = self.get_kind(j);
         let kind_k = self.get_kind(k);
-        self.interactions.add_angle(kind_i, kind_j, kind_k, potential)
+        self.interactions.local.add_angle(kind_i, kind_j, kind_k, potential)
     }
 
     /// Add the `potential` dihedral interaction for the dihedral angle `(i, j,
@@ -175,7 +181,7 @@ impl System {
         let kind_j = self.get_kind(j);
         let kind_k = self.get_kind(k);
         let kind_m = self.get_kind(m);
-        self.interactions.add_dihedral(kind_i, kind_j, kind_k, kind_m, potential)
+        self.interactions.local.add_dihedral(kind_i, kind_j, kind_k, kind_m, potential)
     }
 
     /// Set the coulombic interaction for all pairs to `potential`
@@ -188,19 +194,16 @@ impl System {
         self.interactions.globals.push(potential);
     }
 
+    /// Get a provider form which one can query local potentials
+    pub fn local_potentials(&self) -> LocalPotentials {
+        LocalPotentials(&self.configuration, &self.interactions.local)
+    }
+
     /// Get the list of pair potential acting between the particles at indexes
     /// `i` and `j`.
+    #[inline]
     pub fn pair_potentials(&self, i: usize, j: usize) -> &[PairInteraction] {
-        let kind_i = self.particle(i).kind;
-        let kind_j = self.particle(j).kind;
-        let pairs = self.interactions.pairs(kind_i, kind_j);
-        if pairs.is_empty() {
-            warn_once!(
-                "No potential defined for the pair ({}, {})",
-                self.particle(i).name(), self.particle(j).name()
-            );
-        }
-        return pairs;
+        self.local_potentials().pairs(i, j)
     }
 
     /// Get read-only access to the interactions for this system
@@ -210,52 +213,23 @@ impl System {
 
     /// Get the list of bonded potential acting between the particles at indexes
     /// `i` and `j`.
+    #[inline]
     pub fn bond_potentials(&self, i: usize, j: usize) -> &[Box<BondPotential>] {
-        let kind_i = self.particle(i).kind;
-        let kind_j = self.particle(j).kind;
-        let bonds = self.interactions.bonds(kind_i, kind_j);
-        if bonds.is_empty() {
-            warn_once!(
-                "No potential defined for the bond ({}, {})",
-                self.particle(i).name(), self.particle(j).name()
-            );
-        }
-        return bonds;
+        self.local_potentials().bonds(i, j)
     }
 
     /// Get the list of angle interaction acting between the particles at
     /// indexes `i`, `j` and `k`.
+    #[inline]
     pub fn angle_potentials(&self, i: usize, j: usize, k: usize) -> &[Box<AnglePotential>] {
-        let kind_i = self.particle(i).kind;
-        let kind_j = self.particle(j).kind;
-        let kind_k = self.particle(k).kind;
-        let angles = self.interactions.angles(kind_i, kind_j, kind_k);
-        if angles.is_empty() {
-            warn_once!(
-                "No potential defined for the angle ({}, {}, {})",
-                self.particle(i).name(), self.particle(j).name(),
-                self.particle(k).name()
-            );
-        }
-        return angles;
+        self.local_potentials().angles(i, j, k)
     }
 
     /// Get the list of dihedral angles interaction acting between the particles
     /// at indexes `i`, `j`, `k` and `m`.
+    #[inline]
     pub fn dihedral_potentials(&self, i: usize, j: usize, k: usize, m: usize) -> &[Box<DihedralPotential>] {
-        let kind_i = self.particle(i).kind;
-        let kind_j = self.particle(j).kind;
-        let kind_k = self.particle(k).kind;
-        let kind_m = self.particle(m).kind;
-        let dihedrals = self.interactions.dihedrals(kind_i, kind_j, kind_k, kind_m);
-        if dihedrals.is_empty() {
-            warn_once!(
-                "No potential defined for the dihedral angle ({}, {}, {}, {})",
-                self.particle(i).name(), self.particle(j).name(),
-                self.particle(k).name(), self.particle(m).name()
-            );
-        }
-        return dihedrals;
+        self.local_potentials().dihedrals(i, j, k, m)
     }
 
     /// Get the coulombic interaction for the system
@@ -274,6 +248,73 @@ impl System {
     }
 }
 
+impl<'a> LocalPotentials<'a> {
+    /// Get the list of pair potential acting between the particles at indexes
+   /// `i` and `j`.
+    pub fn pairs(self, i: usize, j: usize) -> &'a [PairInteraction] {
+        let kind_i = self.0.particle(i).kind;
+        let kind_j = self.0.particle(j).kind;
+        let pairs = self.1.pairs(kind_i, kind_j);
+        if pairs.is_empty() {
+            warn_once!(
+                "No potential defined for the pair ({}, {})",
+                self.0.particle(i).name(), self.0.particle(j).name()
+            );
+        }
+        return pairs;
+    }
+
+    /// Get the list of bonded potential acting between the particles at indexes
+    /// `i` and `j`.
+    pub fn bonds(self, i: usize, j: usize) -> &'a [Box<BondPotential>] {
+        let kind_i = self.0.particle(i).kind;
+        let kind_j = self.0.particle(j).kind;
+        let bonds = self.1.bonds(kind_i, kind_j);
+        if bonds.is_empty() {
+            warn_once!(
+                "No potential defined for the bond ({}, {})",
+                self.0.particle(i).name(), self.0.particle(j).name()
+            );
+        }
+        return bonds;
+    }
+
+    /// Get the list of angle interaction acting between the particles at
+    /// indexes `i`, `j` and `k`.
+    pub fn angles(self, i: usize, j: usize, k: usize) -> &'a [Box<AnglePotential>] {
+        let kind_i = self.0.particle(i).kind;
+        let kind_j = self.0.particle(j).kind;
+        let kind_k = self.0.particle(k).kind;
+        let angles = self.1.angles(kind_i, kind_j, kind_k);
+        if angles.is_empty() {
+            warn_once!(
+                "No potential defined for the angle ({}, {}, {})",
+                self.0.particle(i).name(), self.0.particle(j).name(),
+                self.0.particle(k).name()
+            );
+        }
+        return angles;
+    }
+
+    /// Get the list of dihedral angles interaction acting between the particles
+    /// at indexes `i`, `j`, `k` and `m`.
+    pub fn dihedrals(self, i: usize, j: usize, k: usize, m: usize) -> &'a [Box<DihedralPotential>] {
+        let kind_i = self.0.particle(i).kind;
+        let kind_j = self.0.particle(j).kind;
+        let kind_k = self.0.particle(k).kind;
+        let kind_m = self.0.particle(m).kind;
+        let dihedrals = self.1.dihedrals(kind_i, kind_j, kind_k, kind_m);
+        if dihedrals.is_empty() {
+            warn_once!(
+                "No potential defined for the dihedral angle ({}, {}, {}, {})",
+                self.0.particle(i).name(), self.0.particle(j).name(),
+                self.0.particle(k).name(), self.0.particle(m).name()
+            );
+        }
+        return dihedrals;
+    }
+}
+
 use sys::compute::Compute;
 use sys::compute::{PotentialEnergy, KineticEnergy, TotalEnergy};
 use sys::compute::Forces;
@@ -285,11 +326,11 @@ use sys::compute::{StressAtTemperature, PressureAtTemperature};
 /// Functions to get physical properties of a system.
 impl System {
     /// Get the kinetic energy of the system.
-    pub fn kinetic_energy(&self) -> f64 {KineticEnergy.compute(self)}
+    pub fn kinetic_energy(&self) -> f64 { KineticEnergy.compute(self) }
     /// Get the potential energy of the system.
-    pub fn potential_energy(&self) -> f64 {PotentialEnergy.compute(self)}
+    pub fn potential_energy(&self) -> f64 { PotentialEnergy.compute(self) }
     /// Get the total energy of the system.
-    pub fn total_energy(&self) -> f64 {TotalEnergy.compute(self)}
+    pub fn total_energy(&self) -> f64 { TotalEnergy.compute(self) }
 
     /// Get the temperature of the system.
     pub fn temperature(&self) -> f64 {

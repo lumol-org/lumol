@@ -86,7 +86,7 @@ use energy::PairRestriction;
 /// assert_eq!(system.forces(), vec![Vector3D::zero(); 3]);
 /// assert_eq!(system.virial(), Matrix3::zero());
 /// ```
-pub trait GlobalPotential: GlobalCache + BoxCloneGlobal + Send + Sync {
+pub trait GlobalPotential: GlobalCache + BoxCloneGlobal {
     /// Return the cut off radius.
     fn cutoff(&self) -> Option<f64>;
     /// Compute the energetic contribution of this potential
@@ -109,8 +109,7 @@ impl_box_clone!(GlobalPotential, BoxCloneGlobal, box_clone_gobal);
 /// given [GlobalPotential][GlobalPotential] in Monte Carlo simulations.
 ///
 /// All methods take a non-mutable `&self` receiver, which means you may want
-/// to wrap the implemntation in `RwLock` or `Mutex` to allow for inner
-/// mutability while still implementing `Send + Sync`.
+/// to wrap the implemntation in `RefCell` to allow inner mutability.
 ///
 /// [EnergyCache]: ../sys/struct.EnergyCache.html
 /// [GlobalPotential]: trait.GlobalPotential.html

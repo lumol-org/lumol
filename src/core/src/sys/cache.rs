@@ -9,7 +9,7 @@
 //! energy components, by storing them and providing update callbacks.
 use std::mem;
 
-use sys::System;
+use sys::{System, EnergyEvaluator};
 use types::{Vector3D, Array2};
 
 /// Callback for updating a cache. It also take an `&mut System` argument for
@@ -82,7 +82,7 @@ impl EnergyCache {
         for i in 0..system.size() {
             for j in (i + 1)..system.size() {
                 let r = system.nearest_image(i, j).norm();
-                let energy = evaluator.pair(r, i, j);
+                let energy = EnergyEvaluator::pair(system, system.local_potentials(), r, i, j);
                 self.pairs_cache[(i, j)] = energy;
                 self.pairs_cache[(j, i)] = energy;
                 self.pairs += energy;
@@ -155,7 +155,7 @@ impl EnergyCache {
                 if idxes.contains(&part_j) {continue}
 
                 let r = system.cell.distance(&system.particle(part_j).position, &newpos[i]);
-                let energy = evaluator.pair(r, part_i, part_j);
+                let energy = EnergyEvaluator::pair(system, system.local_potentials(), r, part_i, part_j);
 
                 pairs_delta += energy;
                 new_pairs[(part_i, part_j)] += energy;
@@ -169,7 +169,7 @@ impl EnergyCache {
         for (i, &part_i) in idxes.iter().enumerate() {
             for (j, &part_j) in idxes.iter().enumerate().skip(i + 1) {
                 let r = system.cell.distance(&newpos[i], &newpos[j]);
-                let energy = evaluator.pair(r, part_i, part_j);
+                let energy = EnergyEvaluator::pair(system, system.local_potentials(), r, part_i, part_j);
 
                 pairs_delta += energy;
                 new_pairs[(part_i, part_j)] += energy;
@@ -301,7 +301,7 @@ impl EnergyCache {
                             &system.particle(pi).position,
                             &system.particle(pj).position
                         );
-                        let energy = evaluator.pair(r, pi, pj);
+                        let energy = EnergyEvaluator::pair(system, system.local_potentials(), r, pi, pj);
                         pairs_delta += energy;
                         new_pairs[(pi, pj)] += energy;
                         new_pairs[(pj, pi)] += energy;

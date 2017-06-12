@@ -7,10 +7,10 @@ mod config;
 pub use self::config::*;
 
 mod system;
-pub use self::system::System;
+pub use self::system::{System, LocalPotentials};
 
 mod interactions;
-use self::interactions::Interactions;
+use self::interactions::{Interactions, LocalInteractions};
 
 mod energy;
 pub use self::energy::EnergyEvaluator;
