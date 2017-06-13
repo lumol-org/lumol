@@ -32,7 +32,7 @@ fn forces_ewald(bencher: &mut Bencher) {
     let mut forces = vec![Vector3D::zero(); system.size()];
 
     bencher.iter(||{
-        let _ = ewald.forces(&system, &mut forces);
+        ewald.forces(&system, &mut forces);
     })
 }
 
@@ -60,7 +60,7 @@ fn forces_wolf(bencher: &mut Bencher) {
     let mut forces = vec![Vector3D::zero(); system.size()];
 
     bencher.iter(||{
-        let _ = wolf.forces(&system, &mut forces);
+        wolf.forces(&system, &mut forces);
     })
 }
 

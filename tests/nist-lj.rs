@@ -4,6 +4,8 @@
 //! Testing energy of a Lennard-Jones fluid using data from
 //! https://www.nist.gov/mml/csd/chemical-informatics-research-group/lennard-jones-fluid-reference-calculations
 
+#![allow(unknown_lints, float_cmp, needless_pass_by_value)]
+
 extern crate lumol;
 extern crate lumol_input as input;
 extern crate env_logger;
@@ -50,11 +52,9 @@ mod cutoff_3_lrc {
             epsilon: 1.0, sigma: 1.0
         }), 3.0);
 
-        match kind {
-            PairKind::None => {}
-            PairKind::Tail => lj.enable_tail_corrections()
+        if let PairKind::Tail = kind {
+            lj.enable_tail_corrections();
         }
-
         system.add_pair_potential("X", "X", lj);
     }
 
@@ -153,12 +153,9 @@ mod cutoff_4_lrc {
         let mut lj = PairInteraction::new(Box::new(LennardJones{
             epsilon: 1.0, sigma: 1.0
         }), 4.0);
-
-        match kind {
-            PairKind::None => {}
-            PairKind::Tail => lj.enable_tail_corrections()
+        if let PairKind::Tail = kind {
+            lj.enable_tail_corrections();
         }
-
         system.add_pair_potential("X", "X", lj);
     }
 
