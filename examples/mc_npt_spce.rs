@@ -59,9 +59,8 @@ fn get_system() -> System {
     system.set_coulomb_potential(Box::new(SharedEwald::new(ewald)));
 
     // Check if bonds are guessed correctly.
-    assert_eq!(system.size() as f64 / system.molecules().len() as f64, 3.0);
-
-    system
+    assert_eq!(system.size(), 3 * system.molecules().len());
+    return system;
 }
 
 fn main() {

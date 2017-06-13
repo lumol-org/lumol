@@ -21,9 +21,9 @@
     unused_qualifications, unused_results
 )]
 
-#![warn(clippy, clippy_pedantic)]
 #![allow(unknown_lints)]
-// List of lints we allow in this code
+#![warn(clippy, clippy_pedantic)]
+// List of allowed clippy lints
 #![allow(
     float_arithmetic, integer_arithmetic, indexing_slicing, needless_return,
     needless_range_loop, shadow_reuse, shadow_same, shadow_unrelated,

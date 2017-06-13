@@ -1,7 +1,7 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) Lumol's contributors — BSD license
 
-//! Testing physical properties of a NaCl crystal
+//! Testing physical properties of a sodium chloride crystal
 extern crate lumol;
 extern crate lumol_input as input;
 extern crate env_logger;

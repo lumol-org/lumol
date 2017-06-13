@@ -31,12 +31,12 @@ impl Encode for LogEncoder {
             LogLevel::Debug => try!(write!(out, "[debug] ")),
             LogLevel::Info => {},
             LogLevel::Warn => {
-                try!(out.set_style(&Style::new().text(Color::Red)));
+                try!(out.set_style(Style::new().text(Color::Red)));
                 try!(write!(out, "[warning] "));
                 try!(out.set_style(&Style::new()));
             }
             LogLevel::Error => {
-                try!(out.set_style(&Style::new().text(Color::Red).intense(true)));
+                try!(out.set_style(Style::new().text(Color::Red).intense(true)));
                 try!(write!(out, "[error] "));
             },
         }
@@ -162,8 +162,7 @@ fn read_appender(config: &Table, name: &str) -> Result<Appender, Error> {
     }
 
     let level = try!(config.get("level")
-                           .map(|level| level.as_str())
-                           .unwrap_or(Some("info"))
+                           .map_or(Some("info"), |level| level.as_str())
                            .ok_or(Error::from(
                                "'level' must be a string in log target"
                            )));
@@ -197,8 +196,7 @@ fn read_appender(config: &Table, name: &str) -> Result<Appender, Error> {
         )),
         filename => {
             let append_mode = try!(config.get("append")
-                                         .map(|x| x.as_bool())
-                                         .unwrap_or(Some(false))
+                                         .map_or(Some(false), |x| x.as_bool())
                                          .ok_or(Error::from(
                                              "'append' must be a boolean in log file target"
                                          )));

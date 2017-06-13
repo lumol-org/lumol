@@ -31,7 +31,7 @@ pub fn get_system(path: &str, cutoff: f64) -> System {
     let mut file = File::open(path).unwrap();
     let mut buffer = String::new();
     file.read_to_string(&mut buffer).unwrap();
-    let line = buffer.lines().skip(1).next().unwrap();
+    let line = buffer.lines().nth(1).unwrap();
     let mut splited = line.split_whitespace();
     assert_eq!(splited.next(), Some("cell:"));
     let a: f64 = splited.next().expect("Missing 'a' cell parameter")
