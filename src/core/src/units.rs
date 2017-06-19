@@ -15,71 +15,76 @@
 //! Other units are derived from these primitives units. For examples, the
 //! internal unit for energy is 1e-4 kJ/mol.
 
-use std::collections::BTreeMap;
-use std::f64::consts::PI;
 use std::num;
 use std::fmt;
 use std::error::Error;
 
-use consts::{BOHR_RADIUS, NA};
+// Using a separated module because lazy_static do not support pub(crate)
+mod detail {
+    use std::collections::BTreeMap;
+    use std::f64::consts::PI;
+    use consts::{BOHR_RADIUS, NA};
 
-// Atomic mass unit in kg
-const U_IN_KG : f64 = 1.660538782e-27;
+    // Atomic mass unit in kg
+    const U_IN_KG : f64 = 1.660538782e-27;
 
-/// Get the conversion factors from a string unit to the internal units.
-lazy_static!(
-    static ref FACTORS: BTreeMap<&'static str, f64> = {
-        let mut map = BTreeMap::new();
-        // Distances units.
-        assert!(map.insert("A", 1.0).is_none());
-        assert!(map.insert("nm", 10.0).is_none());
-        assert!(map.insert("pm", 1e-2).is_none());
-        assert!(map.insert("fm", 1e-5).is_none());
-        assert!(map.insert("m", 1e10).is_none());
-        assert!(map.insert("bohr", BOHR_RADIUS).is_none());
+    /// Get the conversion factors from a string unit to the internal units.
+    lazy_static!{
+        pub static ref FACTORS: BTreeMap<&'static str, f64> = {
+            let mut map = BTreeMap::new();
+            // Distances units.
+            assert!(map.insert("A", 1.0).is_none());
+            assert!(map.insert("nm", 10.0).is_none());
+            assert!(map.insert("pm", 1e-2).is_none());
+            assert!(map.insert("fm", 1e-5).is_none());
+            assert!(map.insert("m", 1e10).is_none());
+            assert!(map.insert("bohr", BOHR_RADIUS).is_none());
 
-        // Time units.
-        assert!(map.insert("fs", 1.0).is_none());
-        assert!(map.insert("ps", 1e3).is_none());
-        assert!(map.insert("ns", 1e6).is_none());
+            // Time units.
+            assert!(map.insert("fs", 1.0).is_none());
+            assert!(map.insert("ps", 1e3).is_none());
+            assert!(map.insert("ns", 1e6).is_none());
 
-        // Mass units.
-        assert!(map.insert("u", 1.0).is_none());
-        assert!(map.insert("Da", 1.0).is_none());
-        assert!(map.insert("kDa", 1.0).is_none());
-        assert!(map.insert("g", 1e-3 / U_IN_KG).is_none());
-        assert!(map.insert("kg", 1.0 / U_IN_KG).is_none());
+            // Mass units.
+            assert!(map.insert("u", 1.0).is_none());
+            assert!(map.insert("Da", 1.0).is_none());
+            assert!(map.insert("kDa", 1.0).is_none());
+            assert!(map.insert("g", 1e-3 / U_IN_KG).is_none());
+            assert!(map.insert("kg", 1.0 / U_IN_KG).is_none());
 
-        // Temperature units.
-        assert!(map.insert("K", 1.0).is_none());
-        // Quantity of matter units.
-        assert!(map.insert("mol", NA).is_none());
+            // Temperature units.
+            assert!(map.insert("K", 1.0).is_none());
+            // Quantity of matter units.
+            assert!(map.insert("mol", NA).is_none());
 
-        // Angle units.
-        assert!(map.insert("rad", 1.0).is_none());
-        assert!(map.insert("deg", PI / 180.0).is_none());
+            // Angle units.
+            assert!(map.insert("rad", 1.0).is_none());
+            assert!(map.insert("deg", PI / 180.0).is_none());
 
-        // Energy units.
-        assert!(map.insert("J", 1e-10 / U_IN_KG).is_none());
-        assert!(map.insert("kJ", 1e-7 / U_IN_KG).is_none());
-        assert!(map.insert("kcal", 4.184 * 1e-7 / U_IN_KG).is_none());
-        assert!(map.insert("eV", 1.60217653e-19 * 1e-10 / U_IN_KG).is_none());
-        assert!(map.insert("H", 4.35974417e-18 * 1e-10 / U_IN_KG).is_none());
-        assert!(map.insert("Ry", 4.35974417e-18 / 2.0 * 1e-10 / U_IN_KG).is_none());
+            // Energy units.
+            assert!(map.insert("J", 1e-10 / U_IN_KG).is_none());
+            assert!(map.insert("kJ", 1e-7 / U_IN_KG).is_none());
+            assert!(map.insert("kcal", 4.184 * 1e-7 / U_IN_KG).is_none());
+            assert!(map.insert("eV", 1.60217653e-19 * 1e-10 / U_IN_KG).is_none());
+            assert!(map.insert("H", 4.35974417e-18 * 1e-10 / U_IN_KG).is_none());
+            assert!(map.insert("Ry", 4.35974417e-18 / 2.0 * 1e-10 / U_IN_KG).is_none());
 
-        // Force unit.
-        assert!(map.insert("N", 1e-20 / U_IN_KG).is_none());
+            // Force unit.
+            assert!(map.insert("N", 1e-20 / U_IN_KG).is_none());
 
-        // Pressure units.
-        assert!(map.insert("Pa", 1e-40 / U_IN_KG).is_none());
-        assert!(map.insert("kPa", 1e-37 / U_IN_KG).is_none());
-        assert!(map.insert("MPa", 1e-34 / U_IN_KG).is_none());
-        assert!(map.insert("bar", 1e-35 / U_IN_KG).is_none());
-        assert!(map.insert("atm", 101325.0 * 1e-40 / U_IN_KG).is_none());
+            // Pressure units.
+            assert!(map.insert("Pa", 1e-40 / U_IN_KG).is_none());
+            assert!(map.insert("kPa", 1e-37 / U_IN_KG).is_none());
+            assert!(map.insert("MPa", 1e-34 / U_IN_KG).is_none());
+            assert!(map.insert("bar", 1e-35 / U_IN_KG).is_none());
+            assert!(map.insert("atm", 101325.0 * 1e-40 / U_IN_KG).is_none());
 
-        return map;
-    };
-);
+            return map;
+        };
+    }
+}
+
+pub(crate) use self::detail::FACTORS;
 
 /// Possible error causes when parsing an unit string.
 #[derive(Debug)]
