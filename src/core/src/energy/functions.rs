@@ -299,7 +299,6 @@ impl PairPotential for Buckingham {
     }
 }
 
-
 /// Born-Mayer-Huggins potential.
 ///
 /// The following potential expression is used: `V(x) = A * exp((sigma - r) /
@@ -363,6 +362,33 @@ impl PairPotential for BornMayerHuggins {
         self.a * exp * factor - 20.0 * self.c / rc3 + 8.0 * self.d / (5.0 * rc2 * rc3)
     }
 }
+
+struct MorsePotential {
+    width: f64, 
+    r0: f64,
+    depth: f64 
+}
+
+impl Potential for MorsePotential {  
+    fn energy(&self, r: f64) -> f64 { 
+        let rc2 = (1.0 - f64::exp(self.width * (r - self.r0))) * (1.0 - f64::exp(self.width * (r - self.r0)));
+        let result = self.depth * rc2;
+        return result;
+    }
+    
+    fn force(&self, r: f64) -> f64 { 
+        let result = self.depth * (f64::exp(-2 * self.width * (r - self.r0)) - 2 * f64::exp(self.width * (r -self.r0))) ; 
+        return result;
+    }
+}
+
+impl PairPotential for MorsePotential {  
+    fn tail_energy(&self, _: f64) -> f64 {0.0}
+    fn tail_virial(&self, _: f64) -> f64 {0.0}
+}
+
+impl BondPotential for MorsePotential {}
+
 
 #[cfg(test)]
 mod tests {
@@ -487,4 +513,18 @@ mod tests {
         let e1 = born.energy(4.0 + EPS);
         assert_relative_eq!((e0 - e1) / EPS, born.force(4.0), epsilon=1e-6);
     }
+    
+  #[test]
+    fn MorsePotential() {
+        let MorsePotiential = MorsePotential{a: 2.0, r0: 3.0, De: 4.0};
+        assert_eq!(MorsePotential.energy(1.0), 3.611618461763754);
+        assert_eq!(MorsePotential.force(2.5), 6.25);
+ 
+        assert_eq!(harmonic.tail_energy(1.0), 0.0);
+        assert_eq!(harmonic.tail_virial(1.0), 0.0);
+
+        let e0 = MorsePotential.energy(2.1);
+        let e1 = MorsePotential.energy(2.1 + EPS);
+        assert_relative_eq!((e0 - e1) / EPS, MorsePotential.force(2.1), epsilon=1e-6);   
+    } 
 }
