@@ -299,35 +299,6 @@ impl PairPotential for Buckingham {
     }
 }
 
-struct MorsePotential {
-    with: f64, 
-    r0: f64,
-    depth: f64 
-}
-
-impl Potential for MorsePotential {  
-
-fn energy(&self, r: f64) -> f64 { 
-    let rc2 = (1.0 - f64::exp(self.with * (r - self.r0))) * (1.0 - f64::exp(self.with * (r - self.r0)));
-    let result = self.depth * rc2;
-    return result;
-    }
-
-fn force(&self, r: f64) -> f64 { 
-    let result = self.depth * (std::exp(-2 * self.with * (r - self.r0)) - 2 * std::exp(self.with * (r -self.r0))) ; 
-    return result;
-    }
-}
-
-impl BondPotential for MorsePotential {}
-
-impl PairPotential for MorsePotential {  
-    fn tail_energy(&self, _: f64) -> f64 {0.0}
-    fn tail_virial(&self, _: f64) -> f64 {0.0}
-}
-
-
-
 /// Born-Mayer-Huggins potential.
 ///
 /// The following potential expression is used: `V(x) = A * exp((sigma - r) /
@@ -391,6 +362,33 @@ impl PairPotential for BornMayerHuggins {
         self.a * exp * factor - 20.0 * self.c / rc3 + 8.0 * self.d / (5.0 * rc2 * rc3)
     }
 }
+
+struct MorsePotential {
+    width: f64, 
+    r0: f64,
+    depth: f64 
+}
+
+impl Potential for MorsePotential {  
+    fn energy(&self, r: f64) -> f64 { 
+        let rc2 = (1.0 - f64::exp(self.width * (r - self.r0))) * (1.0 - f64::exp(self.width * (r - self.r0)));
+        let result = self.depth * rc2;
+        return result;
+    }
+    
+    fn force(&self, r: f64) -> f64 { 
+        let result = self.depth * (f64::exp(-2 * self.width * (r - self.r0)) - 2 * f64::exp(self.width * (r -self.r0))) ; 
+        return result;
+    }
+}
+
+impl PairPotential for MorsePotential {  
+    fn tail_energy(&self, _: f64) -> f64 {0.0}
+    fn tail_virial(&self, _: f64) -> f64 {0.0}
+}
+
+impl BondPotential for MorsePotential {}
+
 
 #[cfg(test)]
 mod tests {
