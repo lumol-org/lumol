@@ -9,7 +9,7 @@ use FromToml;
 use FromTomlWithData;
 
 use lumol::energy::{Harmonic, LennardJones, NullPotential, CosineHarmonic};
-use lumol::energy::{Torsion, Buckingham, BornMayerHuggins};
+use lumol::energy::{Torsion, Buckingham, BornMayerHuggins, MorsePotential};
 use lumol::energy::{Wolf, Ewald};
 use lumol::energy::{PairPotential, TableComputation};
 
@@ -145,6 +145,25 @@ impl FromToml for BornMayerHuggins {
                     "'A', 'C', 'D', 'sigma' and 'rho' must be strings in Born-Mayer-Huggins potential"
                 )
             )
+        }
+    }
+}
+
+impl FromToml for MorsePotential {
+    fn from_toml(table: &Table) -> Result<MorsePotential> {
+        let a = try_extract_parameter!(table, "a", "Morse potential");
+        let depth = try_extract_parameter!(table, "depth", "Morse potential");
+        let x0 = try_extract_parameter!(table, "x0", "Morse potential");
+
+        if let (Some(a), Some(depth), Some(x0)) = (a.as_str(), depth.as_str(), x0.as_str()) {
+            let a = try!(::lumol::units::from_str(a));
+            let depth = try!(::lumol::units::from_str(depth));
+            let x0 = try!(::lumol::units::from_str(x0));
+            Ok(MorsePotential{a: a, depth: depth, x0: x0})
+        } else {
+            Err(Error::from(
+                "'depth', 'a' and 'x0' must be strings in Morse potential"
+            ))
         }
     }
 }

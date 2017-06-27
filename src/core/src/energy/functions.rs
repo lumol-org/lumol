@@ -82,7 +82,7 @@ impl PairPotential for LennardJones {
         let rc3 = cutoff * cutoff * cutoff;
         let s9 = s3 * s3 * s3;
         let rc9 = rc3 * rc3 * rc3;
-        return 4.0 / 3.0 * self.epsilon * s3 * (1.0 / 3.0 * s9 / rc9 - s3 / rc3);
+        4.0 / 3.0 * self.epsilon * s3 * (1.0 / 3.0 * s9 / rc9 - s3 / rc3)
     }
 
     fn tail_virial(&self, cutoff: f64) -> f64 {
@@ -90,7 +90,7 @@ impl PairPotential for LennardJones {
         let rc3 = cutoff * cutoff * cutoff;
         let s9 = s3 * s3 * s3;
         let rc9 = rc3 * rc3 * rc3;
-        return 8.0 * self.epsilon * s3 * (2.0 / 3.0 * s9 / rc9 - s3 / rc3);
+        8.0 * self.epsilon * s3 * (2.0 / 3.0 * s9 / rc9 - s3 / rc3)
     }
 }
 
@@ -125,7 +125,7 @@ impl Potential for Harmonic {
         let dx = x - self.x0;
         0.5 * self.k * dx * dx
     }
-    
+
     fn force(&self, x: f64) -> f64 {
         self.k * (self.x0 - x)
     }
@@ -364,6 +364,53 @@ impl PairPotential for BornMayerHuggins {
     }
 }
 
+/// Morse potential
+///
+/// The following potential expression is used: `V(r) = depth * (1 - exp(a (x0 -
+/// r))^2` ; where the paramaters are 'x0' for the equilibrium value, 'depth'
+/// for the well depth, and 'a' for the well width.
+///
+/// # Examples
+///
+/// ```
+/// use lumol::energy::Potential;
+/// use lumol::energy::MorsePotential;
+///
+/// let potential = MorsePotential{a: 2.0, x0: 1.3, depth: 4.0};
+/// assert_eq!(potential.energy(1.0), 2.703517287822119);
+/// assert_eq!(potential.force(1.0), -37.12187076378477);
+/// ```
+#[derive(Clone, Copy)]
+pub struct MorsePotential {
+    /// Exponential term width value
+    pub a: f64,
+    /// Equilibrium value
+    pub x0: f64,
+    /// Well depth value
+    pub depth: f64,
+}
+
+impl Potential for MorsePotential {
+    fn energy(&self, r: f64) -> f64 {
+        let rc = 1.0 - f64::exp((self.x0 - r) * self.a);
+        self.depth * rc * rc
+    }
+
+    fn force(&self, r: f64) -> f64 {
+        let exp = f64::exp((self.x0 - r) * self.a);
+        2.0 * self.depth * (1.0 - exp * exp) * self.a
+    }
+}
+
+impl PairPotential for MorsePotential {
+    fn tail_energy(&self, _: f64) -> f64 {0.0}
+    fn tail_virial(&self, _: f64) -> f64 {0.0}
+}
+
+impl BondPotential for MorsePotential {}
+impl AnglePotential for MorsePotential {}
+impl DihedralPotential for MorsePotential {}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -486,5 +533,21 @@ mod tests {
         let e0 = born.energy(4.0);
         let e1 = born.energy(4.0 + EPS);
         assert_relative_eq!((e0 - e1) / EPS, born.force(4.0), epsilon=1e-6);
+    }
+
+  #[test]
+    fn morse() {
+        let morse = MorsePotential{a: 2.0, x0: 1.3, depth: 4.0};
+
+        // Comparing to externally computed values
+        assert_eq!(morse.energy(1.0), 2.703517287822119);
+        assert_eq!(morse.force(1.0), -37.12187076378477);
+
+        assert_eq!(morse.tail_energy(1.0), 0.0);
+        assert_eq!(morse.tail_virial(1.0), 0.0);
+
+        let e0 = morse.energy(1.3);
+        let e1 = morse.energy(1.3 + EPS);
+        assert_relative_eq!((e0 - e1) / EPS, morse.force(1.3), epsilon=1e-6);
     }
 }

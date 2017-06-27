@@ -3,7 +3,7 @@
 use toml::value::{Value, Table};
 
 use lumol::sys::System;
-use lumol::energy::{Harmonic, CosineHarmonic, Torsion, NullPotential};
+use lumol::energy::{Harmonic, CosineHarmonic, Torsion, MorsePotential, NullPotential};
 use lumol::energy::{AnglePotential, DihedralPotential};
 
 use error::{Error, Result};
@@ -103,6 +103,7 @@ fn read_angle_potential(angle: &Table) -> Result<Box<AnglePotential>> {
             "null" => Ok(Box::new(try!(NullPotential::from_toml(table)))),
             "harmonic" => Ok(Box::new(try!(Harmonic::from_toml(table)))),
             "cosine-harmonic" => Ok(Box::new(try!(CosineHarmonic::from_toml(table)))),
+            "morse" => Ok(Box::new(try!(MorsePotential::from_toml(table)))),
             other => Err(
                 Error::from(format!("Unknown potential type '{}'", other))
             ),
@@ -138,6 +139,7 @@ fn read_dihedral_potential(dihedral: &Table) -> Result<Box<DihedralPotential>> {
             "harmonic" => Ok(Box::new(try!(Harmonic::from_toml(table)))),
             "cosine-harmonic" => Ok(Box::new(try!(CosineHarmonic::from_toml(table)))),
             "torsion" => Ok(Box::new(try!(Torsion::from_toml(table)))),
+            "morse" => Ok(Box::new(try!(MorsePotential::from_toml(table)))),
             other => Err(
                 Error::from(format!("Unknown potential type '{}'", other))
             ),
