@@ -129,3 +129,26 @@ integer.
 atoms = ["C", "C", "C", "C"]
 torsion = {k = "40 kJ/mol", delta = "120 deg", n: 4}
 ```
+## Morse potential
+
+This potential is usually used for intramolecular interaction such as bonds,
+angles or dihedrals. It is a better approximation for the vibrational structure
+of the molecule than the Harmonic potential. It is expressed as: $$ V(r) = depth
+(1 - \exp(- a (r - x_0))^2 $$
+
+The potential type keyword is `morse`, and the parameters `a`, `x0` and `depth`
+should be provided as strings.
+
+```toml
+[[pairs]]
+atoms = ["A", "B"]
+morse = {depth = "40 kJ/mol", a = "2.0 A^-1", x0 = "1.3 A"}
+```
+
+For angles and dihedral angles, `x0` and `a` should be provided in angle units:
+
+```toml
+[[pairs]]
+atoms = ["A", "B"]
+morse = {depth = "40 kJ/mol", a = "2.0 rad^-1", x0 = "109.7 deg"}
+```
