@@ -32,6 +32,10 @@ sigma = "3.2 A"
 rho = "2.3 A"
 
 [[pairs]]
+atoms = ["A", "B"]
+morse = {a = "5 A^-1", depth = "25 kJ/mol", x0 = "2.1 A"}
+
+[[pairs]]
 # Table computations
 atoms = ["A", "B"]
 null = {}

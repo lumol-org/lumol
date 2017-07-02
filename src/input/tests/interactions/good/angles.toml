@@ -12,3 +12,7 @@ cosine-harmonic = {k = "67 kJ/mol/deg^2", x0 = "120 deg"}
 [[angles]]
 atoms = ["A", "B", "C"]
 null = {}
+
+[[angles]]
+atoms = ["A", "B", "C"]
+morse = {a = "30 deg^-1", depth = "25 kJ/mol", x0 = "109 deg"}
