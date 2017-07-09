@@ -135,7 +135,7 @@ impl Drop for TestsCleanup {
     fn drop(&mut self) {
         const REMOVE: &'static [&'static str] = &[
             "energy.dat", "filename.xyz", "cell.dat", "properties.dat",
-            "file.log"
+            "file.log", "custom.dat"
         ];
 
         for file in REMOVE {
