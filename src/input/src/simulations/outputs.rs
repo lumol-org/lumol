@@ -5,6 +5,7 @@ use std::path::PathBuf;
 
 use lumol::out::Output;
 use lumol::out::{TrajectoryOutput, CellOutput, EnergyOutput, PropertiesOutput};
+use lumol::out::CustomOutput;
 
 use error::{Error, Result};
 use FromToml;
@@ -35,11 +36,13 @@ impl Input {
                     None => 1u64
                 };
 
-                let output: Box<Output> = match try!(extract::typ(output, "output")) {
-                    "Trajectory" | "trajectory" => Box::new(try!(TrajectoryOutput::from_toml(output))),
-                    "Energy" | "energy" => Box::new(try!(EnergyOutput::from_toml(output))),
-                    "Cell" | "cell" => Box::new(try!(CellOutput::from_toml(output))),
-                    "Properties" | "properties" => Box::new(try!(PropertiesOutput::from_toml(output))),
+                let typ = try!(extract::typ(output, "output"));
+                let output: Box<Output> = match &*typ.to_lowercase() {
+                    "trajectory" => Box::new(try!(TrajectoryOutput::from_toml(output))),
+                    "energy" => Box::new(try!(EnergyOutput::from_toml(output))),
+                    "cell" => Box::new(try!(CellOutput::from_toml(output))),
+                    "properties" => Box::new(try!(PropertiesOutput::from_toml(output))),
+                    "custom" => Box::new(try!(CustomOutput::from_toml(output))),
                     other => {
                         return Err(Error::from(
                             format!("Unknown output type '{}'", other)
@@ -94,6 +97,15 @@ impl FromToml for PropertiesOutput {
     fn from_toml(config: &Table) -> Result<PropertiesOutput> {
         let path = try!(get_file(config));
         let output = try_io!(PropertiesOutput::new(path), PathBuf::from(path));
+        Ok(output)
+    }
+}
+
+impl FromToml for CustomOutput {
+    fn from_toml(config: &Table) -> Result<CustomOutput> {
+        let path = try!(get_file(config));
+        let template = try!(extract::str("template", config, "custom output"));
+        let output = try_io!(CustomOutput::new(path, template), PathBuf::from(path));
         Ok(output)
     }
 }

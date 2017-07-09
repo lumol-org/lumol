@@ -10,6 +10,7 @@ use chemfiles;
 
 use lumol::units::ParseError;
 use lumol::sys::TrajectoryError;
+use lumol::out::CustomOutputError;
 
 /// Custom `Result` type for input files
 pub type Result<T> = result::Result<T, Error>;
@@ -27,6 +28,8 @@ pub enum Error {
     Config(String),
     /// Unit parsing error
     Unit(ParseError),
+    /// Specific error from the custom outputs
+    CustomOutput(CustomOutputError)
 }
 
 impl From<(io::Error, PathBuf)> for Error {
@@ -59,6 +62,15 @@ impl From<ParseError> for Error {
     fn from(err: ParseError) -> Error {Error::Unit(err)}
 }
 
+impl From<(CustomOutputError, PathBuf)> for Error {
+    fn from((err, path): (CustomOutputError, PathBuf)) -> Error {
+        match err {
+            CustomOutputError::Io(err) => Error::Io(err, path),
+            other => Error::CustomOutput(other)
+        }
+    }
+}
+
 impl fmt::Display for Error {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> result::Result<(), fmt::Error> {
         use std::error::Error as StdError;
@@ -80,6 +92,7 @@ impl fmt::Display for Error {
             Error::TOML(ref err) => try!(write!(fmt, "{}", err)),
             Error::Config(ref err) => try!(write!(fmt, "{}", err)),
             Error::Unit(ref err) => try!(write!(fmt, "{}", err)),
+            Error::CustomOutput(ref err) => try!(write!(fmt, "{}", err)),
         };
         Ok(())
     }
@@ -93,6 +106,7 @@ impl error::Error for Error {
             Error::Io(ref err, _) => err.description(),
             Error::Trajectory(ref err) => err.description(),
             Error::Unit(ref err) => err.description(),
+            Error::CustomOutput(ref err) => err.description(),
         }
     }
 
@@ -102,6 +116,7 @@ impl error::Error for Error {
             Error::Io(ref err, _) => Some(err),
             Error::Trajectory(ref err) => Some(err),
             Error::Unit(ref err) => Some(err),
+            Error::CustomOutput(ref err) => Some(err),
         }
     }
 }
