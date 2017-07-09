@@ -34,7 +34,8 @@ properties. Which properties are needed is given in the `outputs` array:
 nsteps = 1_000_000
 outputs = [
     {type = "Trajectory", file = "filename.xyz", frequency = 100},
-    {type = "Energy", file = "energy.dat", frequency = 200}
+    {type = "Energy", file = "energy.dat", frequency = 200},
+    {type = "Custom", file = "custom.dat", template = "{vx[3] / mass[3]}"},
 ]
 
 [simulations.propagator]
@@ -58,3 +59,25 @@ quantities. The available outputs are the following:
   the trajectory will be guessed from the `file` extension. Supported formats
   are documented in [chemfiles](http://chemfiles.github.io/chemfiles/)
   documentation.
+- The `Custom` output is the most powerful one, taking an user-provided
+  template string and using it to output data. The template should be given
+  as a string with the `template` key in the TOML input file.
+
+  Here are some examples of custom output templates:
+    - A constant string is reproduces as it is: `some data`;
+    - Anything in braces is replaced by the corresponding values: `{pressure} {volume}`;
+    - Mathematical operators are allowed in braces: `{pressure / volume}`. You
+      can use `+`, `-`, `/`, `*`, `^` for exponentiation and parentheses;
+    - Some properties are arrays of atomic properties `{x[0] + y[20]}`;
+    - Finally, all the properties are given in the internal units. One can
+      specify another unit: `x[0] / nm`.
+
+    Here is a list of all properties available to custom outputs:
+
+    - Atomic properties: `x`, `y` and `z` for cartesian coordinates, `vx`, `vy`
+      and `vz` for cartesian components of the velocity, `mass` for the atomic
+      mass, `charge` for the atomic charge.
+    - Physical properties: `pressure`, `volume`, `temperature`, `natoms`
+    - Unit Cell properties: `cell.a`, `cell.b`, `cell.c` are the unit cell
+      vector lengths; `cell.alpha`, `cell.beta` and `cell.gamma` are the
+      unit cell angles.
