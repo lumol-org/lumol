@@ -18,7 +18,6 @@ pub use self::cells::{UnitCell, CellShape};
 mod connect;
 pub use self::connect::{Bond, Angle, Dihedral};
 pub use self::connect::BondDistance;
-pub use self::connect::{BONDED_12, BONDED_13, BONDED_14, BONDED_FAR};
 
 mod molecules;
 pub use self::molecules::Molecule;
