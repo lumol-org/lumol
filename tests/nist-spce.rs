@@ -49,7 +49,7 @@ pub fn get_system(path: &str, cutoff: f64) -> System {
     }
 
     for particle in system.particles_mut() {
-        particle.charge = match particle.name() {
+        particle.charge = match particle.name.as_ref() {
             "H" => 0.42380,
             "O" => -2.0 * 0.42380,
             other => panic!("Unknown particle name: {}", other)

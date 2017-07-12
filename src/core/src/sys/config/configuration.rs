@@ -573,9 +573,9 @@ mod tests {
         configuration.add_particle(particle("H"));
 
         assert_eq!(configuration.size(), 3);
-        assert_eq!(configuration.particle(0).name(), "O");
-        assert_eq!(configuration.particle(1).name(), "H");
-        assert_eq!(configuration.particle(2).name(), "H");
+        assert_eq!(configuration.particle(0).name, "O");
+        assert_eq!(configuration.particle(1).name, "H");
+        assert_eq!(configuration.particle(2).name, "H");
     }
 
     #[test]

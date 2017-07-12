@@ -142,7 +142,7 @@ pub trait ToChemfiles {
 impl ToChemfiles for Particle {
     type Output = chemfiles::Atom;
     fn to_chemfiles(&self) -> TrajectoryResult<chemfiles::Atom> {
-        let mut atom = try!(chemfiles::Atom::new(self.name()));
+        let mut atom = try!(chemfiles::Atom::new(&*self.name));
         try!(atom.set_mass(self.mass));
         return Ok(atom);
     }
@@ -534,9 +534,9 @@ H      2.172669     -0.348524    0.000051
 
         assert!(molecule.dihedrals().is_empty());
 
-        assert_eq!(atoms[0].name(), "O");
-        assert_eq!(atoms[1].name(), "H");
-        assert_eq!(atoms[2].name(), "H");
+        assert_eq!(atoms[0].name, "O");
+        assert_eq!(atoms[1].name, "H");
+        assert_eq!(atoms[2].name, "H");
 
         // This is only a simple regression test on the moltype function. Feel
         // free to change the value if the molecule type algorithm change.
