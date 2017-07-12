@@ -46,7 +46,7 @@ fn get_system() -> System {
     let h = 0.42380;
     let o = - 2.0 * h;
     for particle in system.particles_mut() {
-        match particle.name() {
+        match particle.name.as_ref() {
             "H" => particle.charge = h,
             "O" => particle.charge = o,
             _ => panic!("Unknown particle name in charge setting."),

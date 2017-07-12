@@ -29,9 +29,8 @@ impl fmt::Display for ParticleKind {
 /// contained, so that it will be easy to send data between parallels processes.
 #[derive(Clone, Debug)]
 pub struct Particle {
-    /// Particle name. This one is not public, as we always want to get &str,
-    /// and to use either `String` of `&str` to set it.
-    name: String,
+    /// Particle name.
+    pub name: String,
     /// Particle kind, an index for potentials lookup
     pub(in ::sys) kind: ParticleKind,
     /// Particle mass
@@ -67,16 +66,6 @@ impl Particle {
             velocity: Vector3D::zero()
         }
     }
-
-    /// Get the particle name
-    pub fn name(&self) -> &str {
-        &self.name
-    }
-
-    /// Set the particle name to `name`
-    pub fn set_name<'a, S>(&mut self, name: S) where S: Into<&'a str> {
-        self.name = String::from(name.into());
-    }
 }
 
 #[cfg(test)]
@@ -92,23 +81,20 @@ mod tests {
 
     #[test]
     fn name() {
-        let mut particle = Particle::new("");
-        assert_eq!(particle.name(), "");
+        let particle = Particle::new("");
+        assert_eq!(particle.name, "");
 
         assert_eq!(particle.mass, 0.0);
         assert_eq!(particle.charge, 0.0);
         assert_eq!(particle.kind, ParticleKind::invalid());
         assert_eq!(particle.position, Vector3D::new(0.0, 0.0, 0.0));
         assert_eq!(particle.velocity, Vector3D::new(0.0, 0.0, 0.0));
-
-        particle.set_name("H");
-        assert_eq!(particle.name(), "H");
     }
 
     #[test]
     fn with_position() {
         let particle = Particle::with_position("", Vector3D::new(1.0, 2.0, 3.0));
-        assert_eq!(particle.name(), "");
+        assert_eq!(particle.name, "");
         assert_eq!(particle.position, Vector3D::new(1.0, 2.0, 3.0));
 
         assert_eq!(particle.mass, 0.0);

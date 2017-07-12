@@ -75,7 +75,7 @@ impl System {
     /// Insert a particle at the end of the internal list.
     pub fn add_particle(&mut self, mut particle: Particle) {
         if particle.kind == ParticleKind::invalid() {
-            particle.kind = self.get_kind(particle.name());
+            particle.kind = self.get_kind(&particle.name);
         }
         self.configuration.add_particle(particle);
     }
@@ -197,7 +197,7 @@ impl System {
         if pairs.is_empty() {
             warn_once!(
                 "No potential defined for the pair ({}, {})",
-                self.particle(i).name(), self.particle(j).name()
+                self.particle(i).name, self.particle(j).name
             );
         }
         return pairs;
@@ -217,7 +217,7 @@ impl System {
         if bonds.is_empty() {
             warn_once!(
                 "No potential defined for the bond ({}, {})",
-                self.particle(i).name(), self.particle(j).name()
+                self.particle(i).name, self.particle(j).name
             );
         }
         return bonds;
@@ -233,8 +233,8 @@ impl System {
         if angles.is_empty() {
             warn_once!(
                 "No potential defined for the angle ({}, {}, {})",
-                self.particle(i).name(), self.particle(j).name(),
-                self.particle(k).name()
+                self.particle(i).name, self.particle(j).name,
+                self.particle(k).name
             );
         }
         return angles;
@@ -251,8 +251,8 @@ impl System {
         if dihedrals.is_empty() {
             warn_once!(
                 "No potential defined for the dihedral angle ({}, {}, {}, {})",
-                self.particle(i).name(), self.particle(j).name(),
-                self.particle(k).name(), self.particle(m).name()
+                self.particle(i).name, self.particle(j).name,
+                self.particle(k).name, self.particle(m).name
             );
         }
         return dihedrals;

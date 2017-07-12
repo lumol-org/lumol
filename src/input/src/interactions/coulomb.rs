@@ -81,7 +81,7 @@ impl InteractionsInput {
 
             let mut nchanged = 0;
             for particle in system.particles_mut() {
-                if particle.name() == name {
+                if particle.name == name.as_ref() {
                     particle.charge = charge;
                     nchanged += 1;
                     total_charge += charge;

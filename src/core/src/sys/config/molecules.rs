@@ -314,7 +314,7 @@ pub fn molecule_type(molecule: &Molecule, particles: &[Particle]) -> u64 {
     let mut hasher = DefaultHasher::new();
     molecule.cached_hash.hash(&mut hasher);
     for particle in particles {
-        particle.name().hash(&mut hasher);
+        particle.name.hash(&mut hasher);
     }
     hasher.finish()
 }

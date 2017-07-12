@@ -66,9 +66,9 @@ mod tests {
         O 0 0 1.5");
         assert_eq!(system.size(), 3);
 
-        assert_eq!(system.particle(0).name(), "O");
-        assert_eq!(system.particle(1).name(), "C");
-        assert_eq!(system.particle(2).name(), "O");
+        assert_eq!(system.particle(0).name, "O");
+        assert_eq!(system.particle(1).name, "C");
+        assert_eq!(system.particle(2).name, "O");
 
         assert_eq!(system.particle(0).position, Vector3D::new(0.0, 0.0, -1.5));
         assert_eq!(system.particle(1).position, Vector3D::new(0.0, 0.0, 0.0));
