@@ -100,32 +100,28 @@ impl Dihedral {
     #[inline] pub fn m(&self) -> usize {self.m}
 }
 
-mod distance {
-    bitflags! {
-        /// The `BondDistance` bitflag encode the topological distance between
-        /// two particles in the molecule, i.e. the number of bonds between the
-        /// particles.
-        pub flags BondDistance: u8 {
-            /// The particles are separated by one bond
-            const BONDED_12   = 0b0001,
-            /// The particles are separated by two bonds
-            const BONDED_13   = 0b0010,
-            /// The particles are separated by three bonds
-            const BONDED_14   = 0b0100,
-            /// The particles are separated by more than three bonds
-            const BONDED_FAR  = 0b1000,
-        }
-    }
 
-    impl Default for BondDistance {
-        fn default() -> BondDistance {
-            BONDED_FAR
-        }
+bitflags! {
+    /// The `BondDistance` bitflag encode the topological distance between
+    /// two particles in the molecule, i.e. the number of bonds between the
+    /// particles.
+    pub struct BondDistance: u8 {
+        /// The particles are separated by one bond
+        const ONE   = 0b0001;
+        /// The particles are separated by two bonds
+        const TWO   = 0b0010;
+        /// The particles are separated by three bonds
+        const THREE = 0b0100;
+        /// The particles are separated by more than three bonds
+        const FAR   = 0b1000;
     }
 }
 
-pub use self::distance::BondDistance;
-pub use self::distance::{BONDED_12, BONDED_13, BONDED_14, BONDED_FAR};
+impl Default for BondDistance {
+    fn default() -> BondDistance {
+        BondDistance::FAR
+    }
+}
 
 #[cfg(test)]
 mod test {

@@ -4,7 +4,7 @@
 use std::ops::Range;
 
 use rayon::prelude::{ParallelIterator, IntoParallelIterator};
-use rayon::iter::{Map, MapFn};
+use rayon::iter::Map;
 use ndarray_parallel::NdarrayIntoParallelIterator;
 use ndarray::Zip;
 
@@ -24,16 +24,20 @@ pub trait ParallelShortcuts: Sized {
     type Iter: ParallelIterator;
 
     /// Shortcut for `into_par_iter().map()`
-    fn par_map<F, R>(self, map_op: F) -> Map<Self::Iter, MapFn<F>>
-        where F: Fn(<Self::Iter as ParallelIterator>::Item) -> R + Sync, R: Send;
+    fn par_map<F, R>(self, map_op: F) -> Map<Self::Iter, F>
+    where
+        F: Fn(<Self::Iter as ParallelIterator>::Item) -> R + Sync + Send,
+        R: Send;
 }
 
 impl<T> ParallelShortcuts for Range<T>
     where Range<T>: IntoParallelIterator {
     type Iter = <Range<T> as IntoParallelIterator>::Iter;
 
-    fn par_map<F, R>(self, map_op: F) -> Map<Self::Iter, MapFn<F>>
-        where F: Fn(<Self::Iter as ParallelIterator>::Item) -> R + Sync, R: Send {
+    fn par_map<F, R>(self, map_op: F) -> Map<Self::Iter, F>
+    where
+        F: Fn(<Self::Iter as ParallelIterator>::Item) -> R + Sync + Send,
+        R: Send {
         self.into_par_iter().map(map_op)
     }
 }
@@ -42,8 +46,10 @@ impl<Parts, D> ParallelShortcuts for Zip<Parts, D>
     where Zip<Parts, D>: NdarrayIntoParallelIterator {
     type Iter = <Zip<Parts, D> as NdarrayIntoParallelIterator>::Iter;
 
-    fn par_map<F, R>(self, map_op: F) -> Map<Self::Iter, MapFn<F>>
-        where F: Fn(<Self::Iter as ParallelIterator>::Item) -> R + Sync, R: Send {
+    fn par_map<F, R>(self, map_op: F) -> Map<Self::Iter, F>
+    where
+        F: Fn(<Self::Iter as ParallelIterator>::Item) -> R + Sync + Send,
+        R: Send {
         self.into_par_iter().map(map_op)
     }
 }

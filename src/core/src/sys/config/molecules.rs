@@ -9,8 +9,7 @@ use std::hash::{Hash, Hasher};
 use std::collections::hash_map::DefaultHasher;
 
 use types::Array2;
-use sys::{Particle, Bond, Angle, Dihedral};
-use sys::{BondDistance, BONDED_12, BONDED_13, BONDED_14};
+use sys::{Particle, Bond, Angle, Dihedral, BondDistance};
 
 #[derive(Debug, Clone)]
 /// A molecule is the basic building block for a topology. It contains data
@@ -160,18 +159,18 @@ impl Molecule {
         };
 
         for bond in &self.bonds {
-            add_distance_term(bond.i(), bond.j(), BONDED_12);
-            add_distance_term(bond.j(), bond.i(), BONDED_12);
+            add_distance_term(bond.i(), bond.j(), BondDistance::ONE);
+            add_distance_term(bond.j(), bond.i(), BondDistance::ONE);
         }
 
         for angle in &self.angles {
-            add_distance_term(angle.i(), angle.k(), BONDED_13);
-            add_distance_term(angle.k(), angle.i(), BONDED_13);
+            add_distance_term(angle.i(), angle.k(), BondDistance::TWO);
+            add_distance_term(angle.k(), angle.i(), BondDistance::TWO);
         }
 
         for dihedral in &self.dihedrals {
-            add_distance_term(dihedral.i(), dihedral.m(), BONDED_14);
-            add_distance_term(dihedral.m(), dihedral.i(), BONDED_14);
+            add_distance_term(dihedral.i(), dihedral.m(), BondDistance::THREE);
+            add_distance_term(dihedral.m(), dihedral.i(), BondDistance::THREE);
         }
     }
 
@@ -341,8 +340,7 @@ impl<'a> IntoIterator for &'a Molecule {
 #[cfg(test)]
 mod test {
     use super::*;
-    use sys::{Bond, Angle, Dihedral};
-    use sys::{BONDED_12, BONDED_13, BONDED_14};
+    use sys::{Bond, Angle, Dihedral, BondDistance};
 
     #[test]
     fn translate() {
@@ -436,14 +434,14 @@ mod test {
         }
 
         /**********************************************************************/
-        assert!(molecule.bond_distance(0, 1).contains(BONDED_12));
-        assert!(molecule.bond_distance(1, 0).contains(BONDED_12));
+        assert!(molecule.bond_distance(0, 1).contains(BondDistance::ONE));
+        assert!(molecule.bond_distance(1, 0).contains(BondDistance::ONE));
 
-        assert!(molecule.bond_distance(0, 7).contains(BONDED_13));
-        assert!(molecule.bond_distance(7, 0).contains(BONDED_13));
+        assert!(molecule.bond_distance(0, 7).contains(BondDistance::TWO));
+        assert!(molecule.bond_distance(7, 0).contains(BondDistance::TWO));
 
-        assert!(molecule.bond_distance(3, 5).contains(BONDED_14));
-        assert!(molecule.bond_distance(5, 3).contains(BONDED_14));
+        assert!(molecule.bond_distance(3, 5).contains(BondDistance::THREE));
+        assert!(molecule.bond_distance(5, 3).contains(BondDistance::THREE));
 
         /**********************************************************************/
 
@@ -468,8 +466,8 @@ mod test {
         molecule.add_bond(2, 3);
         molecule.add_bond(3, 0);
 
-        assert!(molecule.bond_distance(0, 3).contains(BONDED_12));
-        assert!(molecule.bond_distance(0, 3).contains(BONDED_14));
+        assert!(molecule.bond_distance(0, 3).contains(BondDistance::ONE));
+        assert!(molecule.bond_distance(0, 3).contains(BondDistance::THREE));
 
         assert!(molecule.angles.contains(&Angle::new(0, 3, 2)));
         assert!(molecule.angles.contains(&Angle::new(0, 1, 2)));

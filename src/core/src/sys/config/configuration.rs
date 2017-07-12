@@ -9,11 +9,8 @@ use std::i8;
 
 use types::{Vector3D, Zero};
 
-use sys::{Particle, ParticleKind};
-use sys::Molecule;
-use sys::{BONDED_12, BONDED_13, BONDED_14, BONDED_FAR};
+use sys::{Particle, ParticleKind, Molecule, BondDistance, UnitCell};
 use sys::molecule_type;
-use sys::UnitCell;
 
 /// Particles permutations:. Indexes are given in the `(old, new)` form.
 pub type Permutations = Vec<(usize, usize)>;
@@ -102,13 +99,13 @@ impl Configuration {
             0
         } else {
             let connect = self.molecule(self.molid(i)).bond_distance(i, j);
-            if connect.contains(BONDED_12) {
+            if connect.contains(BondDistance::ONE) {
                 1
-            } else if connect.contains(BONDED_13) {
+            } else if connect.contains(BondDistance::TWO) {
                 2
-            } else if connect.contains(BONDED_14) {
+            } else if connect.contains(BondDistance::THREE) {
                 3
-            } else if connect.contains(BONDED_FAR) {
+            } else if connect.contains(BondDistance::FAR) {
                 i8::MAX
             } else {
                 unreachable!();

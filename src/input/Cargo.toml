@@ -9,12 +9,12 @@ license = "BSD-3-Clause"
 
 [dependencies]
 lumol-core = {path = "../core"}
-toml = "0.3"
+toml = "0.4"
 log = "0.3"
 chemfiles = "0.7"
 
 [dependencies.log4rs]
-version = "0.6"
+version = "0.7"
 # log4rs has a enormous ammount of features pulling a lot of crates. As we don't
 # need most of them, we selectively enable the ones we want.
 default-features = false
