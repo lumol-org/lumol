@@ -259,8 +259,8 @@ impl System {
     }
 
     /// Get the coulombic interaction for the system
-    pub fn coulomb_potential(&self) -> Option<&Box<CoulombicPotential>> {
-        self.interactions.coulomb.as_ref()
+    pub fn coulomb_potential(&self) -> Option<&CoulombicPotential> {
+        self.interactions.coulomb.as_ref().map(|coulomb| &**coulomb)
     }
 
     /// Get all global interactions for the system

@@ -207,16 +207,16 @@ impl FormatArgs {
 /// else is just passed through.
 fn parse_index(input: &str) -> (&str, usize) {
     // We can index `input`, because caldyn only works with ASCII data
-    let lbrackets = input.match_indices('[').collect::<Vec<_>>();
-    let rbrackets = input.match_indices(']').collect::<Vec<_>>();
+    let l_brackets = input.match_indices('[').collect::<Vec<_>>();
+    let r_brackets = input.match_indices(']').collect::<Vec<_>>();
 
-    if lbrackets.len() != 1 || rbrackets.len() != 1 {
+    if l_brackets.len() != 1 || r_brackets.len() != 1 {
         // More than one bracket
         return (input, 0);
     }
 
-    let start = lbrackets[0].0;
-    let end = rbrackets[0].0;
+    let start = l_brackets[0].0;
+    let end = r_brackets[0].0;
     if start > end {
         // `[` is after `]`
         return (input, 0);
