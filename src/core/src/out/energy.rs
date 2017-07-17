@@ -10,7 +10,7 @@ use super::Output;
 use utils;
 use sys::System;
 
-/// The `EnergyOutput` write the energy of the system to a text file, organized
+/// The `EnergyOutput` writes the energy of the system to a text file, organized
 /// as: `PotentialEnergy     KineticEnergy     TotalEnergy`.
 pub struct EnergyOutput {
     file: File,

@@ -5,11 +5,11 @@
 
 use sys::System;
 
-/// The `Output` trait define the interface for all the quantities outputted by
+/// The `Output` trait defines the interface for all the quantities outputted by
 /// the simulation during the run. An Output can be a text or a binary data
 /// file, an image, a text log, …
 pub trait Output {
-    /// Function called once at the beginning of the simulation, which allow
+    /// Function called once at the beginning of the simulation, which allows
     /// for some setup of the output if needed.
     fn setup(&mut self, _: &System) {}
 

@@ -9,8 +9,8 @@ use std::path::{Path, PathBuf};
 use sys::System;
 use super::Output;
 
-/// The `CellOutput` write all the components of a cell to a file . The columns
-/// in the file contains the following values: `A B C α β γ`.
+/// The `CellOutput` writes all the components of a cell to a file . The columns
+/// in the file contain the following values: `A B C α β γ`.
 pub struct CellOutput {
     file: File,
     path: PathBuf

@@ -8,7 +8,7 @@ use super::Output;
 use sys::System;
 use sys::{Trajectory, TrajectoryBuilder, OpenMode, TrajectoryError};
 
-/// The `TrajectoryOutput` allow to write the trajectory of the system to a
+/// The `TrajectoryOutput` allows to write the trajectory of the system to a
 /// file, using any format supported by the [Chemfiles][chemfiles] library.
 ///
 /// [chemfiles]: http://chemfiles.github.io
