@@ -19,7 +19,7 @@ use std::num;
 use std::fmt;
 use std::error::Error;
 
-// Using a separated module because lazy_static do not support pub(crate)
+// Using a separated module because lazy_static does not support pub(crate)
 mod detail {
     use std::collections::BTreeMap;
     use std::f64::consts::PI;

@@ -64,7 +64,7 @@ quantities. The available outputs are the following:
   as a string with the `template` key in the TOML input file.
 
   Here are some examples of custom output templates:
-    - A constant string is reproduces as it is: `some data`;
+    - A constant string is reproduced as it is: `some data`;
     - Anything in braces is replaced by the corresponding values: `{pressure} {volume}`;
     - Mathematical operators are allowed in braces: `{pressure / volume}`. You
       can use `+`, `-`, `/`, `*`, `^` for exponentiation and parentheses;

@@ -122,8 +122,8 @@ impl System {
 
     /// Guess the bonds in the configuration using the chemfiles algorithm.
     ///
-    /// This function remove any existing bond, and try to guess them using a
-    /// distance criteria. Because this function does a round trip to
+    /// This function removes any existing bond, and tries to guess bonds using
+    /// a distance criteria. Because this function does a round trip to
     /// chemfiles, it might be costly when dealing with big systems.
     pub fn guess_bonds(&mut self) {
         use ::sys::chfl::{ToChemfiles, ToLumol};

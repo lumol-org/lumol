@@ -230,13 +230,13 @@ fn parse_index(input: &str) -> (&str, usize) {
     }
 }
 
-/// The `CustomOutput` write data into a file from an user-provided template.
+/// The `CustomOutput` writes data into a file from an user-provided template.
 ///
 /// The template string can contain mathematical expressions, using some
 /// physical properties of the system. These mathematical expressions must be
 /// enclosed in braces (`{}`). Here are some examples:
 ///
-/// - A constant string is reproduces as it is: `some data`;
+/// - A constant string is reproduced as it is: `some data`;
 /// - Anything in braces is replaced by the corresponding values: `{pressure} {volume}`;
 /// - Mathematical operators are allowed in braces: `{pressure / volume}`. You
 ///   can use `+`, `-`, `/`, `*`, `^` for exponentiation and parentheses;
