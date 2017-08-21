@@ -2,7 +2,7 @@
 // Copyright (C) Lumol's contributors — BSD license
 
 //! Complex type
-use std::ops::{Add, Sub, Neg, Mul, Div};
+use std::ops::{Add, AddAssign, Sub, SubAssign, Neg, Mul, MulAssign, Div, DivAssign};
 use std::f64;
 
 use types::{Zero, One};
@@ -158,29 +158,42 @@ impl Complex {
 impl Add<Complex> for Complex {
     type Output = Complex;
 
-    #[inline]
     fn add(self, other: Complex) -> Complex {
-        let x = self.real() + other.real();
-        let y = self.imag() + other.imag();
-        return Complex::cartesian(x, y);
+        Complex {
+            real: self.real + other.real,
+            imag: self.imag + other.imag,
+        }
+    }
+}
+
+impl AddAssign<Complex> for Complex {
+    fn add_assign(&mut self, other: Complex) {
+        self.real += other.real;
+        self.imag += other.imag;
     }
 }
 
 impl Sub<Complex> for Complex {
     type Output = Complex;
 
-    #[inline]
     fn sub(self, other: Complex) -> Complex {
-        let x = self.real() - other.real();
-        let y = self.imag() - other.imag();
-        return Complex::cartesian(x, y);
+        Complex {
+            real: self.real - other.real,
+            imag: self.imag - other.imag,
+        }
+    }
+}
+
+impl SubAssign<Complex> for Complex {
+    fn sub_assign(&mut self, other: Complex) {
+        self.real -= other.real;
+        self.imag -= other.imag;
     }
 }
 
 impl Neg for Complex {
     type Output = Complex;
 
-    #[inline]
     fn neg(self) -> Complex {
         Complex{
             real: -self.real,
@@ -192,53 +205,94 @@ impl Neg for Complex {
 impl Mul<Complex> for Complex {
     type Output = Complex;
 
-    #[inline]
     fn mul(self, other: Complex) -> Complex {
-        let x = self.real() * other.real() - self.imag() * other.imag();
-        let y = self.real() * other.imag() + self.imag() * other.real();
-        Complex::cartesian(x, y)
+        Complex {
+            real: self.real * other.real - self.imag * other.imag,
+            imag: self.real * other.imag + self.imag * other.real,
+        }
     }
 }
 
 impl Mul<f64> for Complex {
     type Output = Complex;
 
-    #[inline]
     fn mul(self, other: f64) -> Complex {
-        Complex::cartesian(self.real() * other, self.imag() * other)
+        Complex {
+            real: self.real * other,
+            imag: self.imag * other,
+        }
     }
 }
 
 impl Mul<Complex> for f64 {
     type Output = Complex;
 
-    #[inline]
     fn mul(self, other: Complex) -> Complex {
-        Complex::cartesian(self * other.real(), self * other.imag())
+        Complex {
+            real: self * other.real,
+            imag: self * other.imag,
+        }
+    }
+}
+
+impl MulAssign<Complex> for Complex {
+    fn mul_assign(&mut self, other: Complex) {
+        let real = self.real * other.real - self.imag * other.imag;
+        let imag = self.real * other.imag + self.imag * other.real;
+
+        self.real = real;
+        self.imag = imag;
+    }
+}
+
+impl MulAssign<f64> for Complex {
+    fn mul_assign(&mut self, other: f64) {
+        self.real *= other;
+        self.imag *= other;
     }
 }
 
 impl Div<Complex> for Complex {
     type Output = Complex;
 
-    #[inline]
     fn div(self, other: Complex) -> Complex {
-        let r = other.norm2();
-        let x = self.real() * other.real() + self.imag() * other.imag();
-        let y = - self.real() * other.imag() + self.imag() * other.real();
+        let norm = other.norm2();
+        let real = self.real * other.real + self.imag * other.imag;
+        let imag = - self.real * other.imag + self.imag * other.real;
 
-        Complex::cartesian(x / r, y / r)
+        Complex {
+            real: real / norm,
+            imag: imag / norm,
+        }
     }
 }
 
 impl Div<f64> for Complex {
     type Output = Complex;
 
-    #[inline]
     fn div(self, other: f64) -> Complex {
-        let norm = self.norm() / other;
-        let phase = self.phase();
-        Complex::polar(norm, phase)
+        Complex {
+            real: self.real / other,
+            imag: self.imag / other,
+        }
+    }
+}
+
+impl DivAssign<Complex> for Complex {
+    fn div_assign(&mut self, other: Complex) {
+        let norm = other.norm2();
+        let real = self.real * other.real + self.imag * other.imag;
+        let imag = - self.real * other.imag + self.imag * other.real;
+
+        self.real = real / norm;
+        self.imag = imag / norm;
+    }
+}
+
+impl DivAssign<f64> for Complex {
+    fn div_assign(&mut self, other: f64) {
+        self.real /= other;
+        self.imag /= other;
     }
 }
 
@@ -362,22 +416,28 @@ mod tests {
 
     #[test]
     fn add() {
-        let a = Complex::polar(2.0, 0.2);
+        let mut a = Complex::polar(2.0, 0.2);
         let b = Complex::polar(1.0, 0.5);
         let c = a + b;
 
         assert_eq!(c.real(), a.real() + b.real());
         assert_eq!(c.imag(), a.imag() + b.imag());
+
+        a += b;
+        assert_eq!(a, c);
     }
 
     #[test]
     fn sub() {
-        let a = Complex::polar(2.0, 0.2);
+        let mut a = Complex::polar(2.0, 0.2);
         let b = Complex::polar(1.0, 0.5);
         let c = a - b;
 
         assert_eq!(c.real(), a.real() - b.real());
         assert_eq!(c.imag(), a.imag() - b.imag());
+
+        a -= b;
+        assert_eq!(a, c);
     }
 
     #[test]
@@ -394,7 +454,7 @@ mod tests {
 
     #[test]
     fn mul() {
-        let a = Complex::polar(2.0, 1.4);
+        let mut a = Complex::polar(2.0, 1.4);
         let b = Complex::polar(1.0, 0.5);
         let c = a * b;
 
@@ -412,11 +472,19 @@ mod tests {
         let c = -2.0 * a;
         assert_eq!(c.norm(), 2.0 * a.norm());
         assert_ulps_eq!(c.phase(), a.phase() - consts::PI);
+
+        let c = a * b;
+        a *= b;
+        assert_eq!(a, c);
+
+        let c = 3.0 * a;
+        a *= 3.0;
+        assert_eq!(a, c);
     }
 
     #[test]
     fn div() {
-        let a = Complex::polar(2.0, 0.2);
+        let mut a = Complex::polar(2.0, 0.2);
         let b = Complex::polar(1.0, 0.5);
         let c = a / b;
 
@@ -430,5 +498,13 @@ mod tests {
         let c = a / (-2.0);
         assert_eq!(c.norm(), a.norm() / 2.0);
         assert_ulps_eq!(c.phase(), a.phase() - consts::PI);
+
+        let c = a / b;
+        a /= b;
+        assert_eq!(a, c);
+
+        let c = a / 3.0;
+        a /= 3.0;
+        assert_eq!(a, c);
     }
 }
