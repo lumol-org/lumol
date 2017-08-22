@@ -24,6 +24,7 @@ num-traits = "0.1"
 rayon = "0.8"
 thread_local = "0.3"
 caldyn = "0.4"
+itertools = "0.6"
 
 [dev-dependencies]
 tempfile = "2.1"

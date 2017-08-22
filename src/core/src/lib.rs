@@ -42,6 +42,8 @@ extern crate log_once;
 extern crate bitflags;
 #[macro_use]
 extern crate lazy_static;
+#[macro_use]
+extern crate itertools;
 
 #[cfg(test)]
 #[macro_use]
