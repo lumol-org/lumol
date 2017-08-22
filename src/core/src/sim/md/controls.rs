@@ -193,8 +193,6 @@ mod tests {
     use super::*;
     use sys::{System, UnitCell, Particle};
     use sys::veloc::{BoltzmannVelocities, InitVelocities};
-    // use types::*;
-    use sim::Alternator;
     use utils::system_from_xyz;
 
     fn testing_system() -> System {
@@ -268,19 +266,7 @@ mod tests {
         Ag 1 1 1 1 0 0
         ");
 
-        let mut control = Alternator::new(4, RemoveTranslation::new());
-
-        // The three first controls do nothing
-        let vel_0 = system.particle(0).velocity;
-        let vel_1 = system.particle(1).velocity;
-        for _ in 0..3 {
-            control.control(&mut system);
-            assert_ulps_eq!(system.particle(0).velocity, vel_0);
-            assert_ulps_eq!(system.particle(1).velocity, vel_1);
-        }
-
-        // The fourth one removes global translation
-        control.control(&mut system);
+        RemoveTranslation::new().control(&mut system);
         assert_ulps_eq!(system.particle(0).velocity, Vector3D::new(0.0, 1.0, 0.0));
         assert_ulps_eq!(system.particle(1).velocity, Vector3D::new(0.0, -1.0, 0.0));
     }
@@ -293,19 +279,7 @@ mod tests {
         Ag 1 0 0 0 -1 2
         ");
 
-        let mut control = Alternator::new(4, RemoveRotation::new());
-
-        // The three first controls do nothing
-        let vel_0 = system.particle(0).velocity;
-        let vel_1 = system.particle(1).velocity;
-        for _ in 0..3 {
-            control.control(&mut system);
-            assert_ulps_eq!(system.particle(0).velocity, vel_0);
-            assert_ulps_eq!(system.particle(1).velocity, vel_1);
-        }
-
-        // The fourth one removes global rotation
-        control.control(&mut system);
+        RemoveRotation::new().control(&mut system);
         assert_ulps_eq!(system.particle(0).velocity, Vector3D::new(0.0, 0.0, 1.0));
         assert_ulps_eq!(system.particle(1).velocity, Vector3D::new(0.0, 0.0, 1.0));
     }
