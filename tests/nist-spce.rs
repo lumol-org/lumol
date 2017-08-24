@@ -4,9 +4,7 @@
 //! Testing energy computation for SPC/E water using data from
 //! https://www.nist.gov/mml/csd/chemical-informatics-research-group/spce-water-reference-calculations-9%C3%A5-cutoff
 //! https://www.nist.gov/mml/csd/chemical-informatics-research-group/spce-water-reference-calculations-10å-cutoff
-
 extern crate lumol;
-extern crate lumol_input as input;
 
 use lumol::sys::{System, UnitCell};
 use lumol::sys::TrajectoryBuilder;

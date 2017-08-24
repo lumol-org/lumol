@@ -1,7 +1,5 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) Lumol's contributors — BSD license
-
-extern crate lumol;
 extern crate lumol_input;
 
 #[macro_use]
@@ -10,8 +8,6 @@ extern crate clap;
 
 use lumol_input::Input;
 use clap::{App, ArgMatches};
-
-use std::process::exit;
 
 fn parse_args<'a>() -> ArgMatches<'a> {
     App::new("lumol")
@@ -28,7 +24,7 @@ fn main() {
         Ok(config) => config,
         Err(err) => {
             error!("bad input file: {}", err);
-            exit(2);
+            std::process::exit(2)
         }
     };
 

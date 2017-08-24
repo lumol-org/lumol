@@ -84,7 +84,7 @@ impl Simulation {
                 output.write(system);
             }
 
-            if i % 10000 == 0 {
+            if i % 10_000 == 0 {
                 self.sanity_check(system);
             }
         }

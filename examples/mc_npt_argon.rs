@@ -4,7 +4,6 @@
 //! Testing physical properties of a Lennard-Jones Argon using Monte Carlo
 //! simulation.
 extern crate lumol;
-extern crate lumol_input as input;
 
 use lumol::sys::{System, TrajectoryBuilder, UnitCell};
 use lumol::energy::{LennardJones, PairInteraction};

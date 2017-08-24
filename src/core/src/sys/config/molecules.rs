@@ -116,7 +116,7 @@ impl Molecule {
                     // We will not find any dihedral angle from these bonds
                     continue;
                 };
-                self.angles.insert(angle);
+                let _ = self.angles.insert(angle);
 
                 // Find dihedral angles
                 for bond3 in &self.bonds {
@@ -137,7 +137,7 @@ impl Molecule {
                         // improper dihedral.
                         continue;
                     };
-                    self.dihedrals.insert(dihedral);
+                    let _ = self.dihedrals.insert(dihedral);
                 }
             }
         }
@@ -180,17 +180,17 @@ impl Molecule {
         assert_eq!(self.range.end, other.range.start);
         self.range.end = other.range.end;
         for bond in other.bonds() {
-            self.bonds.insert(*bond);
+            let _ = self.bonds.insert(*bond);
         }
 
         // Get angles and dihedrals from the other molecule, there is no need to
         // rebuild these.
         for angle in other.angles() {
-            self.angles.insert(*angle);
+            let _ = self.angles.insert(*angle);
         }
 
         for dihedral in other.dihedrals() {
-            self.dihedrals.insert(*dihedral);
+            let _ = self.dihedrals.insert(*dihedral);
         }
 
         self.rebuild_connections();
@@ -212,7 +212,7 @@ impl Molecule {
 
         let mut new_bonds = HashSet::new();
         for bond in &self.bonds {
-            new_bonds.insert(Bond::new(
+            let _ = new_bonds.insert(Bond::new(
                 bond.i().wrapping_add(delta),
                 bond.j().wrapping_add(delta)
             ));
@@ -221,7 +221,7 @@ impl Molecule {
 
         let mut new_angles = HashSet::new();
         for angle in &self.angles {
-            new_angles.insert(Angle::new(
+            let _ = new_angles.insert(Angle::new(
                 angle.i().wrapping_add(delta),
                 angle.j().wrapping_add(delta),
                 angle.k().wrapping_add(delta)
@@ -231,7 +231,7 @@ impl Molecule {
 
         let mut new_dihedrals = HashSet::new();
         for dihedral in &self.dihedrals {
-            new_dihedrals.insert(Dihedral::new(
+            let _ = new_dihedrals.insert(Dihedral::new(
                 dihedral.i().wrapping_add(delta),
                 dihedral.j().wrapping_add(delta),
                 dihedral.k().wrapping_add(delta),
@@ -247,7 +247,7 @@ impl Molecule {
         assert!(self.contains(i));
         assert!(self.contains(j));
         assert_ne!(i, j);
-        self.bonds.insert(Bond::new(i, j));
+        let _ = self.bonds.insert(Bond::new(i, j));
         self.rebuild();
     }
 
@@ -271,7 +271,7 @@ impl Molecule {
                 bond_j -= 1;
             }
 
-            new_bonds.insert(Bond::new(bond_i, bond_j));
+            let _ = new_bonds.insert(Bond::new(bond_i, bond_j));
         }
 
         self.bonds = new_bonds;

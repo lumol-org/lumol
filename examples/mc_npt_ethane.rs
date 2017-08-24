@@ -1,7 +1,6 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) Lumol's contributors — BSD license
 extern crate lumol;
-extern crate lumol_input as input;
 
 use lumol::sys::{UnitCell, System, TrajectoryBuilder};
 use lumol::units;
@@ -91,7 +90,7 @@ fn main() {
     // (See frequencies of moves:
     // nmols/2 translations + nmols/2 rotations + 2 resize moves)
     let moves_per_cycle = 10;
-    let cycles = 100000;
+    let cycles = 100_000;
 
     // Some output and start of the simulation.
     println!("Simuation of 100 ethane molecules.");
