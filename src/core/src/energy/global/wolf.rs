@@ -206,7 +206,7 @@ impl GlobalPotential for Wolf {
         let thread_forces_store = ThreadLocalStore::new(|| vec![Vector3D::zero(); natoms]);
 
         (0..natoms).into_par_iter().for_each(|i| {
-            /// Get the thread local forces Vec
+            // Get the thread local forces Vec
             let mut thread_forces = thread_forces_store.borrow_mut();
 
             let qi = configuration.particle(i).charge;

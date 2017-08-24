@@ -1,7 +1,6 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) Lumol's contributors — BSD license
 extern crate lumol;
-extern crate lumol_input as input;
 
 use lumol::sys::{UnitCell, System, TrajectoryBuilder};
 use lumol::units;
@@ -102,14 +101,14 @@ fn main() {
     simulation.add_output_with_frequency(
         Box::new(EnergyOutput::new("npt_spce_ener.dat").unwrap()), 500);
     simulation.add_output_with_frequency(
-        Box::new(TrajectoryOutput::new("npt_spce_conf.xyz").unwrap()), 10000);
+        Box::new(TrajectoryOutput::new("npt_spce_conf.xyz").unwrap()), 10_000);
 
     // Often, a simulation is described using `MC cycles`.
     // We define a `cycle` to contain `nmols+2` moves.
     // (See frequencies of moves:
     // nmols/2 translations + nmols/2 rotations + 2 resize moves)
     let moves_per_cycle = 92;
-    let cycles = 10000;
+    let cycles = 10_000;
 
     // Some output and start of the simulation.
     println!("Simuation of 90 spce molecules.");

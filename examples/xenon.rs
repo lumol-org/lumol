@@ -36,5 +36,5 @@ fn main() {
     let trajectory_out = Box::new(TrajectoryOutput::new("trajectory.xyz").unwrap());
     simulation.add_output_with_frequency(trajectory_out, 50);
 
-    simulation.run(&mut system, 20000);
+    simulation.run(&mut system, 20_000);
 }

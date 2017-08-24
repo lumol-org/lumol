@@ -31,7 +31,7 @@
     cast_possible_wrap, float_cmp, or_fun_call, string_add, non_ascii_literal,
     doc_markdown, missing_docs_in_private_items, module_inception, stutter,
     unseparated_literal_suffix, new_without_default, new_without_default_derive,
-    zero_ptr,
+    zero_ptr, use_self, borrowed_box
 )]
 
 #[macro_use]

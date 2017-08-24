@@ -2,7 +2,6 @@
 // Copyright (C) Lumol's contributors — BSD license
 
 //! Testing physical properties of f-SPC water
-extern crate lumol;
 extern crate lumol_input as input;
 extern crate env_logger;
 
