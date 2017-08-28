@@ -1,7 +1,5 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) Lumol's contributors — BSD license
-
-//! `Particle` type and manipulation.
 use types::{Vector3D, Zero};
 use sys::PeriodicTable;
 
@@ -27,22 +25,25 @@ impl fmt::Display for ParticleKind {
 
 /// The Particle type hold basic data about a particle in the system. It is self
 /// contained, so that it will be easy to send data between parallels processes.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, StructOfArray)]
+#[soa_derive = "Clone, Debug"]
 pub struct Particle {
     /// Particle name.
     pub name: String,
     /// Particle kind, an index for potentials lookup
-    pub(in ::sys) kind: ParticleKind,
-    /// Particle mass
-    pub mass: f64,
+    pub kind: ParticleKind,
     /// Particle charge
     pub charge: f64,
+    /// Particle mass
+    #[soa_derive(zip)]
+    pub mass: f64,
     /// Particle positions
+    #[soa_derive(zip)]
     pub position: Vector3D,
     /// Particle velocity, if needed
+    #[soa_derive(zip)]
     pub velocity: Vector3D,
 }
-
 
 impl Particle {
     /// Create a new `Particle` from a `name`

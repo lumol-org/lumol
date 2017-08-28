@@ -3,6 +3,8 @@
 
 use utils;
 use sys::System;
+use sys::zip_particle::*;
+
 use super::{Minimizer, Tolerance};
 
 use std::f64;
@@ -28,9 +30,7 @@ impl SteepestDescent {
 impl Minimizer for SteepestDescent {
     fn minimize(&mut self, system: &mut System) -> Tolerance {
         // Store the current coordinates
-        let positions = system.particles()
-                              .map(|particle| particle.position)
-                              .collect::<Vec<_>>();
+        let prevpos = system.particles().position.to_vec();
 
         let mut gamma_changed = false;
         let forces = system.forces();
@@ -39,9 +39,12 @@ impl Minimizer for SteepestDescent {
         // Update coordinates, reducing gamma until we find a configuration of
         // lower energy
         loop {
-            for (i, particle) in system.particles_mut().enumerate() {
-                particle.position = positions[i] + self.gamma * forces[i];
+            for (position, prevpos, force) in system.particles_mut().zip_mut(
+                (&mut Position, &prevpos, &forces)
+            ) {
+                *position = prevpos + self.gamma * force;
             }
+
             energy = system.potential_energy();
             if energy <= initial_energy {
                 break;

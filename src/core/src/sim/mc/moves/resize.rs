@@ -89,8 +89,8 @@ impl MCMove for Resize {
             let old_com = system.molecule_com(mi);
             let frac_com = system.cell.fractional(&old_com);
             let delta_com = system.cell.cartesian(&frac_com) - old_com;
-            for pi in molecule.iter() {
-                system.particle_mut(pi).position += delta_com;
+            for position in &mut system.particles_mut().position[molecule.iter()] {
+                *position += delta_com;
             }
         }
         true

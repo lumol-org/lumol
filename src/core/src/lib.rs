@@ -44,6 +44,8 @@ extern crate bitflags;
 extern crate lazy_static;
 #[macro_use]
 extern crate itertools;
+#[macro_use]
+extern crate soa_derive;
 
 #[cfg(test)]
 #[macro_use]

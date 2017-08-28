@@ -13,6 +13,7 @@ use caldyn::Error as CaldynError;
 
 use super::Output;
 use sys::System;
+use types::Zero;
 use units;
 
 /// Possible causes of error when using a custom output
@@ -137,17 +138,18 @@ impl FormatArgs {
             // Get unit conversion factor firsts
             units::FACTORS.get(name).cloned().or_else(|| {
                 macro_rules! get_particle_data {
-                    ($index: ident, $callback: expr) => (
+                    ($index: ident, $data: ident) => (
                         system.particles()
-                              .nth($index)
-                              .map($callback)
+                              .$data
+                              .get($index)
+                              .cloned()
                               .unwrap_or_else(|| {
                                   warn_once!(
                                       "index out of bound in custom output: \
                                       index is {}, but we only have {} atoms",
                                       $index, system.size()
                                   );
-                                  return 0.0;
+                                  return Zero::zero();
                               })
                     );
                 }
@@ -156,16 +158,16 @@ impl FormatArgs {
                     let (name, index) = parse_index(name);
                     match name {
                         // position
-                        "x" => Some(get_particle_data!(index, |p| p.position[0])),
-                        "y" => Some(get_particle_data!(index, |p| p.position[1])),
-                        "z" => Some(get_particle_data!(index, |p| p.position[2])),
+                        "x" => Some(get_particle_data!(index, position)[0]),
+                        "y" => Some(get_particle_data!(index, position)[1]),
+                        "z" => Some(get_particle_data!(index, position)[2]),
                         // velocity
-                        "vx" => Some(get_particle_data!(index, |p| p.velocity[0])),
-                        "vy" => Some(get_particle_data!(index, |p| p.velocity[1])),
-                        "vz" => Some(get_particle_data!(index, |p| p.velocity[2])),
+                        "vx" => Some(get_particle_data!(index, velocity)[0]),
+                        "vy" => Some(get_particle_data!(index, velocity)[1]),
+                        "vz" => Some(get_particle_data!(index, velocity)[2]),
                         // other atomic properties
-                        "mass" => Some(get_particle_data!(index, |p| p.mass)),
-                        "charge" => Some(get_particle_data!(index, |p| p.charge)),
+                        "mass" => Some(get_particle_data!(index, mass)),
+                        "charge" => Some(get_particle_data!(index, charge)),
                         _ => None
                     }
                 } else {

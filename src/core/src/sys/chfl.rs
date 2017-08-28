@@ -4,7 +4,7 @@
 //! [Chemfiles][Chemfiles] conversion for Lumol.
 //!
 //! [Chemfiles]: https://chemfiles.org/
-use sys::{System, Particle, Molecule, UnitCell, CellShape};
+use sys::{System, Particle, ParticleRef, ParticleVec, Molecule, UnitCell, CellShape};
 use types::Vector3D;
 use chemfiles;
 
@@ -93,7 +93,7 @@ impl ToLumol for chemfiles::Frame {
                 positions[i][1],
                 positions[i][2]
             );
-            system.particle_mut(i).position = position;
+            system.particles_mut().position[i] = position;
         }
 
         let mut bonds = try!(topology.bonds());
@@ -139,11 +139,11 @@ pub trait ToChemfiles {
     fn to_chemfiles(&self) -> TrajectoryResult<Self::Output>;
 }
 
-impl ToChemfiles for Particle {
+impl<'a> ToChemfiles for ParticleRef<'a> {
     type Output = chemfiles::Atom;
     fn to_chemfiles(&self) -> TrajectoryResult<chemfiles::Atom> {
-        let mut atom = try!(chemfiles::Atom::new(&*self.name));
-        try!(atom.set_mass(self.mass));
+        let mut atom = try!(chemfiles::Atom::new(&**self.name));
+        try!(atom.set_mass(*self.mass));
         return Ok(atom);
     }
 }
@@ -177,26 +177,28 @@ impl ToChemfiles for System {
         try!(frame.set_step(self.step() as u64));
 
         {
-            let positions = try!(frame.positions_mut());
-            for (i, particle) in self.particles().enumerate() {
-                positions[i][0] = particle.position[0];
-                positions[i][1] = particle.position[1];
-                positions[i][2] = particle.position[2];
+            let chfl_positions = try!(frame.positions_mut());
+            let positions = self.particles().position;
+            for (chfl_position, position) in izip!(chfl_positions, positions) {
+                chfl_position[0] = position[0];
+                chfl_position[1] = position[1];
+                chfl_position[2] = position[2];
             }
         }
 
         {
             try!(frame.add_velocities());
-            let velocities = try!(frame.velocities_mut());
-            for (i, particle) in self.particles().enumerate() {
-                velocities[i][0] = particle.velocity[0];
-                velocities[i][1] = particle.velocity[1];
-                velocities[i][2] = particle.velocity[2];
+            let chfl_velocities = try!(frame.velocities_mut());
+            let velocities = self.particles().velocity;
+            for (chfl_velocity, velocity) in izip!(chfl_velocities, velocities) {
+                chfl_velocity[0] = velocity[0];
+                chfl_velocity[1] = velocity[1];
+                chfl_velocity[2] = velocity[2];
             }
         }
 
         let mut topology = try!(chemfiles::Topology::new());
-        for particle in self.particles() {
+        for particle in self.particles().iter() {
             let atom = try!(particle.to_chemfiles());
             try!(topology.add_atom(&atom));
         }
@@ -458,7 +460,7 @@ impl Trajectory {
 /// let (molecule, particles) = read_molecule("file.xyz").unwrap();
 /// assert_eq!(molecule.size(), particles.len());
 /// ```
-pub fn read_molecule<P: AsRef<Path>>(path: P) -> TrajectoryResult<(Molecule, Vec<Particle>)> {
+pub fn read_molecule<P: AsRef<Path>>(path: P) -> TrajectoryResult<(Molecule, ParticleVec)> {
     let mut trajectory = try!(chemfiles::Trajectory::open(&path, 'r'));
     let mut frame = try!(chemfiles::Frame::new());
     try!(trajectory.read(&mut frame));
@@ -475,11 +477,7 @@ pub fn read_molecule<P: AsRef<Path>>(path: P) -> TrajectoryResult<(Molecule, Vec
         "No molecule in the file at {}", path.as_ref().display()
     );
     let molecule = system.molecule(0).clone();
-    let mut particles = Vec::new();
-    for i in &molecule {
-        particles.push(system.particle(i).clone());
-    }
-    return Ok((molecule, particles));
+    return Ok((molecule, system.particles().to_vec()));
 }
 
 
@@ -534,13 +532,13 @@ H      2.172669     -0.348524    0.000051
 
         assert!(molecule.dihedrals().is_empty());
 
-        assert_eq!(atoms[0].name, "O");
-        assert_eq!(atoms[1].name, "H");
-        assert_eq!(atoms[2].name, "H");
+        assert_eq!(atoms.name[0], "O");
+        assert_eq!(atoms.name[1], "H");
+        assert_eq!(atoms.name[2], "H");
 
         // This is only a simple regression test on the moltype function. Feel
         // free to change the value if the molecule type algorithm change.
-        assert_eq!(molecule_type(&molecule, &atoms), 2727145596042757306);
+        assert_eq!(molecule_type(&molecule, atoms.as_slice()), 2727145596042757306);
     }
 
     #[test]
@@ -559,6 +557,6 @@ H      2.172669     -0.348524    0.000051
 
         // This is only a simple regression test on the moltype function. Feel
         // free to change the value if the molecule type algorithm change.
-        assert_eq!(molecule_type(&molecule, &atoms), 2028056351119909064);
+        assert_eq!(molecule_type(&molecule, atoms.as_slice()), 2028056351119909064);
     }
 }

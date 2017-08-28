@@ -66,13 +66,13 @@ mod tests {
         O 0 0 1.5");
         assert_eq!(system.size(), 3);
 
-        assert_eq!(system.particle(0).name, "O");
-        assert_eq!(system.particle(1).name, "C");
-        assert_eq!(system.particle(2).name, "O");
+        assert_eq!(system.particles().name[0], "O");
+        assert_eq!(system.particles().name[1], "C");
+        assert_eq!(system.particles().name[2], "O");
 
-        assert_eq!(system.particle(0).position, Vector3D::new(0.0, 0.0, -1.5));
-        assert_eq!(system.particle(1).position, Vector3D::new(0.0, 0.0, 0.0));
-        assert_eq!(system.particle(2).position, Vector3D::new(0.0, 0.0, 1.5));
+        assert_eq!(system.particles().position[0], Vector3D::new(0.0, 0.0, -1.5));
+        assert_eq!(system.particles().position[1], Vector3D::new(0.0, 0.0, 0.0));
+        assert_eq!(system.particles().position[2], Vector3D::new(0.0, 0.0, 1.5));
 
         assert_eq!(system.molecules().len(), 1);
         assert_eq!(system.molecule(0).bonds().len(), 2);
@@ -90,10 +90,10 @@ mod tests {
         assert_eq!(system.molecules().len(), 4);
         assert_eq!(system.cell, UnitCell::cubic(67.0));
 
-        assert_eq!(system.particle(0).position, Vector3D::new(0.0, 0.0, 0.0));
-        assert_eq!(system.particle(1).position, Vector3D::new(1.0, 0.0, 0.0));
-        assert_eq!(system.particle(2).position, Vector3D::new(0.0, 1.0, 0.0));
-        assert_eq!(system.particle(3).position, Vector3D::new(0.0, 0.0, 1.0));
+        assert_eq!(system.particles().position[0], Vector3D::new(0.0, 0.0, 0.0));
+        assert_eq!(system.particles().position[1], Vector3D::new(1.0, 0.0, 0.0));
+        assert_eq!(system.particles().position[2], Vector3D::new(0.0, 1.0, 0.0));
+        assert_eq!(system.particles().position[3], Vector3D::new(0.0, 0.0, 1.0));
     }
 
     #[test]
@@ -109,14 +109,14 @@ mod tests {
         assert_eq!(system.molecules().len(), 4);
         assert_eq!(system.cell, UnitCell::cubic(67.0));
 
-        assert_eq!(system.particle(0).position, Vector3D::new(0.0, 0.0, 0.0));
-        assert_eq!(system.particle(1).position, Vector3D::new(1.0, 0.0, 0.0));
-        assert_eq!(system.particle(2).position, Vector3D::new(0.0, 1.0, 0.0));
-        assert_eq!(system.particle(3).position, Vector3D::new(0.0, 0.0, 1.0));
+        assert_eq!(system.particles().position[0], Vector3D::new(0.0, 0.0, 0.0));
+        assert_eq!(system.particles().position[1], Vector3D::new(1.0, 0.0, 0.0));
+        assert_eq!(system.particles().position[2], Vector3D::new(0.0, 1.0, 0.0));
+        assert_eq!(system.particles().position[3], Vector3D::new(0.0, 0.0, 1.0));
 
-        assert_eq!(system.particle(0).velocity, Vector3D::new(0.0, 0.0, 0.0));
-        assert_eq!(system.particle(1).velocity, Vector3D::new(1.0, 2.0, 3.0));
-        assert_eq!(system.particle(2).velocity, Vector3D::new(0.0, 1.0, 0.0));
-        assert_eq!(system.particle(3).velocity, Vector3D::new(2.0, 2.0, 3.0));
+        assert_eq!(system.particles().velocity[0], Vector3D::new(0.0, 0.0, 0.0));
+        assert_eq!(system.particles().velocity[1], Vector3D::new(1.0, 2.0, 3.0));
+        assert_eq!(system.particles().velocity[2], Vector3D::new(0.0, 1.0, 0.0));
+        assert_eq!(system.particles().velocity[3], Vector3D::new(2.0, 2.0, 3.0));
     }
 }

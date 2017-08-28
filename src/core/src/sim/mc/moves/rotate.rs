@@ -86,12 +86,9 @@ impl MCMove for Rotate {
         let theta = self.range.sample(rng);
 
         // get indices of particles of selected molecule
-        let molecule = system.molecule(self.molid);
+        let indexes = system.molecule(self.molid).iter();
         // store positions of selected molecule
-        self.newpos.clear();
-        for pi in molecule.iter() {
-            self.newpos.push(system.particle(pi).position);
-        }
+        self.newpos = system.particles().position[indexes].to_vec();
         // get center-of-mass of molecule
         let com = system.molecule_com(self.molid);
         rotate_around_axis(&mut self.newpos, com, axis, theta);
@@ -105,8 +102,10 @@ impl MCMove for Rotate {
     }
 
     fn apply(&mut self, system: &mut System) {
-        for (i, pi) in system.molecule(self.molid).iter().enumerate() {
-            system.particle_mut(pi).position = self.newpos[i];
+        let indexes = system.molecule(self.molid).iter();
+        let positions = &mut system.particles_mut().position[indexes];
+        for (position, newpos) in izip!(positions, &self.newpos) {
+            *position = *newpos;
         }
     }
 

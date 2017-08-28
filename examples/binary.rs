@@ -5,7 +5,7 @@
 extern crate lumol;
 extern crate lumol_input as input;
 
-use lumol::sys::{Molecule, Particle, TrajectoryBuilder, UnitCell};
+use lumol::sys::{Molecule, Particle, ParticleVec, TrajectoryBuilder, UnitCell};
 use lumol::sys::{read_molecule, molecule_type};
 use lumol::sim::Simulation;
 use lumol::sim::mc::{MonteCarlo, Translate, Rotate};
@@ -30,7 +30,7 @@ fn main() {
     let co2 = {
         // We can read files to get molecule type
         let (molecule, atoms) = read_molecule("data/CO2.xyz").unwrap();
-        molecule_type(&molecule, &atoms)
+        molecule_type(&molecule, atoms.as_slice())
     };
     let h2o = {
         // Or define a new molecule by hand
@@ -41,7 +41,12 @@ fn main() {
         molecule.add_bond(0, 1);
         molecule.add_bond(1, 2);
 
-        molecule_type(&molecule, &[Particle::new("H"), Particle::new("O"), Particle::new("H")])
+        let mut atoms = ParticleVec::new();
+        atoms.push(Particle::new("H"));
+        atoms.push(Particle::new("O"));
+        atoms.push(Particle::new("H"));
+
+        molecule_type(&molecule, atoms.as_slice())
     };
 
     let mut mc = MonteCarlo::new(units::from(500.0, "K").unwrap());
