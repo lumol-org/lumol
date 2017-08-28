@@ -9,7 +9,7 @@ use std::hash::{Hash, Hasher};
 use std::collections::hash_map::DefaultHasher;
 
 use types::Array2;
-use sys::{Particle, Bond, Angle, Dihedral, BondDistance};
+use sys::{ParticleSlice, Bond, Angle, Dihedral, BondDistance};
 
 #[derive(Debug, Clone)]
 /// A molecule is the basic building block for a topology. It contains data
@@ -309,12 +309,12 @@ impl Molecule {
 /// Get the molecule type of the given `molecule` containing the `particles`.
 /// This type can be used to identify all the molecules containing the same
 /// bonds and particles (see `System::molecule_type` for more information).
-pub fn molecule_type(molecule: &Molecule, particles: &[Particle]) -> u64 {
+pub fn molecule_type(molecule: &Molecule, particles: ParticleSlice) -> u64 {
     assert_eq!(particles.len(), molecule.size());
     let mut hasher = DefaultHasher::new();
     molecule.cached_hash.hash(&mut hasher);
-    for particle in particles {
-        particle.name.hash(&mut hasher);
+    for name in particles.name {
+        name.hash(&mut hasher);
     }
     hasher.finish()
 }

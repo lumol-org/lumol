@@ -25,6 +25,7 @@ rayon = "0.8"
 thread_local = "0.3"
 caldyn = "0.4"
 itertools = "0.6"
+soa_derive = "0.4"
 
 [dev-dependencies]
 tempfile = "2.1"

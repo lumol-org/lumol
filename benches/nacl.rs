@@ -85,7 +85,7 @@ fn cache_move_particle_ewald(bencher: &mut Bencher) {
     let mut rng = utils::get_rng(41201154);
 
     let i: usize = rng.gen_range(0, system.size());
-    let mut delta = system.particle(i).position;
+    let mut delta = system.particles().position[i];
     delta += Vector3D::new(rng.gen(), rng.gen(), rng.gen());
 
     bencher.iter(||{
@@ -103,7 +103,7 @@ fn cache_move_particle_wolf(bencher: &mut Bencher) {
     let mut rng = utils::get_rng(474114);
 
     let i: usize = rng.gen_range(0, system.size());
-    let mut delta = system.particle(i).position;
+    let mut delta = system.particles().position[i];
     delta += Vector3D::new(rng.gen(), rng.gen(), rng.gen());
 
     bencher.iter(||{

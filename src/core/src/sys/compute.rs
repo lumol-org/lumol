@@ -2,12 +2,14 @@
 // Copyright (C) Lumol's contributors — BSD license
 
 //! Computing properties of a system
-
 use std::f64::consts::PI;
 
 use consts::K_BOLTZMANN;
 use types::{Matrix3, Vector3D, Zero, One};
+
 use sys::System;
+use sys::zip_particle::*;
+
 use parallel::prelude::*;
 use parallel::ThreadLocalStore;
 
@@ -133,8 +135,8 @@ impl Compute for KineticEnergy {
     type Output = f64;
     fn compute(&self, system: &System) -> f64 {
         let mut energy = 0.0;
-        for particle in system.particles() {
-            energy += 0.5 * particle.mass * particle.velocity.norm2();
+        for (&mass, velocity) in system.particles().zip((&Mass, &Velocity)) {
+            energy += 0.5 * mass * velocity.norm2();
         }
         assert!(energy.is_finite(), "Kinetic energy is infinite!");
         return energy;
@@ -295,10 +297,10 @@ impl Compute for Stress {
     type Output = Matrix3;
     fn compute(&self, system: &System) -> Matrix3 {
         assert!(!system.cell.is_infinite(), "Can not compute stress for infinite cell");
+
         let mut kinetic = Matrix3::zero();
-        for particle in system.particles() {
-            let velocity = &particle.velocity;
-            kinetic += particle.mass * velocity.tensorial(velocity);
+        for (&mass, velocity) in system.particles().zip((&Mass, &Velocity)) {
+            kinetic += mass * velocity.tensorial(velocity);
         }
 
         let volume = system.volume();

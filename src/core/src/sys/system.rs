@@ -84,8 +84,8 @@ impl System {
     pub fn composition(&self) -> Composition {
         let mut composition = Composition::new();
         composition.resize(self.kinds.len());
-        for particle in self.particles() {
-            composition[particle.kind] += 1;
+        for &kind in self.particles().kind {
+            composition[kind] += 1;
         }
         return composition;
     }
@@ -191,13 +191,13 @@ impl System {
     /// Get the list of pair potential acting between the particles at indexes
     /// `i` and `j`.
     pub fn pair_potentials(&self, i: usize, j: usize) -> &[PairInteraction] {
-        let kind_i = self.particle(i).kind;
-        let kind_j = self.particle(j).kind;
+        let kind_i = self.particles().kind[i];
+        let kind_j = self.particles().kind[j];
         let pairs = self.interactions.pairs(kind_i, kind_j);
         if pairs.is_empty() {
             warn_once!(
                 "No potential defined for the pair ({}, {})",
-                self.particle(i).name, self.particle(j).name
+                self.particles().name[i], self.particles().name[j]
             );
         }
         return pairs;
@@ -211,13 +211,13 @@ impl System {
     /// Get the list of bonded potential acting between the particles at indexes
     /// `i` and `j`.
     pub fn bond_potentials(&self, i: usize, j: usize) -> &[Box<BondPotential>] {
-        let kind_i = self.particle(i).kind;
-        let kind_j = self.particle(j).kind;
+        let kind_i = self.particles().kind[i];
+        let kind_j = self.particles().kind[j];
         let bonds = self.interactions.bonds(kind_i, kind_j);
         if bonds.is_empty() {
             warn_once!(
                 "No potential defined for the bond ({}, {})",
-                self.particle(i).name, self.particle(j).name
+                self.particles().name[i], self.particles().name[j]
             );
         }
         return bonds;
@@ -226,15 +226,15 @@ impl System {
     /// Get the list of angle interaction acting between the particles at
     /// indexes `i`, `j` and `k`.
     pub fn angle_potentials(&self, i: usize, j: usize, k: usize) -> &[Box<AnglePotential>] {
-        let kind_i = self.particle(i).kind;
-        let kind_j = self.particle(j).kind;
-        let kind_k = self.particle(k).kind;
+        let kind_i = self.particles().kind[i];
+        let kind_j = self.particles().kind[j];
+        let kind_k = self.particles().kind[k];
         let angles = self.interactions.angles(kind_i, kind_j, kind_k);
         if angles.is_empty() {
             warn_once!(
                 "No potential defined for the angle ({}, {}, {})",
-                self.particle(i).name, self.particle(j).name,
-                self.particle(k).name
+                self.particles().name[i], self.particles().name[j],
+                self.particles().name[k]
             );
         }
         return angles;
@@ -243,16 +243,16 @@ impl System {
     /// Get the list of dihedral angles interaction acting between the particles
     /// at indexes `i`, `j`, `k` and `m`.
     pub fn dihedral_potentials(&self, i: usize, j: usize, k: usize, m: usize) -> &[Box<DihedralPotential>] {
-        let kind_i = self.particle(i).kind;
-        let kind_j = self.particle(j).kind;
-        let kind_k = self.particle(k).kind;
-        let kind_m = self.particle(m).kind;
+        let kind_i = self.particles().kind[i];
+        let kind_j = self.particles().kind[j];
+        let kind_k = self.particles().kind[k];
+        let kind_m = self.particles().kind[m];
         let dihedrals = self.interactions.dihedrals(kind_i, kind_j, kind_k, kind_m);
         if dihedrals.is_empty() {
             warn_once!(
                 "No potential defined for the dihedral angle ({}, {}, {}, {})",
-                self.particle(i).name, self.particle(j).name,
-                self.particle(k).name, self.particle(m).name
+                self.particles().name[i], self.particles().name[j],
+                self.particles().name[k], self.particles().name[m]
             );
         }
         return dihedrals;
@@ -391,9 +391,9 @@ mod tests {
         system.add_particle(Particle::new("O"));
         system.add_particle(Particle::new("H"));
 
-        assert_eq!(system.particle(0).kind, ParticleKind(0));
-        assert_eq!(system.particle(1).kind, ParticleKind(1));
-        assert_eq!(system.particle(2).kind, ParticleKind(0));
+        assert_eq!(system.particles().kind[0], ParticleKind(0));
+        assert_eq!(system.particles().kind[1], ParticleKind(1));
+        assert_eq!(system.particles().kind[2], ParticleKind(0));
     }
 
     #[test]

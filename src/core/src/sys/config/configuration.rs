@@ -3,13 +3,13 @@
 
 //! The Configuration type definition
 
-use std::slice;
 use std::cmp::{min, max};
 use std::i8;
 
 use types::{Vector3D, Zero};
 
-use sys::{Particle, ParticleKind, Molecule, BondDistance, UnitCell};
+use sys::{ParticleKind, Molecule, BondDistance, UnitCell};
+use sys::{Particle, ParticleVec, ParticleSlice, ParticleSliceMut, };
 use sys::molecule_type;
 
 /// Particles permutations:. Indexes are given in the `(old, new)` form.
@@ -25,7 +25,7 @@ pub struct Configuration {
     /// Unit cell of the system
     pub cell: UnitCell,
     /// List of particles in the system
-    particles: Vec<Particle>,
+    particles: ParticleVec,
     /// Molecules in the system
     molecules: Vec<Molecule>,
     /// Molecules indexes for all the particles
@@ -36,7 +36,7 @@ impl Configuration {
     /// Create a new empty `Configuration`
     pub fn new() -> Configuration {
         Configuration {
-            particles: Vec::new(),
+            particles: ParticleVec::new(),
             molecules: Vec::new(),
             molids: Vec::new(),
             cell: UnitCell::new(),
@@ -52,7 +52,7 @@ impl Configuration {
     /// same atoms and the same bonds, **in the same order**.
     pub fn molecule_type(&self, molid: usize) -> u64 {
         let molecule = self.molecule(molid);
-        molecule_type(molecule, &self.particles[molecule.into_iter()])
+        molecule_type(molecule, self.particles.slice(molecule.into_iter()))
     }
 
     /// Get a list of molecules with `moltype` molecule type.
@@ -187,8 +187,8 @@ impl Configuration {
             }
         }
 
-        // One of the `particle_i` or `particle_j` index is no longer valid, as one
-        // molecule has been displaced.
+        // One of the `particle_i` or `particle_j` index is no longer valid, as
+        // one molecule has been displaced.
         if molid_i == new_molid {
             particle_j -= delta; // j moved
         } else {
@@ -232,19 +232,16 @@ impl Configuration {
     ///
     /// # Warning
     ///
-    /// This function does not check for the particles' positions'
-    /// nearest images. To use this function properly, make sure
-    /// that all particles of the molecule are adjacent.
+    /// This function does not check for the particles' positions' nearest
+    /// images. To use this function properly, make sure that all particles of
+    /// the molecule are adjacent.
     pub fn molecule_com(&self, molid: usize) -> Vector3D {
-        // iterate over all particles of molecule(molid)
-        let total_mass = self.molecule(molid)
-            .iter()
-            .fold(0.0, |total_mass, i| total_mass + self.particle(i).mass);
-        let com = self.molecule(molid)
-            .iter()
-            .fold(Vector3D::zero(), |com , i| {
-                com + self.particle(i).mass * self.particle(i).position
-            });
+        let mut total_mass = 0.0;
+        let mut com = Vector3D::zero();
+        for i in self.molecule(molid) {
+            total_mass += self.particles.mass[i];
+            com += self.particles.mass[i] * self.particles.position[i];
+        }
         com / total_mass
     }
 
@@ -252,23 +249,21 @@ impl Configuration {
     ///
     /// # Warning
     ///
-    /// This function does not check for the particles' positions'
-    /// nearest images. To use this function properly, make sure
-    /// that all particles of a molecule are adjacent.
+    /// This function does not check for the particles' positions' nearest
+    /// images. To use this function properly, make sure that all particles of
+    /// a molecule are adjacent.
     pub fn center_of_mass(&self) -> Vector3D {
-        // iterate over all particles in the configuration
-        let total_mass = self.particles()
-                             .fold(0.0, |total, particle| total + particle.mass);
-        let com: Vector3D = self.particles()
-                                .fold(Vector3D::zero(), |com, particle| {
-                                    com + particle.position * particle.mass
-                                });
+        let mut total_mass = 0.0;
+        let mut com = Vector3D::zero();
+        for i in 0..self.size() {
+            total_mass += self.particles.mass[i];
+            com += self.particles.mass[i] * self.particles.position[i];
+        }
         com / total_mass
     }
 
-    /// Move all particles of a molecule such that the
-    /// molecules center-of-mass position resides
-    /// inside the simulation cell.
+    /// Move all particles of a molecule such that the molecules center-of-mass
+    /// position resides inside the simulation cell.
     ///
     /// # Note
     ///
@@ -281,28 +276,19 @@ impl Configuration {
         let delta = com_wrapped - com;
         // iterate over all positions and move them accordingly
         for i in self.molecule(molid) {
-            self.particle_mut(i).position += delta;
+            self.particles.position[i] += delta;
         }
     }
 
-    /// Get an iterator over the `Particle` in this configuration
-    #[inline] pub fn particles(&self) -> slice::Iter<Particle> {
-        self.particles.iter()
+    /// Get the list of particles in this configuration, as a `ParticleSlice`.
+    pub fn particles(&self) -> ParticleSlice {
+        self.particles.as_slice()
     }
 
-    /// Get a mutable iterator over the `Particle` in this configuration
-    #[inline] pub fn particles_mut(&mut self) -> slice::IterMut<Particle> {
-        self.particles.iter_mut()
-    }
-
-    /// Get a reference to the `i`'th particle in this configuration
-    #[inline] pub fn particle(&self, i: usize) -> &Particle {
-        &self.particles[i]
-    }
-
-    /// Get a mutable reference to the `i`'th particle in this configuration
-    #[inline] pub fn particle_mut(&mut self, i: usize) -> &mut Particle {
-        &mut self.particles[i]
+    /// Get the list of particles in this configuration, as a mutable
+    /// `ParticleSliceMut`.
+    pub fn particles_mut(&mut self) -> ParticleSliceMut {
+        self.particles.as_mut_slice()
     }
 
     /// Merge the molecules at indexes `first` and `second` into one
@@ -402,50 +388,50 @@ impl Configuration {
 impl Configuration {
     /// Get the distance between the particles at indexes `i` and `j`
     #[inline] pub fn distance(&self, i: usize, j:usize) -> f64 {
-        self.cell.distance(&self.particles[i].position, &self.particles[j].position)
+        self.cell.distance(&self.particles.position[i], &self.particles.position[j])
     }
 
     /// Get the vector between the nearest image of particle `j` with respect to
     /// particle `i`.
     pub fn nearest_image(&self, i: usize, j:usize) -> Vector3D {
-        let mut res = self.particles[i].position - self.particles[j].position;
+        let mut res = self.particles.position[i] - self.particles.position[j];
         self.cell.vector_image(&mut res);
         return res;
     }
 
     /// Get the angle between the particles `i`, `j` and `k`
     pub fn angle(&self, i: usize, j: usize, k: usize) -> f64 {
-        let a = self.particles[i].position;
-        let b = self.particles[j].position;
-        let c = self.particles[k].position;
+        let a = self.particles.position[i];
+        let b = self.particles.position[j];
+        let c = self.particles.position[k];
         self.cell.angle(&a, &b, &c)
     }
 
     /// Get the angle and the derivatives of the angle between the particles
     /// `i`, `j` and `k`
     pub fn angle_and_derivatives(&self, i: usize, j: usize, k: usize) -> (f64, Vector3D, Vector3D, Vector3D) {
-        let a = self.particles[i].position;
-        let b = self.particles[j].position;
-        let c = self.particles[k].position;
+        let a = self.particles.position[i];
+        let b = self.particles.position[j];
+        let c = self.particles.position[k];
         self.cell.angle_and_derivatives(&a, &b, &c)
     }
 
     /// Get the dihedral angle between the particles `i`, `j`, `k` and `m`
     pub fn dihedral(&self, i: usize, j: usize, k: usize, m: usize) -> f64 {
-        let a = self.particles[i].position;
-        let b = self.particles[j].position;
-        let c = self.particles[k].position;
-        let d = self.particles[m].position;
+        let a = self.particles.position[i];
+        let b = self.particles.position[j];
+        let c = self.particles.position[k];
+        let d = self.particles.position[m];
         self.cell.dihedral(&a, &b, &c, &d)
     }
 
     /// Get the dihedral angle and the derivatives of the dihedral angle
     /// between the particles `i`, `j`, `k` and `m`
     pub fn dihedral_and_derivatives(&self, i: usize, j: usize, k: usize, m: usize) -> (f64, Vector3D, Vector3D, Vector3D, Vector3D) {
-        let a = self.particles[i].position;
-        let b = self.particles[j].position;
-        let c = self.particles[k].position;
-        let d = self.particles[m].position;
+        let a = self.particles.position[i];
+        let b = self.particles.position[j];
+        let c = self.particles.position[k];
+        let d = self.particles.position[m];
         self.cell.dihedral_and_derivatives(&a, &b, &c, &d)
     }
 }
@@ -573,9 +559,9 @@ mod tests {
         configuration.add_particle(particle("H"));
 
         assert_eq!(configuration.size(), 3);
-        assert_eq!(configuration.particle(0).name, "O");
-        assert_eq!(configuration.particle(1).name, "H");
-        assert_eq!(configuration.particle(2).name, "H");
+        assert_eq!(configuration.particles().name[0], "O");
+        assert_eq!(configuration.particles().name[1], "H");
+        assert_eq!(configuration.particles().name[2], "H");
     }
 
     #[test]
@@ -585,8 +571,8 @@ mod tests {
         configuration.add_particle(particle("O"));
         configuration.add_particle(particle("H"));
 
-        configuration.particle_mut(0).position = Vector3D::new(9.0, 0.0, 0.0);
-        configuration.particle_mut(1).position = Vector3D::zero();
+        configuration.particles_mut().position[0] = Vector3D::new(9.0, 0.0, 0.0);
+        configuration.particles_mut().position[1] = Vector3D::zero();
         assert_eq!(configuration.distance(0, 1), 1.0);
 
         configuration.cell = UnitCell::new();
@@ -600,8 +586,9 @@ mod tests {
         configuration.add_particle(particle("O"));
         configuration.add_particle(particle("O"));
         let _ = configuration.add_bond(0, 1);
-        configuration.particle_mut(0).position = Vector3D::new(1.0, 0.0, 0.0);
-        configuration.particle_mut(1).position = Vector3D::zero();
+
+        configuration.particles_mut().position[0] = Vector3D::new(1.0, 0.0, 0.0);
+        configuration.particles_mut().position[1] = Vector3D::zero();
         assert_eq!(configuration.molecule_com(0), Vector3D::new(0.5, 0.0, 0.0));
         assert_eq!(configuration.center_of_mass(), Vector3D::new(0.5, 0.0, 0.0));
     }
@@ -613,11 +600,13 @@ mod tests {
         configuration.add_particle(particle("O"));
         configuration.add_particle(particle("O"));
         let _ = configuration.add_bond(0, 1);
-        configuration.particle_mut(0).position = Vector3D::new(-2.0, 0.0, 0.0);
-        configuration.particle_mut(1).position = Vector3D::zero();
+
+        configuration.particles_mut().position[0] = Vector3D::new(-2.0, 0.0, 0.0);
+        configuration.particles_mut().position[1] = Vector3D::zero();
         configuration.wrap_molecule(0);
-        assert_eq!(configuration.particle(0).position, Vector3D::new(3.0, 0.0, 0.0));
-        assert_eq!(configuration.particle(1).position, Vector3D::new(5.0, 0.0, 0.0));
+
+        assert_eq!(configuration.particles().position[0], Vector3D::new(3.0, 0.0, 0.0));
+        assert_eq!(configuration.particles().position[1], Vector3D::new(5.0, 0.0, 0.0));
         assert_eq!(configuration.molecule_com(0), Vector3D::new(4.0, 0.0, 0.0))
     }
 

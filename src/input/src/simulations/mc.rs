@@ -83,7 +83,7 @@ impl FromTomlWithData for Translate {
             let molfile = try!(extract::str("molecule", config, "Translate move"));
             let molfile = get_input_path(root, molfile);
             let (molecule, atoms) = try!(read_molecule(molfile));
-            let moltype = molecule_type(&molecule, &atoms);
+            let moltype = molecule_type(&molecule, atoms.as_slice());
             Ok(Translate::with_moltype(delta, moltype))
         } else {
             Ok(Translate::new(delta))
@@ -101,7 +101,7 @@ impl FromTomlWithData for Rotate {
             let molfile = try!(extract::str("molecule", config, "Rotate move"));
             let molfile = get_input_path(root, molfile);
             let (molecule, atoms) = try!(read_molecule(molfile));
-            let moltype = molecule_type(&molecule, &atoms);
+            let moltype = molecule_type(&molecule, atoms.as_slice());
             Ok(Rotate::with_moltype(delta, moltype))
         } else {
             Ok(Rotate::new(delta))

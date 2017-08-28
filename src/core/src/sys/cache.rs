@@ -144,6 +144,7 @@ impl EnergyCache {
     /// effectively moved.
     pub fn move_particles_cost(&mut self, system: &System, idxes: Vec<usize>, newpos: &[Vector3D]) -> f64 {
         let evaluator = system.energy_evaluator();
+        let positions = system.particles().position;
 
         // First, go for pair interactions
         let mut new_pairs = Array2::<f64>::zeros((system.size(), system.size()));
@@ -154,7 +155,7 @@ impl EnergyCache {
                 // Exclude interactions inside the sub-system.
                 if idxes.contains(&part_j) {continue}
 
-                let r = system.cell.distance(&system.particle(part_j).position, &newpos[i]);
+                let r = system.cell.distance(&positions[part_j], &newpos[i]);
                 let energy = evaluator.pair(r, part_i, part_j);
 
                 pairs_delta += energy;
@@ -288,6 +289,7 @@ impl EnergyCache {
     /// MUST be called if the molecules are effectively moved.
     pub fn move_all_rigid_molecules_cost(&mut self, system: &System) -> f64 {
         let evaluator = system.energy_evaluator();
+        let positions = system.particles().position;
 
         let mut new_pairs = Array2::<f64>::zeros((system.size(), system.size()));
         let mut pairs_delta = 0.0;
@@ -297,10 +299,7 @@ impl EnergyCache {
                 // Loop over all particles in the molecules
                 for pi in mi.iter() {
                     for pj in mj.iter() {
-                        let r = system.cell.distance(
-                            &system.particle(pi).position,
-                            &system.particle(pj).position
-                        );
+                        let r = system.cell.distance(&positions[pi], &positions[pj]);
                         let energy = evaluator.pair(r, pi, pj);
                         pairs_delta += energy;
                         new_pairs[(pi, pj)] += energy;
@@ -354,7 +353,7 @@ fn new_position<'a>(system: &'a System, i: usize, idxes: &[usize], newpos: &'a[V
             return &newpos[idx];
         }
     }
-    return &system.particle(i).position;
+    return &system.particles().position[i];
 }
 
 #[cfg(test)]
@@ -405,11 +404,11 @@ mod tests {
 
         system.set_coulomb_potential(Box::new(Wolf::new(8.0)));
 
-        for atom in system.particles_mut() {
-            if atom.name == "O" {
-                atom.charge = -0.5;
-            } else if atom.name == "H" {
-                atom.charge = 0.5;
+        for particle in system.particles_mut() {
+            if particle.name == "O" {
+                *particle.charge = -0.5;
+            } else if particle.name == "H" {
+                *particle.charge = 0.5;
             }
         }
         system
@@ -436,8 +435,8 @@ mod tests {
 
         let cost = cache.move_particles_cost(&system, idxes, newpos);
 
-        system.particle_mut(0).position = newpos[0];
-        system.particle_mut(3).position = newpos[1];
+        system.particles_mut().position[0] = newpos[0];
+        system.particles_mut().position[3] = newpos[1];
         let new_e = system.potential_energy();
         assert_ulps_eq!(cost, new_e - old_e);
 
@@ -449,8 +448,8 @@ mod tests {
         let idxes = vec![2, 3];
         let newpos = &[Vector3D::new(0.9, 0.2, -0.4), Vector3D::new(-0.9, 0.0, 1.8)];
         let cost = cache.move_particles_cost(&system, idxes, newpos);
-        system.particle_mut(2).position = newpos[0];
-        system.particle_mut(3).position = newpos[1];
+        system.particles_mut().position[2] = newpos[0];
+        system.particles_mut().position[3] = newpos[1];
         let new_e = system.potential_energy();
         assert_ulps_eq!(cost, new_e - old_e);
     }
@@ -467,7 +466,7 @@ mod tests {
         let mut new_system = system.clone();
         // translate the center of mass
         for i in system.molecule(0) {
-            new_system.particle_mut(i).position += delta
+            new_system.particles_mut().position[i] += delta
         }
         let cost = cache.move_all_rigid_molecules_cost(&new_system);
         let new_e = new_system.potential_energy();
@@ -482,7 +481,7 @@ mod tests {
         let mut new_system = system.clone();
         // translate the center of mass
         for i in &system.molecules()[1] {
-            new_system.particle_mut(i).position += delta
+            new_system.particles_mut().position[i] += delta
         }
         let cost = cache.move_all_rigid_molecules_cost(&new_system);
         let new_e = new_system.potential_energy();

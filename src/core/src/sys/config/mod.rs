@@ -8,6 +8,9 @@ pub use self::periodic::{PeriodicTable, ElementData};
 
 mod particles;
 pub use self::particles::{Particle, ParticleKind};
+pub use self::particles::{ParticleVec, ParticleSlice, ParticleSliceMut};
+pub use self::particles::{ParticleRef, ParticleRefMut};
+pub use self::particles::zip_particle;
 
 mod composition;
 pub use self::composition::Composition;

@@ -45,7 +45,7 @@ fn cache_move_particle(bencher: &mut Bencher) {
     let mut rng = utils::get_rng(654646);
 
     let i: usize = rng.gen_range(0, system.size());
-    let mut delta = system.particle(i).position;
+    let mut delta = system.particles().position[i];
     delta += Vector3D::new(rng.gen(), rng.gen(), rng.gen());
 
     bencher.iter(||{

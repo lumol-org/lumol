@@ -97,14 +97,14 @@ impl MCMove for Translate {
             self.range.sample(rng)
         );
 
-        self.newpos.clear();
-        // Create new position.
-        // Note that this may move a particles' center-
-        // of-mass (com) out of the cell.
-        // If the move is accepted, we have to wrap the
-        // com such that it lies inside the cell.
-        for i in system.molecule(self.molid) {
-            self.newpos.push(system.particle(i).position + delta);
+        // Generate displaced coordinates
+        // Note that this may move a particles' center-of-mass (com) out of
+        // the cell. If the move is accepted, we have to wrap the com such
+        // that it lies inside the cell.
+        let indexes = system.molecule(self.molid).iter();
+        self.newpos = system.particles().position[indexes].to_vec();
+        for newpos in &mut self.newpos {
+            *newpos += delta;
         }
         return true;
     }
@@ -116,14 +116,17 @@ impl MCMove for Translate {
     }
 
     fn apply(&mut self, system: &mut System) {
-        // Update positions.
-        for (i, pi) in system.molecule(self.molid).iter().enumerate() {
-            system.particle_mut(pi).position = self.newpos[i];
+        {
+            // Update positions.
+            let indexes = system.molecule(self.molid).iter();
+            let positions = &mut system.particles_mut().position[indexes];
+            for (position, newpos) in izip!(positions, &self.newpos) {
+                *position = *newpos;
+            }
         }
-        // Move molecule such that its center-of-mass
-        // is inside the simulation cell.
-        // Note that particles of the molecule may still be
-        // outside the cell, but that is not important.
+        // Move molecule such that its center-of-mass is inside the simulation
+        // cell. Note that particles of the molecule may still be outside the
+        // cell, but that is not important.
         system.wrap_molecule(self.molid)
     }
 

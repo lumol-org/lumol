@@ -9,6 +9,8 @@ use sys::System;
 use sys::veloc;
 use sim::Alternator;
 
+use sys::zip_particle::*;
+
 /// Trait for controlling some parameters in a system during a simulation.
 pub trait Control {
     /// Function called once at the beginning of the simulation, which allow
@@ -97,8 +99,8 @@ impl Control for BerendsenThermostat {
     fn control(&mut self, system: &mut System) {
         let instant_temperature = system.temperature();
         let factor = f64::sqrt(1.0 + 1.0 / self.tau * (self.temperature / instant_temperature - 1.0));
-        for particle in system.particles_mut() {
-            particle.velocity *= factor;
+        for velocity in system.particles_mut().velocity {
+            *velocity *= factor;
         }
     }
 }
@@ -127,15 +129,15 @@ impl RemoveTranslation {
 
 impl Control for RemoveTranslation {
     fn control(&mut self, system: &mut System) {
-        let total_mass = system.particles().fold(0.0, |total_mass, particle| total_mass + particle.mass);
+        let total_mass = system.particles().mass.iter().sum();
 
-        let total_velocity = system.particles().fold(
-            Vector3D::zero(),
-            |total_velocity, particle| total_velocity + particle.velocity * particle.mass / total_mass
-        );
+        let mut com_velocity = Vector3D::zero();
+        for (&mass, velocity) in system.particles().zip((&Mass, &Velocity)) {
+            com_velocity += velocity * mass / total_mass;
+        }
 
-        for particle in system.particles_mut() {
-            particle.velocity -= total_velocity;
+        for velocity in system.particles_mut().velocity {
+            *velocity -= com_velocity;
         }
     }
 }
@@ -157,21 +159,13 @@ impl Control for RemoveRotation {
         let com = system.center_of_mass();
 
         // Angular momentum
-        let moment = system.particles().fold(
-            Vector3D::zero(),
-            |moment, particle| {
-                let delta = particle.position - com;
-                moment + particle.mass * (delta ^ particle.velocity)
-            }
-        );
-
-        let mut inertia = system.particles().fold(
-            Matrix3::zero(),
-            |inertia, particle| {
-                let delta = particle.position - com;
-                inertia - particle.mass * delta.tensorial(&delta)
-            }
-        );
+        let mut moment = Vector3D::zero();
+        let mut inertia = Matrix3::zero();
+        for (&mass, position, velocity) in system.particles().zip((&Mass, &Position, &Velocity)) {
+            let delta = position - com;
+            moment += mass * (delta ^ velocity);
+            inertia += - mass * delta.tensorial(&delta);
+        }
 
         let trace = inertia.trace();
         inertia[(0, 0)] += trace;
@@ -181,9 +175,8 @@ impl Control for RemoveRotation {
         // The angular velocity omega is defined by `L = I w` with L the angular
         // momentum, and I the inertia matrix.
         let angular = inertia.inverse() * moment;
-        for particle in system.particles_mut() {
-            let delta = particle.position - com;
-            particle.velocity -= delta ^ angular;
+        for (position, velocity) in system.particles_mut().zip_mut((&Position, &mut Velocity)) {
+            *velocity -= (position - com) ^ angular;
         }
     }
 }
@@ -267,8 +260,8 @@ mod tests {
         ");
 
         RemoveTranslation::new().control(&mut system);
-        assert_ulps_eq!(system.particle(0).velocity, Vector3D::new(0.0, 1.0, 0.0));
-        assert_ulps_eq!(system.particle(1).velocity, Vector3D::new(0.0, -1.0, 0.0));
+        assert_ulps_eq!(system.particles().velocity[0], Vector3D::new(0.0, 1.0, 0.0));
+        assert_ulps_eq!(system.particles().velocity[1], Vector3D::new(0.0, -1.0, 0.0));
     }
 
     #[test]
@@ -280,7 +273,7 @@ mod tests {
         ");
 
         RemoveRotation::new().control(&mut system);
-        assert_ulps_eq!(system.particle(0).velocity, Vector3D::new(0.0, 0.0, 1.0));
-        assert_ulps_eq!(system.particle(1).velocity, Vector3D::new(0.0, 0.0, 1.0));
+        assert_ulps_eq!(system.particles().velocity[0], Vector3D::new(0.0, 0.0, 1.0));
+        assert_ulps_eq!(system.particles().velocity[1], Vector3D::new(0.0, 0.0, 1.0));
     }
 }
