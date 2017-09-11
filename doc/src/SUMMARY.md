@@ -29,7 +29,7 @@
     - [Logging configuration](input/log.md)
 
 - [Advanced tutorials]()
-    - [Adding potentials]()
+    - [Adding potentials](advanced/potential.md)
     - [Adding outputs]()
     - [Extending Molecular dynamics]()
     - [Extending Monte Carlo]()
