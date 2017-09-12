@@ -18,7 +18,7 @@ fi
 if [ -f $HOME/.cargo/bin/mdbook ]; then
     echo "Using cached mdbook from ~/.cargo/bin/mdbook"
 else
-    cargo install mdbook
+    cargo install mdbook --vers "0.0.25"
 fi
 
 cd $TRAVIS_BUILD_DIR
