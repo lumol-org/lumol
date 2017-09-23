@@ -1,6 +1,7 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) Lumol's contributors — BSD license
 
+use std::any::Any;
 use energy::Potential;
 use energy::{PairPotential, BondPotential, AnglePotential, DihedralPotential};
 
@@ -34,8 +35,12 @@ impl PairPotential for NullPotential {
     fn tail_energy(&self, _: f64) -> f64 {0.0}
     fn tail_virial(&self, _: f64) -> f64 {0.0}
 }
-impl BondPotential for NullPotential {}
-impl AnglePotential for NullPotential {}
+impl BondPotential for NullPotential {
+    fn as_any(&self) -> &Any { self }
+}
+impl AnglePotential for NullPotential {
+    fn as_any(&self) -> &Any { self }
+}
 impl DihedralPotential for NullPotential {}
 
 /// Lennard-Jones potential.
@@ -139,8 +144,12 @@ impl PairPotential for Harmonic {
     fn tail_virial(&self, _: f64) -> f64 {0.0}
 }
 
-impl BondPotential for Harmonic {}
-impl AnglePotential for Harmonic {}
+impl BondPotential for Harmonic {
+    fn as_any(&self) -> &Any { self }
+}
+impl AnglePotential for Harmonic {
+    fn as_any(&self) -> &Any { self }
+}
 impl DihedralPotential for Harmonic {}
 
 /// Cosine harmonic potential.
@@ -188,7 +197,9 @@ impl Potential for CosineHarmonic {
     }
 }
 
-impl AnglePotential for CosineHarmonic {}
+impl AnglePotential for CosineHarmonic {
+    fn as_any(&self) -> &Any { self }
+}
 impl DihedralPotential for CosineHarmonic {}
 
 /// Torsion potential.
