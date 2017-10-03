@@ -9,7 +9,7 @@
 /// # Example
 ///
 /// ```
-/// use lumol::sim::Alternator;
+/// use lumol_core::sim::Alternator;
 ///
 /// struct HelloWorld;
 ///

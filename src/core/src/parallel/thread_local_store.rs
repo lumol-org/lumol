@@ -23,8 +23,8 @@ use thread_local::CachedThreadLocal;
 ///
 /// ```
 ///
-/// use lumol::parallel::prelude::*;
-/// use lumol::parallel::ThreadLocalStore;
+/// use lumol_core::parallel::prelude::*;
+/// use lumol_core::parallel::ThreadLocalStore;
 ///
 /// let store = ThreadLocalStore::new(|| vec![0, 0, 0]);
 ///

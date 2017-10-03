@@ -23,7 +23,7 @@
 //!   interactions.
 //!
 //! ```
-//! use lumol::energy::{Potential, PairPotential, DihedralPotential};
+//! use lumol_core::energy::{Potential, PairPotential, DihedralPotential};
 //!
 //! #[derive(Clone)]
 //! struct OnePotential;
@@ -72,7 +72,7 @@ use types::{Matrix3, Vector3D};
 ///
 /// ```
 /// # use std::f64;
-/// use lumol::energy::Potential;
+/// use lumol_core::energy::Potential;
 ///
 /// /// An hard sphere potential
 /// #[derive(Clone)]
@@ -108,8 +108,8 @@ pub trait Potential : Sync + Send {
 /// # Example
 ///
 /// ```
-/// # use lumol::types::{Zero, Matrix3};
-/// use lumol::energy::{Potential, PairPotential};
+/// # use lumol_core::types::{Zero, Matrix3};
+/// use lumol_core::energy::{Potential, PairPotential};
 ///
 /// // A no-op potential
 /// #[derive(Clone)]
@@ -169,7 +169,7 @@ impl_box_clone!(PairPotential, BoxClonePair, box_clone_pair);
 /// # Example
 ///
 /// ```
-/// use lumol::energy::{Potential, BondPotential};
+/// use lumol_core::energy::{Potential, BondPotential};
 ///
 /// // A no-op potential
 /// #[derive(Clone)]
@@ -200,7 +200,7 @@ impl_box_clone!(BondPotential, BoxCloneBond, box_clone_bond);
 /// # Example
 ///
 /// ```
-/// use lumol::energy::{Potential, AnglePotential};
+/// use lumol_core::energy::{Potential, AnglePotential};
 ///
 /// // A no-op potential
 /// #[derive(Clone)]
@@ -222,7 +222,7 @@ impl_box_clone!(AnglePotential, BoxCloneAngle, box_clone_angle);
 /// # Example
 ///
 /// ```
-/// use lumol::energy::{Potential, DihedralPotential};
+/// use lumol_core::energy::{Potential, DihedralPotential};
 ///
 /// // A no-op potential
 /// #[derive(Clone)]

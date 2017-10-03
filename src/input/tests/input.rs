@@ -4,7 +4,7 @@ extern crate test;
 extern crate walkdir;
 extern crate env_logger;
 
-extern crate lumol;
+extern crate lumol_core;
 extern crate lumol_input;
 
 use std::{env, fs, io};
@@ -17,7 +17,7 @@ use walkdir::WalkDir;
 use test::{TestDesc, TestDescAndFn, DynTestName, DynTestFn};
 use test::ShouldPanic::No;
 
-use lumol::sys::System;
+use lumol_core::sys::System;
 use lumol_input::{InteractionsInput, Input, Error};
 
 fn main() {

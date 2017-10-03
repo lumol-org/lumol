@@ -29,17 +29,17 @@ use super::{GlobalPotential, CoulombicPotential, GlobalCache};
 /// # Examples
 ///
 /// ```
-/// use lumol::energy::{Ewald, SharedEwald};
-/// use lumol::units;
+/// use lumol_core::energy::{Ewald, SharedEwald};
+/// use lumol_core::units;
 ///
 /// let ewald = SharedEwald::new(
 ///     Ewald::new(/* cutoff */ 12.0, /* kmax */ 7)
 /// );
 ///
-/// use lumol::sys::System;
-/// use lumol::sys::Particle;
-/// use lumol::sys::UnitCell;
-/// use lumol::types::Vector3D;
+/// use lumol_core::sys::System;
+/// use lumol_core::sys::Particle;
+/// use lumol_core::sys::UnitCell;
+/// use lumol_core::types::Vector3D;
 ///
 /// // Setup a system containing a NaCl pair
 /// let mut system = System::with_cell(UnitCell::cubic(10.0));
@@ -737,7 +737,7 @@ impl SharedEwald {
     ///
     /// # Example
     /// ```
-    /// # use lumol::energy::{Ewald, SharedEwald, CoulombicPotential};
+    /// # use lumol_core::energy::{Ewald, SharedEwald, CoulombicPotential};
     /// let ewald = SharedEwald::new(Ewald::new(12.5, 10));
     /// let boxed: Box<CoulombicPotential> = Box::new(ewald);
     /// ```

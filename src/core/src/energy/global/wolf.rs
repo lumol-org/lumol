@@ -21,16 +21,16 @@ use super::{GlobalPotential, CoulombicPotential, GlobalCache};
 /// # Examples
 ///
 /// ```
-/// use lumol::energy::Wolf;
-/// use lumol::units;
+/// use lumol_core::energy::Wolf;
+/// use lumol_core::units;
 ///
 /// // A relatively large cutoff is needed for Wolf summation
 /// let wolf = Wolf::new(12.0);
 ///
-/// use lumol::sys::System;
-/// use lumol::sys::Particle;
-/// use lumol::sys::UnitCell;
-/// use lumol::types::Vector3D;
+/// use lumol_core::sys::System;
+/// use lumol_core::sys::Particle;
+/// use lumol_core::sys::UnitCell;
+/// use lumol_core::types::Vector3D;
 ///
 /// // Setup a system containing a NaCl pair
 /// let mut system = System::with_cell(UnitCell::cubic(10.0));

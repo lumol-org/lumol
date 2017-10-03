@@ -7,9 +7,6 @@ repository = "https://github.com/lumol-org/lumol"
 readme = "../../README.md"
 license = "BSD-3-Clause"
 
-[lib]
-name = "lumol"
-
 [dependencies]
 chemfiles = "0.7"
 rand = "0.3"
@@ -28,5 +25,6 @@ itertools = "0.6"
 soa_derive = "0.4"
 
 [dev-dependencies]
+lumol = {path = "../.."}
 tempfile = "2.1"
 approx = "0.1.1"

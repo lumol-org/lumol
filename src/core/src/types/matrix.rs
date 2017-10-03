@@ -13,7 +13,7 @@ use types::{Vector3D, Zero, One};
 /// `Matrix3` implements all the usual arithmetic operations:
 ///
 /// ```
-/// use lumol::types::{Matrix3, Vector3D, One};
+/// use lumol_core::types::{Matrix3, Vector3D, One};
 ///
 /// let one = Matrix3::one();
 /// let a = Matrix3::new(
@@ -75,7 +75,7 @@ impl Matrix3 {
     /// Create a new `Matrix3` specifying all its components
     /// # Examples
     /// ```
-    /// # use lumol::types::Matrix3;
+    /// # use lumol_core::types::Matrix3;
     /// let matrix = Matrix3::new(
     ///     0.0, 0.0, 3.0,
     ///     0.0, 1.0, 5.6,
@@ -98,7 +98,7 @@ impl Matrix3 {
     /// # Examples
     ///
     /// ```
-    /// # use lumol::types::{Vector3D, Matrix3};
+    /// # use lumol_core::types::{Vector3D, Matrix3};
     /// let e1 = Vector3D::new(1.0f64, 0.0, 0.0);
     /// let e3 = Vector3D::new(0.0f64, 0.0, 1.0);
     /// let angle = 90f64.to_radians();
@@ -140,7 +140,7 @@ impl Matrix3 {
     /// Compute the trace of the matrix
     /// # Examples
     /// ```
-    /// # use lumol::types::Matrix3;
+    /// # use lumol_core::types::Matrix3;
     /// let matrix = Matrix3::new(
     ///     0.0, 0.0, 3.0,
     ///     0.0, 1.0, 5.6,
@@ -157,7 +157,7 @@ impl Matrix3 {
     /// # Examples
     ///
     /// ```
-    /// # use lumol::types::{Matrix3, One};
+    /// # use lumol_core::types::{Matrix3, One};
     /// // A diagonal matrix is trivially invertible
     /// let matrix = Matrix3::new(
     ///     4.0, 0.0, 0.0,
@@ -203,7 +203,7 @@ impl Matrix3 {
     /// # Examples
     ///
     /// ```
-    /// # use lumol::types::Matrix3;
+    /// # use lumol_core::types::Matrix3;
     /// let matrix = Matrix3::new(
     ///     4.0, 0.0, 0.0,
     ///     0.0, 1.5, 0.0,
@@ -222,7 +222,7 @@ impl Matrix3 {
     /// # Examples
     ///
     /// ```
-    /// # use lumol::types::Matrix3;
+    /// # use lumol_core::types::Matrix3;
     /// let matrix = Matrix3::new(
     ///     1.0, 2.0, 4.0,
     ///     0.0, 1.0, 3.0,

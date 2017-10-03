@@ -50,7 +50,7 @@ impl PairRestriction {
     /// # Example
     ///
     /// ```
-    /// # use lumol::energy::PairRestriction;
+    /// # use lumol_core::energy::PairRestriction;
     /// let restriction = PairRestriction::None;
     /// assert_eq!(restriction.information(3).excluded, false);
     /// assert_eq!(restriction.information(2).scaling, 1.0);
