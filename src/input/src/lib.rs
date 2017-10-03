@@ -28,9 +28,9 @@
 //! from a TOML file. It can be used to set the interactions in a system:
 //!
 //! ```no_run
-//! extern crate lumol;
+//! extern crate lumol_core;
 //! extern crate lumol_input;
-//! use lumol::sys::System;
+//! use lumol_core::sys::System;
 //! use lumol_input::InteractionsInput;
 //!
 //! fn main() {
@@ -61,7 +61,7 @@
     unseparated_literal_suffix, new_without_default_derive, use_self
 )]
 
-extern crate lumol;
+extern crate lumol_core as lumol;
 extern crate toml;
 extern crate chemfiles;
 

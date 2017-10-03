@@ -13,7 +13,7 @@ use types::{Matrix3, Zero};
 /// A `Vector3D` implement all the arithmetic operations:
 ///
 /// ```
-/// # use lumol::types::Vector3D;
+/// # use lumol_core::types::Vector3D;
 /// let u = Vector3D::new(1.0, 2.0, 3.0);
 /// let v = Vector3D::new(4.0, -2.0, 1.0);
 ///
@@ -61,7 +61,7 @@ impl Vector3D {
     ///
     /// # Examples
     /// ```
-    /// # use lumol::types::Vector3D;
+    /// # use lumol_core::types::Vector3D;
     /// let vec = Vector3D::new(1.0, 0.0, -42.0);
     /// ```
     pub fn new(x: f64, y: f64, z: f64) -> Vector3D {
@@ -72,7 +72,7 @@ impl Vector3D {
     ///
     /// # Examples
     /// ```
-    /// # use lumol::types::Vector3D;
+    /// # use lumol_core::types::Vector3D;
     /// let vec = Vector3D::new(1.0, 0.0, -4.0);
     /// assert_eq!(vec.norm2(), 17.0);
     /// ```
@@ -83,7 +83,7 @@ impl Vector3D {
     /// Return the euclidean norm of a `Vector3D`
     /// # Examples
     /// ```
-    /// # use lumol::types::Vector3D;
+    /// # use lumol_core::types::Vector3D;
     /// # use std::f64;
     /// let vec = Vector3D::new(1.0, 0.0, -4.0);
     /// assert_eq!(vec.norm(), f64::sqrt(17.0));
@@ -95,7 +95,7 @@ impl Vector3D {
     /// Normalize a `Vector3D`.
     /// # Examples
     /// ```
-    /// # use lumol::types::Vector3D;
+    /// # use lumol_core::types::Vector3D;
     /// let vec = Vector3D::new(1.0, 0.0, -4.0);
     /// let n = vec.normalized();
     /// assert_eq!(n.norm(), 1.0);
@@ -111,8 +111,8 @@ impl Vector3D {
     /// # Examples
     ///
     /// ```
-    /// # use lumol::types::Vector3D;
-    /// # use lumol::types::Matrix3;
+    /// # use lumol_core::types::Vector3D;
+    /// # use lumol_core::types::Matrix3;
     /// let a = Vector3D::new(1.0, 0.0, -4.0);
     /// let b = Vector3D::new(1.0, 2.0, 3.0);
     /// let matrix = Matrix3::new(

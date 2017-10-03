@@ -367,7 +367,7 @@ fn read_expr(stream: &mut Vec<Token>) -> Result<UnitExpr, ParseError> {
 /// Convert the numeric value `val` from the unit `unit` to the internal unit.
 ///
 /// ```
-/// use lumol::units;
+/// use lumol_core::units;
 /// let internal = units::from(10.0, "A").unwrap();
 /// assert!(internal == 10.0);
 /// ```
@@ -379,7 +379,7 @@ pub fn from(value: f64, unit: &str) -> Result<f64, ParseError> {
 /// Parse the string `val` and convert it to the corresponding internal unit
 ///
 /// ```
-/// use lumol::units;
+/// use lumol_core::units;
 /// let internal = units::from_str("10 A").unwrap();
 /// assert!(internal == 10.0);
 /// ```
@@ -398,7 +398,7 @@ pub fn from_str(value: &str) -> Result<f64, ParseError> {
 /// Convert the numeric value `val` (in internal units) to the unit `unit`.
 ///
 /// ```
-/// use lumol::units;
+/// use lumol_core::units;
 /// let real = units::to(10.0, "A").unwrap();
 /// assert!(real == 10.0);
 /// ```

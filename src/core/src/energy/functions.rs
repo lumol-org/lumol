@@ -13,8 +13,8 @@ use energy::{PairPotential, BondPotential, AnglePotential, DihedralPotential};
 /// # Examples
 ///
 /// ```
-/// use lumol::energy::Potential;
-/// use lumol::energy::NullPotential;
+/// use lumol_core::energy::Potential;
+/// use lumol_core::energy::NullPotential;
 ///
 /// let potential = NullPotential;
 /// assert_eq!(potential.energy(0.1), 0.0);
@@ -47,8 +47,8 @@ impl DihedralPotential for NullPotential {}
 /// # Examples
 ///
 /// ```
-/// use lumol::energy::Potential;
-/// use lumol::energy::LennardJones;
+/// use lumol_core::energy::Potential;
+/// use lumol_core::energy::LennardJones;
 ///
 /// let potential = LennardJones{sigma: 2.0, epsilon: 10.0};
 /// assert_eq!(potential.energy(2.0), 0.0);
@@ -102,8 +102,8 @@ impl PairPotential for LennardJones {
 /// # Examples
 ///
 /// ```
-/// use lumol::energy::Potential;
-/// use lumol::energy::Harmonic;
+/// use lumol_core::energy::Potential;
+/// use lumol_core::energy::Harmonic;
 ///
 /// let potential = Harmonic{x0: 2.0, k: 100.0};
 /// assert_eq!(potential.energy(2.0), 0.0);
@@ -152,8 +152,8 @@ impl DihedralPotential for Harmonic {}
 /// # Examples
 ///
 /// ```
-/// use lumol::energy::Potential;
-/// use lumol::energy::CosineHarmonic;
+/// use lumol_core::energy::Potential;
+/// use lumol_core::energy::CosineHarmonic;
 ///
 /// let potential = CosineHarmonic::new(/* k */ 100.0, /* x0 */ 2.0);
 /// assert_eq!(potential.energy(2.0), 0.0);
@@ -203,8 +203,8 @@ impl DihedralPotential for CosineHarmonic {}
 /// # Examples
 ///
 /// ```
-/// use lumol::energy::Potential;
-/// use lumol::energy::Torsion;
+/// use lumol_core::energy::Potential;
+/// use lumol_core::energy::Torsion;
 /// use std::f64::consts::PI;
 ///
 /// let potential = Torsion{delta: PI / 2.0, k: 10.0, n: 3};
@@ -248,8 +248,8 @@ impl DihedralPotential for Torsion {}
 /// # Examples
 ///
 /// ```
-/// use lumol::energy::Potential;
-/// use lumol::energy::Buckingham;
+/// use lumol_core::energy::Potential;
+/// use lumol_core::energy::Buckingham;
 ///
 /// let potential = Buckingham{a: 2.0, c: 1.0, rho: 5.3};
 /// assert_eq!(potential.energy(2.2), 1.3117360696239022);
@@ -309,8 +309,8 @@ impl PairPotential for Buckingham {
 /// # Examples
 ///
 /// ```
-/// use lumol::energy::Potential;
-/// use lumol::energy::BornMayerHuggins;
+/// use lumol_core::energy::Potential;
+/// use lumol_core::energy::BornMayerHuggins;
 ///
 /// let potential = BornMayerHuggins{a: 2.0, c: 1.0, d: 0.5, sigma: 1.5, rho: 5.3};
 /// assert_eq!(potential.energy(2.2), 1.7446409593340713);
@@ -373,8 +373,8 @@ impl PairPotential for BornMayerHuggins {
 /// # Examples
 ///
 /// ```
-/// use lumol::energy::Potential;
-/// use lumol::energy::MorsePotential;
+/// use lumol_core::energy::Potential;
+/// use lumol_core::energy::MorsePotential;
 ///
 /// let potential = MorsePotential{a: 2.0, x0: 1.3, depth: 4.0};
 /// assert_eq!(potential.energy(1.0), 2.703517287822119);

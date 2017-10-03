@@ -9,7 +9,7 @@ use sys::ParticleKind;
 ///
 /// # Examples
 /// ```
-/// # use lumol::sys::{Composition, ParticleKind};
+/// # use lumol_core::sys::{Composition, ParticleKind};
 /// let mut composition = Composition::new();
 /// composition.resize(10);
 ///
@@ -29,7 +29,7 @@ impl Composition {
     ///
     /// # Examples
     /// ```
-    /// # use lumol::sys::Composition;
+    /// # use lumol_core::sys::Composition;
     /// let composition = Composition::new();
     /// assert_eq!(composition.len(), 0);
     /// ```
@@ -42,7 +42,7 @@ impl Composition {
     ///
     /// # Examples
     /// ```
-    /// # use lumol::sys::Composition;
+    /// # use lumol_core::sys::Composition;
     /// let mut composition = Composition::new();
     /// assert_eq!(composition.len(), 0);
     ///
@@ -59,7 +59,7 @@ impl Composition {
     ///
     /// # Examples
     /// ```
-    /// # use lumol::sys::Composition;
+    /// # use lumol_core::sys::Composition;
     /// let mut composition = Composition::new();
     /// assert_eq!(composition.len(), 0);
     /// assert!(composition.is_empty());
@@ -73,7 +73,7 @@ impl Composition {
     ///
     /// # Examples
     /// ```
-    /// # use lumol::sys::{Composition, ParticleKind};
+    /// # use lumol_core::sys::{Composition, ParticleKind};
     /// let mut composition = Composition::new();
     /// assert_eq!(composition.len(), 0);
     ///

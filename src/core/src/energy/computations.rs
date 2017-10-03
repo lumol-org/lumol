@@ -12,9 +12,9 @@ use energy::{Potential, PairPotential};
 /// # Examples
 ///
 /// ```
-/// # use lumol::energy::Potential;
-/// use lumol::energy::Computation;
-/// use lumol::energy::Harmonic;
+/// # use lumol_core::energy::Potential;
+/// use lumol_core::energy::Computation;
+/// use lumol_core::energy::Harmonic;
 ///
 /// /// This is just a thin wrapper logging every time the `energy/force`
 /// /// methods are called.
@@ -85,9 +85,9 @@ impl TableComputation {
     /// # Examples
     ///
     /// ```
-    /// # use lumol::energy::Potential;
-    /// use lumol::energy::TableComputation;
-    /// use lumol::energy::Harmonic;
+    /// # use lumol_core::energy::Potential;
+    /// use lumol_core::energy::TableComputation;
+    /// use lumol_core::energy::Harmonic;
     ///
     /// let potential = Box::new(Harmonic{x0: 0.5, k: 4.2});
     /// let table = TableComputation::new(potential, 1000, 2.0);

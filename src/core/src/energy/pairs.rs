@@ -44,8 +44,8 @@ impl PairInteraction {
     /// # Examples
     ///
     /// ```
-    /// use lumol::energy::PairInteraction;
-    /// use lumol::energy::Harmonic;
+    /// use lumol_core::energy::PairInteraction;
+    /// use lumol_core::energy::Harmonic;
     ///
     /// let potential = Box::new(Harmonic{x0: 0.5, k: 4.2});
     /// let interaction = PairInteraction::new(potential, 2.0);
@@ -70,8 +70,8 @@ impl PairInteraction {
     /// # Examples
     ///
     /// ```
-    /// use lumol::energy::PairInteraction;
-    /// use lumol::energy::Harmonic;
+    /// use lumol_core::energy::PairInteraction;
+    /// use lumol_core::energy::Harmonic;
     ///
     /// let potential = Box::new(Harmonic{x0: 0.5, k: 4.2});
     /// let interaction = PairInteraction::shifted(potential, 2.0);
@@ -100,8 +100,8 @@ impl PairInteraction {
     /// # Examples
     ///
     /// ```
-    /// use lumol::energy::PairInteraction;
-    /// use lumol::energy::LennardJones;
+    /// use lumol_core::energy::PairInteraction;
+    /// use lumol_core::energy::LennardJones;
     ///
     /// let potential = Box::new(LennardJones{sigma: 0.5, epsilon: 4.2});
     /// let mut interaction = PairInteraction::new(potential, 2.0);
@@ -121,8 +121,8 @@ impl PairInteraction {
     /// # Examples
     ///
     /// ```
-    /// use lumol::energy::PairInteraction;
-    /// use lumol::energy::{NullPotential, PairRestriction};
+    /// use lumol_core::energy::PairInteraction;
+    /// use lumol_core::energy::{NullPotential, PairRestriction};
     /// let interaction = PairInteraction::new(Box::new(NullPotential), 2.0);
     ///
     /// assert_eq!(interaction.restriction(), PairRestriction::None);
@@ -136,8 +136,8 @@ impl PairInteraction {
     /// # Examples
     ///
     /// ```
-    /// use lumol::energy::PairInteraction;
-    /// use lumol::energy::{NullPotential, PairRestriction};
+    /// use lumol_core::energy::PairInteraction;
+    /// use lumol_core::energy::{NullPotential, PairRestriction};
     /// let mut interaction = PairInteraction::new(Box::new(NullPotential), 2.0);
     ///
     /// assert_eq!(interaction.restriction(), PairRestriction::None);
@@ -153,8 +153,8 @@ impl PairInteraction {
     /// # Examples
     ///
     /// ```
-    /// use lumol::energy::PairInteraction;
-    /// use lumol::energy::LennardJones;
+    /// use lumol_core::energy::PairInteraction;
+    /// use lumol_core::energy::LennardJones;
     ///
     /// let ar = LennardJones{sigma: 3.405, epsilon: 1.0};
     /// let interaction = PairInteraction::new(Box::new(ar), 9.1935);
@@ -172,8 +172,8 @@ impl PairInteraction {
     /// # Examples
     ///
     /// ```
-    /// use lumol::energy::PairInteraction;
-    /// use lumol::energy::Harmonic;
+    /// use lumol_core::energy::PairInteraction;
+    /// use lumol_core::energy::Harmonic;
     ///
     /// let potential = Box::new(Harmonic{x0: 0.5, k: 4.2});
     /// let interaction = PairInteraction::new(potential, 2.0);
@@ -199,8 +199,8 @@ impl PairInteraction {
     /// # Examples
     ///
     /// ```
-    /// use lumol::energy::PairInteraction;
-    /// use lumol::energy::Harmonic;
+    /// use lumol_core::energy::PairInteraction;
+    /// use lumol_core::energy::Harmonic;
     ///
     /// let potential = Box::new(Harmonic{x0: 0.5, k: 4.2});
     /// let interaction = PairInteraction::new(potential, 2.0);
@@ -223,9 +223,9 @@ impl PairInteraction {
     /// # Examples
     ///
     /// ```
-    /// use lumol::energy::PairInteraction;
-    /// use lumol::energy::Harmonic;
-    /// # use lumol::types::Vector3D;
+    /// use lumol_core::energy::PairInteraction;
+    /// use lumol_core::energy::Harmonic;
+    /// # use lumol_core::types::Vector3D;
     ///
     /// let potential = Box::new(Harmonic{x0: 0.5, k: 4.2});
     /// let interaction = PairInteraction::shifted(potential, 2.0);
@@ -247,8 +247,8 @@ impl PairInteraction {
     /// # Examples
     ///
     /// ```
-    /// use lumol::energy::PairInteraction;
-    /// use lumol::energy::LennardJones;
+    /// use lumol_core::energy::PairInteraction;
+    /// use lumol_core::energy::LennardJones;
     ///
     /// let potential = Box::new(LennardJones{sigma: 0.5, epsilon: 4.2});
     /// let mut interaction = PairInteraction::new(potential, 2.0);
@@ -269,9 +269,9 @@ impl PairInteraction {
     /// # Examples
     ///
     /// ```
-    /// use lumol::energy::PairInteraction;
-    /// use lumol::energy::LennardJones;
-    /// # use lumol::types::Matrix3;
+    /// use lumol_core::energy::PairInteraction;
+    /// use lumol_core::energy::LennardJones;
+    /// # use lumol_core::types::Matrix3;
     ///
     /// let potential = Box::new(LennardJones{sigma: 0.5, epsilon: 4.2});
     /// let mut interaction = PairInteraction::new(potential, 2.0);

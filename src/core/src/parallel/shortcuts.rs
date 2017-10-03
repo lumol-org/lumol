@@ -14,7 +14,7 @@ use ndarray::Zip;
 /// # Example
 ///
 /// ```
-/// use lumol::parallel::prelude::*;
+/// use lumol_core::parallel::prelude::*;
 ///
 /// let s = (0..100_i32).par_map(|i| -i).sum();
 /// assert_eq!(-4950, s);

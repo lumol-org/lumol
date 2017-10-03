@@ -13,7 +13,7 @@ use types::{Zero, One};
 /// `Complex` implements all the usual arithmetic operations:
 ///
 /// ```
-/// # use lumol::types::Complex;
+/// # use lumol_core::types::Complex;
 ///
 /// let w = Complex::cartesian(-1.0, 0.5);
 /// let z = Complex::cartesian(4.0, 2.0);
@@ -48,7 +48,7 @@ impl Complex {
     /// Create a new `Complex` from a norm `r` and a phase `phi` in radians.
     /// # Examples
     /// ```
-    /// # use lumol::types::Complex;
+    /// # use lumol_core::types::Complex;
     /// # use std::f64;
     /// let z = Complex::polar(3.0, f64::consts::PI);
     /// assert_eq!(z.norm(), 3.0);
@@ -63,7 +63,7 @@ impl Complex {
     /// Create a complex from Cartesian coordinates
     /// # Examples
     /// ```
-    /// # use lumol::types::Complex;
+    /// # use lumol_core::types::Complex;
     /// let z = Complex::cartesian(3.0, -2.0);
     /// assert_eq!(z.real(), 3.0);
     /// assert_eq!(z.imag(), -2.0);
@@ -78,7 +78,7 @@ impl Complex {
     /// Get the real part of the complex
     /// # Examples
     /// ```
-    /// # use lumol::types::Complex;
+    /// # use lumol_core::types::Complex;
     /// let z = Complex::cartesian(3.0, -2.0);
     /// assert_eq!(z.real(), 3.0);
     /// ```
@@ -90,7 +90,7 @@ impl Complex {
     /// Get the imaginary part of the complex
     /// # Examples
     /// ```
-    /// # use lumol::types::Complex;
+    /// # use lumol_core::types::Complex;
     /// let z = Complex::cartesian(3.0, -2.0);
     /// assert_eq!(z.imag(), -2.0);
     /// ```
@@ -102,7 +102,7 @@ impl Complex {
     /// Get the phase of the complex in the [-π, π) interval
     /// # Examples
     /// ```
-    /// # use lumol::types::Complex;
+    /// # use lumol_core::types::Complex;
     /// let z = Complex::polar(2.0, 0.3);
     /// assert_eq!(z.phase(), 0.3);
     /// ```
@@ -114,7 +114,7 @@ impl Complex {
     /// Get the norm of the complex
     /// # Examples
     /// ```
-    /// # use lumol::types::Complex;
+    /// # use lumol_core::types::Complex;
     /// # use std::f64;
     /// let z = Complex::polar(2.0, 0.3);
     /// assert_eq!(z.norm(), 2.0);
@@ -130,7 +130,7 @@ impl Complex {
     /// Get the square of the norm if this complex
     /// # Examples
     /// ```
-    /// # use lumol::types::Complex;
+    /// # use lumol_core::types::Complex;
     /// let z = Complex::cartesian(2.0, 1.0);
     /// assert_eq!(z.norm2(), 5.0);
     /// ```
@@ -142,7 +142,7 @@ impl Complex {
     /// Get the conjugate of the complex
     /// # Examples
     /// ```
-    /// # use lumol::types::Complex;
+    /// # use lumol_core::types::Complex;
     /// let z = Complex::cartesian(2.0, 1.0);
     /// assert_eq!(z.conj(), Complex::cartesian(2.0, -1.0));
     /// ```

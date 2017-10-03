@@ -28,9 +28,9 @@ use energy::PairRestriction;
 /// # Examples
 ///
 /// ```
-/// use lumol::energy::{GlobalPotential, GlobalCache};
-/// use lumol::types::{Vector3D, Matrix3, Zero};
-/// use lumol::sys::{System, Configuration, Particle, UnitCell};
+/// use lumol_core::energy::{GlobalPotential, GlobalCache};
+/// use lumol_core::types::{Vector3D, Matrix3, Zero};
+/// use lumol_core::sys::{System, Configuration, Particle, UnitCell};
 ///
 /// /// Shift the energy of all the particles by a given delta.
 /// #[derive(Clone)]
@@ -118,9 +118,9 @@ impl_box_clone!(GlobalPotential, BoxCloneGlobal, box_clone_gobal);
 /// # Examples
 ///
 /// ```
-/// use lumol::energy::{GlobalPotential, GlobalCache};
-/// use lumol::types::{Vector3D, Matrix3, Zero};
-/// use lumol::sys::{Configuration, Particle};
+/// use lumol_core::energy::{GlobalPotential, GlobalCache};
+/// use lumol_core::types::{Vector3D, Matrix3, Zero};
+/// use lumol_core::sys::{Configuration, Particle};
 ///
 /// /// Shift the energy of all the particles by a given delta.
 /// #[derive(Clone)]
