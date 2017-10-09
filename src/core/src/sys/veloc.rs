@@ -9,6 +9,7 @@ use rand::SeedableRng;
 use consts::K_BOLTZMANN;
 use types::Vector3D;
 use sys::System;
+use sim::md::{RemoveRotation, RemoveTranslation, Control};
 
 /// Scale all velocities in the `System` such that the `system` temperature
 /// is `temperature`.
@@ -55,6 +56,8 @@ impl InitVelocities for BoltzmannVelocities {
             let z = f64::sqrt(m_inv) * self.dist.sample(&mut self.rng);
             *particle.velocity = Vector3D::new(x, y, z);
         }
+        RemoveTranslation.control(system);
+        RemoveRotation.control(system);
         scale(system, self.temperature);
     }
 
@@ -91,6 +94,8 @@ impl InitVelocities for UniformVelocities {
             let z = f64::sqrt(m_inv) * self.dist.sample(&mut self.rng);
             *particle.velocity = Vector3D::new(x, y, z);
         }
+        RemoveTranslation.control(system);
+        RemoveRotation.control(system);
         scale(system, self.temperature);
     }
 
@@ -102,14 +107,32 @@ impl InitVelocities for UniformVelocities {
 #[cfg(test)]
 mod test {
     use super::*;
+    use rand::random;
     use sys::{System, Particle};
+    use utils::system_from_xyz;
 
     fn testing_system() -> System {
         let mut system = System::new();
         for _ in 0..10000 {
-            system.add_particle(Particle::new("F"));
+            let mut particle = Particle::new("F");
+            particle.position = Vector3D::new(
+                random::<f64>() * 100.0, random::<f64>() * 100.0, random::<f64>() * 100.0
+            );
+            system.add_particle(particle);
         }
         return system;
+    }
+
+    fn global_translation(system: &System) -> f64 {
+        use sys::zip_particle::{Mass, Velocity};
+        use types::{Vector3D, Zero};
+
+        let total_mass = system.particles().mass.iter().sum();
+        let mut com_velocity = Vector3D::zero();
+        for (&mass, velocity) in system.particles().zip((&Mass, &Velocity)) {
+            com_velocity += velocity * mass / total_mass;
+        }
+        return com_velocity.norm();
     }
 
     #[test]
@@ -119,7 +142,8 @@ mod test {
         velocities.seed(1234);
         velocities.init(&mut system);
         let temperature = system.temperature();
-        assert_ulps_eq!(temperature, 300.0, epsilon=1e-12);
+        assert_ulps_eq!(temperature, 300.0, epsilon=1e-9);
+        assert_ulps_eq!(global_translation(&system), 0.0);
     }
 
     #[test]
@@ -129,6 +153,24 @@ mod test {
         velocities.seed(1234);
         velocities.init(&mut system);
         let temperature = system.temperature();
-        assert_ulps_eq!(temperature, 300.0);
+        assert_ulps_eq!(temperature, 300.0, epsilon=1e-9);
+        assert_ulps_eq!(global_translation(&system), 0.0);
+    }
+
+    #[test]
+    fn scaling_keeps_global_velocity() {
+        let mut system = system_from_xyz("2
+        cell: 20.0
+        Ag 0 0 0 1 0 0
+        Ag 1 1 1 2 0 0
+        ");
+        assert!(global_translation(&system) > 1.0);
+
+        scale(&mut system, 452.0);
+        let temperature = system.temperature();
+        assert_ulps_eq!(temperature, 452.0, epsilon=1e-9);
+
+        println!("{:?}", global_translation(&system));
+        assert!(global_translation(&system) > 1e-5);
     }
 }
