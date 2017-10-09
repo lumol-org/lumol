@@ -109,7 +109,6 @@ impl Thermostat for BerendsenThermostat {}
 /******************************************************************************/
 
 impl<T> Control for Alternator<T> where T: Control {
-
     fn control(&mut self, system: &mut System) {
         if self.can_run() {
             self.as_mut().control(system)
