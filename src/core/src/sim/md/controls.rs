@@ -180,6 +180,26 @@ impl Control for RemoveRotation {
     }
 }
 
+
+/******************************************************************************/
+/// Rewrap all molecules inside the unit cell
+pub struct Rewrap;
+
+impl Rewrap {
+    /// Create a new `RemoveRotation` control.
+    pub fn new() -> Rewrap {
+        Rewrap
+    }
+}
+
+impl Control for Rewrap {
+    fn control(&mut self, system: &mut System) {
+        for i in 0..system.molecules().len() {
+            system.wrap_molecule(i);
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -274,5 +294,18 @@ mod tests {
         RemoveRotation::new().control(&mut system);
         assert_ulps_eq!(system.particles().velocity[0], Vector3D::new(0.0, 0.0, 1.0));
         assert_ulps_eq!(system.particles().velocity[1], Vector3D::new(0.0, 0.0, 1.0));
+    }
+
+    #[test]
+    fn rewrap() {
+        let mut system = system_from_xyz("2
+        cell: 20.0
+        Ag 0 0 0
+        Ag 25 0 0
+        ");
+
+        Rewrap::new().control(&mut system);
+        assert_ulps_eq!(system.particles().position[0], Vector3D::new(0.0, 0.0, 0.0));
+        assert_ulps_eq!(system.particles().position[1], Vector3D::new(5.0, 0.0, 0.0));
     }
 }

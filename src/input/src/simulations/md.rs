@@ -84,6 +84,9 @@ impl FromToml for MolecularDynamics {
                     "RemoveRotation" => Box::new(try!(
                         Alternator::<RemoveRotation>::from_toml(control)
                     )),
+                    "Rewrap" => Box::new(try!(
+                        Alternator::<Rewrap>::from_toml(control)
+                    )),
                     other => return Err(Error::from(
                         format!("Unknown control '{}'", other)
                     ))
@@ -187,5 +190,16 @@ impl FromToml for Alternator<RemoveRotation> {
            1
         };
         Ok(Alternator::new(every, RemoveRotation::new()))
+    }
+}
+
+impl FromToml for Alternator<Rewrap> {
+    fn from_toml(config: &Table) -> Result<Alternator<Rewrap>> {
+        let every = if config.contains_key("every") {
+            try!(extract::uint("every", config, "Rewrap control"))
+        } else {
+           1
+        };
+        Ok(Alternator::new(every, Rewrap::new()))
     }
 }

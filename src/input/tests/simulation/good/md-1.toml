@@ -23,5 +23,6 @@ integrator = {type = "BerendsenBarostat", pressure = "100 bar", timestep = 1000}
 thermostat = {type = "Berendsen", temperature = "400 K", timestep = 100}
 controls = [
     {type = "RemoveRotation", every = 10},
-    {type = "RemoveTranslation"}
+    {type = "RemoveTranslation"},
+    {type = "Rewrap"},
 ]

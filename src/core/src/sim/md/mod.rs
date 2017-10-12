@@ -13,7 +13,7 @@ pub use self::integrators::AnisoBerendsenBarostat;
 mod controls;
 pub use self::controls::{Control, Thermostat};
 pub use self::controls::{RescaleThermostat, BerendsenThermostat};
-pub use self::controls::{RemoveTranslation, RemoveRotation};
+pub use self::controls::{RemoveTranslation, RemoveRotation, Rewrap};
 
 mod molecular_dynamics;
 pub use self::molecular_dynamics::MolecularDynamics;
