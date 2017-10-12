@@ -1,0 +1,7 @@
+[package]
+name = "mie_potential"
+version = "0.1.0"
+authors = ["Gernot Bauer <gernotbauer85@googlemail.com>"]
+
+[dependencies]
+lumol = {git = "https://github.com/lumol-org/lumol"}
