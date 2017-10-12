@@ -184,3 +184,5 @@ controls = [
 
 - The `RemoveTranslation` control removes the global system rotation;
 - The `RemoveRotation` control removes the global system translation.
+- The `Rewrap` control rewraps all molecules' centers of mass to lie within the
+  unit cell. Individual atoms in a molecule may still lie outside of the cell.
