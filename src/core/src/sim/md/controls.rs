@@ -182,7 +182,8 @@ impl Control for RemoveRotation {
 
 
 /******************************************************************************/
-/// Rewrap all molecules inside the unit cell
+/// Rewrap all molecules' centers of mass to lie within the unit cell.
+/// Individual atoms in a molecule may still lie outside of the cell.
 pub struct Rewrap;
 
 impl Rewrap {
