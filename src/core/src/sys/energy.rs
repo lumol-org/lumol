@@ -213,7 +213,7 @@ mod tests {
                 x0: unit_from(185.0, "deg")
         }));
 
-        /// unused interaction to check that we do handle this right
+        // unused interaction to check that we do handle this right
         system.add_pair_potential("H", "O",
             PairInteraction::new(Box::new(NullPotential), 0.0)
         );
