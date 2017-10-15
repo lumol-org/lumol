@@ -1,5 +1,6 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) Lumol's contributors — BSD license
+#![allow(dead_code)]
 
 use lumol::out::Output;
 use lumol::sys::System;
