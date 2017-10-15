@@ -81,13 +81,13 @@ impl MCMove for Resize {
         };
 
         for (mi, molecule) in self.previous.molecules().iter().enumerate() {
-            // We don't want to change the intramolecular distances
-            // so we compute the translation vector of the center-of-mass
-            // (com) of a molecule and apply it to all its particles.
-            // Note that to do this, the com of a molecule *always* has
-            // to reside inside the simulation cell.
-            let old_com = system.molecule_com(mi);
-            let frac_com = system.cell.fractional(&old_com);
+            // We don't want to change the intramolecular distances so we
+            // compute the translation vector of the center-of-mass (com) of a
+            // molecule and apply it to all its particles. Note that to do
+            // this, the com of a molecule *always* has to reside inside the
+            // simulation cell.
+            let old_com = self.previous.molecule_com(mi);
+            let frac_com = self.previous.cell.fractional(&old_com);
             let delta_com = system.cell.cartesian(&frac_com) - old_com;
             for position in &mut system.particles_mut().position[molecule.iter()] {
                 *position += delta_com;
