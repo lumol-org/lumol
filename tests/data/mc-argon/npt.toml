@@ -1,0 +1,22 @@
+[input]
+version = 1
+
+[[systems]]
+file = "argon.pdb"
+
+[[systems.potentials.pairs]]
+atoms = ["Ar", "Ar"]
+lj = {sigma = "3.405 A", epsilon = "1.0 kJ/mol"}
+cutoff = "8 A"
+tail_correction = true
+
+[[simulations]]
+nsteps = 1000
+
+[simulations.propagator]
+type = "MonteCarlo"
+temperature = "100 K"
+moves = [
+    {type = "Translate", delta = "1 A", frequency = 1},
+    {type = "Resize", pressure = "200 bar", delta = "1000 A^3", frequency = 50},
+]
