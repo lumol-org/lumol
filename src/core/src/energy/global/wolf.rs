@@ -88,11 +88,11 @@ impl Wolf {
     /// at the distance of `rij`. The `scaling` parameter comes from the
     /// restriction associated with this potential.
     #[inline]
-    fn energy_pair(&self, info: RestrictionInfo, qi: f64, qj: f64, rij: f64) -> f64 {
+    fn energy_pair(&self, info: RestrictionInfo, qiqj: f64, rij: f64) -> f64 {
         if rij > self.cutoff || info.excluded {
             return 0.0;
         }
-        info.scaling * qi * qj * (f64::erfc(self.alpha * rij) / rij - self.energy_cst) / ELCC
+        info.scaling * qiqj * (f64::erfc(self.alpha * rij) / rij - self.energy_cst) / ELCC
     }
 
     /// Compute the energy for self interaction of a particle with charge `qi`
@@ -105,14 +105,14 @@ impl Wolf {
     /// `qj`, at the distance of `rij`. The `scaling` parameter comes from the
     /// restriction associated with this potential.
     #[inline]
-    fn force_pair(&self, info: RestrictionInfo, qi: f64, qj: f64, rij: Vector3D) -> Vector3D {
+    fn force_pair(&self, info: RestrictionInfo, qiqj: f64, rij: Vector3D) -> Vector3D {
         let d = rij.norm();
         if d > self.cutoff || info.excluded {
             return Vector3D::zero();
         }
-        let factor = f64::erfc(self.alpha * d) / (d * d)
-                     + 2.0 * self.alpha / f64::sqrt(PI) * f64::exp(-self.alpha * self.alpha * d * d) / d;
-        return info.scaling * qi * qj * (factor - self.force_cst) * rij.normalized() / ELCC;
+        let factor = f64::erfc(self.alpha * d) / (d * d) +
+                     2.0 * self.alpha / f64::sqrt(PI) * f64::exp(-self.alpha * self.alpha * d * d) / d;
+        return info.scaling * qiqj * (factor - self.force_cst) * rij.normalized() / ELCC;
     }
 }
 
@@ -138,8 +138,8 @@ impl GlobalCache for Wolf {
                 let distance = config.bond_distance(i, j);
                 let info = self.restriction.information(distance);
 
-                e_old += self.energy_pair(info, qi, qj, r_old);
-                e_new += self.energy_pair(info, qi, qj, r_new);
+                e_old += self.energy_pair(info, qi * qj, r_old);
+                e_new += self.energy_pair(info, qi * qj, r_new);
             }
         }
 
@@ -157,8 +157,8 @@ impl GlobalCache for Wolf {
                 let distance = config.bond_distance(i, j);
                 let info = self.restriction.information(distance);
 
-                e_old += self.energy_pair(info, qi, qj, r_old);
-                e_new += self.energy_pair(info, qi, qj, r_new);
+                e_old += self.energy_pair(info, qi * qj, r_old);
+                e_new += self.energy_pair(info, qi * qj, r_new);
             }
         }
 
@@ -192,7 +192,7 @@ impl GlobalPotential for Wolf {
                 let info = self.restriction.information(distance);
 
                 let rij = configuration.distance(i, j);
-                local_energy  += self.energy_pair(info, qi, qj, rij);
+                local_energy  += self.energy_pair(info, qi * qj, rij);
             }
 
             local_energy - self.energy_self(qi)
@@ -222,7 +222,7 @@ impl GlobalPotential for Wolf {
                 let info = self.restriction.information(distance);
 
                 let rij = configuration.nearest_image(i, j);
-                let force = self.force_pair(info, qi, qj, rij);
+                let force = self.force_pair(info, qi * qj, rij);
                 thread_forces[i] += force;
                 thread_forces[j] -= force;
             }
@@ -251,7 +251,7 @@ impl GlobalPotential for Wolf {
                 let info = self.restriction.information(distance);
 
                 let rij = configuration.nearest_image(i, j);
-                let force = self.force_pair(info, qi, qj, rij);
+                let force = self.force_pair(info, qi * qj, rij);
                 local_virial += force.tensorial(&rij);
             }
 
