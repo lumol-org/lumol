@@ -81,6 +81,7 @@ macro_rules! internal_error {
 // Helper modules
 #[macro_use]
 mod utils;
+mod math;
 
 // Main modules
 pub mod units;

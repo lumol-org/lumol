@@ -1,6 +1,7 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) Lumol's contributors — BSD license
 
+use math::*;
 use energy::Potential;
 use energy::{PairPotential, BondPotential, AnglePotential, DihedralPotential};
 
@@ -173,18 +174,18 @@ impl CosineHarmonic {
     /// Create a new `CosineHarmonic` potentials, with elastic constant of `k`
     /// and equilibrium value of `x0`
     pub fn new(k: f64, x0:f64) -> CosineHarmonic {
-        CosineHarmonic{k: k, cos_x0: f64::cos(x0)}
+        CosineHarmonic{k: k, cos_x0: cos(x0)}
     }
 }
 
 impl Potential for CosineHarmonic {
     fn energy(&self, x: f64) -> f64 {
-        let dr = f64::cos(x) - self.cos_x0;
+        let dr = cos(x) - self.cos_x0;
         0.5 * self.k * dr * dr
     }
 
     fn force(&self, x: f64) -> f64 {
-        self.k * (f64::cos(x) - self.cos_x0) * f64::sin(x)
+        self.k * (cos(x) - self.cos_x0) * sin(x)
     }
 }
 
@@ -226,13 +227,13 @@ pub struct Torsion {
 impl Potential for Torsion {
     fn energy(&self, phi: f64) -> f64 {
         let n = self.n as f64;
-        let cos = f64::cos(n * phi - self.delta);
+        let cos = cos(n * phi - self.delta);
         self.k * (1.0 + cos)
     }
 
     fn force(&self, phi: f64) -> f64 {
         let n = self.n as f64;
-        let sin = f64::sin(n * phi - self.delta);
+        let sin = sin(n * phi - self.delta);
         self.k * n * sin
     }
 }
@@ -269,14 +270,14 @@ impl Potential for Buckingham {
     fn energy(&self, r: f64) -> f64 {
         let r3 = r * r * r;
         let r6 = r3 * r3;
-        let exp = f64::exp(- r / self.rho);
+        let exp = exp(- r / self.rho);
         self.a * exp - self.c / r6
     }
 
     fn force(&self, r: f64) -> f64 {
         let r3 = r * r * r;
         let r7 = r3 * r3 * r;
-        let exp = f64::exp(- r / self.rho);
+        let exp = exp(- r / self.rho);
         self.a / self.rho * exp - 6.0 * self.c / r7
     }
 }
@@ -285,7 +286,7 @@ impl PairPotential for Buckingham {
     fn tail_energy(&self, rc: f64) -> f64 {
         let rc2 = rc * rc;
         let rc3 = rc2 * rc;
-        let exp = f64::exp(- rc / self.rho);
+        let exp = exp(- rc / self.rho);
         let factor = rc2 - 2.0 * rc * self.rho + 2.0 * self.rho * self.rho;
         self.a * self.rho * exp * factor - self.c / (3.0 * rc3)
     }
@@ -293,7 +294,7 @@ impl PairPotential for Buckingham {
     fn tail_virial(&self, rc: f64) -> f64 {
         let rc2 = rc * rc;
         let rc3 = rc2 * rc;
-        let exp = f64::exp(- rc / self.rho);
+        let exp = exp(- rc / self.rho);
         let factor = rc3 + 3.0 * rc2 * self.rho + 6.0 * rc * self.rho * self.rho + 6.0 * self.rho * self.rho * self.rho;
         self.a * exp * factor - 20.0 * self.c / rc3 + 8.0
     }
@@ -334,14 +335,14 @@ impl Potential for BornMayerHuggins {
     fn energy(&self, r: f64) -> f64 {
         let r2 = r * r;
         let r6 = r2 * r2 * r2;
-        let exp = f64::exp((self.sigma - r) / self.rho);
+        let exp = exp((self.sigma - r) / self.rho);
         self.a * exp - self.c / r6 + self.d / (r6 * r2)
     }
 
     fn force(&self, r: f64) -> f64 {
         let r2 = r * r;
         let r7 = r2 * r2 * r2 * r;
-        let exp = f64::exp((self.sigma - r) / self.rho);
+        let exp = exp((self.sigma - r) / self.rho);
         self.a / self.rho * exp - 6.0 * self.c / r7 + 8.0 * self.d / (r7 * r2)
     }
 }
@@ -350,7 +351,7 @@ impl PairPotential for BornMayerHuggins {
     fn tail_energy(&self, rc: f64) -> f64 {
         let rc2 = rc * rc;
         let rc3 = rc2 * rc;
-        let exp = f64::exp((self.sigma - rc) / self.rho);
+        let exp = exp((self.sigma - rc) / self.rho);
         let factor = rc2 - 2.0 * rc * self.rho + 2.0 * self.rho * self.rho;
         self.a * self.rho * exp * factor - self.c / (3.0 * rc3) + self.d / (5.0 * rc2 * rc3)
     }
@@ -358,7 +359,7 @@ impl PairPotential for BornMayerHuggins {
     fn tail_virial(&self, rc: f64) -> f64 {
         let rc2 = rc * rc;
         let rc3 = rc2 * rc;
-        let exp = f64::exp((self.sigma - rc) / self.rho);
+        let exp = exp((self.sigma - rc) / self.rho);
         let factor = rc3 + 3.0 * rc2 * self.rho + 6.0 * rc * self.rho * self.rho + 6.0 * self.rho * self.rho * self.rho;
         self.a * exp * factor - 20.0 * self.c / rc3 + 8.0 * self.d / (5.0 * rc2 * rc3)
     }
@@ -392,12 +393,12 @@ pub struct MorsePotential {
 
 impl Potential for MorsePotential {
     fn energy(&self, r: f64) -> f64 {
-        let rc = 1.0 - f64::exp((self.x0 - r) * self.a);
+        let rc = 1.0 - exp((self.x0 - r) * self.a);
         self.depth * rc * rc
     }
 
     fn force(&self, r: f64) -> f64 {
-        let exp = f64::exp((self.x0 - r) * self.a);
+        let exp = exp((self.x0 - r) * self.a);
         2.0 * self.depth * (1.0 - exp * exp) * self.a
     }
 }
@@ -477,12 +478,12 @@ mod tests {
     fn cosine_harmonic() {
         let harmonic = CosineHarmonic::new(50.0, 2.0);
         assert_eq!(harmonic.energy(2.0), 0.0);
-        let dcos = f64::cos(2.5) - f64::cos(2.0);
+        let dcos = cos(2.5) - cos(2.0);
         assert_eq!(harmonic.energy(2.5), 0.5 * 50.0 * dcos * dcos);
 
         assert_eq!(harmonic.force(2.0), 0.0);
-        let dcos = f64::cos(2.5) - f64::cos(2.0);
-        assert_eq!(harmonic.force(2.5), 50.0 * dcos * f64::sin(2.5));
+        let dcos = cos(2.5) - cos(2.0);
+        assert_eq!(harmonic.force(2.5), 50.0 * dcos * sin(2.5));
 
         let e0 = harmonic.energy(2.3);
         let e1 = harmonic.energy(2.3 + EPS);
@@ -493,7 +494,7 @@ mod tests {
     fn torsion() {
         let torsion = Torsion{k: 5.0, n: 3, delta: 3.0};
         assert_eq!(torsion.energy(1.0), 10.0);
-        let energy = 5.0 * (1.0 + f64::cos(3.0 * 1.1 - 3.0));
+        let energy = 5.0 * (1.0 + cos(3.0 * 1.1 - 3.0));
         assert_eq!(torsion.energy(1.1), energy);
 
         assert_eq!(torsion.force(1.0), 0.0);

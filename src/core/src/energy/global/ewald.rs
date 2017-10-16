@@ -1,14 +1,13 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) Lumol's contributors — BSD license
 
-use special::Error;
-
 use std::sync::{RwLock, RwLockReadGuard, RwLockWriteGuard};
 use std::f64::consts::{PI, FRAC_2_SQRT_PI};
 use std::f64;
 
 use ndarray::Zip;
 
+use math::*;
 use sys::{Configuration, UnitCell, CellShape};
 use types::{Matrix3, Vector3D, Array3, Complex, Zero};
 use consts::ELCC;
@@ -160,7 +159,7 @@ impl Ewald {
                         self.expfactors[(ikx, iky, ikz)] = 0.0;
                         continue;
                     }
-                    self.expfactors[(ikx, iky, ikz)] = f64::exp(-k2 / (4.0 * self.alpha * self.alpha)) / k2;
+                    self.expfactors[(ikx, iky, ikz)] = exp(-k2 / (4.0 * self.alpha * self.alpha)) / k2;
                     if ikx != 0 {self.expfactors[(ikx, iky, ikz)] *= 2.0;}
                     if iky != 0 {self.expfactors[(ikx, iky, ikz)] *= 2.0;}
                     if ikz != 0 {self.expfactors[(ikx, iky, ikz)] *= 2.0;}
@@ -181,7 +180,7 @@ impl Ewald {
             return 0.0
         }
         assert_eq!(info.scaling, 1.0, "Scaling restriction scheme using Ewald are not implemented");
-        return qi * qj * f64::erfc(self.alpha * r) / r / ELCC;
+        return qi * qj * erfc(self.alpha * r) / r / ELCC;
     }
 
     /// Get the real-space force for one pair at distance `rij` with charges
@@ -193,8 +192,8 @@ impl Ewald {
         if r > self.rc || info.excluded {
             return Vector3D::new(0.0, 0.0, 0.0)
         }
-        let mut factor = f64::erfc(self.alpha * r) / r;
-        factor += self.alpha * FRAC_2_SQRT_PI * f64::exp(-self.alpha * self.alpha * r * r);
+        let mut factor = erfc(self.alpha * r) / r;
+        factor += self.alpha * FRAC_2_SQRT_PI * exp(-self.alpha * self.alpha * r * r);
         factor *= qi * qj / (r * r) / ELCC;
         return factor * rij;
     }
@@ -330,7 +329,7 @@ impl Ewald {
                               .iter()
                               .map(|q| q * q)
                               .sum::<f64>();
-        return -self.alpha / f64::sqrt(PI) * q2 / ELCC;
+        return -self.alpha / sqrt(PI) * q2 / ELCC;
     }
 }
 
@@ -576,7 +575,7 @@ impl Ewald {
         assert_eq!(info.scaling, 1.0, "Scaling restriction scheme using Ewald are not implemented");
         assert!(r < self.rc, "Atoms in molecule are separated by more than the cutoff radius of Ewald sum.");
 
-        return - qi * qj / ELCC * f64::erf(self.alpha * r) / r;
+        return - qi * qj / ELCC * erf(self.alpha * r) / r;
     }
 
     /// Get the molecular correction force for the pair with charges `qi` and
@@ -589,7 +588,7 @@ impl Ewald {
         assert!(r < self.rc, "Atoms in molecule are separated by more than the cutoff radius of Ewald sum.");
 
         let qiqj = qi * qj / (ELCC * r * r);
-        let factor = qiqj * (2.0 * self.alpha / f64::sqrt(PI) * f64::exp(-self.alpha * self.alpha * r * r) - f64::erf(self.alpha * r) / r);
+        let factor = qiqj * (2.0 * self.alpha / sqrt(PI) * exp(-self.alpha * self.alpha * r * r) - erf(self.alpha * r) / r);
         return factor * rij;
     }
 
@@ -1008,7 +1007,7 @@ mod tests {
             let molcorrect_force = forces_buffer[0][0];
 
             let force_fda = (energy - energy_1) / eps;
-            assert!(f64::abs((force_fda - force) / force) < 1e-4);
+            assert!(abs((force_fda - force) / force) < 1e-4);
 
             // No real space energetic contribution here, we only have one
             // molecule.
@@ -1017,10 +1016,10 @@ mod tests {
             assert_ulps_eq!(real_force, 0.0);
 
             let kspace_force_fda = (kspace_energy - kspace_energy_1) / eps;
-            assert!(f64::abs((kspace_force_fda - kspace_force) / kspace_force) < 1e-4);
+            assert!(abs((kspace_force_fda - kspace_force) / kspace_force) < 1e-4);
 
             let molcorrect_force_fda = (molcorrect_energy - molcorrect_energy_1) / eps;
-            assert!(f64::abs((molcorrect_force_fda - molcorrect_force) / molcorrect_force) < 1e-4);
+            assert!(abs((molcorrect_force_fda - molcorrect_force) / molcorrect_force) < 1e-4);
         }
     }
 
