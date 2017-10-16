@@ -427,7 +427,7 @@ impl Ewald {
 
                 for j in (i + 1)..configuration.size() {
                     let qj = charges[j];
-                    let force = f * self.kspace_force_factor(j, ikx, iky, ikz, qi, qj, fourier_i) * k;
+                    let force = f * self.kspace_force_factor(j, (ikx, iky, ikz), qi * qj, fourier_i) * k;
                     force_i -= force;
                     thread_forces[j] += force;
                 }
@@ -442,10 +442,7 @@ impl Ewald {
     /// Get the force factor for particles `i` and `j` with charges `qi` and
     /// `qj`, at k point  `(ikx, iky, ikz)`
     #[inline]
-    #[allow(too_many_arguments)]
-    fn kspace_force_factor(&self, j: usize, ikx: usize, iky: usize, ikz: usize,
-                           qi: f64, qj: f64, fourier_i: f64) -> f64 {
-
+    fn kspace_force_factor(&self, j: usize, (ikx, iky, ikz): (usize, usize, usize), qiqj: f64, fourier_i: f64) -> f64 {
         // Here the compiler is smart enough to optimize away
         // the useless computation of the last real part.
         let fourier_j = self.fourier_phases[(ikx, j, 0)] *
@@ -453,7 +450,7 @@ impl Ewald {
                         self.fourier_phases[(ikz, j, 2)];
         let fourier_j = fourier_j.imag();
 
-        return qi * qj * (fourier_i - fourier_j);
+        return qiqj * (fourier_i - fourier_j);
     }
 
     /// k-space contribution to the virial
@@ -481,7 +478,7 @@ impl Ewald {
 
                 for j in (i + 1)..configuration.size() {
                     let qj = charges[j];
-                    let force = f * self.kspace_force_factor(j, ikx, iky, ikz, qi, qj, fourier_i) * k;
+                    let force = f * self.kspace_force_factor(j, (ikx, iky, ikz), qi * qj, fourier_i) * k;
                     let rij = configuration.nearest_image(i, j);
                     local_virial += force.tensorial(&rij);
                 }
