@@ -36,6 +36,10 @@ atoms = ["A", "B"]
 morse = {a = "5 A^-1", depth = "25 kJ/mol", x0 = "2.1 A"}
 
 [[pairs]]
+atoms = ["A", "B"]
+gaussian = {a = "8.0 kJ/mol", b = "50.0 A^-2"}
+
+[[pairs]]
 # Table computations
 atoms = ["A", "B"]
 null = {}

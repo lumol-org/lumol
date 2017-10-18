@@ -1,0 +1,7 @@
+[input]
+version = 1
+
+[[pairs]]
+atoms = ["A", "A"]
+gaussian = {a = "3.0 A", b = "-5.9 kJ/mol"}
+#^ 'b' has to be positive

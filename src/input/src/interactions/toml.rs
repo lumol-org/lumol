@@ -9,7 +9,7 @@ use FromToml;
 use FromTomlWithData;
 
 use lumol::energy::{Harmonic, LennardJones, NullPotential, CosineHarmonic};
-use lumol::energy::{Torsion, Buckingham, BornMayerHuggins, MorsePotential};
+use lumol::energy::{Torsion, Buckingham, BornMayerHuggins, MorsePotential, Gaussian};
 use lumol::energy::{Wolf, Ewald};
 use lumol::energy::{PairPotential, TableComputation};
 
@@ -38,11 +38,9 @@ impl FromToml for Harmonic {
         if let (Some(k), Some(x0)) = (k.as_str(), x0.as_str()) {
             let k = try!(::lumol::units::from_str(k));
             let x0 = try!(::lumol::units::from_str(x0));
-            Ok(Harmonic{k: k, x0: x0})
+            Ok(Harmonic { k: k, x0: x0 })
         } else {
-            Err(
-                Error::from("'k' and 'x0' must be strings in harmonic potential")
-            )
+            Err(Error::from("'k' and 'x0' must be strings in harmonic potential"))
         }
     }
 }
@@ -55,11 +53,12 @@ impl FromToml for LennardJones {
         if let (Some(sigma), Some(epsilon)) = (sigma.as_str(), epsilon.as_str()) {
             let sigma = try!(::lumol::units::from_str(sigma));
             let epsilon = try!(::lumol::units::from_str(epsilon));
-            Ok(LennardJones{sigma: sigma, epsilon: epsilon})
+            Ok(LennardJones {
+                sigma: sigma,
+                epsilon: epsilon,
+            })
         } else {
-            Err(
-                Error::from("'epsilon' and 'sigma' must be strings in Lennard-Jones potential")
-            )
+            Err(Error::from("'epsilon' and 'sigma' must be strings in Lennard-Jones potential"))
         }
     }
 }
@@ -74,9 +73,7 @@ impl FromToml for CosineHarmonic {
             let x0 = try!(::lumol::units::from_str(x0));
             Ok(CosineHarmonic::new(k, x0))
         } else {
-            Err(
-                Error::from("'k' and 'x0' must be strings in cosine harmonic potential")
-            )
+            Err(Error::from("'k' and 'x0' must be strings in cosine harmonic potential"))
         }
     }
 }
@@ -90,14 +87,14 @@ impl FromToml for Torsion {
         if let (Some(n), Some(k), Some(delta)) = (n.as_integer(), k.as_str(), delta.as_str()) {
             let k = try!(::lumol::units::from_str(k));
             let delta = try!(::lumol::units::from_str(delta));
-            Ok(Torsion{n: n as usize, k: k, delta: delta})
+            Ok(Torsion {
+                n: n as usize,
+                k: k,
+                delta: delta,
+            })
         } else {
-            Err(
-                Error::from(
-                    "'k' and 'delta' must be strings in torsion potential, \
-                    and 'n' must be an integer"
-                )
-            )
+            Err(Error::from("'k' and 'delta' must be strings in torsion potential, and 'n' must \
+                             be an integer"))
         }
     }
 }
@@ -112,13 +109,13 @@ impl FromToml for Buckingham {
             let a = try!(::lumol::units::from_str(a));
             let c = try!(::lumol::units::from_str(c));
             let rho = try!(::lumol::units::from_str(rho));
-            Ok(Buckingham{a: a, c: c, rho: rho})
+            Ok(Buckingham {
+                a: a,
+                c: c,
+                rho: rho,
+            })
         } else {
-            Err(
-                Error::from(
-                    "'A', 'C' and 'rho' must be strings in Buckingham potential"
-                )
-            )
+            Err(Error::from("'A', 'C' and 'rho' must be strings in Buckingham potential"))
         }
     }
 }
@@ -132,19 +129,22 @@ impl FromToml for BornMayerHuggins {
         let rho = try_extract_parameter!(table, "rho", "Born-Mayer-Huggins potential");
 
         if let (Some(a), Some(c), Some(d), Some(sigma), Some(rho)) =
-               (a.as_str(), c.as_str(), d.as_str(), sigma.as_str(), rho.as_str()) {
+            (a.as_str(), c.as_str(), d.as_str(), sigma.as_str(), rho.as_str()) {
             let a = try!(::lumol::units::from_str(a));
             let c = try!(::lumol::units::from_str(c));
             let d = try!(::lumol::units::from_str(d));
             let sigma = try!(::lumol::units::from_str(sigma));
             let rho = try!(::lumol::units::from_str(rho));
-            Ok(BornMayerHuggins{a: a, c: c, d: d, sigma: sigma, rho: rho})
+            Ok(BornMayerHuggins {
+                a: a,
+                c: c,
+                d: d,
+                sigma: sigma,
+                rho: rho,
+            })
         } else {
-            Err(
-                Error::from(
-                    "'A', 'C', 'D', 'sigma' and 'rho' must be strings in Born-Mayer-Huggins potential"
-                )
-            )
+            Err(Error::from("'A', 'C', 'D', 'sigma' and 'rho' must be strings in \
+                             Born-Mayer-Huggins potential"))
         }
     }
 }
@@ -159,38 +159,56 @@ impl FromToml for MorsePotential {
             let a = try!(::lumol::units::from_str(a));
             let depth = try!(::lumol::units::from_str(depth));
             let x0 = try!(::lumol::units::from_str(x0));
-            Ok(MorsePotential{a: a, depth: depth, x0: x0})
+            Ok(MorsePotential {
+                a: a,
+                depth: depth,
+                x0: x0,
+            })
         } else {
-            Err(Error::from(
-                "'depth', 'a' and 'x0' must be strings in Morse potential"
-            ))
+            Err(Error::from("'depth', 'a' and 'x0' must be strings in Morse potential"))
         }
     }
 }
 
-/******************************************************************************/
+impl FromToml for Gaussian {
+    fn from_toml(table: &Table) -> Result<Gaussian> {
+        let a = try_extract_parameter!(table, "a", "Gaussian");
+        let b = try_extract_parameter!(table, "b", "Gaussian");
+
+        if let (Some(a), Some(b)) = (a.as_str(), b.as_str()) {
+            let a = try!(::lumol::units::from_str(a));
+            let b = try!(::lumol::units::from_str(b));
+            if b <= 0.0 {
+                Err(Error::from("'b' has to be positive"))
+            } else {
+                Ok(Gaussian::new(a, b))
+            }
+        } else {
+            Err(Error::from("'a' and 'b' must be strings in Gaussian"))
+        }
+    }
+}
+/// ***************************************************************************
 
 impl FromTomlWithData for TableComputation {
     type Data = Box<PairPotential>;
 
     fn from_toml(table: &Table, potential: Box<PairPotential>) -> Result<TableComputation> {
-        let table = try!(table["table"].as_table().ok_or(
-            Error::from("'table' key in computation must be a TOML table")
-        ));
+        let table = try!(table["table"]
+            .as_table()
+            .ok_or(Error::from("'table' key in computation must be a TOML table")));
         let n = try_extract_parameter!(table, "n", "table computation");
         let max = try_extract_parameter!(table, "max", "table computation");
         if let (Some(n), Some(max)) = (n.as_integer(), max.as_str()) {
             let max = try!(::lumol::units::from_str(max));
             Ok(TableComputation::new(potential, n as usize, max))
         } else {
-            Err(Error::from(
-                "'max' must be a string and 'n' and integere in table computation"
-            ))
+            Err(Error::from("'max' must be a string and 'n' and integere in table computation"))
         }
     }
 }
 
-/******************************************************************************/
+/// ***************************************************************************
 
 impl FromToml for Wolf {
     fn from_toml(table: &Table) -> Result<Wolf> {
