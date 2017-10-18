@@ -95,7 +95,7 @@ use types::{Matrix3, Vector3D};
 ///     }
 /// }
 /// ```
-pub trait Potential : Sync + Send {
+pub trait Potential: Sync + Send {
     /// Get the energy corresponding to the variable `x`
     fn energy(&self, x: f64) -> f64;
     /// Get the force norm corresponding to the variable `x`
@@ -132,7 +132,7 @@ pub trait Potential : Sync + Send {
 ///     }
 /// }
 /// ```
-pub trait PairPotential : Potential + BoxClonePair {
+pub trait PairPotential: Potential + BoxClonePair {
     /// Compute the virial contribution corresponding to the distance `r`
     /// between the particles.
     fn virial(&self, r: &Vector3D) -> Matrix3 {
@@ -183,7 +183,7 @@ impl_box_clone!(PairPotential, BoxClonePair, box_clone_pair);
 /// // Now we can use the Null potential for bonds
 /// impl BondPotential for Null {}
 /// ```
-pub trait BondPotential : Potential + BoxCloneBond {
+pub trait BondPotential: Potential + BoxCloneBond {
     /// Compute the virial contribution corresponding to the distance `r`
     /// between the particles.
     fn virial(&self, r: &Vector3D) -> Matrix3 {
@@ -214,7 +214,7 @@ impl_box_clone!(BondPotential, BoxCloneBond, box_clone_bond);
 /// // Now we can use the Null potential for angles
 /// impl AnglePotential for Null {}
 /// ```
-pub trait AnglePotential : Potential + BoxCloneAngle {}
+pub trait AnglePotential: Potential + BoxCloneAngle {}
 impl_box_clone!(AnglePotential, BoxCloneAngle, box_clone_angle);
 
 /// Marker trait for potentials that can be used for molecular dihedral angles.
@@ -236,12 +236,12 @@ impl_box_clone!(AnglePotential, BoxCloneAngle, box_clone_angle);
 /// // Now we can use the Null potential for dihedral angles
 /// impl DihedralPotential for Null {}
 /// ```
-pub trait DihedralPotential : Potential + BoxCloneDihedral {}
+pub trait DihedralPotential: Potential + BoxCloneDihedral {}
 impl_box_clone!(DihedralPotential, BoxCloneDihedral, box_clone_dihedral);
 
 mod functions;
 pub use self::functions::{NullPotential, LennardJones, Harmonic, CosineHarmonic};
-pub use self::functions::{Torsion, Buckingham, BornMayerHuggins, MorsePotential};
+pub use self::functions::{Torsion, Buckingham, BornMayerHuggins, MorsePotential, Gaussian};
 
 mod computations;
 pub use self::computations::{Computation, TableComputation};

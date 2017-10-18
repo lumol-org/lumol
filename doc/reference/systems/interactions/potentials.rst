@@ -186,3 +186,25 @@ units:
     [[pairs]]
     atoms = ["A", "B"]
     morse = {depth = "40 kJ/mol", a = "2.0 rad^-1", x0 = "109.7 deg"}
+
+
+Gaussian potential
+------------------
+
+This potential is usually used to describe energy wells and is expressed as:
+
+.. math::
+
+    V(r) = -a \exp(-b r^2)
+
+The potential type keyword is ``gaussian``, and the parameters ``a`` (well depth)
+and ``b`` (well width) should be provided as strings.
+
+.. code::
+
+    [[pairs]]
+    atoms = ["A", "B"]
+    gaussian = {a = "8.0 kJ/mol", b = "0.2 A^-2"}
+
+.. caution::
+    ``b`` has to be positive

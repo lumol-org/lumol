@@ -1,6 +1,7 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) Lumol's contributors — BSD license
 
+use std::f64::consts::PI;
 use math::*;
 use energy::Potential;
 use energy::{PairPotential, BondPotential, AnglePotential, DihedralPotential};
@@ -27,13 +28,21 @@ use energy::{PairPotential, BondPotential, AnglePotential, DihedralPotential};
 #[derive(Clone, Copy)]
 pub struct NullPotential;
 impl Potential for NullPotential {
-    fn energy(&self, _: f64) -> f64 {0.0}
-    fn force(&self, _: f64) -> f64 {0.0}
+    fn energy(&self, _: f64) -> f64 {
+        0.0
+    }
+    fn force(&self, _: f64) -> f64 {
+        0.0
+    }
 }
 
 impl PairPotential for NullPotential {
-    fn tail_energy(&self, _: f64) -> f64 {0.0}
-    fn tail_virial(&self, _: f64) -> f64 {0.0}
+    fn tail_energy(&self, _: f64) -> f64 {
+        0.0
+    }
+    fn tail_virial(&self, _: f64) -> f64 {
+        0.0
+    }
 }
 impl BondPotential for NullPotential {}
 impl AnglePotential for NullPotential {}
@@ -136,8 +145,12 @@ impl PairPotential for Harmonic {
     // These two functions should return infinity, as the Harmonic potential
     // does not goes to zero at infinity. We use 0 instead to ignore the tail
     // contribution to the energy/virial.
-    fn tail_energy(&self, _: f64) -> f64 {0.0}
-    fn tail_virial(&self, _: f64) -> f64 {0.0}
+    fn tail_energy(&self, _: f64) -> f64 {
+        0.0
+    }
+    fn tail_virial(&self, _: f64) -> f64 {
+        0.0
+    }
 }
 
 impl BondPotential for Harmonic {}
@@ -173,8 +186,11 @@ pub struct CosineHarmonic {
 impl CosineHarmonic {
     /// Create a new `CosineHarmonic` potentials, with elastic constant of `k`
     /// and equilibrium value of `x0`
-    pub fn new(k: f64, x0:f64) -> CosineHarmonic {
-        CosineHarmonic{k: k, cos_x0: cos(x0)}
+    pub fn new(k: f64, x0: f64) -> CosineHarmonic {
+        CosineHarmonic {
+            k: k,
+            cos_x0: cos(x0),
+        }
     }
 }
 
@@ -270,14 +286,14 @@ impl Potential for Buckingham {
     fn energy(&self, r: f64) -> f64 {
         let r3 = r * r * r;
         let r6 = r3 * r3;
-        let exp = exp(- r / self.rho);
+        let exp = exp(-r / self.rho);
         self.a * exp - self.c / r6
     }
 
     fn force(&self, r: f64) -> f64 {
         let r3 = r * r * r;
         let r7 = r3 * r3 * r;
-        let exp = exp(- r / self.rho);
+        let exp = exp(-r / self.rho);
         self.a / self.rho * exp - 6.0 * self.c / r7
     }
 }
@@ -286,7 +302,7 @@ impl PairPotential for Buckingham {
     fn tail_energy(&self, rc: f64) -> f64 {
         let rc2 = rc * rc;
         let rc3 = rc2 * rc;
-        let exp = exp(- rc / self.rho);
+        let exp = exp(-rc / self.rho);
         let factor = rc2 - 2.0 * rc * self.rho + 2.0 * self.rho * self.rho;
         self.a * self.rho * exp * factor - self.c / (3.0 * rc3)
     }
@@ -294,8 +310,9 @@ impl PairPotential for Buckingham {
     fn tail_virial(&self, rc: f64) -> f64 {
         let rc2 = rc * rc;
         let rc3 = rc2 * rc;
-        let exp = exp(- rc / self.rho);
-        let factor = rc3 + 3.0 * rc2 * self.rho + 6.0 * rc * self.rho * self.rho + 6.0 * self.rho * self.rho * self.rho;
+        let exp = exp(-rc / self.rho);
+        let factor = rc3 + 3.0 * rc2 * self.rho + 6.0 * rc * self.rho * self.rho +
+                     6.0 * self.rho * self.rho * self.rho;
         self.a * exp * factor - 20.0 * self.c / rc3 + 8.0
     }
 }
@@ -360,7 +377,8 @@ impl PairPotential for BornMayerHuggins {
         let rc2 = rc * rc;
         let rc3 = rc2 * rc;
         let exp = exp((self.sigma - rc) / self.rho);
-        let factor = rc3 + 3.0 * rc2 * self.rho + 6.0 * rc * self.rho * self.rho + 6.0 * self.rho * self.rho * self.rho;
+        let factor = rc3 + 3.0 * rc2 * self.rho + 6.0 * rc * self.rho * self.rho +
+                     6.0 * self.rho * self.rho * self.rho;
         self.a * exp * factor - 20.0 * self.c / rc3 + 8.0 * self.d / (5.0 * rc2 * rc3)
     }
 }
@@ -404,13 +422,76 @@ impl Potential for MorsePotential {
 }
 
 impl PairPotential for MorsePotential {
-    fn tail_energy(&self, _: f64) -> f64 {0.0}
-    fn tail_virial(&self, _: f64) -> f64 {0.0}
+    fn tail_energy(&self, _: f64) -> f64 {
+        0.0
+    }
+    fn tail_virial(&self, _: f64) -> f64 {
+        0.0
+    }
 }
 
 impl BondPotential for MorsePotential {}
 impl AnglePotential for MorsePotential {}
 impl DihedralPotential for MorsePotential {}
+
+/// Gaussian potential.
+///
+/// The following expression of the Gaussian potential is used:
+/// `V(r) = -a * exp(-b * r^2)`
+/// where `a` is the potential depth and `b` is the potential width.
+///
+/// # Note
+///
+/// `b` has to be positive
+///
+/// # Examples
+///
+/// ```
+/// use lumol_core::energy::Potential;
+/// use lumol_core::energy::Gaussian;
+///
+/// let potential = Gaussian::new(8.0, 0.5);
+/// assert_eq!(potential.energy(0.0), -8.0);
+/// assert_eq!(potential.force(0.0), 0.0);
+/// ```
+#[derive(Clone, Copy)]
+pub struct Gaussian {
+    /// Depth of the Gaussian potential
+    a: f64,
+    /// Width of the Gaussian potential
+    b: f64,
+}
+
+impl Gaussian {
+    pub fn new(a: f64, b: f64) -> Gaussian {
+        if b <= 0.0 {
+            panic!("\"b\" has to be positive")
+        }
+        Gaussian { a: a, b: b }
+    }
+}
+
+impl Potential for Gaussian {
+    fn energy(&self, r: f64) -> f64 {
+        -self.a * exp(-self.b * r * r)
+    }
+
+    fn force(&self, r: f64) -> f64 {
+        2.0 * self.b * r * self.energy(r)
+    }
+}
+
+impl PairPotential for Gaussian {
+    fn tail_energy(&self, rc: f64) -> f64 {
+        self.energy(rc) * rc / (2.0 * self.b) -
+        self.a * sqrt(PI) * erfc(sqrt(self.b) * rc) / (4.0 * self.b.powf(3.0 / 2.0))
+    }
+
+    fn tail_virial(&self, rc: f64) -> f64 {
+        3.0 * sqrt(PI) * self.a * erfc(sqrt(self.b) * rc) / (4.0 * self.b.powf(3.0 / 2.0)) -
+        self.energy(rc) * rc * (2.0 * self.b * rc * rc + 3.0) / (2.0 * self.b)
+    }
+}
 
 #[cfg(test)]
 mod tests {
@@ -437,7 +518,10 @@ mod tests {
 
     #[test]
     fn lj() {
-        let lj = LennardJones{epsilon: 0.8, sigma: 2.0};
+        let lj = LennardJones {
+            epsilon: 0.8,
+            sigma: 2.0,
+        };
         assert_eq!(lj.energy(2.0), 0.0);
         assert_eq!(lj.energy(2.5), -0.6189584744448002);
 
@@ -454,12 +538,12 @@ mod tests {
 
         let e0 = lj.energy(4.0);
         let e1 = lj.energy(4.0 + EPS);
-        assert_relative_eq!((e0 - e1) / EPS, lj.force(4.0), epsilon=1e-6);
+        assert_relative_eq!((e0 - e1) / EPS, lj.force(4.0), epsilon = 1e-6);
     }
 
     #[test]
     fn harmonic() {
-        let harmonic = Harmonic{k: 50.0, x0: 2.0};
+        let harmonic = Harmonic { k: 50.0, x0: 2.0 };
         assert_eq!(harmonic.energy(2.0), 0.0);
         assert_eq!(harmonic.energy(2.5), 6.25);
 
@@ -471,7 +555,7 @@ mod tests {
 
         let e0 = harmonic.energy(2.1);
         let e1 = harmonic.energy(2.1 + EPS);
-        assert_relative_eq!((e0 - e1) / EPS, harmonic.force(2.1), epsilon=1e-6);
+        assert_relative_eq!((e0 - e1) / EPS, harmonic.force(2.1), epsilon = 1e-6);
     }
 
     #[test]
@@ -487,12 +571,16 @@ mod tests {
 
         let e0 = harmonic.energy(2.3);
         let e1 = harmonic.energy(2.3 + EPS);
-        assert_relative_eq!((e0 - e1) / EPS, harmonic.force(2.3), epsilon=1e-6);
+        assert_relative_eq!((e0 - e1) / EPS, harmonic.force(2.3), epsilon = 1e-6);
     }
 
     #[test]
     fn torsion() {
-        let torsion = Torsion{k: 5.0, n: 3, delta: 3.0};
+        let torsion = Torsion {
+            k: 5.0,
+            n: 3,
+            delta: 3.0,
+        };
         assert_eq!(torsion.energy(1.0), 10.0);
         let energy = 5.0 * (1.0 + cos(3.0 * 1.1 - 3.0));
         assert_eq!(torsion.energy(1.1), energy);
@@ -501,12 +589,16 @@ mod tests {
 
         let e0 = torsion.energy(4.0);
         let e1 = torsion.energy(4.0 + EPS);
-        assert_relative_eq!((e0 - e1) / EPS, torsion.force(4.0), epsilon=1e-6);
+        assert_relative_eq!((e0 - e1) / EPS, torsion.force(4.0), epsilon = 1e-6);
     }
 
     #[test]
     fn buckingham() {
-        let buckingham = Buckingham{a: 2.0, c: 1.0, rho: 2.0};
+        let buckingham = Buckingham {
+            a: 2.0,
+            c: 1.0,
+            rho: 2.0,
+        };
 
         // Comparing to externally computed values
         assert_eq!(buckingham.energy(2.0), 0.7201338823428847);
@@ -517,12 +609,18 @@ mod tests {
 
         let e0 = buckingham.energy(4.0);
         let e1 = buckingham.energy(4.0 + EPS);
-        assert_relative_eq!((e0 - e1) / EPS, buckingham.force(4.0), epsilon=1e-6);
+        assert_relative_eq!((e0 - e1) / EPS, buckingham.force(4.0), epsilon = 1e-6);
     }
 
     #[test]
     fn born() {
-        let born = BornMayerHuggins{a: 2.0, c: 1.0, d: 0.5, sigma: 2.0, rho: 2.0};
+        let born = BornMayerHuggins {
+            a: 2.0,
+            c: 1.0,
+            d: 0.5,
+            sigma: 2.0,
+            rho: 2.0,
+        };
 
         // Comparing to externally computed values
         assert_eq!(born.energy(2.0), 1.986328125);
@@ -533,12 +631,16 @@ mod tests {
 
         let e0 = born.energy(4.0);
         let e1 = born.energy(4.0 + EPS);
-        assert_relative_eq!((e0 - e1) / EPS, born.force(4.0), epsilon=1e-6);
+        assert_relative_eq!((e0 - e1) / EPS, born.force(4.0), epsilon = 1e-6);
     }
 
-  #[test]
+    #[test]
     fn morse() {
-        let morse = MorsePotential{a: 2.0, x0: 1.3, depth: 4.0};
+        let morse = MorsePotential {
+            a: 2.0,
+            x0: 1.3,
+            depth: 4.0,
+        };
 
         // Comparing to externally computed values
         assert_eq!(morse.energy(1.0), 2.703517287822119);
@@ -549,6 +651,27 @@ mod tests {
 
         let e0 = morse.energy(1.3);
         let e1 = morse.energy(1.3 + EPS);
-        assert_relative_eq!((e0 - e1) / EPS, morse.force(1.3), epsilon=1e-6);
+        assert_relative_eq!((e0 - e1) / EPS, morse.force(1.3), epsilon = 1e-6);
+    }
+
+    #[test]
+    fn gaussian() {
+        let gaussian = Gaussian::new(8.0, 2.0);
+        assert_eq!(gaussian.energy(0.0), -8.0);
+        assert_eq!(gaussian.force(0.0), 0.0);
+
+        assert_relative_eq!(gaussian.tail_energy(2.5), -1.93518e-5, epsilon = 1e-10);
+        assert_relative_eq!(gaussian.tail_virial(2.5), 5.23887e-4, epsilon = 1e-10);
+
+        let e0 = gaussian.energy(0.5);
+        let e1 = gaussian.energy(0.5 + EPS);
+        assert_relative_eq!((e0 - e1) / EPS, gaussian.force(0.5), epsilon = 1e-6);
+    }
+
+    #[test]
+    #[should_panic(expected = "\"b\" has to be positive")]
+    fn test_gaussian_wrong_input() {
+        let gaussian = Gaussian::new(8.0, -2.0);
+        assert_eq!(gaussian.energy(0.0), -8.0);
     }
 }
