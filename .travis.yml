@@ -29,8 +29,12 @@ script:
     # Run unit tests and doc tests in debug mode
     - cargo test -p lumol-core
     - cargo test -p lumol-input
+    # Check if tutorials compile
+    - cd
     # Check that benchmarks still compile
     - cargo bench --no-run
+    # Check if tutorials compile
+    - ./scripts/ci/compile-tutorials.py
     # Misc style checking
     - ./scripts/ci/check-whitespaces.py
     # Generate and check doc

@@ -12,7 +12,7 @@ pub struct Mie {
     /// Exponent of attractive contribution
     m: f64,
     /// Energetic prefactor computed from the exponents and epsilon
-    prefac: f64,
+    prefactor: f64,
 }
 
 impl Mie {
@@ -20,13 +20,13 @@ impl Mie {
         if m >= n {
             panic!("The repulsive exponent n has to be larger than the attractive exponent m")
         };
-        let prefac = n / (n - m) * (n / m).powf(m / (n - m)) * epsilon;
+        let prefactor = n / (n - m) * (n / m).powf(m / (n - m)) * epsilon;
         Mie {
             sigma: sigma,
             epsilon: epsilon,
             n: n,
             m: m,
-            prefac: prefac,
+            prefactor: prefactor,
         }
     }
 }
@@ -36,14 +36,14 @@ impl Potential for Mie {
         let sigma_r = self.sigma / r;
         let repulsive = f64::powf(sigma_r, self.n);
         let attractive = f64::powf(sigma_r, self.m);
-        self.prefac * (repulsive - attractive)
+        self.prefactor * (repulsive - attractive)
     }
 
     fn force(&self, r: f64) -> f64 {
         let sigma_r = self.sigma / r;
         let repulsive = f64::powf(sigma_r, self.n);
         let attractive = f64::powf(sigma_r, self.m);
-        -self.prefac * (self.n * repulsive - self.m * attractive) / r
+        -self.prefactor * (self.n * repulsive - self.m * attractive) / r
     }
 }
 
@@ -57,7 +57,7 @@ impl PairPotential for Mie {
         let m_3 = self.m - 3.0;
         let repulsive = f64::powf(sigma_rc, n_3);
         let attractive = f64::powf(sigma_rc, m_3);
-        -self.prefac * self.sigma.powi(3) * (repulsive / n_3 - attractive / m_3)
+        -self.prefactor * self.sigma.powi(3) * (repulsive / n_3 - attractive / m_3)
     }
 
     fn tail_virial(&self, cutoff: f64) -> f64 {
@@ -69,7 +69,7 @@ impl PairPotential for Mie {
         let m_3 = self.m - 3.0;
         let repulsive = f64::powf(sigma_rc, n_3);
         let attractive = f64::powf(sigma_rc, m_3);
-        -self.prefac * self.sigma.powi(3) * (repulsive * self.n / n_3 - attractive * self.m / m_3)
+        -self.prefactor * self.sigma.powi(3) * (repulsive * self.n / n_3 - attractive * self.m / m_3)
     }
 }
 

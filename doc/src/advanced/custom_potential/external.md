@@ -3,14 +3,14 @@
 We start by creating a new package using `cargo`:
 
 ```
-cargo new mie_potential
-cd mie_potential
+cargo new lumol_tutorial_potential
+cd lumol_tutorial_potential
 ```
 
 Open `Cargo.toml` and add the lines
 ```toml
 [dependencies]
-lumol-core = {git = "https://github.com/lumol-org/lumol"}
+lumol = {git = "https://github.com/lumol-org/lumol"}
 ```
 
 to add `Lumol` as a dependency to the package.
@@ -53,7 +53,7 @@ pub struct Mie {
     /// Exponent of attractive contribution
     m: f64,
     /// Energetic prefactor computed from the exponents and epsilon
-    prefac: f64,
+    prefactor: f64,
 }
 ```
 
@@ -62,7 +62,7 @@ In the first two lines we define our imports from `Lumol`, following with our st
 Next, we implement a constructor function. That's usefull in this case since we want to compute the prefactor
 of the potential once before we start our simulation.
 
-$\text{prefac} = \frac{n}{n-m} \left(\frac{n}{m}\right)^{m/(n-m)}\epsilon$
+$\text{prefactor} = \frac{n}{n-m} \left(\frac{n}{m}\right)^{m/(n-m)}\epsilon$
 
 In Rust we typically use `new` for the constructors' name.
 
@@ -72,13 +72,13 @@ impl Mie {
         if m >= n {
             panic!("The repulsive exponent n has to be larger than the attractive exponent m")
         };
-        let prefac = n / (n - m) * (n / m).powf(m / (n - m)) * epsilon;
+        let prefactor = n / (n - m) * (n / m).powf(m / (n - m)) * epsilon;
         Mie {
             sigma: sigma,
             epsilon: epsilon,
             n: n,
             m: m,
-            prefac: prefac,
+            prefactor: prefactor,
         }
     }
 }
@@ -98,14 +98,14 @@ impl Potential for Mie {
         let sigma_r = self.sigma / r;
         let repulsive = f64::powf(sigma_r, self.n);
         let attractive = f64::powf(sigma_r, self.m);
-        self.prefac * (repulsive - attractive)
+        self.prefactor * (repulsive - attractive)
     }
 
     fn force(&self, r: f64) -> f64 {
         let sigma_r = self.sigma / r;
         let repulsive = f64::powf(sigma_r, self.n);
         let attractive = f64::powf(sigma_r, self.m);
-        -self.prefac * (self.n * repulsive - self.m * attractive) / r
+        -self.prefactor * (self.n * repulsive - self.m * attractive) / r
     }
 }
 ```
@@ -132,7 +132,7 @@ pub trait PairPotential: Potential + BoxClonePair {
 }
 ```
 
-First, we can see that `PairPotential` enforces the implementation of `Potential` which is denoted by `pub trait PairPotential: Potential ...` (we ignore `BoxClonePair` for now).
+First, we can see that `PairPotential` enforces the implementation of `Potential` which is denoted by `pub trait PairPotential: Potential ...` (we ignore `BoxClonePair` for now, as it is automatically implemented for us if we implement `PairPotential` manually).
 That makes sense from a didactive point of view since we said that `PairPotential` is a "specialization" of `Potential`
 and furthermore, we can make use of all functions that we had to implement for `Potential`.
 
@@ -165,7 +165,7 @@ impl PairPotential for Mie {
         let m_3 = self.m - 3.0;
         let repulsive = f64::powf(sigma_rc, n_3);
         let attractive = f64::powf(sigma_rc, m_3);
-        -self.prefac * self.sigma.powi(3) * (repulsive / n_3 - attractive / m_3)
+        -self.prefactor * self.sigma.powi(3) * (repulsive / n_3 - attractive / m_3)
     }
 
     fn tail_virial(&self, cutoff: f64) -> f64 {
@@ -177,7 +177,7 @@ impl PairPotential for Mie {
         let m_3 = self.m - 3.0;
         let repulsive = f64::powf(sigma_rc, n_3);
         let attractive = f64::powf(sigma_rc, m_3);
-        -self.prefac * self.sigma.powi(3) * (repulsive * self.n / n_3 - attractive * self.m / m_3)
+        -self.prefactor * self.sigma.powi(3) * (repulsive * self.n / n_3 - attractive * self.m / m_3)
     }
 }
 ```
@@ -186,14 +186,13 @@ Note that we cannot correct every kind of energy function.
 In fact, the potential has to be a *short ranged* potential.
 For our Mie potential, both the exponents have to be larger than 3.0 else our potential will be *long ranged* and
 the integral that has to be solved to compute the tail corrections diverges.
-For now, we will simply return zero in this case.
+We return zero in that case.
 
 ## Running a small simulation using the new potential
 
 That concludes the first part.
 To test your new and shiny potential, you can run a small simulation.
-You'll find a minimal Monte Carlo simulation example in the `lumol/tutorials/mie_potential` directory where you will also find the `src/lib.rs` file we created in this tutorial.
-To test your own implementation, simply copy `src/main.rs` into your `src` directory.
+You'll find a minimal Monte Carlo simulation example in the `lumol/tutorials/lumol_tutorial_potential` directory where you will also find the `src/lib.rs` file we created in this tutorial.
 You can then run the simulation via
 ```
 cargo run --release
