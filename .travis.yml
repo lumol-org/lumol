@@ -21,6 +21,7 @@ install:
     - source scripts/ci/setup-travis.sh
     - ./scripts/ci/install-travis.sh
     # Clean any cached test executable
+    - mkdir -p target/debug/deps/  # just in case
     - find target/debug/deps/ ! -name "lib*" -type f -delete
 script:
     - cd $TRAVIS_BUILD_DIR
