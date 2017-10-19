@@ -12,6 +12,7 @@ members = [
 	"src/core",
     "src/input"
 ]
+exclude = ["tutorials"]
 
 [[bin]]
 name = "lumol"

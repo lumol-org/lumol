@@ -29,7 +29,9 @@
     - [Logging configuration](input/log.md)
 
 - [Advanced tutorials]()
-    - [Adding potentials]()
+    - [Adding potentials](advanced/custom_potential/intro.md)
+        - [Part I: Separate package](advanced/custom_potential/external.md)
+        - [Part II: Lumol core](advanced/custom_potential/core.md)
     - [Adding outputs]()
     - [Extending Molecular dynamics]()
     - [Extending Monte Carlo]()

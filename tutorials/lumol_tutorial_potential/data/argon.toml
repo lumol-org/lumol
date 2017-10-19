@@ -1,0 +1,26 @@
+[input]
+version = 1
+
+[[systems]]
+file = "argon.xyz"
+cell = 31.0
+
+[systems.potentials.global]
+cutoff = "14.0 A"
+tail_correction = true
+
+[[simulations]]
+nsteps = 1_00000
+outputs = [
+    {type = "Energy", file = "mie_energy.dat", frequency = 500},
+    {type = "Properties", file = "mie_prp.dat", frequency = 500}
+]
+
+[simulations.propagator]
+type = "MonteCarlo"
+temperature = "217.0 K"
+update_frequency = 500
+
+moves = [
+    {type = "Translate", delta = "10 A", frequency = 500, target_acceptance = 0.5},
+]

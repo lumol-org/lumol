@@ -31,6 +31,8 @@ script:
     - cargo test -p lumol-input
     # Check that benchmarks still compile
     - cargo bench --no-run
+    # Check if tutorials compile
+    - ./scripts/ci/compile-tutorials.py
     # Misc style checking
     - ./scripts/ci/check-whitespaces.py
     # Generate and check doc
