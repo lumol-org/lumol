@@ -55,9 +55,8 @@ deploy:
   email: lumol-bot@lumol.org
   name: Lumol Bot
   on:
-    os: linux
-    rust: stable
     branch: master
+    condition: "${TRAVIS_OS_NAME} == linux && ${TRAVIS_RUST_VERSION} == stable"
 
 cache:
   cargo: true
