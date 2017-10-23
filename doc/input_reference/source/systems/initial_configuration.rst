@@ -10,17 +10,18 @@ file using the ``file`` key:
     file = "data/water.pdb"
 
 Lumol will read the file to build the system accordingly. If the file is
-a trajectory containing multiple steps, the first frame is used. Under
+a trajectory containing multiple steps, only the first frame is used. Under
 the hood, we utilize `chemfiles <http://chemfiles.github.io/>`__ to
-parse the data. You can read about available file formats in the
-`chemfiles documentation <http://chemfiles.readthedocs.io/en/latest/formats.html>`__.
+parse the data and thus we can read in plenty different file formats.
+All possible formats are listed in the `chemfiles documentation <http://chemfiles.readthedocs.io/en/latest/formats.html>`__.
 
 
 Initializing velocities
 -----------------------
 
 For molecular dynamics (MD) simulations you need initial positions and
-initial velocities of all atoms in your system. Use the ``velocities``
+initial velocities of all atoms in your system. If no velocities are present
+within the read in configuration you can use the ``velocities``
 key to initialize the velocities in the following way:
 
 .. code::

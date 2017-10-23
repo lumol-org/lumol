@@ -1,8 +1,8 @@
 Units
 =====
 
-Lumol features a set of internal units and offers facilities to convert
-from and to this set of internal units.
+Internally Lumol uses a set of internal units.
+For convenience we offer facilities to convert from and to this set of internal units.
 
 The internal unit system is the following:
 
@@ -20,8 +20,8 @@ Any other internal unit is derived from this set:
 - The internal unit of pressure is ``u A^-1 fs^-2``;
 - *etc.*
 
-Lumol knows how to convert any value in these internal unit to others
-units. The accepted units are:
+Lumol provides convertion of any value in these internal unit to others
+units. The following table lists available units that can be converted:
 
 +------------+-----------------------------+
 | Quantity   | Accepted units              |
@@ -46,6 +46,6 @@ units. The accepted units are:
 In the input files, the units are specified as strings, and must be
 spelled exactly as in the above table. They can be combined with other
 units using ``*`` for multiplication, ``/`` for division, and ``^`` for
-exponents. Parentheses can be used to group sub-units together. Some
+exponentiation. Parentheses can be used to group sub-units together. Some
 valid unit strings are ``kcal/mol``, ``(J / mol) * A^-2``, and
 ``m*fs^-1``.
