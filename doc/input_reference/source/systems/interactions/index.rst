@@ -31,6 +31,7 @@ partial charges of the atoms.
    :maxdepth: 2
    :caption: Contents:
 
+   organisation
    non_bonded
    electrostatic
    potentials

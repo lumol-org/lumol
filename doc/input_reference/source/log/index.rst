@@ -1,21 +1,23 @@
-Logging configuration
-=====================
+*********************
+The ``[log]`` section
+*********************
 
 Lumol sends various logging messages while running a simulation. Some of
-them are informational messages
-(``charge was set to 1.2 for 132 particles``), others are warnings or
-error message (``infinite energy!``) and some are for debug purposes.
+them are informational messages (``charge was set to 1.2 for 132 particles``),
+others are warnings or error message (``infinite energy!``) and some are for debugging purposes.
 
-By default, lumol prints all the informational, warning and error
+By default, Lumol prints all the informational, warning and error
 messages to the standard terminal output. This allows to run the code
-and redirect the output to a specific file with the usual UNIX way:
+and redirect the output to a specific file in the usual UNIX way:
 ``lumol input.toml > simulation.log``.
 
-Lumol also offers finer-grain configuration for logging output, for
-example only printing errors and warnings, and redirecting everything
+Lumol also offers more detailed configuration for logging output, for
+example if you only want to print errors and warnings, and redirect everything
 else to a file. This configuration happens in the ``[log]`` section of
 the input file. This section can contain either a single output
 ``target``, or multiple ``targets``.
+
+**Example**
 
 .. code::
 
@@ -38,13 +40,14 @@ the input file. This section can contain either a single output
     target = "<stdout>"
     level = "warning"
 
-In the multiple targets case, the ``targets`` key must be an array of
-tables, containing individual target configuration with the same syntax
-as a single target.
+For multiple targets, the ``targets`` key must be an array of
+tables (either indicated by two brackets, i.e. ``[[log.targets]]`` or by defining
+the table ``targets = [{target = ...}, {target = ...}, ...]``),
+containing individual target configuration with the same syntax as a single target.
 
 The only required key is the ``target`` key, identifying where to write
-the messages. It is interpreted as the path to a file, expect for the
-two special values of ``<stdout>`` and ``<stderr>`` that are used to
+the messages. It is interpreted as  path to a file, except for the
+two special cases of ``<stdout>`` and ``<stderr>`` that are used to
 write messages to the standard terminal output stream or error stream
 respectively.
 
@@ -55,7 +58,7 @@ respectively.
     target = "<stderr>"
 
 Optional keys are ``level`` and ``append``. The ``level`` key controls
-which messages are sent to this output, and default to ``info``.
+which messages are sent to the specified output and defaults to ``info``.
 Available levels are the following:
 
 -  ``error``: only error messages;
@@ -65,10 +68,10 @@ Available levels are the following:
 The ``debug`` (debug messages) and ``trace`` (very verbose debug) are
 also available, but mainly intended for developers.
 
-The ``append`` key is a Boolean value (``true`` or ``false``) only used
-for files, and controlling whether to overwrite the file or append new
-messages at the end of the file. It defaults to ``false``, meaning that
-the file is overwritten by every simulation run.
+The ``append`` key is a boolean value (``true`` or ``false``) only used
+for files, and controls whether to overwrite the file or append new
+messages at the end of an existing file. It defaults to ``false``,
+meaning that the file is overwritten by every simulation run.
 
 .. code::
 
@@ -83,4 +86,3 @@ the file is overwritten by every simulation run.
         # runs.
         {target = "debug.log", level = "debug", append = true},
     ]
-

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-# input documentation build configuration file, created by
+# Lumol documentation build configuration file, created by
 # sphinx-quickstart on Thu Oct 19 16:57:49 2017.
 #
 # This file is execfile()d with the current directory set to its
@@ -49,7 +49,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = 'input'
+project = 'Lumol'
 copyright = '2017, Guillaume Fraux'
 author = 'Guillaume Fraux'
 
@@ -107,7 +107,7 @@ html_sidebars = {'**': ['globaltoc.html',
 # -- Options for HTMLHelp output ------------------------------------------
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'inputdoc'
+htmlhelp_basename = 'Lumoldoc'
 
 
 # -- Options for LaTeX output ---------------------------------------------
@@ -134,7 +134,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'input.tex', 'lumol\\_input\\_reference Documentation',
+    (master_doc, 'Lumol.tex', 'Lumol input reference documentation',
      'Guillaume Fraux', 'manual'),
 ]
 
@@ -144,7 +144,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'input', 'input Documentation',
+    (master_doc, 'Lumol', 'Lumol Documentation',
      [author], 1)
 ]
 
@@ -155,8 +155,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'input', 'input Documentation',
-     author, 'input', 'One line description of project.',
+    (master_doc, 'Lumol', 'Lumol Documentation',
+     author, 'Lumol', 'One line description of project.',
      'Miscellaneous'),
 ]
 
