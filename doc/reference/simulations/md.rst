@@ -1,3 +1,5 @@
+.. _molecular-dynamics:
+
 Molecular dynamics
 ==================
 
@@ -26,17 +28,15 @@ Integrators
 Integrators are algorithms that propagate the forces acting on the particles to
 compute their motions. The simplest ones performs an NVE integration, but some
 integrators allow to work in different ensembles.  All NVE integrators can be
-turned into NVT integrators by adding a `thermostat
-<input/md.html#thermostats>`__ to the simulation. In the input, if the
-``integrator`` key is absent, the default integrator is a Velocity-Verlet
-integrator.
+turned into NVT integrators by adding a :ref:`thermostat <md-thermostat>` to the
+simulation. In the input, if the ``integrator`` key is absent, the default
+integrator is a Velocity-Verlet integrator.
 
 Velocity-Verlet integrator
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Velocity-Verlet is the most common NVE integrator for molecular dynamics. See
-this `page <https://en.wikipedia.org/wiki/Verlet_integration#Velocity_Verlet>`__
-for more information about the algorithm.
+this `page <velocity-verlet_>`_ for more information about the algorithm.
 
 In the input, it can be specified by using the ``VelocityVerlet`` integrator
 type:
@@ -48,13 +48,14 @@ type:
     timestep = "1 fs"
     integrator = {type = "VelocityVerlet"}
 
+.. _velocity-verlet: https://en.wikipedia.org/wiki/Verlet_integration#Velocity_Verlet
+
 Verlet integrator
 ~~~~~~~~~~~~~~~~~
 
-Verlet algorithm is another simple NVE integrator. See this `page
-<https://en.wikipedia.org/wiki/Verlet_integration#Basic_St.C3.B6rmer.E2.80.93Verlet>`__
-for more information. Most of the time, the Velocity-Verlet algorithm is
-preferable, since it produces more precise velocities.
+Verlet algorithm is another simple NVE integrator. See this `page <verlet_>`_ for
+more information. Most of the time, the Velocity-Verlet algorithm is preferable,
+since it produces more precise velocities.
 
 In the input, it can be specified by using the ``Verlet`` integrator type:
 
@@ -65,12 +66,13 @@ In the input, it can be specified by using the ``Verlet`` integrator type:
     timestep = "1 fs"
     integrator = {type = "Verlet"}
 
+.. _verlet: https://en.wikipedia.org/wiki/Verlet_integration#Basic_St.C3.B6rmer.E2.80.93Verlet
+
 Leap-Frog integrator
 ~~~~~~~~~~~~~~~~~~~~
 
-The Leap-Frog algorithm is a third NVE integrator. See this `page
-<https://en.wikipedia.org/wiki/Leapfrog_integration>`__ for details about the
-algorithm.
+The Leap-Frog algorithm is a third NVE integrator. See this `page <leap-frog_>`_
+for details about the algorithm.
 
 In the input, it can be specified by using the ``LeapFrog`` integrator type:
 
@@ -81,14 +83,15 @@ In the input, it can be specified by using the ``LeapFrog`` integrator type:
     timestep = "1 fs"
     integrator = {type = "LeapFrog"}
 
+.. _leap-frog: https://en.wikipedia.org/wiki/Leapfrog_integration
+
 Berendsen barostat
 ~~~~~~~~~~~~~~~~~~
 
 The Berendsen barostat integrator algorithm use the Berendsen barostat with a
 Velocity-Verlet integrator to achieve NPT integration. It must be use together
-with a thermostat, preferentially the Berendsen thermostat.  See this `page
-<http://www.sklogwiki.org/SklogWiki/index.php/Berendsen_barostat>`__ for more
-information about the algorithm.
+with a thermostat, preferentially the Berendsen thermostat. See this `page
+<berendsen-barostat_>`_ for more information about the algorithm.
 
 This algorithm exists in two versions: an isotropic one and an anisotropic one.
 The isotropic version of the barostat scale all the cell parameter by the same
@@ -127,6 +130,8 @@ In both cases, the barostat time step is expressed in fraction of the main
 integration time step. Using a main time step of 2 fs and a barostat time step
 of 1000 will yield an effective relaxation time of 2000 fs or 2 ps.
 
+.. _md-thermostat:
+
 Thermostats
 -----------
 
@@ -136,8 +141,7 @@ given value. They are specified in the input by the ``thermostat`` key.
 Berendsen thermostat
 ~~~~~~~~~~~~~~~~~~~~
 
-The Berendsen thermostat is described `here
-<http://www.sklogwiki.org/SklogWiki/index.php/Berendsen_thermostat>`__, and
+The Berendsen thermostat is described `here <berendsen-thermostat_>`_, and
 provide a simple exponential relaxation of the temperature to a target value. In
 the input, it is declared with the ``Berendsen`` thermostat type, a target
 ``temperature`` value, and a ``timestep``.
@@ -195,3 +199,8 @@ defaults to 1).
 -  The ``Rewrap`` control rewraps all molecules' centers of mass to lie within
    the unit cell. Individual atoms in a molecule may still lie outside of the
    cell.
+
+
+
+.. _berendsen-barostat: http://www.sklogwiki.org/SklogWiki/index.php/Berendsen_barostat
+.. _berendsen-thermostat: http://www.sklogwiki.org/SklogWiki/index.php/Berendsen_thermostat
