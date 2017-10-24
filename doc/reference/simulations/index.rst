@@ -2,9 +2,9 @@
 The ``[simulations]`` section
 *****************************
 
-The way to propagate the system is defined in the ``[[simulations]]``
-section of the input file. This section always contains at least two
-keys: ``nsteps`` specify the number of steps in the simulation, and the
+The way to propagate the system is defined in the ``[[simulations]]`` section of
+the input file. This section always contains at least two keys: ``nsteps``
+specify the number of steps in the simulation, and the
 ``simulations.propagator`` table specify which propagator to use.
 
 Here is an example of NPT molecular dynamics:
