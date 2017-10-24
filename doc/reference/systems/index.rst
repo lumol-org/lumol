@@ -17,7 +17,5 @@ All these details are listed after the ``[[systems]]`` keyword.
    :maxdepth: 2
    :caption: Contents:
 
-   initial_configuration
-   cell
+   configuration
    interactions/index
-
