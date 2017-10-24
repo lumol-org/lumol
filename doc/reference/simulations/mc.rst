@@ -1,3 +1,5 @@
+.. _monte-carlo:
+
 Monte Carlo
 ===========
 
@@ -27,9 +29,10 @@ multiple moves so that the ensemble of your choice is sampled.
 
 Here is a list of all moves that are currently implemented in Lumol:
 
-* `Translate <input/mc.html#translation>`__: Change the center of mass position of a molecule.
-* `Rotate <input/mc.html#rotation>`__: Perform a rotation of a molecule about its center of mass.
-* `Resize <input/mc.html#resize>`__: Change the size of the simulation cell.
+* :ref:`mcmove-translate`: Change the center of mass position of a molecule.
+* :ref:`mcmove-rotate`: Perform a rotation of a molecule about its center of
+  mass.
+* :ref:`mcmove-resize`: Change the size of the simulation cell.
 
 Currently, all Monte Carlo simulations are carried out using Metropolis
 acceptance criteria.
@@ -79,7 +82,9 @@ given examples.
 
 Some moves can be specified to act on a single molecule or particle type. These
 moves accept a ``molecule`` key whose value is a path to a configuration file
-that can be read by `chemfiles <http://chemfiles.org/>`__.
+that can be read by `chemfiles`_.
+
+.. _chemfiles: http://chemfiles.org/
 
 You can add the same move multiple times. For example, you can assign different
 amplitudes for different species in a mixture to make sampling more efficient.
@@ -133,8 +138,10 @@ use them for a production run, where no further adjustments are made.
         {type = "Translate", delta = "0.05 A", molecule = "protein.pdb", frequency = 1},
     ]
 
-Translation
-~~~~~~~~~~~
+.. _mcmove-translate:
+
+Translate
+~~~~~~~~~
 
 The ``Translate`` move changes the position of a single, randomly selected
 molecule by adding a random displacement vector to its center of mass.
@@ -175,8 +182,10 @@ contains the value with unit of distance.
         {type = "Translate", delta = "10 A", molecule = "He.xyz"},
     ]
 
-Rotation
-~~~~~~~~
+.. _mcmove-rotate:
+
+Rotate
+~~~~~~
 
 The ``Rotate`` move randomly rotates a single molecule around its center of
 mass.
@@ -210,6 +219,8 @@ either radians or degrees (``rad`` or ``deg``).
     moves = [
         {type = "Rotate", delta = "3 deg", frequency = 2},
     ]
+
+.. _mcmove-resize:
 
 Resize
 ~~~~~~

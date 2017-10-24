@@ -39,11 +39,13 @@ associated quantities.  The available outputs are the following:
    system;
 -  The ``Trajectory`` output should be used to write a trajectory. The format of
    the trajectory will be guessed from the ``file`` extension.  Supported
-   formats are documented in `chemfiles
-   <http://chemfiles.github.io/chemfiles/>`__ documentation.
+   formats are documented in `chemfiles`_ documentation.
 -  The ``Custom`` output is the most powerful one, taking an user-provided
    template string and using it to output data. The template should be given as
    a string with the ``template`` key in the TOML input file.
+
+
+.. _chemfiles: http://chemfiles.org/
 
 Here are some examples of custom output templates:
 

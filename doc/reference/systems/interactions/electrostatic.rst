@@ -37,10 +37,10 @@ Ewald solver
 
 Ewald's idea to compute electrostatic interactions is to split the interaction
 into a short-range term which can be handled with a cutoff scheme; and a long
-range term that can be computed using a `Fourier transform
-<https://en.wikipedia.org/wiki/Fourier_transform>`__. For more information about
-the Ewald summation and its variants, see `[Frenkel2002]
-<http://dx.doi.org/10.1063/1.881812>`__.
+range term that can be computed using a Fourier transform. For more information about
+the Ewald summation and its variants, see `[Frenkel2002]`_.
+
+.. _[Frenkel2002]: http://dx.doi.org/10.1063/1.881812
 
 The ``[coulomb]`` section for using an Ewald solver looks like this in the input
 file:
@@ -61,10 +61,11 @@ Wolf solver
 -----------
 
 The Wolf summation method is another method for computing electrostatic
-interactions presented in `[Wolf1999] <http://dx.doi.org/10.1063/1.478738>`__.
-This method replaces the expensive computation in reciprocal space from Ewald by
-a corrective term, and can be expressed as a converging sum over the charged
-pairs in the system.
+interactions presented in `[Wolf1999]`_.  This method replaces the expensive
+computation in reciprocal space from Ewald by a corrective term, and can be
+expressed as a converging sum over the charged pairs in the system.
+
+.. _[Wolf1999]: http://dx.doi.org/10.1063/1.478738
 
 It is accessible using the ``wolf`` keyword in the input files:
 

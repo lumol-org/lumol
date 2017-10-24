@@ -22,10 +22,10 @@ Here is an example of NPT molecular dynamics:
 
 Three propagators are currently implemented:
 
-- A `minimization <md.html>`__ propagator, to minimize energy of a system before
+- A :ref:`minimization` propagator, to minimize energy of a system before
   running another propagator;
-- A `molecular dynamics <md.html>`__ propagator;
-- A `Monte Carlo <mc.html>`__ propagator;
+- A :ref:`molecular-dynamics` propagator;
+- A :ref:`monte-carlo` propagator;
 
 
 .. toctree::
