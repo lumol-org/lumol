@@ -40,7 +40,10 @@ are based on the positions (and the underlying interactions) only.
 Setting the simulation cell
 ---------------------------
 
-To set up the (initial) simulation cell you use the `cell` key.
+To set up the (initial) simulation cell you can use the `cell` key. This key is
+only needed if the configuration file does not contain this information (for
+example XYZ file), or if you want to override the cell from the file.
+
 We offer three different ways to set the cell:
 
 -  ``cell = <length>`` creates a cubic unit cell with the given side
