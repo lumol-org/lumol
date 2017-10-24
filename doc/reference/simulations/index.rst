@@ -20,14 +20,18 @@ Here is an example of NPT molecular dynamics:
     integrator = {type = "BerendsenBarostat", pressure = "100 bar", timestep = 1000}
     thermostat = {type = "Berendsen", temperature = "400 K", timestep = 100}
 
-Two propagators are currently implemented: one for `molecular
-dynamics <md.html>`__ and one for `Monte Carlo <mc.html>`__.
+Three propagators are currently implemented:
+
+- A `minimization <md.html>`__ propagator, to minimize energy of a system before
+  running another propagator;
+- A `molecular dynamics <md.html>`__ propagator;
+- A `Monte Carlo <mc.html>`__ propagator;
 
 
 .. toctree::
    :maxdepth: 2
 
    output
-   mc
-   md
    min
+   md
+   mc
