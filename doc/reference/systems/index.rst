@@ -13,9 +13,7 @@ information about:
 All these details are listed after the ``[[systems]]`` keyword.
 
 .. toctree::
-   :hidden:
    :maxdepth: 2
-   :caption: Contents:
 
    configuration
    interactions/index

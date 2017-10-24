@@ -25,9 +25,7 @@ dynamics <md.html>`__ and one for `Monte Carlo <mc.html>`__.
 
 
 .. toctree::
-   :hidden:
    :maxdepth: 2
-   :caption: Contents:
 
    output
    mc

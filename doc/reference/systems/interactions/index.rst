@@ -27,9 +27,7 @@ electrostatic interactions and the ``charges`` section defines the
 partial charges of the atoms.
 
 .. toctree::
-   :hidden:
    :maxdepth: 2
-   :caption: Contents:
 
    organisation
    non_bonded
