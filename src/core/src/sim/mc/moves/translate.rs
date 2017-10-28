@@ -73,10 +73,8 @@ impl MCMove for Translate {
         self.maximum_cutoff = system.maximum_cutoff();
         if let Some(max) = self.maximum_cutoff {
             if self.delta > max {
-                warn!(
-                    "Changing the maximal displacement for Translate, \
-                    because the interactions cutoff is too low."
-                );
+                warn!("Changing the maximal displacement for Translate, because the interactions \
+                       cutoff is too low.");
                 self.delta = max
             }
         }
@@ -91,11 +89,9 @@ impl MCMove for Translate {
         }
 
         // Create random displacement vector.
-        let delta = Vector3D::new(
-            self.range.sample(rng),
-            self.range.sample(rng),
-            self.range.sample(rng)
-        );
+        let delta = Vector3D::new(self.range.sample(rng),
+                                  self.range.sample(rng),
+                                  self.range.sample(rng));
 
         // Generate displaced coordinates
         // Note that this may move a particles' center-of-mass (com) out of
@@ -137,11 +133,9 @@ impl MCMove for Translate {
     fn update_amplitude(&mut self, scaling_factor: Option<f64>) {
         if let Some(s) = scaling_factor {
             if let Some(max) = self.maximum_cutoff {
-                if (self.delta * s) < max {
-                    warn_once!(
-                        "Tried to increase the maximum amplitude for \
-                        translations to more than the maximum cutoff -- ignoring."
-                    );
+                if (self.delta * s) > max {
+                    warn_once!("Tried to increase the maximum amplitude for translations to more \
+                                than the maximum cutoff -- ignoring.");
                     return;
                 }
             }
