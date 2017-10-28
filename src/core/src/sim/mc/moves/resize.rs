@@ -72,11 +72,9 @@ impl MCMove for Resize {
         // Abort simulation when box gets smaller than twice the cutoff radius.
         if let Some(maximum_cutoff) = self.maximum_cutoff {
             if system.cell.lengths().iter().any(|&d| 0.5 * d <= maximum_cutoff) {
-                fatal_error!(
-                    "Tried to decrease the cell size but new size
-                    conflicts with the cut off radius. \
-                    Increase the number of particles to get rid of this problem."
-                );
+                fatal_error!("Tried to decrease the cell size but new size \
+                              conflicts with the cut off radius. Increase the number of \
+                              particles to get rid of this problem.");
             }
         };
 

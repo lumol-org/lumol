@@ -42,7 +42,8 @@ impl MonteCarlo {
     /// Create a Monte Carlo propagator at temperature `T`, using the `rng`
     /// random number generator.
     pub fn from_rng(temperature: f64, rng: Box<rand::Rng>) -> MonteCarlo {
-        assert!(temperature >= 0.0, "Monte Carlo temperature must be positive");
+        assert!(temperature >= 0.0,
+                "Monte Carlo temperature must be positive");
         MonteCarlo {
             beta: 1.0 / (K_BOLTZMANN * temperature),
             moves: Vec::new(),
@@ -63,10 +64,8 @@ impl MonteCarlo {
     /// If called after a simulation run.
     pub fn add(&mut self, mcmove: Box<MCMove>, frequency: f64) {
         if self.initialized {
-            fatal_error!(
-                "Monte Carlo simulation has already been initialized, \
-                we can not add new moves."
-            );
+            fatal_error!("Monte Carlo simulation has already been initialized, we can not add \
+                          new moves.");
         }
         self.moves.push((mcmove, MoveCounter::new(None)));
         self.frequencies.push(frequency);
@@ -80,12 +79,13 @@ impl MonteCarlo {
     ///
     /// If called after a simulation run.
     /// If `target_acceptance` is either negative or larger than one.
-    pub fn add_move_with_acceptance(&mut self, mcmove: Box<MCMove>, frequency: f64, target_acceptance: f64) {
+    pub fn add_move_with_acceptance(&mut self,
+                                    mcmove: Box<MCMove>,
+                                    frequency: f64,
+                                    target_acceptance: f64) {
         if self.initialized {
-            fatal_error!(
-                "Monte Carlo simulation has already been initialized, \
-                we can not add new moves."
-            );
+            fatal_error!("Monte Carlo simulation has already been initialized, we can not add \
+                          new moves.");
         }
         self.moves.push((mcmove, MoveCounter::new(Some(target_acceptance))));
         self.frequencies.push(frequency);
@@ -110,10 +110,7 @@ impl MonteCarlo {
     fn normalize_frequencies(&mut self) {
         assert_eq!(self.frequencies.len(), self.moves.len());
         if self.frequencies.is_empty() {
-            warn!(
-                "No move in the Monte Carlo simulation, \
-                did you forget to specify them?"
-            );
+            warn!("No move in the Monte Carlo simulation, did you forget to specify them?");
             return;
         }
 
@@ -154,10 +151,11 @@ impl Propagator for MonteCarlo {
         let mcmove = {
             let probability = self.rng.next_f64();
             // Get the index of the first move with frequency >= probability.
-            let (i, _) = self.frequencies.iter()
-                                         .enumerate()
-                                         .find(|&(_, f)| probability <= *f)
-                                         .expect("Could not find a move in MonteCarlo moves list");
+            let (i, _) = self.frequencies
+                .iter()
+                .enumerate()
+                .find(|&(_, f)| probability <= *f)
+                .expect("Could not find a move in MonteCarlo moves list");
             &mut self.moves[i]
         };
         trace!("Selected move is '{}'", mcmove.0.describe());
@@ -166,10 +164,6 @@ impl Propagator for MonteCarlo {
             trace!("    --> Can not perform the move");
             return;
         }
-
-        // attempt the move: increase counter
-        mcmove.1.ncalled += 1;
-        mcmove.1.nattempted += 1;
 
         // compute cost
         let cost = mcmove.0.cost(system, self.beta, &mut self.cache);
@@ -182,19 +176,17 @@ impl Propagator for MonteCarlo {
             trace!("    --> Move was accepted");
             mcmove.0.apply(system);
             self.cache.update(system);
-            mcmove.1.naccepted += 1;
+            mcmove.1.accept();
         } else {
             trace!("    --> Move was rejected");
             mcmove.0.restore(system);
+            mcmove.1.reject();
         }
 
         // Do the adjustments for the selected move as needed
         if mcmove.1.nattempted == self.update_frequency {
             mcmove.0.update_amplitude(mcmove.1.compute_scaling_factor());
-            // Set `nattempted` and `naccepted` to zero.
-            // This way, only the running acceptance since the last update is considered.
-            mcmove.1.naccepted = 0;
-            mcmove.1.nattempted = 0;
+            mcmove.1.update();
         }
     }
 
@@ -203,24 +195,55 @@ impl Propagator for MonteCarlo {
         info!("Monte Carlo simulation summary");
         for mc_move in &self.moves {
             info!("Statistics for move: {}", mc_move.0.describe());
-            info!("  Calls     : {}", mc_move.1.ncalled);
-            info!("  Acceptance: {} %", mc_move.1.naccepted as f64 /
-                mc_move.1.nattempted as f64 * 100.0);
+            mc_move.1.print_info();
         }
     }
 }
 
 /// This struct keeps track of the number of times a move was called
 /// and how often it was accepted.
+///
+/// These statistics can be used to compute a scaling factor to
+/// increase the efficiency of a move.
+///
+/// # Example
+///
+/// ```
+/// use lumol_core::sim::mc::MoveCounter;
+///
+/// // Create a new counter with a target acceptance of 0.5 (=50 %)
+/// let mut counter = MoveCounter::new(Some(0.5));
+/// // Move was attempted and accepted.
+/// counter.accept();
+/// // Increase scaling factor since 100 % of moves where accepted.
+/// assert_eq!(counter.compute_scaling_factor(), Some(1.2));
+/// // Update the counters to track acceptance for move with new
+/// // scaling factor.
+/// counter.update();
+/// // Directly calling for a new scaling factor returns
+/// // `None` since there were no attempts since last update.
+/// assert_eq!(counter.compute_scaling_factor(), None);
+/// // The overall acceptance is still 1.0 (=100 %).
+/// assert_eq!(counter.current_acceptance(), 1.0);
+///
+/// // The scaling factor is computed based on the acceptance
+/// // since the last update was performed, not the overall acceptance
+/// counter.reject();
+/// // The scaling factor will be smaller: the acceptance
+/// // since the last update is zero.
+/// assert_eq!(counter.compute_scaling_factor(), Some(0.8));
+/// assert_eq!(counter.current_acceptance(), 0.5);
+/// ```
 pub struct MoveCounter {
     /// Count the total number of times the move was called.
-    pub ncalled: u64,
+    pub nattempted_total: u64,
+    /// Count the total number of times the move was accepted.
+    pub naccepted_total: u64,
     /// Count the number of times the move was accepted since the last update.
     pub naccepted: u64,
     /// Count the number of times the move was called since the last update.
     pub nattempted: u64,
     /// The target fraction of accepted over attempted moves.
-    /// The acceptance can be used to increase the efficiency of a move set.
     target_acceptance: Option<f64>,
 }
 
@@ -228,8 +251,9 @@ impl MoveCounter {
     /// Create a new counter for the move, initializing all counts to zero and
     /// setting the `target_acceptance`.
     pub fn new(target_acceptance: Option<f64>) -> MoveCounter {
-        let mut counter = MoveCounter{
-            ncalled: 0,
+        let mut counter = MoveCounter {
+            nattempted_total: 0,
+            naccepted_total: 0,
             naccepted: 0,
             nattempted: 0,
             target_acceptance: None,
@@ -243,10 +267,47 @@ impl MoveCounter {
         // Check if `target_acceptance` has a valid value.
         if let Some(acceptance) = target_acceptance {
             assert!(0.0 < acceptance && acceptance < 1.0,
-                "The target acceptance ratio has to be a value between 0 and 1"
-            )
+                    "The target acceptance ratio has to be a value between 0 and 1")
         }
         self.target_acceptance = target_acceptance;
+    }
+
+    /// Increase counters for attempt.
+    #[inline]
+    pub fn reject(&mut self) {
+        self.nattempted_total += 1;
+        self.nattempted += 1;
+    }
+
+    /// Increase counters to track the number of times the move was accepted.
+    #[inline]
+    pub fn accept(&mut self) {
+        self.nattempted_total += 1;
+        self.nattempted += 1;
+        self.naccepted += 1;
+        self.naccepted_total += 1;
+    }
+
+    /// Reset counters for attempts and acceptance since the last update.
+    #[inline]
+    pub fn update(&mut self) {
+        self.naccepted = 0;
+        self.nattempted = 0;
+    }
+
+    /// Print the total number of attempts and the current acceptance to `info` log.
+    pub fn print_info(&self) {
+        info!("  Attempts  : {}", self.nattempted_total);
+        info!("  Acceptance: {:.4} %", self.current_acceptance() * 100.0);
+    }
+
+    /// Return fraction of total number of accepted over total number of attempted moves.
+    pub fn current_acceptance(&self) -> f64 {
+        if self.nattempted_total != 0 {
+            self.naccepted_total as f64 / self.nattempted_total as f64
+        } else {
+            0.0
+        }
     }
 
     /// Compute a scaling factor according to the desired acceptance.
@@ -254,7 +315,9 @@ impl MoveCounter {
         // Check if there exists an target_acceptance
         if let Some(ta) = self.target_acceptance {
             // Capture division by zero
-            if self.nattempted == 0 { return None };
+            if self.nattempted == 0 {
+                return None;
+            };
             let quotient = self.naccepted as f64 / self.nattempted as f64 / ta;
             // Limit the change
             match quotient {
@@ -277,13 +340,19 @@ mod tests {
 
     struct DummyMove;
     impl MCMove for DummyMove {
-        fn describe(&self) -> &str {"dummy"}
+        fn describe(&self) -> &str {
+            "dummy"
+        }
         fn setup(&mut self, _: &System) {}
-        fn prepare(&mut self, _: &mut System, _: &mut Box<Rng>) -> bool {true}
-        fn cost(&self, _: &System, _: f64, _: &mut EnergyCache) -> f64 {0.0}
+        fn prepare(&mut self, _: &mut System, _: &mut Box<Rng>) -> bool {
+            true
+        }
+        fn cost(&self, _: &System, _: f64, _: &mut EnergyCache) -> f64 {
+            0.0
+        }
         fn apply(&mut self, _: &mut System) {}
         fn restore(&mut self, _: &mut System) {}
-        fn update_amplitude(&mut self, _:Option<f64>) {}
+        fn update_amplitude(&mut self, _: Option<f64>) {}
     }
 
     #[test]
@@ -344,10 +413,12 @@ mod tests {
     fn scaling_factor() {
         let mut counter = MoveCounter::new(Some(0.5));
         assert_eq!(counter.compute_scaling_factor(), None);
-        counter.nattempted = 10;
-        counter.naccepted = 10;
+        counter.nattempted = 100;
+        counter.naccepted = 100;
         assert_eq!(counter.compute_scaling_factor(), Some(1.2));
         counter.naccepted = 0;
         assert_eq!(counter.compute_scaling_factor(), Some(0.8));
+        counter.naccepted = 55;
+        assert_eq!(counter.compute_scaling_factor(), Some(1.1));
     }
 }
