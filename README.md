@@ -43,12 +43,16 @@ building blocks.
 ### Documentation
 
 Documentation is hosted [here](http://lumol-org.github.io/lumol), and separated
-in two parts:
+in multiple parts:
 
-- The [user manual][user_manual] contains information on how to use Lumol as a
-  command line tool, and the complete input file documentation. Use this
-  documentation if you want to use Lumol as a simulation engine — without
-  writing code.
+- The [user manual][user_manual] contains information about the general
+  concepts of systems and simulations used in Lumol. Additionally, it has
+  tutorials on how to use and extend Lumol. Use this documentation if you want
+  to know basic concepts and how they are used in Lumol.
+- The [input reference][input_reference] contains information about - well,
+  the input file system of Lumol.
+  Use this document if you want to use Lumol as a command line tool
+  without writing code.
 - To use Lumol as a library inside your own code, we have a [developer
   documentation][devdoc], which contains documentation for all the library
   public functions, and examples for most of them.
@@ -101,4 +105,5 @@ without any additional terms or conditions.
 [issues]: https://github.com/lumol-org/lumol/issues/new
 [contributing]: Contributing.md
 [user_manual]: http://lumol-org.github.io/lumol/latest/book/
+[input_reference]: http://lumol-org.github.io/lumol/latest/book/
 [devdoc]: http://lumol-org.github.io/lumol/latest/lumol/
