@@ -36,10 +36,12 @@ fn main() {
 
     let start = Local::now();
     info!("Simulation started the {} at {}", start.format("%Y-%m-%d"), start.format("%H:%M:%S"));
+    info!(" "); // Skip a line
+
     config.simulation.run(&mut config.system, config.nsteps);
 
     let end = Local::now();
-    info!("Simulation ended the {} at {}", end.format("%Y-%m-%d"), end.format("%H:%M:%S"));
+    info!("\nSimulation ended the {} at {}", end.format("%Y-%m-%d"), end.format("%H:%M:%S"));
     let elapsed = end.signed_duration_since(start);
     info!("Simulation ran for {}", format_elapsed(elapsed));
 }
