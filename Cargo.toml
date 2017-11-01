@@ -25,6 +25,7 @@ lumol-input = {path = "src/input"}
 lumol-core = {path = "src/core"}
 log = "0.3"
 clap = "2"
+chrono = "0.4"
 
 [dev-dependencies]
 bencher = "0.1"
