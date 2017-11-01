@@ -4,7 +4,9 @@ Electrostatic interactions
 When some particles in a system are charged, they interact with a Coulomb
 potential:
 
-.. math::  V(x) = \frac{Z_i Z_j}{4 \pi \epsilon r_{ij}},
+.. math::
+
+    V(x) = \frac{Z_i Z_j}{4 \pi \epsilon r_{ij}},
 
 where :math:`Z_{i,j}` are the net charges of the particles, :math:`r_{ij}` the
 distance between them and :math:`\epsilon` the dielectric permittivity of the

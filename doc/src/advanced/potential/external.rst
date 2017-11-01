@@ -34,7 +34,9 @@ For the first part of the tutorial, the complete code will be written into the
 
 The energy function of the Mie potential reads
 
-:math:`u(x) = \frac{n}{n-m} \left(\frac{n}{m}\right)^{m/(n-m)}\epsilon \left[ \left( \frac{\sigma}{x}\right)^n - \left( \frac{\sigma}{x}\right)^m \right]`
+.. math::
+
+    u(x) = \frac{n}{n-m} \left(\frac{n}{m}\right)^{m/(n-m)}\epsilon \left[ \left( \frac{\sigma}{x}\right)^n - \left( \frac{\sigma}{x}\right)^m \right]
 
 where :math:`x` denotes the distance between two interaction sites :math:`i, j`,
 with :math:`x = x_{ij} = | \mathbf{r}_j - \mathbf{r}_i |`.  The parameters of
@@ -73,7 +75,9 @@ Next, we implement a constructor function. That's usefull in this case since we
 want to compute the prefactor of the potential once before we start our
 simulation.
 
-:math:`\text{prefactor} = \frac{n}{n-m} \left(\frac{n}{m}\right)^{m/(n-m)}\epsilon`
+.. math::
+
+    \text{prefactor} = \frac{n}{n-m} \left(\frac{n}{m}\right)^{m/(n-m)}\epsilon
 
 In Rust we typically use ``new`` for the constructors' name.
 
@@ -172,10 +176,11 @@ have to write an implementation for our potential.
 We will omit the derivation of the formulae for tail corrections here but they
 are computed by solving these equations
 
-energy: :math:`\int_{r_c}^{\infty} u(r) r^2 \mathrm{d}r`
+.. math::
+    \text{tail_energy} = \int_{r_c}^{\infty} u(r) r^2 \mathrm{d}r
 
-virial:
-:math:`\int_{r_c}^{\infty} \frac{\partial u(r)}{\partial r} r^3 \mathrm{d}r`
+.. math::
+    \text{tail_virial} = \int_{r_c}^{\infty} \frac{\partial u(r)}{\partial r} r^3 \mathrm{d}r
 
 The implementation looks like so
 
