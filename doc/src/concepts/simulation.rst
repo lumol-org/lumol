@@ -1,23 +1,15 @@
 Simulation
 **********
 
-The flow of a simulation in Lumol is represented below.
+A simulation in Lumol always contains the same steps:
 
-.. figure:: ../static/img/simulation.svg
-   :alt: Simulation flow graph
-
-First, it uses a system to setup any algorithms which uses system specific
-information.
-
-Then it propagate the system for one step, compute the physical properties as
-needed, and output these properties to the hard drive.
-
-If the simulation is finished (either the required number of steps has been
-done, or come convergence criterion is reached) it returns the updated system.
-If the simulation is not finished, the system is propagated for one more step.
-
-While propagating the simulation, Lumol uses two type of algorithms: propagators
-and output algorithms.
+1. Setup the system and initialize the algorithms using system specific
+   information;
+2. Propagate the system for one step using a Propagator;
+3. Compute the physical properties of the system and output them to a file;
+4. Check if the simulation is finished (either the required number of steps has
+   been done, or come convergence criterion is reached) it returns the updated
+   system. If the simulation is not finished, go back to (2)
 
 Propagators
 -----------

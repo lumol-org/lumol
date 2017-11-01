@@ -11,10 +11,22 @@ It contains four types of data:
 -  An **UnitCell**, *i.e.* the bounding box of the simulation.
 -  **Interactions**, sometimes called a force field.
 
-.. figure:: ../static/img/system.svg
-   :alt: System components
+Particles
+---------
 
-   System components
+Particles are the basic building blocks of a system. They can be atoms, or more
+complex: coarse-grained sites, dummy atoms, anisotropic particles ...
+
+They have a name, a mass, a position, a velocity, and most importantly a
+particle kind, defined by the name of the particle. All particles with the same
+name shares the same kind: all ``H`` are the same, as well as all ``C``, *etc.*
+
+Molecules
+---------
+
+When particles are bonded together, they form molecules. The Molecules contains
+the list of bonds for a given molecule, and make for the *molecular* part in
+*molecular simulation*.
 
 Unit cells
 ----------
