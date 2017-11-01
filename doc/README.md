@@ -26,10 +26,10 @@ pip install -r doc/requirements.txt
 
 ## User manual
 
-The user manual is located in the `src` directory.
+The user manual is located in the `book` directory.
 
 ```bash
-cd src
+cd book
 make html
 # HTML pages are in `build/html`
 ```
