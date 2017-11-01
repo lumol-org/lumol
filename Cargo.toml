@@ -6,6 +6,7 @@ documentation = "https://lumol-org.github.io/lumol"
 repository = "https://github.com/lumol-org/lumol"
 readme = "README.md"
 license = "BSD-3-Clause"
+build = "src/build.rs"
 
 [workspace]
 members = [

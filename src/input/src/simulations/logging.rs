@@ -123,8 +123,7 @@ impl Input {
             }
         } else {
             setup_default_logger();
-            info!("Logging to console as default.");
-            info!("You can configure logging in the [log] section of input file.");
+            info!("Printing logs to the console as default.");
         }
         Ok(())
     }

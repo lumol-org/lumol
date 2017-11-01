@@ -1,5 +1,6 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) Lumol's contributors — BSD license
+extern crate lumol;
 extern crate lumol_input;
 
 #[macro_use]
@@ -11,7 +12,7 @@ use clap::{App, ArgMatches};
 
 fn parse_args<'a>() -> ArgMatches<'a> {
     App::new("lumol")
-        .version(env!("CARGO_PKG_VERSION"))
+        .version(lumol::VERSION)
         .about("An extensible molecular simulation engine")
         .args_from_usage("<input.toml>      'Simulation input file'")
         .get_matches()
@@ -27,6 +28,8 @@ fn main() {
             std::process::exit(2)
         }
     };
+
+    info!("Running lumol version {}", lumol::VERSION);
 
     config.simulation.run(&mut config.system, config.nsteps);
 }
