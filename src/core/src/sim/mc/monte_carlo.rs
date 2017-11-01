@@ -184,7 +184,7 @@ impl Propagator for MonteCarlo {
         }
 
         // Do the adjustments for the selected move as needed
-        if mcmove.1.nattempted == self.update_frequency {
+        if mcmove.1.attempted == self.update_frequency {
             mcmove.0.update_amplitude(mcmove.1.compute_scaling_factor());
             mcmove.1.update();
         }
@@ -194,8 +194,12 @@ impl Propagator for MonteCarlo {
     fn finish(&mut self, _: &System) {
         info!("Monte Carlo simulation summary");
         for mc_move in &self.moves {
-            info!("Statistics for move: {}", mc_move.0.describe());
-            mc_move.1.print_info();
+            info!(
+                "    {}: {} attempts -- {:2.1} % accepted",
+                mc_move.0.describe(),
+                mc_move.1.total_attempted,
+                mc_move.1.acceptance() * 100.0
+            );
         }
     }
 }
@@ -224,7 +228,7 @@ impl Propagator for MonteCarlo {
 /// // `None` since there were no attempts since last update.
 /// assert_eq!(counter.compute_scaling_factor(), None);
 /// // The overall acceptance is still 1.0 (=100 %).
-/// assert_eq!(counter.current_acceptance(), 1.0);
+/// assert_eq!(counter.acceptance(), 1.0);
 ///
 /// // The scaling factor is computed based on the acceptance
 /// // since the last update was performed, not the overall acceptance
@@ -232,17 +236,17 @@ impl Propagator for MonteCarlo {
 /// // The scaling factor will be smaller: the acceptance
 /// // since the last update is zero.
 /// assert_eq!(counter.compute_scaling_factor(), Some(0.8));
-/// assert_eq!(counter.current_acceptance(), 0.5);
+/// assert_eq!(counter.acceptance(), 0.5);
 /// ```
 pub struct MoveCounter {
     /// Count the total number of times the move was called.
-    pub nattempted_total: u64,
+    pub total_attempted: u64,
     /// Count the total number of times the move was accepted.
-    pub naccepted_total: u64,
+    pub total_accepted: u64,
     /// Count the number of times the move was accepted since the last update.
-    pub naccepted: u64,
+    pub accepted: u64,
     /// Count the number of times the move was called since the last update.
-    pub nattempted: u64,
+    pub attempted: u64,
     /// The target fraction of accepted over attempted moves.
     target_acceptance: Option<f64>,
 }
@@ -252,10 +256,10 @@ impl MoveCounter {
     /// setting the `target_acceptance`.
     pub fn new(target_acceptance: Option<f64>) -> MoveCounter {
         let mut counter = MoveCounter {
-            nattempted_total: 0,
-            naccepted_total: 0,
-            naccepted: 0,
-            nattempted: 0,
+            total_attempted: 0,
+            total_accepted: 0,
+            accepted: 0,
+            attempted: 0,
             target_acceptance: None,
         };
         counter.set_acceptance(target_acceptance);
@@ -275,36 +279,30 @@ impl MoveCounter {
     /// Increase counters for attempt.
     #[inline]
     pub fn reject(&mut self) {
-        self.nattempted_total += 1;
-        self.nattempted += 1;
+        self.total_attempted += 1;
+        self.attempted += 1;
     }
 
     /// Increase counters to track the number of times the move was accepted.
     #[inline]
     pub fn accept(&mut self) {
-        self.nattempted_total += 1;
-        self.nattempted += 1;
-        self.naccepted += 1;
-        self.naccepted_total += 1;
+        self.total_attempted += 1;
+        self.attempted += 1;
+        self.accepted += 1;
+        self.total_accepted += 1;
     }
 
     /// Reset counters for attempts and acceptance since the last update.
     #[inline]
     pub fn update(&mut self) {
-        self.naccepted = 0;
-        self.nattempted = 0;
-    }
-
-    /// Print the total number of attempts and the current acceptance to `info` log.
-    pub fn print_info(&self) {
-        info!("  Attempts  : {}", self.nattempted_total);
-        info!("  Acceptance: {:.4} %", self.current_acceptance() * 100.0);
+        self.accepted = 0;
+        self.attempted = 0;
     }
 
     /// Return fraction of total number of accepted over total number of attempted moves.
-    pub fn current_acceptance(&self) -> f64 {
-        if self.nattempted_total != 0 {
-            self.naccepted_total as f64 / self.nattempted_total as f64
+    pub fn acceptance(&self) -> f64 {
+        if self.total_attempted != 0 {
+            self.total_accepted as f64 / self.total_attempted as f64
         } else {
             0.0
         }
@@ -315,10 +313,10 @@ impl MoveCounter {
         // Check if there exists an target_acceptance
         if let Some(ta) = self.target_acceptance {
             // Capture division by zero
-            if self.nattempted == 0 {
+            if self.attempted == 0 {
                 return None;
             };
-            let quotient = self.naccepted as f64 / self.nattempted as f64 / ta;
+            let quotient = self.accepted as f64 / self.attempted as f64 / ta;
             // Limit the change
             match quotient {
                 _ if quotient > 1.2 => Some(1.2),
@@ -413,12 +411,12 @@ mod tests {
     fn scaling_factor() {
         let mut counter = MoveCounter::new(Some(0.5));
         assert_eq!(counter.compute_scaling_factor(), None);
-        counter.nattempted = 100;
-        counter.naccepted = 100;
+        counter.attempted = 100;
+        counter.accepted = 100;
         assert_eq!(counter.compute_scaling_factor(), Some(1.2));
-        counter.naccepted = 0;
+        counter.accepted = 0;
         assert_eq!(counter.compute_scaling_factor(), Some(0.8));
-        counter.naccepted = 55;
+        counter.accepted = 55;
         assert_eq!(counter.compute_scaling_factor(), Some(1.1));
     }
 }
