@@ -76,6 +76,8 @@ of the processor (this is shared memory parallelism, like OpenMP). It is
 not yet possible to run Lumol on multiple nodes in a cluster (message
 passing parallelism, like MPI).
 
+.. _why-rust:
+
 Why is Lumol written in Rust?
 -----------------------------
 

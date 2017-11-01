@@ -1,2 +1,0 @@
-Energy minimization
-===================

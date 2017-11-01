@@ -1,8 +1,9 @@
-******************
-Advanced Tutorials
-******************
+Modifying lumol
+***************
 
 This chapter discusses ways to extend or modify Lumol.
 
 .. toctree::
-   custom_potential/index
+    :maxdepth: 2
+
+    potential/index
