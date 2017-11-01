@@ -15,12 +15,8 @@ For this simulation, you will need the following files:
 * the initial configuration ``nacl.xyz```
 * the input file ``nacl.toml``
 
-You can download both files :download:`here <../data/nacl.tar.gz>`. Again you
-can run the simulation which should complete in a minute with:
-
-::
-
-    lumol nacl.toml
+You can download both files :download:`here <../data/nacl.zip>`. Again you can
+run the simulation which should complete in a minute with ``lumol nacl.toml``.
 
 This will perform a molecular dynamics simulation of a NaCl crystal, using
 electrostatic interactions between the atomic charges.
@@ -30,75 +26,47 @@ The input file commented
 
 We start with the input version again:
 
-.. code::
-
-    [input]
-    version = 1
+.. literalinclude:: ../data/nacl.toml
+    :lines: 1-2
 
 Then we load the system from the ``nacl.xyz`` file and define the unit cell.
 
-.. code::
+.. literalinclude:: ../data/nacl.toml
+    :lines: 4-6
 
-    [[systems]]
-    file = "nacl.xyz"
-    cell = 22.5608
+Then comes the potential definition section, which is way bigger than the one
+for our previous Lennard-Jones example:
 
-Here we define some global values for the interactions: setting
-``systems.potentials.global.cutoff`` will use the given cutoff for all the pair
-interactions. The ``systems.potentials.charges`` section defined the atomic
-charges in the system.
+.. literalinclude:: ../data/nacl.toml
+    :lines: 8-28
 
-.. code::
+Let's break it down. First we define some global values for the interactions:
+setting ``systems.potentials.global.cutoff`` will use the given cutoff for all
+the pair interactions. The ``systems.potentials.charges`` section defined the
+atomic charges in the system.
 
-    [systems.potentials.global]
-    cutoff = "8 A"
+.. literalinclude:: ../data/nacl.toml
+    :lines: 8-13
 
-    [systems.potentials.charges]
-    Na = 1.0
-    Cl = -1.0
-
-We need to define the pair interactions for all the pair combinations in the
+Then, we need to define the pair interactions for all the pair combinations in the
 system, *i.e.* (Na, Na); (Cl, Cl); and (Na, Cl).
 
-.. code::
-
-    [[systems.potentials.pairs]]
-    atoms = ["Na", "Cl"]
-    lj = {sigma = "3.5545 A", epsilon = "0.04425 kcal/mol"}
-
-    [[systems.potentials.pairs]]
-    atoms = ["Na", "Na"]
-    lj = {sigma = "2.497 A", epsilon = "0.07826 kcal/mol"}
-
-    [[systems.potentials.pairs]]
-    atoms = ["Cl", "Cl"]
-    lj = {sigma = "4.612 A", epsilon = "0.02502 kcal/mol"}
+.. literalinclude:: ../data/nacl.toml
+    :lines: 15-25
 
 Because our system have charges, we need to use an electrostatic potential
 solver. Here we are going for the ``Wolf`` solver, with a cutoff of 8 A.
 
-.. code::
-
-    [systems.potentials.coulomb]
-    wolf = {cutoff = "8 A"}
+.. literalinclude:: ../data/nacl.toml
+    :lines: 27-28
 
 We can now define the simulation and the outputs for this simulation.
 
-.. code::
-
-    [[simulations]]
-    nsteps = 5000
-    outputs = [
-        {type = "Trajectory", file = "trajectory.xyz", frequency = 10}
-    ]
+.. literalinclude:: ../data/nacl.toml
+    :lines: 30-34
 
 We are using here a molecular dynamics simulation of the NaCl crystal, and a
 timestep of 1 fs for integration.
 
-.. code::
-
-    [simulations.propagator]
-    type = "MolecularDynamics"
-    timestep = "1 fs"
-
-In the next example, we will see how to run a :doc:`water`.
+.. literalinclude:: ../data/nacl.toml
+    :lines: 36-38

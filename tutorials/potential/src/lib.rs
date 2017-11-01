@@ -5,8 +5,6 @@ use lumol::energy::{Potential, PairPotential};
 pub struct Mie {
     /// Distance constant
     sigma: f64,
-    /// Energy constant
-    epsilon: f64,
     /// Exponent of repulsive contribution
     n: f64,
     /// Exponent of attractive contribution
@@ -23,7 +21,6 @@ impl Mie {
         let prefactor = n / (n - m) * (n / m).powf(m / (n - m)) * epsilon;
         Mie {
             sigma: sigma,
-            epsilon: epsilon,
             n: n,
             m: m,
             prefactor: prefactor,
@@ -71,10 +68,4 @@ impl PairPotential for Mie {
         let attractive = f64::powf(sigma_rc, m_3);
         -self.prefactor * self.sigma.powi(3) * (repulsive * self.n / n_3 - attractive * self.m / m_3)
     }
-}
-
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn it_works() {}
 }

@@ -5,22 +5,19 @@ We start by creating a new package using ``cargo``:
 
 .. code:: bash
 
-    cargo new lumol_tutorial_potential
-    cd lumol_tutorial_potential
+    cargo new potential
+    cd potential
 
 Open ``Cargo.toml`` and add the lines
 
-.. code::
+.. literalinclude:: ../../../../tutorials/potential/Cargo.toml
+    :lines: 7-8
 
-    [dependencies]
-    lumol = {git = "https://github.com/lumol-org/lumol"}
+to add the ``lumol`` crate as a dependency to the package. To test if everything
+works, open the ``lib.rs`` file in ``src`` and add
 
-to add ``Lumol`` as a dependency to the package. To test if everything works,
-open the ``lib.rs`` file in ``src`` and add
-
-.. code:: rust
-
-    extern crate lumol;
+.. literalinclude:: ../../../../tutorials/potential/src/lib.rs
+    :lines: 1
 
 in the first line.
 
@@ -49,55 +46,25 @@ the potential are
 We start by defining the ``struct`` for our potential. Add the following lines
 to ``lib.rs``:
 
-.. code:: rust
-
-    extern crate lumol;
-    use lumol::energy::{Potential, PairPotential};
-
-    #[derive(Clone, Copy)]
-    pub struct Mie {
-        /// Distance constant
-        sigma: f64,
-        /// Energy constant
-        epsilon: f64,
-        /// Exponent of repulsive contribution
-        n: f64,
-        /// Exponent of attractive contribution
-        m: f64,
-        /// Energetic prefactor computed from the exponents and epsilon
-        prefactor: f64,
-    }
+.. literalinclude:: ../../../../tutorials/potential/src/lib.rs
+    :lines: 1-14
 
 In the first two lines we define our imports from ``Lumol``, following with our
-structure.
-
-Next, we implement a constructor function. That's usefull in this case since we
-want to compute the prefactor of the potential once before we start our
-simulation.
+structure. Notice that we don't store the ``epsilon`` value, instead we store an
+energetic prefactor that will make it easier to compute the potential.
 
 .. math::
 
     \text{prefactor} = \frac{n}{n-m} \left(\frac{n}{m}\right)^{m/(n-m)}\epsilon
 
+Next, we implement a constructor function. That's usefull in this case since we
+want to compute the prefactor of the potential once before we start our
+simulation.
+
 In Rust we typically use ``new`` for the constructors' name.
 
-.. code:: rust
-
-    impl Mie {
-        pub fn new(sigma: f64, epsilon: f64, n: f64, m: f64) -> Mie {
-            if m >= n {
-                panic!("The repulsive exponent n has to be larger than the attractive exponent m")
-            };
-            let prefactor = n / (n - m) * (n / m).powf(m / (n - m)) * epsilon;
-            Mie {
-                sigma: sigma,
-                epsilon: epsilon,
-                n: n,
-                m: m,
-                prefactor: prefactor,
-            }
-        }
-    }
+.. literalinclude:: ../../../../tutorials/potential/src/lib.rs
+    :lines: 16-29
 
 Our function takes the parameter set as input, computes the prefactor and
 returns a ``Mie`` struct. Notice that it panics, for ``n`` smaller than or equal
@@ -108,23 +75,8 @@ Implementing ``Potential``
 
 Add the following lines below the structs implementation.
 
-.. code:: rust
-
-    impl Potential for Mie {
-        fn energy(&self, r: f64) -> f64 {
-            let sigma_r = self.sigma / r;
-            let repulsive = f64::powf(sigma_r, self.n);
-            let attractive = f64::powf(sigma_r, self.m);
-            self.prefactor * (repulsive - attractive)
-        }
-
-        fn force(&self, r: f64) -> f64 {
-            let sigma_r = self.sigma / r;
-            let repulsive = f64::powf(sigma_r, self.n);
-            let attractive = f64::powf(sigma_r, self.m);
-            -self.prefactor * (self.n * repulsive - self.m * attractive) / r
-        }
-    }
+.. literalinclude:: ../../../../tutorials/potential/src/lib.rs
+    :lines: 32-45
 
 ``energy`` is the implementation of the Mie potential equation shown above.
 ``force`` is the negative derivative of the energy with respect to the distance,
@@ -184,33 +136,8 @@ are computed by solving these equations
 
 The implementation looks like so
 
-.. code:: rust
-
-    impl PairPotential for Mie {
-        fn tail_energy(&self, cutoff: f64) -> f64 {
-            if self.m < 3.0 {
-                return 0.0;
-            };
-            let sigma_rc = self.sigma / cutoff;
-            let n_3 = self.n - 3.0;
-            let m_3 = self.m - 3.0;
-            let repulsive = f64::powf(sigma_rc, n_3);
-            let attractive = f64::powf(sigma_rc, m_3);
-            -self.prefactor * self.sigma.powi(3) * (repulsive / n_3 - attractive / m_3)
-        }
-
-        fn tail_virial(&self, cutoff: f64) -> f64 {
-            if self.m < 3.0 {
-                return 0.0;
-            };
-            let sigma_rc = self.sigma / cutoff;
-            let n_3 = self.n - 3.0;
-            let m_3 = self.m - 3.0;
-            let repulsive = f64::powf(sigma_rc, n_3);
-            let attractive = f64::powf(sigma_rc, m_3);
-            -self.prefactor * self.sigma.powi(3) * (repulsive * self.n / n_3 - attractive * self.m / m_3)
-        }
-    }
+.. literalinclude:: ../../../../tutorials/potential/src/lib.rs
+    :lines: 47-71
 
 Note that we cannot correct every kind of energy function. In fact, the
 potential has to be a *short ranged* potential. For our Mie potential, both the
@@ -223,7 +150,7 @@ Running a simulation
 
 That concludes the first part. To test your new and shiny potential, you can run
 a small simulation. You'll find a minimal Monte Carlo simulation example in the
-``tutorials/lumol_tutorial_potential`` directory of the main lumol repository
+``tutorials/potential`` directory of the main lumol repository
 where you will also find the ``src/lib.rs`` file we created in this tutorial.
 You can then run the simulation via
 

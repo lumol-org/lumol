@@ -16,6 +16,7 @@ outputs = [
     {type = "Energy", file = "energy.dat", frequency = 100},
     {type = "Trajectory", file = "trajectory.xyz", frequency = 100}
 ]
+
 [simulations.propagator]
 type = "MonteCarlo"
 temperature = "500 K"
