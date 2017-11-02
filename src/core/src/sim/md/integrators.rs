@@ -295,8 +295,8 @@ impl Integrator for AnisoBerendsenBarostat {
         // Make the eta matrix symmetric here
         for i in 0..3 {
             for j in 0..i {
-                self.eta[(i, j)] = 0.5 * (self.eta[(i, j)] + self.eta[(j, i)]);
-                self.eta[(j, i)] = self.eta[(i, j)];
+                self.eta[i][j] = 0.5 * (self.eta[i][j] + self.eta[j][i]);
+                self.eta[j][i] = self.eta[i][j];
             }
         }
 

@@ -474,7 +474,7 @@ mod test {
 
         let mut expected = Matrix3::zero();
         let force = unit_from(30.0, "kJ/mol/A^2");
-        expected[(0, 0)] = - force * 1.3;
+        expected[0][0] = - force * 1.3;
 
         assert_ulps_eq!(virial, expected);
         assert_eq!(virial, system.virial());
@@ -487,8 +487,8 @@ mod test {
 
         let mut expected = Matrix3::zero();
         let w = unit_from(100.0, "kJ/mol/A");
-        expected[(0, 0)] = 2.0 * w;
-        expected[(1, 1)] = 1.0 * w;
+        expected[0][0] = 2.0 * w;
+        expected[1][1] = 1.0 * w;
 
         assert_ulps_eq!(virial, expected);
         assert_eq!(virial, system.virial());
@@ -558,7 +558,7 @@ mod test {
         let pressure = PressureAtTemperature{temperature: temperature}.compute(system);
 
         // tail corrections are smaller than 1e-9
-        let trace = (stress[(0, 0)] + stress[(1, 1)] + stress[(2, 2)]) / 3.0;
+        let trace = (stress[0][0] + stress[1][1] + stress[2][2]) / 3.0;
         assert_ulps_eq!(trace, pressure);
 
         system.external_temperature(Some(temperature));

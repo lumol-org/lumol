@@ -110,9 +110,9 @@ impl UnitCell {
 
     /// Get the first vector of the cell
     pub fn vect_a(&self) -> Vector3D {
-        let x = self.cell[(0, 0)];
-        let y = self.cell[(1, 0)];
-        let z = self.cell[(2, 0)];
+        let x = self.cell[0][0];
+        let y = self.cell[1][0];
+        let z = self.cell[2][0];
         Vector3D::new(x, y, z)
     }
     /// Get the first length of the cell (i.e. the norm of the first vector of
@@ -120,15 +120,15 @@ impl UnitCell {
     pub fn a(&self) -> f64 {
         match self.shape {
             CellShape::Triclinic => self.vect_a().norm(),
-            CellShape::Orthorhombic | CellShape::Infinite => self.cell[(0, 0)],
+            CellShape::Orthorhombic | CellShape::Infinite => self.cell[0][0],
         }
     }
 
     /// Get the second vector of the cell
     pub fn vect_b(&self) -> Vector3D {
-        let x = self.cell[(0, 1)];
-        let y = self.cell[(1, 1)];
-        let z = self.cell[(2, 1)];
+        let x = self.cell[0][1];
+        let y = self.cell[1][1];
+        let z = self.cell[2][1];
         Vector3D::new(x, y, z)
     }
 
@@ -137,15 +137,15 @@ impl UnitCell {
     pub fn b(&self) -> f64 {
         match self.shape {
             CellShape::Triclinic => self.vect_b().norm(),
-            CellShape::Orthorhombic | CellShape::Infinite => self.cell[(1, 1)],
+            CellShape::Orthorhombic | CellShape::Infinite => self.cell[1][1],
         }
     }
 
     /// Get the third vector of the cell
     pub fn vect_c(&self) -> Vector3D {
-        let x = self.cell[(0, 2)];
-        let y = self.cell[(1, 2)];
-        let z = self.cell[(2, 2)];
+        let x = self.cell[0][2];
+        let y = self.cell[1][2];
+        let z = self.cell[2][2];
         Vector3D::new(x, y, z)
     }
 
@@ -154,7 +154,7 @@ impl UnitCell {
     pub fn c(&self) -> f64 {
         match self.shape {
             CellShape::Triclinic => self.vect_c().norm(),
-            CellShape::Orthorhombic | CellShape::Infinite => self.cell[(2, 2)],
+            CellShape::Orthorhombic | CellShape::Infinite => self.cell[2][2],
         }
     }
 

@@ -167,9 +167,9 @@ impl Control for RemoveRotation {
         }
 
         let trace = inertia.trace();
-        inertia[(0, 0)] += trace;
-        inertia[(1, 1)] += trace;
-        inertia[(2, 2)] += trace;
+        inertia[0][0] += trace;
+        inertia[1][1] += trace;
+        inertia[2][2] += trace;
 
         // The angular velocity omega is defined by `L = I w` with L the angular
         // momentum, and I the inertia matrix.
