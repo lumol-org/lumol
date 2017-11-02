@@ -265,6 +265,12 @@ impl Zero for Vector3D {
     }
 }
 
+impl From<[f64; 3]> for Vector3D {
+    fn from(data: [f64; 3]) -> Vector3D {
+        Vector3D(data)
+    }
+}
+
 /******************************************************************************/
 
 #[cfg(test)]
