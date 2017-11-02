@@ -68,9 +68,7 @@ use types::{Vector3D, Zero, One};
 /// ));
 /// ```
 #[derive(Copy, Clone, Debug, PartialEq)]
-pub struct Matrix3 {
-    data : [[f64; 3]; 3]
-}
+pub struct Matrix3([[f64; 3]; 3]);
 
 impl Matrix3 {
     /// Create a new `Matrix3` specifying all its components
@@ -88,9 +86,11 @@ impl Matrix3 {
     pub fn new(m00: f64, m01: f64, m02: f64,
                m10: f64, m11: f64, m12: f64,
                m20: f64, m21: f64, m22: f64) -> Matrix3 {
-        Matrix3{data: [[m00, m01, m02],
-                       [m10, m11, m12],
-                       [m20, m21, m22]]}
+        Matrix3([
+            [m00, m01, m02],
+            [m10, m11, m12],
+            [m20, m21, m22]
+        ])
     }
 
 
@@ -244,21 +244,6 @@ impl Matrix3 {
             self[0][1], self[1][1], self[2][1],
             self[0][2], self[1][2], self[2][2]
         )
-    }
-}
-
-impl Deref for Matrix3 {
-    type Target = [[f64; 3]; 3];
-    #[inline]
-    fn deref(&self) -> &Self::Target {
-        &self.data
-    }
-}
-
-impl DerefMut for Matrix3 {
-    #[inline]
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.data
     }
 }
 
@@ -422,6 +407,27 @@ impl One for Matrix3 {
 impl iter::Sum for Matrix3 {
     fn sum<I>(iter: I) -> Self where I: Iterator<Item=Matrix3> {
         iter.fold(Matrix3::zero(), |a, b| a + b)
+    }
+}
+
+impl Deref for Matrix3 {
+    type Target = [[f64; 3]; 3];
+    #[inline]
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl DerefMut for Matrix3 {
+    #[inline]
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
+
+impl From<[[f64; 3]; 3]> for Matrix3 {
+    fn from(data: [[f64; 3]; 3]) -> Matrix3 {
+        Matrix3(data)
     }
 }
 
