@@ -2,9 +2,9 @@
 // Copyright (C) Lumol's contributors — BSD license
 
 //! 3-dimensional vector type
-use std::ops::{Add, Sub, Neg, Mul, Div, BitXor, Index, IndexMut};
+use std::ops::{Add, Sub, Neg, Mul, Div, BitXor};
 use std::ops::{AddAssign, SubAssign, MulAssign, DivAssign};
-use std::cmp::PartialEq;
+use std::ops::{Deref, DerefMut};
 
 use types::{Matrix3, Zero};
 
@@ -53,7 +53,7 @@ use types::{Matrix3, Zero};
 /// let a = u * v;
 /// assert_eq!(a, 3.0);
 /// ```
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq, PartialOrd)]
 pub struct Vector3D([f64; 3]);
 
 impl Vector3D {
@@ -239,25 +239,19 @@ impl<'a> Neg for &'a mut Vector3D {
 
 /******************************************************************************/
 
-/// Comparing two vectors
-impl PartialEq for Vector3D {
-    #[inline] fn eq(&self, other: &Vector3D) -> bool {
-        self[0] == other[0] && self[1] == other[1] && self[2] == other[2]
+impl Deref for Vector3D {
+    type Target = [f64; 3];
+
+    #[inline]
+    fn deref(&self) -> &Self::Target {
+        &self.0
     }
 }
 
-impl Index<usize> for Vector3D {
-    type Output = f64;
+impl DerefMut for Vector3D {
     #[inline]
-    fn index(&self, index: usize) -> &f64 {
-        &self.0[index]
-    }
-}
-
-impl IndexMut<usize> for Vector3D {
-    #[inline]
-    fn index_mut(&mut self, index: usize) -> &mut f64 {
-        &mut self.0[index]
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
     }
 }
 

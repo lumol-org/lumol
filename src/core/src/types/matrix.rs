@@ -2,8 +2,9 @@
 // Copyright (C) Lumol's contributors — BSD license
 
 //! 3x3 matrix type.
-use std::ops::{Add, Sub, Mul, Div, Index, IndexMut};
+use std::ops::{Add, Sub, Mul, Div};
 use std::ops::{AddAssign, SubAssign, MulAssign, DivAssign};
+use std::ops::{Deref, DerefMut};
 use std::iter;
 
 use types::{Vector3D, Zero, One};
@@ -149,7 +150,7 @@ impl Matrix3 {
     /// assert_eq!(matrix.trace(), 8.0);
     /// ```
     pub fn trace(&self) -> f64 {
-        return self[(0, 0)] + self[(1, 1)] + self[(2, 2)];
+        return self[0][0] + self[1][1] + self[2][2];
     }
 
     /// Computes the inverse of a matrix
@@ -184,15 +185,15 @@ impl Matrix3 {
         assert_ne!(determinant, 0.0, "The matrix is not inversible!");
         let invdet = 1.0 / determinant;
         let mut res = Matrix3::zero();
-        res[(0, 0)] = (self[(1, 1)] * self[(2, 2)] - self[(2, 1)] * self[(1, 2)]) * invdet;
-        res[(0, 1)] = (self[(0, 2)] * self[(2, 1)] - self[(0, 1)] * self[(2, 2)]) * invdet;
-        res[(0, 2)] = (self[(0, 1)] * self[(1, 2)] - self[(0, 2)] * self[(1, 1)]) * invdet;
-        res[(1, 0)] = (self[(1, 2)] * self[(2, 0)] - self[(1, 0)] * self[(2, 2)]) * invdet;
-        res[(1, 1)] = (self[(0, 0)] * self[(2, 2)] - self[(0, 2)] * self[(2, 0)]) * invdet;
-        res[(1, 2)] = (self[(1, 0)] * self[(0, 2)] - self[(0, 0)] * self[(1, 2)]) * invdet;
-        res[(2, 0)] = (self[(1, 0)] * self[(2, 1)] - self[(2, 0)] * self[(1, 1)]) * invdet;
-        res[(2, 1)] = (self[(2, 0)] * self[(0, 1)] - self[(0, 0)] * self[(2, 1)]) * invdet;
-        res[(2, 2)] = (self[(0, 0)] * self[(1, 1)] - self[(1, 0)] * self[(0, 1)]) * invdet;
+        res[0][0] = (self[1][1] * self[2][2] - self[2][1] * self[1][2]) * invdet;
+        res[0][1] = (self[0][2] * self[2][1] - self[0][1] * self[2][2]) * invdet;
+        res[0][2] = (self[0][1] * self[1][2] - self[0][2] * self[1][1]) * invdet;
+        res[1][0] = (self[1][2] * self[2][0] - self[1][0] * self[2][2]) * invdet;
+        res[1][1] = (self[0][0] * self[2][2] - self[0][2] * self[2][0]) * invdet;
+        res[1][2] = (self[1][0] * self[0][2] - self[0][0] * self[1][2]) * invdet;
+        res[2][0] = (self[1][0] * self[2][1] - self[2][0] * self[1][1]) * invdet;
+        res[2][1] = (self[2][0] * self[0][1] - self[0][0] * self[2][1]) * invdet;
+        res[2][2] = (self[0][0] * self[1][1] - self[1][0] * self[0][1]) * invdet;
         return res;
     }
 
@@ -213,9 +214,9 @@ impl Matrix3 {
     /// assert_eq!(matrix.determinant(), 4.0 * 1.5 * 7.0);
     /// ```
     pub fn determinant(&self) -> f64 {
-        ( self[(0, 0)] * (self[(1, 1)] * self[(2, 2)] - self[(2, 1)] * self[(1, 2)])
-        - self[(0, 1)] * (self[(1, 0)] * self[(2, 2)] - self[(1, 2)] * self[(2, 0)])
-        + self[(0, 2)] * (self[(1, 0)] * self[(2, 1)] - self[(1, 1)] * self[(2, 0)]))
+        ( self[0][0] * (self[1][1] * self[2][2] - self[2][1] * self[1][2])
+        - self[0][1] * (self[1][0] * self[2][2] - self[1][2] * self[2][0])
+        + self[0][2] * (self[1][0] * self[2][1] - self[1][1] * self[2][0]))
     }
 
     /// Transpose this matrix into a new matrix
@@ -239,40 +240,25 @@ impl Matrix3 {
     /// ```
     pub fn transposed(&self) -> Matrix3 {
         Matrix3::new(
-            self[(0, 0)], self[(1, 0)], self[(2, 0)],
-            self[(0, 1)], self[(1, 1)], self[(2, 1)],
-            self[(0, 2)], self[(1, 2)], self[(2, 2)]
+            self[0][0], self[1][0], self[2][0],
+            self[0][1], self[1][1], self[2][1],
+            self[0][2], self[1][2], self[2][2]
         )
     }
 }
 
-impl Index<usize> for Matrix3 {
-    type Output = [f64; 3];
+impl Deref for Matrix3 {
+    type Target = [[f64; 3]; 3];
     #[inline]
-    fn index(&self, index: usize) -> &[f64; 3] {
-        &self.data[index]
+    fn deref(&self) -> &Self::Target {
+        &self.data
     }
 }
 
-impl Index<(usize, usize)> for Matrix3 {
-    type Output = f64;
+impl DerefMut for Matrix3 {
     #[inline]
-    fn index(&self, index: (usize, usize)) -> &f64 {
-        &self.data[index.0][index.1]
-    }
-}
-
-impl IndexMut<usize> for Matrix3 {
-    #[inline]
-    fn index_mut(&mut self, index: usize) -> &mut [f64; 3] {
-        &mut self.data[index]
-    }
-}
-
-impl IndexMut<(usize, usize)> for Matrix3 {
-    #[inline]
-    fn index_mut(&mut self, index: (usize, usize)) -> &mut f64 {
-        &mut self.data[index.0][index.1]
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.data
     }
 }
 
@@ -317,17 +303,17 @@ impl_arithmetic!(
     Matrix3, Matrix3, Mul, mul, Matrix3,
     self, other,
     {
-        let m00 = self[(0, 0)] * other[(0, 0)] + self[(0, 1)] * other[(1, 0)] + self[(0, 2)] * other[(2, 0)];
-        let m01 = self[(0, 0)] * other[(0, 1)] + self[(0, 1)] * other[(1, 1)] + self[(0, 2)] * other[(2, 1)];
-        let m02 = self[(0, 0)] * other[(0, 2)] + self[(0, 1)] * other[(1, 2)] + self[(0, 2)] * other[(2, 2)];
+        let m00 = self[0][0] * other[0][0] + self[0][1] * other[1][0] + self[0][2] * other[2][0];
+        let m01 = self[0][0] * other[0][1] + self[0][1] * other[1][1] + self[0][2] * other[2][1];
+        let m02 = self[0][0] * other[0][2] + self[0][1] * other[1][2] + self[0][2] * other[2][2];
 
-        let m10 = self[(1, 0)] * other[(0, 0)] + self[(1, 1)] * other[(1, 0)] + self[(1, 2)] * other[(2, 0)];
-        let m11 = self[(1, 0)] * other[(0, 1)] + self[(1, 1)] * other[(1, 1)] + self[(1, 2)] * other[(2, 1)];
-        let m12 = self[(1, 0)] * other[(0, 2)] + self[(1, 1)] * other[(1, 2)] + self[(1, 2)] * other[(2, 2)];
+        let m10 = self[1][0] * other[0][0] + self[1][1] * other[1][0] + self[1][2] * other[2][0];
+        let m11 = self[1][0] * other[0][1] + self[1][1] * other[1][1] + self[1][2] * other[2][1];
+        let m12 = self[1][0] * other[0][2] + self[1][1] * other[1][2] + self[1][2] * other[2][2];
 
-        let m20 = self[(2, 0)] * other[(0, 0)] + self[(2, 1)] * other[(1, 0)] + self[(2, 2)] * other[(2, 0)];
-        let m21 = self[(2, 0)] * other[(0, 1)] + self[(2, 1)] * other[(1, 1)] + self[(2, 2)] * other[(2, 1)];
-        let m22 = self[(2, 0)] * other[(0, 2)] + self[(2, 1)] * other[(1, 2)] + self[(2, 2)] * other[(2, 2)];
+        let m20 = self[2][0] * other[0][0] + self[2][1] * other[1][0] + self[2][2] * other[2][0];
+        let m21 = self[2][0] * other[0][1] + self[2][1] * other[1][1] + self[2][2] * other[2][1];
+        let m22 = self[2][0] * other[0][2] + self[2][1] * other[1][2] + self[2][2] * other[2][2];
 
         Matrix3::new(m00, m01, m02, m10, m11, m12, m20, m21, m22)
     }
@@ -337,17 +323,17 @@ impl_inplace_arithmetic!(
     Matrix3, Matrix3, MulAssign, mul_assign,
     self, other,
     {
-        let m00 = self[(0, 0)] * other[(0, 0)] + self[(0, 1)] * other[(1, 0)] + self[(0, 2)] * other[(2, 0)];
-        let m01 = self[(0, 0)] * other[(0, 1)] + self[(0, 1)] * other[(1, 1)] + self[(0, 2)] * other[(2, 1)];
-        let m02 = self[(0, 0)] * other[(0, 2)] + self[(0, 1)] * other[(1, 2)] + self[(0, 2)] * other[(2, 2)];
+        let m00 = self[0][0] * other[0][0] + self[0][1] * other[1][0] + self[0][2] * other[2][0];
+        let m01 = self[0][0] * other[0][1] + self[0][1] * other[1][1] + self[0][2] * other[2][1];
+        let m02 = self[0][0] * other[0][2] + self[0][1] * other[1][2] + self[0][2] * other[2][2];
 
-        let m10 = self[(1, 0)] * other[(0, 0)] + self[(1, 1)] * other[(1, 0)] + self[(1, 2)] * other[(2, 0)];
-        let m11 = self[(1, 0)] * other[(0, 1)] + self[(1, 1)] * other[(1, 1)] + self[(1, 2)] * other[(2, 1)];
-        let m12 = self[(1, 0)] * other[(0, 2)] + self[(1, 1)] * other[(1, 2)] + self[(1, 2)] * other[(2, 2)];
+        let m10 = self[1][0] * other[0][0] + self[1][1] * other[1][0] + self[1][2] * other[2][0];
+        let m11 = self[1][0] * other[0][1] + self[1][1] * other[1][1] + self[1][2] * other[2][1];
+        let m12 = self[1][0] * other[0][2] + self[1][1] * other[1][2] + self[1][2] * other[2][2];
 
-        let m20 = self[(2, 0)] * other[(0, 0)] + self[(2, 1)] * other[(1, 0)] + self[(2, 2)] * other[(2, 0)];
-        let m21 = self[(2, 0)] * other[(0, 1)] + self[(2, 1)] * other[(1, 1)] + self[(2, 2)] * other[(2, 1)];
-        let m22 = self[(2, 0)] * other[(0, 2)] + self[(2, 1)] * other[(1, 2)] + self[(2, 2)] * other[(2, 2)];
+        let m20 = self[2][0] * other[0][0] + self[2][1] * other[1][0] + self[2][2] * other[2][0];
+        let m21 = self[2][0] * other[0][1] + self[2][1] * other[1][1] + self[2][2] * other[2][1];
+        let m22 = self[2][0] * other[0][2] + self[2][1] * other[1][2] + self[2][2] * other[2][2];
 
         *self = Matrix3::new(m00, m01, m02, m10, m11, m12, m20, m21, m22)
     }
@@ -493,7 +479,7 @@ mod tests {
     #[should_panic]
     fn out_of_bounds() {
         let a = Matrix3::zero();
-        let _ = a[(3, 1)];
+        let _ = a[3][1];
     }
 
     #[test]
@@ -503,11 +489,11 @@ mod tests {
 
         for i in 0..3 {
             for j in 0..3 {
-                assert_eq!(a[(i, j)], 0.0);
+                assert_eq!(a[i][j], 0.0);
                 if i == j {
-                    assert_eq!(b[(i, j)], 1.0);
+                    assert_eq!(b[i][j], 1.0);
                 } else {
-                    assert_eq!(b[(i, j)], 0.0);
+                    assert_eq!(b[i][j], 0.0);
                 }
             }
         }
