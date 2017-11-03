@@ -463,9 +463,10 @@ pub struct Gaussian {
 }
 
 impl Gaussian {
+    /// Create a new `Gaussian` potential with a depth of `a` and a width of `b`
     pub fn new(a: f64, b: f64) -> Gaussian {
         if b <= 0.0 {
-            panic!("\"b\" has to be positive")
+            panic!("\"b\" has to be positive in Gaussian potential")
         }
         Gaussian { a: a, b: b }
     }
