@@ -3,9 +3,7 @@
 use toml::value::Table;
 use std::path::PathBuf;
 
-use lumol::out::Output;
-use lumol::out::{TrajectoryOutput, CellOutput, EnergyOutput, PropertiesOutput};
-use lumol::out::CustomOutput;
+use lumol::out::*;
 
 use error::{Error, Result};
 use FromToml;
@@ -39,9 +37,10 @@ impl Input {
                 let typ = try!(extract::typ(output, "output"));
                 let output: Box<Output> = match &*typ.to_lowercase() {
                     "trajectory" => Box::new(try!(TrajectoryOutput::from_toml(output))),
-                    "energy" => Box::new(try!(EnergyOutput::from_toml(output))),
-                    "cell" => Box::new(try!(CellOutput::from_toml(output))),
                     "properties" => Box::new(try!(PropertiesOutput::from_toml(output))),
+                    "energy" => Box::new(try!(EnergyOutput::from_toml(output))),
+                    "stress" => Box::new(try!(StressOutput::from_toml(output))),
+                    "cell" => Box::new(try!(CellOutput::from_toml(output))),
                     "custom" => Box::new(try!(CustomOutput::from_toml(output))),
                     other => {
                         return Err(Error::from(
@@ -97,6 +96,14 @@ impl FromToml for PropertiesOutput {
     fn from_toml(config: &Table) -> Result<PropertiesOutput> {
         let path = try!(get_file(config));
         let output = try_io!(PropertiesOutput::new(path), PathBuf::from(path));
+        Ok(output)
+    }
+}
+
+impl FromToml for StressOutput {
+    fn from_toml(config: &Table) -> Result<StressOutput> {
+        let path = try!(get_file(config));
+        let output = try_io!(StressOutput::new(path), PathBuf::from(path));
         Ok(output)
     }
 }
