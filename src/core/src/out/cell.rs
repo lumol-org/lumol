@@ -10,7 +10,7 @@ use sys::System;
 use super::Output;
 
 /// The `CellOutput` writes all the components of a cell to a file . The columns
-/// in the file contain the following values: `A B C α β γ`.
+/// in the file contain the following values: `step A B C α β γ`.
 pub struct CellOutput {
     file: File,
     path: PathBuf

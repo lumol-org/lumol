@@ -11,7 +11,7 @@ use utils;
 use sys::System;
 
 /// The `EnergyOutput` writes the energy of the system to a text file, organized
-/// as: `PotentialEnergy     KineticEnergy     TotalEnergy`.
+/// as: `steps PotentialEnergy KineticEnergy TotalEnergy`.
 pub struct EnergyOutput {
     file: File,
     path: PathBuf
