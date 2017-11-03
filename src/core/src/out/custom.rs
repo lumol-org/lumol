@@ -183,6 +183,12 @@ impl FormatArgs {
                         "cell.alpha" => Some(system.cell.alpha()),
                         "cell.beta" => Some(system.cell.beta()),
                         "cell.gamma" => Some(system.cell.gamma()),
+                        "stress.xx" => Some(system.stress()[0][0]),
+                        "stress.yy" => Some(system.stress()[1][1]),
+                        "stress.zz" => Some(system.stress()[2][2]),
+                        "stress.xy" => Some(system.stress()[0][1]),
+                        "stress.xz" => Some(system.stress()[0][2]),
+                        "stress.yz" => Some(system.stress()[1][2]),
                         _ => None
                     }
                 }
@@ -342,6 +348,13 @@ mod tests {
         assert_eq!(format("{cell.alpha}"), "90");
         assert_eq!(format("{cell.beta}"),  "90");
         assert_eq!(format("{cell.gamma}"), "90");
+
+        assert_eq!(format("{stress.xx / bar}"), "30899.975184239443");
+        assert_eq!(format("{stress.yy / bar}"), "0");
+        assert_eq!(format("{stress.zz / bar}"), "0");
+        assert_eq!(format("{stress.xy / bar}"), "0");
+        assert_eq!(format("{stress.xz / bar}"), "0");
+        assert_eq!(format("{stress.yz / bar}"), "0");
 
         assert_eq!(format("{x[1]}"), "1.3");
         assert_eq!(format("{vy[1]}"), "0");
