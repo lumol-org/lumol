@@ -11,6 +11,9 @@ use chemfiles;
 use std::fmt;
 use std::error;
 use std::path::Path;
+use std::sync::{Once, ONCE_INIT};
+
+static REDIRECT_CHEMFILES_WARNING: Once = ONCE_INIT;
 
 /// Possible error when reading and writing to trajectories
 #[derive(Debug)]
@@ -333,6 +336,11 @@ impl<'a> TrajectoryBuilder<'a> {
     ///                                    .unwrap();
     /// ```
     pub fn open<P: AsRef<Path>>(self, path: P) -> TrajectoryResult<Trajectory> {
+        REDIRECT_CHEMFILES_WARNING.call_once(|| {
+            chemfiles::set_warning_callback(|message| {
+                warn!("[chemfiles] {}", message);
+            }).expect("could not redirect chemfiles warning");
+        });
         let mode = match self.mode {
             OpenMode::Read => 'r',
             OpenMode::Write => 'w',
