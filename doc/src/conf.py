@@ -26,6 +26,7 @@ master_doc = 'index'
 # General information about the project.
 copyright = '2017, the lumol developers'
 author = 'The lumol developers'
+project = 'Lumol'
 
 
 def version():
@@ -95,3 +96,7 @@ htmlhelp_basename = 'Lumol'
 latex_elements = {
     'papersize': 'a4paper',
 }
+
+latex_documents = [
+    (master_doc, 'Lumol.tex', 'Lumol user manual', author, 'howto'),
+]

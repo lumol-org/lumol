@@ -20,7 +20,7 @@ Excited? Then let's start with an overview of this book:
 
    installation
    tutorial/index
-   units
    concepts/index
+   input/index
    advanced/index
    faq

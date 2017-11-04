@@ -1,14 +1,9 @@
-.. lumol_input_reference documentation master file, created by
-   sphinx-quickstart on Thu Oct 19 16:57:49 2017.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+Input file reference
+====================
 
-Welcome to the Lumol input reference!
-=====================================
-
-This document teaches you how to use input files to run your simulations with Lumol.
-An input file contains all information that you need to run a
-simulation and it is usually organized in four main sections: **input**, **log**,
+This section describes how to use input files to run your simulations with
+Lumol.  An input file contains all information that you need to run a simulation
+and it is usually organized in four main sections: **input**, **log**,
 **systems** and **simulations**.
 
 -  The **input** section contains metadata about the input itself (i.e. a version number).
@@ -81,4 +76,3 @@ format, a simple and minimalist configuration format based on
    log/index
    systems/index
    simulations/index
-   units

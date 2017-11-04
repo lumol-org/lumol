@@ -1,5 +1,5 @@
-Simulations building block
-**************************
+Lumol concepts
+**************
 
 In order to run a molecular simulation, you need two things: a description of
 the system you are simulating and a set of algorithms used to propagate the
@@ -11,3 +11,4 @@ system.
 .. toctree::
    system
    simulation
+   units
