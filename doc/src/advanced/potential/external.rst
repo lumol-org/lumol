@@ -129,10 +129,10 @@ We will omit the derivation of the formulae for tail corrections here but they
 are computed by solving these equations
 
 .. math::
-    \text{tail_energy} = \int_{r_c}^{\infty} u(r) r^2 \mathrm{d}r
+    \text{tail energy} = \int_{r_c}^{\infty} u(r) r^2 \mathrm{d}r
 
 .. math::
-    \text{tail_virial} = \int_{r_c}^{\infty} \frac{\partial u(r)}{\partial r} r^3 \mathrm{d}r
+    \text{tail virial} = \int_{r_c}^{\infty} \frac{\partial u(r)}{\partial r} r^3 \mathrm{d}r
 
 The implementation looks like so
 
