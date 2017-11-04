@@ -14,13 +14,6 @@ else
     cd $TRAVIS_BUILD_DIR
 fi
 
-# Build and cache mdbook
-if [ -f $HOME/.cargo/bin/mdbook ]; then
-    echo "Using cached mdbook from ~/.cargo/bin/mdbook"
-else
-    cargo install mdbook --vers "0.0.25"
-fi
-
 cd $TRAVIS_BUILD_DIR
 
-pip install --user -r scripts/ci/requirements.txt
+pip install --user -r doc/requirements.txt
