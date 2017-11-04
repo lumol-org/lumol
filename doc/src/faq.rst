@@ -2,26 +2,28 @@
 Frequently Asked Questions
 **************************
 
-Here are some commons questions about Lumol. If you have more questions,
-please contact us on `Gitter <https://gitter.im/lumol-org/lumol>`__ to
-ask it, so that we can add it here!
+Here are some commons questions about Lumol. If you have more questions, please
+contact us on `Gitter`_ to ask it, so that we can add it here!
 
--  `What kind of simulation can I run with
-   Lumol? <#what-kind-of-simulation-can-i-run-with-lumol>`__
--  `Why should I use Lumol? <#why-should-i-use-lumol>`__
--  `Why should I NOT use Lumol? <#why-should-i-not-use-lumol>`__
--  `How can I build the initial
-   configuration? <#how-can-i-build-the-initial-configuration>`__
--  `Is the code parallel? <#is-the-code-parallel>`__
--  `Why is Lumol written in Rust? <#why-is-lumol-written-in-rust>`__
--  `Is there any graphical interface to
-   Lumol? <#is-there-any-graphical-interface-to-lumol>`__
+-  :ref:`faq-simulation-kind`
+-  :ref:`faq-why-lumol`
+-  :ref:`faq-why-not-lumol`
+-  :ref:`faq-initial-config`
+-  :ref:`faq-parallel`
+-  :ref:`faq-why-rust`
+-  :ref:`faq-gui`
+
+.. _Gitter: https://gitter.im/lumol-org/lumol
+
+.. _faq-simulation-kind:
 
 What kind of simulation can I run with Lumol?
 ---------------------------------------------
 
 You should be able to run any kind of classical simulation, the only
 limit being the number of atoms fitting in memory.
+
+.. _faq-why-lumol:
 
 Why should I use Lumol?
 -----------------------
@@ -42,8 +44,10 @@ Other nice goodies include:
 -  Nicely formatted and easy to read input files;
 -  *(and more to come ...)*
 
-Why should I NOT use Lumol?
----------------------------
+.. _faq-why-not-lumol:
+
+Why should I **not** use Lumol?
+-------------------------------
 
 Here are some reasons for you not to use Lumol:
 
@@ -54,19 +58,23 @@ Here are some reasons for you not to use Lumol:
    multiple cores (think OpenMP), but not yet on multiple nodes (think
    MPI).
 
+.. _faq-initial-config:
+
 How can I build the initial configuration?
 ------------------------------------------
 
-Lumol does not provide tools for building the initial simulation
-configuration. There are already a lot of very good tools around, that
-you can use. Examples include
-`VMD <http://www.ks.uiuc.edu/Research/vmd/>`__,
-`packmol <http://www.ime.unicamp.br/~martinez/packmol/>`__,
-`gromacs <http://gromacs.org/>`__, and many others. Because Lumol uses
-`chemfiles <http://chemfiles.org/>`__ to read initial configuration, any
-`format supported by
-chemfiles <http://chemfiles.org/chemfiles/latest/formats.html#list-of-supported-formats>`__
-can be used.
+Lumol does not provide tools for building the initial simulation configuration.
+There are already a lot of very good tools around, that you can use. Examples
+include `VMD`_, `packmol`_, and many others.  Because Lumol uses `chemfiles`_ to
+read initial configuration, any `format supported by chemfiles
+<chemfiles-formats_>`_ can be used.
+
+.. _VMD: http://www.ks.uiuc.edu/Research/vmd/
+.. _packmol: http://www.ime.unicamp.br/~martinez/packmol/
+.. _chemfiles: http://chemfiles.org/
+.. _chemfiles-formats: http://chemfiles.org/chemfiles/latest/formats.html
+
+.. _faq-parallel:
 
 Is the code parallel?
 ---------------------
@@ -76,7 +84,7 @@ of the processor (this is shared memory parallelism, like OpenMP). It is
 not yet possible to run Lumol on multiple nodes in a cluster (message
 passing parallelism, like MPI).
 
-.. _why-rust:
+.. _faq-why-rust:
 
 Why is Lumol written in Rust?
 -----------------------------
@@ -91,6 +99,8 @@ This allow to build better software faster, because the programmer does
 not need to spend as much time debugging the code. At the same time, it
 also allow to check at compile-time that a code is data-race free, and
 allow to build parallel programs more easily.
+
+.. _faq-gui:
 
 Is there any graphical interface to Lumol?
 ------------------------------------------

@@ -2,8 +2,8 @@
 Installation
 ************
 
-Lumol is written in `rust`_ (:ref:`why? <why-rust>`), and you will need a Rust
-compiler to compile it. You can find installation instructions `here
+Lumol is written in `rust`_ (:ref:`why? <faq-why-rust>`), and you will need a
+Rust compiler to compile it. You can find installation instructions `here
 <rust-install_>`_, or use your system package manager (Rust is available on
 Fedora, and with Homebrew on OS X). Lumol also depends on some C++ libraries, so
 you will also need a C++ compiler and CMake to be installed.
