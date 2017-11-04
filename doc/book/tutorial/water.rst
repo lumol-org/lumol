@@ -13,7 +13,7 @@ You will need three input files for this simulation:
 - the force field (potential definitions) ``water-fSCP.toml``.
 
 You can download them :download:`here <../data/water.zip>`, and run the
-simulation with ``lumol nacl.toml``. The simulation should finish in a few
+simulation with ``lumol water.toml``. The simulation should finish in a few
 minutes.
 
 The input files commented
@@ -27,7 +27,7 @@ novelties:
 
 -  The ``guess_bonds = true`` entry tells Lumol to try to guess the bonds from
    the distances in the XYZ file. This is needed because we want to simulate a
-   molecule but there is not bonding information inside the XYZ format. If we
+   molecule but there is no bonding information inside the XYZ format. If we
    were to use a PDB file with connectivity instead, this would not be needed;
 -  The ``potentials = "water-fSCP.toml"`` tells Lumol to read the potentials
    from the ``water-fSCP.toml`` file. Using this type of input for the
@@ -55,28 +55,28 @@ atomic charges.
 .. literalinclude:: ../data/water-fSCP.toml
     :lines: 4-9
 
-The pair potential section contains the usual pairs declarations, with a few
+The pair potential section contains the usual declarations for pairs, with a few
 additional options.
 
 .. literalinclude:: ../data/water-fSCP.toml
     :lines: 11-13
 
 We can add a ``restriction`` to restrict a specific pair interaction to some
-kind of pairs. Here we will only account for H-H pairs inside the same molecule
+kind of pairs. Here, we will only account for H-H pairs inside the same molecule
 (``"intra-molecular"`` interactions).
 
 .. literalinclude:: ../data/water-fSCP.toml
     :lines: 15-18
 
 We can also define a non-interacting pair interaction! This is useful when some
-atoms does not interact in the model we use.
+atoms do not interact in the model we use.
 
 .. literalinclude:: ../data/water-fSCP.toml
     :lines: 20-22
 
-Then comes the bonds and angles definitions. These are the interactions used
+Next, the bonds and angles are defined. These are interactions used
 between bonded particles (or angles formed by two bonds and dihedral angles
-formed by three bonds). These section follow the same pattern as the
+formed by three bonds). This section follows the same pattern as the
 ``[[pairs]]`` section.
 
 .. literalinclude:: ../data/water-fSCP.toml
@@ -84,8 +84,14 @@ formed by three bonds). These section follow the same pattern as the
 
 Finally we specify how to compute the electrostatic interaction, this time using
 the Ewald summation method. We can restrict the coulombic interactions to only
-apply between particles not in the same molecule using a ``restriction`` here
-too.
+apply between particles not in the same molecule by using
+``restriction = "inter-molecular"``.
 
 .. literalinclude:: ../data/water-fSCP.toml
     :lines: 32-34
+
+The simulation is run via
+
+.. code::
+
+    lumol water.toml

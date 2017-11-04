@@ -83,7 +83,7 @@ Add the following lines below the structs implementation.
 ``r``. To be more precise, the vectorial force can readily be computed by
 multiplying the result of ``force`` with the connection vector :math:`\vec{r}`.
 
-The next step is to make our ``Potential`` usable in Lumol's algortihms to
+The next step is to make our ``Potential`` usable in Lumol's algorithms to
 compute non-bonded energies and forces. Therefore, we have to implement the
 ``PairPotential`` trait.
 

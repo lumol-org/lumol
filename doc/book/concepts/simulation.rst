@@ -8,7 +8,7 @@ A simulation in Lumol always contains the same steps:
 2. Propagate the system for one step using a Propagator;
 3. Compute the physical properties of the system and output them to a file;
 4. Check if the simulation is finished (either the required number of steps has
-   been done, or come convergence criterion is reached) it returns the updated
+   been done, or a convergence criterion is reached) it returns the updated
    system. If the simulation is not finished, go back to (2)
 
 Propagators
