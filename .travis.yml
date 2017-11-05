@@ -37,9 +37,8 @@ script:
     - ./scripts/ci/compile-tutorials.py
     # Misc style checking
     - ./scripts/ci/check-whitespaces.py
-    # Generate and check doc
+    # Generate documentation and place it in target/gh-pages
     - ./scripts/ci/generate-docs.sh
-    - ./scripts/ci/check-html-book.py doc/book
     # Generate and publish coverage
     - |
       if ${DO_COVERAGE}; then
