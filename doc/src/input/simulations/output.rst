@@ -37,6 +37,8 @@ associated quantities.  The available outputs are the following:
 -  The ``Properties`` output will write the volume, the instant pressure
    (computed from the virial equation) and the instant temperature of the
    system;
+-  The ``Stress`` output will write all the components of the stress tensor
+   (computed from the virial equation);
 -  The ``Trajectory`` output should be used to write a trajectory. The format of
    the trajectory will be guessed from the ``file`` extension.  Supported
    formats are documented in `chemfiles`_ documentation.
@@ -67,6 +69,8 @@ Here is a list of all properties available to custom outputs:
 - Atomic properties: `x`, `y` and `z` for cartesian coordinates, `vx`, `vy` and
   `vz` for cartesian components of the velocity, `mass` for the atomic mass,
   `charge` for the atomic charge.
-- Physical properties: `pressure`, `volume`, `temperature`, `natoms`
+- Physical properties: `pressure`, `volume`, `temperature`, `natoms`, stress
+  tensor components: `stress.xx`, `stress.yy`, `stress.zz`, `stress.xy`,
+  `stress.xz`, `stress.yz`.
 - Unit Cell properties: `cell.a`, `cell.b`, `cell.c` are the unit cell vector
   lengths; `cell.alpha`, `cell.beta` and `cell.gamma` are the unit cell angles.
