@@ -16,3 +16,5 @@ mv ../doc/* latest/
 cat <<EOF > index.html
 <meta http-equiv=refresh content=0;url=latest/index.html>
 EOF
+
+touch .nojekyll
