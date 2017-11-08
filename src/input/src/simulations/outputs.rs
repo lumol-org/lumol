@@ -40,6 +40,7 @@ impl Input {
                     "properties" => Box::new(try!(PropertiesOutput::from_toml(output))),
                     "energy" => Box::new(try!(EnergyOutput::from_toml(output))),
                     "stress" => Box::new(try!(StressOutput::from_toml(output))),
+                    "forces" => Box::new(try!(ForcesOutput::from_toml(output))),
                     "cell" => Box::new(try!(CellOutput::from_toml(output))),
                     "custom" => Box::new(try!(CustomOutput::from_toml(output))),
                     other => {
@@ -104,6 +105,14 @@ impl FromToml for StressOutput {
     fn from_toml(config: &Table) -> Result<StressOutput> {
         let path = try!(get_file(config));
         let output = try_io!(StressOutput::new(path), PathBuf::from(path));
+        Ok(output)
+    }
+}
+
+impl FromToml for ForcesOutput {
+    fn from_toml(config: &Table) -> Result<ForcesOutput> {
+        let path = try!(get_file(config));
+        let output = try_io!(ForcesOutput::new(path), PathBuf::from(path));
         Ok(output)
     }
 }
