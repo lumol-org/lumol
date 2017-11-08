@@ -9,6 +9,7 @@ nsteps = 1000000
 outputs = [
     {type = "Trajectory", file = "filename.xyz", frequency = 100},
     {type = "Energy", file = "energy.dat", frequency = 200},
+    {type = "Forces", file = "forces.xyz", frequency = 200},
     {type = "Custom", file = "custom.dat", template = "{temperature / pressure}", frequency = 200}
 ]
 
