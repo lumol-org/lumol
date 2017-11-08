@@ -484,11 +484,4 @@ mod tests {
         assert_eq!(a.tensorial(&b), matrix);
         assert_eq!(b.tensorial(&a), matrix.transposed());
     }
-
-    #[test]
-    #[should_panic]
-    fn index_out_of_bounds() {
-        let mut a = Vector3D::new(2.1, 3.5, 4.8);
-        a[3] += 4.0;
-    }
 }

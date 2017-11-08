@@ -482,13 +482,6 @@ mod tests {
     }
 
     #[test]
-    #[should_panic]
-    fn out_of_bounds() {
-        let a = Matrix3::zero();
-        let _ = a[3][1];
-    }
-
-    #[test]
     fn specials_matrix() {
         let a = Matrix3::zero();
         let b = Matrix3::one();
