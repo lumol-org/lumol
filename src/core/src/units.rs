@@ -342,9 +342,9 @@ fn read_expr(stream: &mut Vec<Token>) -> Result<UnitExpr, ParseError> {
                 let pow = match stream.pop() {
                     Some(pow) => match pow {
                         Token::Value(value) => try!(value.parse()),
-                        _ => return Err(ParseError::MalformedExpr(String::from(
+                        _ => return Err(ParseError::MalformedExpr(
                             format!("Invalid value after ^: {}", pow.as_str())
-                        )))
+                        ))
                     },
                     None => return Err(ParseError::MalformedExpr(String::from(
                         "Missing value after '^'"
