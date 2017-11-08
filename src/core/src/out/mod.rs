@@ -26,12 +26,14 @@ mod cell;
 mod stress;
 mod energy;
 mod custom;
+mod forces;
 mod properties;
 mod trajectory;
 
 pub use self::cell::CellOutput;
 pub use self::energy::EnergyOutput;
 pub use self::stress::StressOutput;
+pub use self::forces::ForcesOutput;
 pub use self::custom::{CustomOutput, CustomOutputError};
 pub use self::properties::PropertiesOutput;
 pub use self::trajectory::TrajectoryOutput;
