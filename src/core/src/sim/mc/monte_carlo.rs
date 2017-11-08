@@ -301,10 +301,10 @@ impl MoveCounter {
 
     /// Return fraction of total number of accepted over total number of attempted moves.
     pub fn acceptance(&self) -> f64 {
-        if self.total_attempted != 0 {
-            self.total_accepted as f64 / self.total_attempted as f64
-        } else {
+        if self.total_attempted == 0 {
             0.0
+        } else {
+            self.total_accepted as f64 / self.total_attempted as f64
         }
     }
 

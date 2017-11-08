@@ -176,8 +176,7 @@ impl InteractionsInput {
 }
 
 fn read_pair_potential(pair: &Table) -> Result<Box<PairPotential>> {
-    const KEYWORDS: &'static [&'static str] =
-        &["restriction", "computation", "atoms", "cutoff", "tail_correction"];
+    const KEYWORDS: &[&str] = &["restriction", "computation", "atoms", "cutoff", "tail_correction"];
 
     let potentials = pair.keys()
         .cloned()

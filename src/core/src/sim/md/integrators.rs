@@ -109,7 +109,7 @@ impl Integrator for Verlet {
             (&mut Position, &mut Velocity, &Mass, &mut self.prevpos, forces)
         ) {
             // Save positions at t
-            let tmp = position.clone();
+            let tmp = *position;
             // Update positions at t + ∆t
             *position = 2.0 * (*position) - (*prevpos) + dt2 / mass * force;
             // Update velocities at t

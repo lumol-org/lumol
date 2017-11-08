@@ -526,11 +526,15 @@ impl Ewald {
                 for ikz in 0..self.kmax {
                     self.delta_rho[(ikx, iky, ikz)] = Complex::polar(0.0, 0.0);
                     for (idx, &i) in idxes.iter().enumerate() {
-                        let old_phi = old_fourier_phases[(ikx, idx, 0)] * old_fourier_phases[(iky, idx, 1)] * old_fourier_phases[(ikz, idx, 2)];
-                        let new_phi = new_fourier_phases[(ikx, idx, 0)] * new_fourier_phases[(iky, idx, 1)] * new_fourier_phases[(ikz, idx, 2)];
+                        let old_phi = old_fourier_phases[(ikx, idx, 0)] *
+                                      old_fourier_phases[(iky, idx, 1)] *
+                                      old_fourier_phases[(ikz, idx, 2)];
+                        let new_phi = new_fourier_phases[(ikx, idx, 0)] *
+                                      new_fourier_phases[(iky, idx, 1)] *
+                                      new_fourier_phases[(ikz, idx, 2)];
 
-                        self.delta_rho[(ikx, iky, ikz)] = self.delta_rho[(ikx, iky, ikz)] - charges[i] * old_phi;
-                        self.delta_rho[(ikx, iky, ikz)] = self.delta_rho[(ikx, iky, ikz)] + charges[i] * new_phi;
+                        self.delta_rho[(ikx, iky, ikz)] -= charges[i] * old_phi;
+                        self.delta_rho[(ikx, iky, ikz)] += charges[i] * new_phi;
                     }
                 }
             }
@@ -819,8 +823,7 @@ impl GlobalCache for SharedEwald {
         for ikx in 0..ewald.kmax {
             for iky in 0..ewald.kmax {
                 for ikz in 0..ewald.kmax {
-                    ewald.rho[(ikx, iky, ikz)] = ewald.rho[(ikx, iky, ikz)]
-                                               + ewald.delta_rho[(ikx, iky, ikz)];
+                    ewald.rho[(ikx, iky, ikz)] += ewald.delta_rho[(ikx, iky, ikz)];
                 }
             }
         }
