@@ -8,5 +8,5 @@ TUTORIALS = glob.glob('{}/tutorials/*'.format(os.curdir))
 
 if __name__ == '__main__':
     for tutorial in TUTORIALS:
-        subprocess.call('Cargo build', shell=True, cwd=tutorial)
+        subprocess.call('cargo build', shell=True, cwd=tutorial)
 
