@@ -8,6 +8,7 @@ use std::path::{Path, PathBuf};
 
 use super::Output;
 use sys::System;
+use utils;
 
 /// The `ForcesOutput` writes the forces acting on the atoms using XYZ format
 pub struct ForcesOutput {
@@ -41,11 +42,15 @@ impl Output for ForcesOutput {
     fn write(&mut self, system: &System) {
         let forces = system.forces();
         let names = system.particles().name;
+        let conversion = utils::unit_to(1.0, "kJ/mol/A");
 
         try!(writeln!(&mut self.file, "{}", forces.len()), self.path);
-        try!(writeln!(&mut self.file, "forces at step {}", system.step()), self.path);
+        try!(writeln!(&mut self.file, "forces in kJ/mol/A at step {}", system.step()), self.path);
         for (i, force) in forces.iter().enumerate() {
-            try!(writeln!(&mut self.file, "{} {} {} {}", names[i], force[0], force[1], force[2]), self.path);
+            let x = conversion * force[0];
+            let y = conversion * force[1];
+            let z = conversion * force[2];
+            try!(writeln!(&mut self.file, "{} {} {} {}", names[i], x, y, z), self.path);
         }
     }
 }
@@ -61,9 +66,9 @@ mod tests {
             Box::new(ForcesOutput::new(path).unwrap())
         },
 "2
-forces at step 0
-F 0.0030000000021006322 0 0
-F -0.0030000000021006322 0 0
+forces in kJ/mol/A at step 0
+F 30.000000000000025 0 0
+F -30.000000000000025 0 0
 "
         );
     }
