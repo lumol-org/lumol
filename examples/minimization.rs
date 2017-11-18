@@ -26,30 +26,27 @@ fn main() {
     system.add_bond(0, 2);
 
     let null_interaction = PairInteraction::new(Box::new(NullPotential), 10.0);
-    system.add_pair_potential("O", "H", null_interaction.clone());
-    system.add_pair_potential("O", "O", null_interaction.clone());
-    system.add_pair_potential("H", "H", null_interaction.clone());
+    system.add_pair_potential(("O", "H"), null_interaction.clone());
+    system.add_pair_potential(("O", "O"), null_interaction.clone());
+    system.add_pair_potential(("H", "H"), null_interaction.clone());
 
     system.add_bond_potential(
-        "O",
-        "H",
+        ("O", "H"),
         Box::new(Harmonic {
             x0: units::from(1.1, "A").unwrap(),
             k: units::from(100.0, "kJ/mol/A^2").unwrap(),
         }),
     );
     system.add_angle_potential(
-        "H",
-        "O",
-        "H",
+        ("H", "O", "H"),
         Box::new(Harmonic {
             x0: units::from(109.0, "deg").unwrap(),
             k: units::from(30.0, "kJ/mol/deg").unwrap(),
         }),
     );
 
-    let mut simulation =
-        Simulation::new(Box::new(Minimization::new(Box::new(SteepestDescent::new()))));
+    let minimization = Minimization::new(Box::new(SteepestDescent::new()));
+    let mut simulation = Simulation::new(Box::new(minimization));
     simulation.add_output(Box::new(EnergyOutput::new("energy.dat").unwrap()));
     simulation.run(&mut system, 500);
 }

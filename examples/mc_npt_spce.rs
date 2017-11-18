@@ -30,16 +30,16 @@ fn get_system() -> System {
     // Restrict interactions to act only between different molecules.
     pairs.set_restriction(PairRestriction::InterMolecular);
     pairs.enable_tail_corrections();
-    system.add_pair_potential("O", "O", pairs);
+    system.add_pair_potential(("O", "O"), pairs);
 
     // Add bonds: we use fixed bond lengths assuming
     // the equilibrium bond length. This means that both
     // energy as well as virial for the bond potential are
     // zero. Hence, we use a `NullPotential`.
     let bond = Box::new(NullPotential {});
-    system.add_bond_potential("O", "H", bond);
+    system.add_bond_potential(("O", "H"), bond);
     let angle = Box::new(NullPotential {});
-    system.add_angle_potential("H", "O", "H", angle);
+    system.add_angle_potential(("H", "O", "H"), angle);
 
     // Set charges
     for particle in system.particles_mut() {

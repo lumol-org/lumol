@@ -46,7 +46,7 @@ pub fn testing_system() -> System {
         k: unit_from(300.0, "kJ/mol/A^2"),
         x0: unit_from(1.2, "A"),
     });
-    system.add_pair_potential("F", "F", PairInteraction::new(harmonic, 5.0));
+    system.add_pair_potential(("F", "F"), PairInteraction::new(harmonic, 5.0));
     return system;
 }
 

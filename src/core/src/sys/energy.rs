@@ -66,7 +66,7 @@ impl<'a> EnergyEvaluator<'a> {
             let ni = composition[i] as f64;
             for j in self.system.particle_kinds() {
                 let nj = composition[j] as f64;
-                for potential in self.system.interactions().pairs(i, j) {
+                for potential in self.system.interactions().pairs((i, j)) {
                     energy += 2.0 * PI * ni * nj * potential.tail_energy() / volume;
                 }
             }
@@ -196,11 +196,10 @@ mod tests {
         );
         pair.enable_tail_corrections();
 
-        system.add_pair_potential("F", "F", pair);
+        system.add_pair_potential(("F", "F"), pair);
 
         system.add_bond_potential(
-            "F",
-            "F",
+            ("F", "F"),
             Box::new(Harmonic {
                 k: unit_from(100.0, "kJ/mol/A^2"),
                 x0: unit_from(2.0, "A"),
@@ -208,9 +207,7 @@ mod tests {
         );
 
         system.add_angle_potential(
-            "F",
-            "F",
-            "F",
+            ("F", "F", "F"),
             Box::new(Harmonic {
                 k: unit_from(100.0, "kJ/mol/deg^2"),
                 x0: unit_from(88.0, "deg"),
@@ -218,10 +215,7 @@ mod tests {
         );
 
         system.add_dihedral_potential(
-            "F",
-            "F",
-            "F",
-            "F",
+            ("F", "F", "F", "F"),
             Box::new(Harmonic {
                 k: unit_from(100.0, "kJ/mol/deg^2"),
                 x0: unit_from(185.0, "deg"),
@@ -229,7 +223,7 @@ mod tests {
         );
 
         // unused interaction to check that we do handle this right
-        system.add_pair_potential("H", "O", PairInteraction::new(Box::new(NullPotential), 0.0));
+        system.add_pair_potential(("H", "O"), PairInteraction::new(Box::new(NullPotential), 0.0));
 
         return system;
     }

@@ -56,7 +56,7 @@ mod cutoff_3_lrc {
         if let PairKind::Tail = kind {
             lj.enable_tail_corrections();
         }
-        system.add_pair_potential("X", "X", lj);
+        system.add_pair_potential(("X", "X"), lj);
     }
 
     #[test]
@@ -169,7 +169,7 @@ mod cutoff_4_lrc {
         if let PairKind::Tail = kind {
             lj.enable_tail_corrections();
         }
-        system.add_pair_potential("X", "X", lj);
+        system.add_pair_potential(("X", "X"), lj);
     }
 
     #[test]

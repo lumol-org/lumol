@@ -45,7 +45,7 @@ impl InteractionsInput {
             ));
 
             let potential = try!(read_angle_potential(angle));
-            system.add_angle_potential(a, b, c, potential);
+            system.add_angle_potential((a, b, c), potential);
         }
         Ok(())
     }
@@ -90,7 +90,7 @@ impl InteractionsInput {
             ));
 
             let potential = try!(read_dihedral_potential(dihedral));
-            system.add_dihedral_potential(a, b, c, d, potential);
+            system.add_dihedral_potential((a, b, c, d), potential);
         }
         Ok(())
     }
