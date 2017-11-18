@@ -3,13 +3,13 @@
 
 //! The Configuration type definition
 
-use std::cmp::{min, max};
+use std::cmp::{max, min};
 use std::i8;
 
 use types::{Vector3D, Zero};
 
-use sys::{ParticleKind, Molecule, BondDistance, UnitCell};
-use sys::{Particle, ParticleVec, ParticleSlice, ParticleSliceMut, };
+use sys::{BondDistance, Molecule, ParticleKind, UnitCell};
+use sys::{Particle, ParticleSlice, ParticleSliceMut, ParticleVec};
 use sys::molecule_type;
 
 /// Particles permutations:. Indexes are given in the `(old, new)` form.
@@ -67,23 +67,27 @@ impl Configuration {
     }
 
     /// Check if the particles at indexes `i` and `j` are in the same molecule
-    #[inline] pub fn are_in_same_molecule(&self, i: usize, j:usize) -> bool {
+    #[inline]
+    pub fn are_in_same_molecule(&self, i: usize, j: usize) -> bool {
         debug_assert_eq!(self.molids.len(), self.particles.len());
         self.molids[i] == self.molids[j]
     }
 
     /// Get the list of molecules in the configuration.
-    #[inline] pub fn molecules(&self) -> &[Molecule] {
+    #[inline]
+    pub fn molecules(&self) -> &[Molecule] {
         &self.molecules
     }
 
     /// Get the molecule at index `id`
-    #[inline] pub fn molecule(&self, id: usize) -> &Molecule {
+    #[inline]
+    pub fn molecule(&self, id: usize) -> &Molecule {
         &self.molecules[id]
     }
 
     /// Get the index of the molecule containing the particle `i`
-    #[inline] pub fn molid(&self, i: usize) -> usize {
+    #[inline]
+    pub fn molid(&self, i: usize) -> usize {
         self.molids[i]
     }
 
@@ -151,7 +155,10 @@ impl Configuration {
         assert_ne!(particle_i, particle_j);
         trace!(
             "Adding bond {}-{} between molecules {} and {}",
-            particle_i, particle_j, self.molids[particle_i], self.molids[particle_j]
+            particle_i,
+            particle_j,
+            self.molids[particle_i],
+            self.molids[particle_j]
         );
 
         // Getting copy of the molecules before the merge
@@ -180,7 +187,7 @@ impl Configuration {
 
             // Add permutations for molecules that where shifted to make
             // space for the just moved molecule.
-            for molecule in &self.molecules[new_molid + 1 .. old_molid] {
+            for molecule in &self.molecules[new_molid + 1..old_molid] {
                 for i in molecule {
                     permutations.push((i - size, i));
                 }
@@ -223,10 +230,16 @@ impl Configuration {
     }
 
     /// Get the number of particles in this configuration
-    #[inline] pub fn size(&self) -> usize {self.particles.len()}
+    #[inline]
+    pub fn size(&self) -> usize {
+        self.particles.len()
+    }
 
     /// Check if this configuration contains any particle
-    #[inline] pub fn is_empty(&self) -> bool {self.particles.is_empty()}
+    #[inline]
+    pub fn is_empty(&self) -> bool {
+        self.particles.is_empty()
+    }
 
     /// Return the center-of-mass of a molecule
     ///
@@ -352,7 +365,9 @@ impl Configuration {
         let size = old_mol.size() as isize;
 
         // translate all indexes in the molecules between new_mol and old_mol
-        for molecule in self.molecules.iter_mut().skip(new_molid + 1).take(old_molid - new_molid - 1) {
+        for molecule in
+            self.molecules.iter_mut().skip(new_molid + 1).take(old_molid - new_molid - 1)
+        {
             molecule.translate_by(size);
         }
 
@@ -362,38 +377,42 @@ impl Configuration {
         }
 
         let delta = old_mol.start() - new_mol.end();
-        old_mol.translate_by(- (delta as isize));
+        old_mol.translate_by(-(delta as isize));
 
         new_mol.merge_with(old_mol);
         self.molecules[new_molid] = new_mol;
         let _ = self.molecules.remove(old_molid);
 
-        // Check that self.molids is sorted and only contains successive values
-        #[allow(block_in_if_condition_stmt)]
-        {
-            debug_assert!(self.molids.iter().fold((true, 0), |(is_valid, previous), &i| {
-                if i == previous || i == previous + 1 {
-                    (is_valid, i)
-                } else {
-                    (false, i)
-                }
-            }).0, "Unsorted molecule ids {:?}", self.molids);
-        }
+        debug_assert!(check_molid_sorted(&self.molids), "Unsorted molecule ids {:?}", self.molids);
 
         return delta;
     }
 }
 
+/// Check that molids is sorted and only contains successive values
+fn check_molid_sorted(molids: &[usize]) -> bool {
+    let mut previous = 0;
+    for &i in molids {
+        if i == previous || i == previous + 1 {
+            previous = i;
+        } else {
+            return false;
+        }
+    }
+    return true;
+}
+
 /// `UnitCell` related functions
 impl Configuration {
     /// Get the distance between the particles at indexes `i` and `j`
-    #[inline] pub fn distance(&self, i: usize, j:usize) -> f64 {
+    #[inline]
+    pub fn distance(&self, i: usize, j: usize) -> f64 {
         self.cell.distance(&self.particles.position[i], &self.particles.position[j])
     }
 
     /// Get the vector between the nearest image of particle `j` with respect to
     /// particle `i`.
-    pub fn nearest_image(&self, i: usize, j:usize) -> Vector3D {
+    pub fn nearest_image(&self, i: usize, j: usize) -> Vector3D {
         let mut res = self.particles.position[i] - self.particles.position[j];
         self.cell.vector_image(&mut res);
         return res;
@@ -409,7 +428,12 @@ impl Configuration {
 
     /// Get the angle and the derivatives of the angle between the particles
     /// `i`, `j` and `k`
-    pub fn angle_and_derivatives(&self, i: usize, j: usize, k: usize) -> (f64, Vector3D, Vector3D, Vector3D) {
+    pub fn angle_and_derivatives(
+        &self,
+        i: usize,
+        j: usize,
+        k: usize,
+    ) -> (f64, Vector3D, Vector3D, Vector3D) {
         let a = self.particles.position[i];
         let b = self.particles.position[j];
         let c = self.particles.position[k];
@@ -427,7 +451,13 @@ impl Configuration {
 
     /// Get the dihedral angle and the derivatives of the dihedral angle
     /// between the particles `i`, `j`, `k` and `m`
-    pub fn dihedral_and_derivatives(&self, i: usize, j: usize, k: usize, m: usize) -> (f64, Vector3D, Vector3D, Vector3D, Vector3D) {
+    pub fn dihedral_and_derivatives(
+        &self,
+        i: usize,
+        j: usize,
+        k: usize,
+        m: usize,
+    ) -> (f64, Vector3D, Vector3D, Vector3D, Vector3D) {
         let a = self.particles.position[i];
         let b = self.particles.position[j];
         let c = self.particles.position[k];
@@ -439,13 +469,13 @@ impl Configuration {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use sys::{Bond, Angle, Dihedral};
+    use sys::{Angle, Bond, Dihedral};
     use types::Vector3D;
 
     /// Create particles with intialized kind for the tests
     fn particle(name: &str) -> Particle {
-        use std::sync::Mutex;
         use std::collections::HashMap;
+        use std::sync::Mutex;
         lazy_static! {
             static ref KINDS: Mutex<HashMap<String, u32>> = Mutex::new(HashMap::new());
         }

@@ -2,12 +2,12 @@
 // Copyright (C) Lumol's contributors — BSD license
 
 //! 3x3 matrix type.
-use std::ops::{Add, Sub, Mul, Div};
-use std::ops::{AddAssign, SubAssign, MulAssign, DivAssign};
-use std::ops::{Deref, DerefMut};
 use std::iter;
+use std::ops::{Add, Div, Mul, Sub};
+use std::ops::{AddAssign, DivAssign, MulAssign, SubAssign};
+use std::ops::{Deref, DerefMut};
 
-use types::{Vector3D, Zero, One};
+use types::{One, Vector3D, Zero};
 
 /// A 3x3 square matrix type.
 ///
@@ -121,7 +121,7 @@ impl Matrix3 {
         Matrix3::new([
             [(n[0] * n[0]) * one_minus_cos + cos, xy + z_sin, xz - y_sin],
             [xy - z_sin, (n[1] * n[1]) * one_minus_cos + cos, yz + x_sin],
-            [xz + y_sin, yz - x_sin, (n[2] * n[2]) * one_minus_cos + cos]
+            [xz + y_sin, yz - x_sin, (n[2] * n[2]) * one_minus_cos + cos],
         ])
     }
 
@@ -200,6 +200,7 @@ impl Matrix3 {
     ///
     /// assert_eq!(matrix.determinant(), 4.0 * 1.5 * 7.0);
     /// ```
+    #[cfg_attr(rustfmt, rustfmt_skip)]
     pub fn determinant(&self) -> f64 {
         ( self[0][0] * (self[1][1] * self[2][2] - self[2][1] * self[1][2])
         - self[0][1] * (self[1][0] * self[2][2] - self[1][2] * self[2][0])
@@ -234,6 +235,7 @@ impl Matrix3 {
     }
 }
 
+#[cfg_attr(rustfmt, rustfmt_skip)]
 impl_arithmetic!(
     Matrix3, Matrix3, Add, add, Matrix3,
     self, other,
@@ -244,6 +246,7 @@ impl_arithmetic!(
     ])
 );
 
+#[cfg_attr(rustfmt, rustfmt_skip)]
 impl_inplace_arithmetic!(
     Matrix3, Matrix3, AddAssign, add_assign,
     self, other,
@@ -254,7 +257,7 @@ impl_inplace_arithmetic!(
     }
 );
 
-
+#[cfg_attr(rustfmt, rustfmt_skip)]
 impl_arithmetic!(
     Matrix3, Matrix3, Sub, sub, Matrix3,
     self, other,
@@ -265,6 +268,7 @@ impl_arithmetic!(
     ])
 );
 
+#[cfg_attr(rustfmt, rustfmt_skip)]
 impl_inplace_arithmetic!(
     Matrix3, Matrix3, SubAssign, sub_assign,
     self, other,
@@ -275,6 +279,7 @@ impl_inplace_arithmetic!(
     }
 );
 
+#[cfg_attr(rustfmt, rustfmt_skip)]
 impl_arithmetic!(
     Matrix3, Matrix3, Mul, mul, Matrix3,
     self, other,
@@ -299,6 +304,7 @@ impl_arithmetic!(
     }
 );
 
+#[cfg_attr(rustfmt, rustfmt_skip)]
 impl_inplace_arithmetic!(
     Matrix3, Matrix3, MulAssign, mul_assign,
     self, other,
@@ -323,6 +329,7 @@ impl_inplace_arithmetic!(
     }
 );
 
+#[cfg_attr(rustfmt, rustfmt_skip)]
 impl_arithmetic!(
     Matrix3, Vector3D, Mul, mul, Vector3D,
     self, other,
@@ -334,6 +341,7 @@ impl_arithmetic!(
     }
 );
 
+#[cfg_attr(rustfmt, rustfmt_skip)]
 lsh_scal_arithmetic!(
     Matrix3, Mul, mul, Matrix3,
     self, other,
@@ -344,6 +352,7 @@ lsh_scal_arithmetic!(
     ])
 );
 
+#[cfg_attr(rustfmt, rustfmt_skip)]
 rhs_scal_arithmetic!(
     Matrix3, Mul, mul, Matrix3,
     self, other,
@@ -354,6 +363,7 @@ rhs_scal_arithmetic!(
     ])
 );
 
+#[cfg_attr(rustfmt, rustfmt_skip)]
 impl_inplace_arithmetic!(
     Matrix3, f64, MulAssign, mul_assign,
     self, other,
@@ -366,6 +376,7 @@ impl_inplace_arithmetic!(
     }
 );
 
+#[cfg_attr(rustfmt, rustfmt_skip)]
 lsh_scal_arithmetic!(
     Matrix3, Div, div, Matrix3,
     self, other,
@@ -376,6 +387,7 @@ lsh_scal_arithmetic!(
     ])
 );
 
+#[cfg_attr(rustfmt, rustfmt_skip)]
 impl_inplace_arithmetic!(
     Matrix3, f64, DivAssign, div_assign,
     self, other,
@@ -401,16 +413,15 @@ impl Zero for Matrix3 {
 impl One for Matrix3 {
     /// Create an identity matrix
     fn one() -> Matrix3 {
-        Matrix3::new([
-            [1.0, 0.0, 0.0],
-            [0.0, 1.0, 0.0],
-            [0.0, 0.0, 1.0],
-        ])
+        Matrix3::new([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]])
     }
 }
 
 impl iter::Sum for Matrix3 {
-    fn sum<I>(iter: I) -> Self where I: Iterator<Item=Matrix3> {
+    fn sum<I>(iter: I) -> Self
+    where
+        I: Iterator<Item = Matrix3>,
+    {
         iter.fold(Matrix3::zero(), |a, b| a + b)
     }
 }
@@ -436,6 +447,7 @@ impl From<[[f64; 3]; 3]> for Matrix3 {
     }
 }
 
+#[cfg_attr(rustfmt, rustfmt_skip)]
 #[cfg(test)]
 mod tests {
     use super::*;

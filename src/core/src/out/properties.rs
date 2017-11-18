@@ -1,15 +1,15 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) Lumol's contributors — BSD license
 
-use std::io::prelude::*;
-use std::io;
 use std::fs::File;
+use std::io;
+use std::io::prelude::*;
 use std::path::{Path, PathBuf};
 
 use super::Output;
 
-use utils;
 use sys::System;
+use utils;
 
 /// The `PropertiesOutput` write various physical properties of the system to
 /// a file. These properties are:
@@ -26,7 +26,7 @@ impl PropertiesOutput {
     /// Create a new `PropertiesOutput` writing to `filename`. The file is replaced
     /// if it already exists.
     pub fn new<P: AsRef<Path>>(filename: P) -> Result<PropertiesOutput, io::Error> {
-        Ok(PropertiesOutput{
+        Ok(PropertiesOutput {
             file: try!(File::create(filename.as_ref())),
             path: filename.as_ref().to_owned(),
         })
@@ -47,7 +47,9 @@ impl Output for PropertiesOutput {
         let volume = utils::unit_to(system.volume(), "A^3");
         let temperature = utils::unit_to(system.temperature(), "K");
         let pressure = utils::unit_to(system.pressure(), "bar");
-        if let Err(err) = writeln!(&mut self.file, "{} {} {} {}", system.step(), volume, temperature, pressure) {
+        if let Err(err) =
+            writeln!(&mut self.file, "{} {} {} {}", system.step(), volume, temperature, pressure)
+        {
             error!("Could not write to file '{}': {}", self.path.display(), err);
         }
     }
@@ -60,13 +62,12 @@ mod tests {
 
     #[test]
     fn properties() {
-        test_output(|path| {
-            Box::new(PropertiesOutput::new(path).unwrap())
-        },
-"# Physical properties of the simulation
-# Step Volume/A^3 Temperature/K Pressure/bar
-0 1000 38083.04389172312 10299.991728079816
-"
+        test_output(
+            |path| Box::new(PropertiesOutput::new(path).unwrap()),
+            "# Physical properties of the simulation
+            # Step Volume/A^3 Temperature/K Pressure/bar
+            0 1000 38083.04389172312 10299.991728079816
+            ",
         );
     }
 }

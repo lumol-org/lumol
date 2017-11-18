@@ -3,6 +3,6 @@
 
 //! Combination of `rayon::prelude` and lumol specific utilities
 
-pub use rayon::prelude::*;
-pub use ndarray_parallel::prelude::*;
 pub use super::ParallelShortcuts;
+pub use ndarray_parallel::prelude::*;
+pub use rayon::prelude::*;

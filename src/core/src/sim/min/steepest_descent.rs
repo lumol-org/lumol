@@ -1,9 +1,9 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) Lumol's contributors — BSD license
 
-use utils;
 use sys::System;
 use sys::zip_particle::*;
+use utils;
 
 use super::{Minimizer, Tolerance};
 
@@ -39,9 +39,9 @@ impl Minimizer for SteepestDescent {
         // Update coordinates, reducing gamma until we find a configuration of
         // lower energy
         loop {
-            for (position, prevpos, force) in system.particles_mut().zip_mut(
-                (&mut Position, &prevpos, &forces)
-            ) {
+            for (position, prevpos, force) in
+                system.particles_mut().zip_mut((&mut Position, &prevpos, &forces))
+            {
                 *position = prevpos + self.gamma * force;
             }
 
@@ -61,29 +61,30 @@ impl Minimizer for SteepestDescent {
 
         return Tolerance {
             energy: energy,
-            force2: forces.iter().map(|&f| f.norm2()).fold(f64::NAN, f64::max)
-        }
+            force2: forces.iter().map(|&f| f.norm2()).fold(f64::NAN, f64::max),
+        };
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use energy::{Harmonic, PairInteraction};
+    use sim::{Minimization, Propagator};
     use sys::System;
-    use energy::{PairInteraction, Harmonic};
-    use sim::{Propagator, Minimization};
     use utils::system_from_xyz;
 
     fn testing_system() -> System {
-        let mut system = system_from_xyz("2
-        cell: 20.0
-        Cl 0.0 0.0 0.0
-        Cl 0.0 0.0 2.0
-        ");
-
-        system.add_pair_potential("Cl", "Cl",
-            PairInteraction::new(Box::new(Harmonic{x0: 2.3, k: 0.1}), 10.0)
+        let mut system = system_from_xyz(
+            "2
+            cell: 20.0
+            Cl 0.0 0.0 0.0
+            Cl 0.0 0.0 2.0
+            ",
         );
+
+        let pair = PairInteraction::new(Box::new(Harmonic { x0: 2.3, k: 0.1 }), 10.0);
+        system.add_pair_potential("Cl", "Cl", pair);
         return system;
     }
 
@@ -96,6 +97,6 @@ mod tests {
             minization.propagate(&mut system);
         }
         assert!(minization.converged());
-        assert_relative_eq!(system.distance(0, 1), 2.3, epsilon=1e-3);
+        assert_relative_eq!(system.distance(0, 1), 2.3, epsilon = 1e-3);
     }
 }

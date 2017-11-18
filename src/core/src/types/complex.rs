@@ -2,10 +2,10 @@
 // Copyright (C) Lumol's contributors — BSD license
 
 //! Complex type
-use std::ops::{Add, AddAssign, Sub, SubAssign, Neg, Mul, MulAssign, Div, DivAssign};
 use std::f64;
+use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign};
 
-use types::{Zero, One};
+use types::{One, Zero};
 
 #[derive(Debug, Clone, Copy, PartialEq, Default)]
 /// Complex number, with double precision real and imaginary parts.
@@ -54,9 +54,9 @@ impl Complex {
     /// assert_eq!(z.norm(), 3.0);
     /// ```
     pub fn polar(r: f64, phi: f64) -> Complex {
-        Complex{
+        Complex {
             real: r * f64::cos(phi),
-            imag: r * f64::sin(phi)
+            imag: r * f64::sin(phi),
         }
     }
 
@@ -69,10 +69,7 @@ impl Complex {
     /// assert_eq!(z.imag(), -2.0);
     /// ```
     pub fn cartesian(x: f64, y: f64) -> Complex {
-        Complex{
-            real: x,
-            imag: y,
-        }
+        Complex { real: x, imag: y }
     }
 
     /// Get the real part of the complex
@@ -150,7 +147,7 @@ impl Complex {
     pub fn conj(&self) -> Complex {
         Complex {
             real: self.real,
-            imag: -self.imag
+            imag: -self.imag,
         }
     }
 }
@@ -195,7 +192,7 @@ impl Neg for Complex {
     type Output = Complex;
 
     fn neg(self) -> Complex {
-        Complex{
+        Complex {
             real: -self.real,
             imag: -self.imag,
         }
@@ -258,7 +255,7 @@ impl Div<Complex> for Complex {
     fn div(self, other: Complex) -> Complex {
         let norm = other.norm2();
         let real = self.real * other.real + self.imag * other.imag;
-        let imag = - self.real * other.imag + self.imag * other.real;
+        let imag = -self.real * other.imag + self.imag * other.real;
 
         Complex {
             real: real / norm,
@@ -282,7 +279,7 @@ impl DivAssign<Complex> for Complex {
     fn div_assign(&mut self, other: Complex) {
         let norm = other.norm2();
         let real = self.real * other.real + self.imag * other.imag;
-        let imag = - self.real * other.imag + self.imag * other.real;
+        let imag = -self.real * other.imag + self.imag * other.real;
 
         self.real = real / norm;
         self.imag = imag / norm;
@@ -333,11 +330,13 @@ mod tests {
             f64::default_max_ulps()
         }
 
+        #[cfg_attr(rustfmt, rustfmt_skip)]
         fn relative_eq(&self, other: &Self, epsilon: Self::Epsilon, max_relative: Self::Epsilon) -> bool {
             f64::relative_eq(&self.real, &other.real, epsilon, max_relative) &&
             f64::relative_eq(&self.imag, &other.imag, epsilon, max_relative)
         }
 
+        #[cfg_attr(rustfmt, rustfmt_skip)]
         fn ulps_eq(&self, other: &Self, epsilon: Self::Epsilon, max_ulps: u32) -> bool {
             f64::ulps_eq(&self.real, &other.real, epsilon, max_ulps) &&
             f64::ulps_eq(&self.imag, &other.imag, epsilon, max_ulps)
@@ -365,7 +364,7 @@ mod tests {
         assert_ulps_eq!(c.phase(), -8.0 + 2.0 * consts::PI);
 
         let c = Complex::polar(1.0, 12.0);
-        assert_ulps_eq!(c.phase(), 12.0 - 4.0 * consts::PI, max_ulps=10);
+        assert_ulps_eq!(c.phase(), 12.0 - 4.0 * consts::PI, max_ulps = 10);
 
         let c = Complex::polar(1.0, consts::PI);
         assert_eq!(c.phase(), consts::PI);
@@ -448,8 +447,8 @@ mod tests {
         assert_ulps_eq!(c.norm(), a.norm());
         assert_ulps_eq!(c.phase(), a.phase() - consts::PI);
 
-        assert_ulps_eq!(c.real(), - a.real());
-        assert_ulps_eq!(c.imag(), - a.imag());
+        assert_ulps_eq!(c.real(), -a.real());
+        assert_ulps_eq!(c.imag(), -a.imag());
     }
 
     #[test]

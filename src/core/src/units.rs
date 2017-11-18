@@ -15,18 +15,18 @@
 //! Other units are derived from these primitives units. For examples, the
 //! internal unit for energy is 1e-4 kJ/mol.
 
-use std::num;
-use std::fmt;
 use std::error::Error;
+use std::fmt;
+use std::num;
 
 // Using a separated module because lazy_static does not support pub(crate)
 mod detail {
+    use consts::{BOHR_RADIUS, NA};
     use std::collections::BTreeMap;
     use std::f64::consts::PI;
-    use consts::{BOHR_RADIUS, NA};
 
     // Atomic mass unit in kg
-    const U_IN_KG : f64 = 1.660538782e-27;
+    const U_IN_KG: f64 = 1.660538782e-27;
 
     /// Get the conversion factors from a string unit to the internal units.
     lazy_static!{
@@ -98,7 +98,7 @@ pub enum ParseError {
     /// This unit was not found
     NotFound {
         /// The unit that created this error
-        unit: String
+        unit: String,
     },
     /// Any other error
     MalformedExpr(String),
@@ -122,7 +122,7 @@ impl fmt::Display for ParseError {
             ParseError::Power(ref err) => err.fmt(f),
             ParseError::Value(ref err) => err.fmt(f),
             ParseError::ParenthesesMismatch => write!(f, "Parentheses are not equilibrated."),
-            ParseError::NotFound{ref unit} => write!(f, "Unit '{}' not found.", unit),
+            ParseError::NotFound { ref unit } => write!(f, "Unit '{}' not found.", unit),
             ParseError::MalformedExpr(ref err) => write!(f, "Malformed expression: {}", err),
         }
     }
@@ -134,7 +134,7 @@ impl Error for ParseError {
             ParseError::Power(ref err) => err.description(),
             ParseError::Value(ref err) => err.description(),
             ParseError::ParenthesesMismatch => "Parentheses are not equilibrated.",
-            ParseError::NotFound{..} => "Unit not found.",
+            ParseError::NotFound { .. } => "Unit not found.",
             ParseError::MalformedExpr(..) => "Malformed expression",
         }
     }
@@ -154,7 +154,7 @@ enum Token {
     /// '^' token
     Pow,
     /// Any other whitespaces separated value
-    Value(String)
+    Value(String),
 }
 
 impl Token {
@@ -164,9 +164,7 @@ impl Token {
             Token::LParen | Token::RParen => 0,
             Token::Div | Token::Mul => 10,
             Token::Pow => 20,
-            Token::Value(..) => internal_error!(
-                "invalid call to UnitTok::precedence for values"
-            )
+            Token::Value(..) => internal_error!("invalid call to UnitTok::precedence for values"),
         }
     }
 
@@ -178,7 +176,7 @@ impl Token {
             Token::Div => "/",
             Token::Mul => "*",
             Token::Pow => "^",
-            Token::Value(ref value) => value
+            Token::Value(ref value) => value,
         }
     }
 }
@@ -202,11 +200,11 @@ fn tokenize(unit: &str) -> Vec<Token> {
                     ')' => tokens.push(Token::RParen),
                     _ => internal_error!("invalid unit operator"),
                 }
-            },
+            }
             other if !other.is_whitespace() => {
                 token.push(other);
-            },
-            _ => {assert!(c.is_whitespace())}
+            }
+            _ => assert!(c.is_whitespace()),
         }
     }
     // Last token
@@ -217,7 +215,7 @@ fn tokenize(unit: &str) -> Vec<Token> {
 }
 
 static MISSING_OPERATOR: &'static str = "Oops, sorry explorator, but you felt \
-in a space-time hole. We are missing an operator here";
+                                         in a space-time hole. We are missing an operator here";
 
 /// Create the AST for unit expression using the Shunting-Yard algorithm.
 ///
@@ -231,26 +229,27 @@ fn shunting_yard(tokens: Vec<Token>) -> Result<Vec<Token>, ParseError> {
         match token {
             Token::Value(..) => output.push(token),
             Token::Mul | Token::Div | Token::Pow => {
-                 while !operators.is_empty() {
-                     // The cast is useless here, but rustc can't figure out
-                     // the type of the expression after the call to `expect`
-                     let top_operator = (operators.last().expect(MISSING_OPERATOR) as &Token).clone();
-                     // All the operators are left-associative
-                     if token.precedence() <= top_operator.precedence() {
-                         output.push(operators.pop().expect(MISSING_OPERATOR));
-                     } else {
-                         break;
-                     }
+                while !operators.is_empty() {
+                    // The cast is useless here, but rustc can't figure out
+                    // the type of the expression after the call to `expect`
+                    let top_operator =
+                        (operators.last().expect(MISSING_OPERATOR) as &Token).clone();
+                    // All the operators are left-associative
+                    if token.precedence() <= top_operator.precedence() {
+                        output.push(operators.pop().expect(MISSING_OPERATOR));
+                    } else {
+                        break;
+                    }
                 }
                 operators.push(token);
-            },
+            }
             Token::LParen => operators.push(token),
             Token::RParen => {
                 while !operators.is_empty() && operators.last() != Some(&Token::LParen) {
                     output.push(operators.pop().expect(MISSING_OPERATOR))
                 }
                 if operators.is_empty() || operators.last() != Some(&Token::LParen) {
-                    return Err(ParseError::ParenthesesMismatch)
+                    return Err(ParseError::ParenthesesMismatch);
                 } else {
                     let _ = operators.pop();
                 }
@@ -261,7 +260,7 @@ fn shunting_yard(tokens: Vec<Token>) -> Result<Vec<Token>, ParseError> {
     while !operators.is_empty() {
         match *operators.last().expect(MISSING_OPERATOR) {
             Token::LParen | Token::RParen => return Err(ParseError::ParenthesesMismatch),
-            _ => output.push(operators.pop().expect(MISSING_OPERATOR))
+            _ => output.push(operators.pop().expect(MISSING_OPERATOR)),
         }
     }
 
@@ -303,8 +302,8 @@ impl UnitExpr {
         } else {
             let remaining = stream.iter().map(|t| t.as_str()).collect::<Vec<_>>().join(" ");
             return Err(ParseError::MalformedExpr(
-                format!("remaining values after the end of the unit: {}", remaining)
-            ))
+                format!("remaining values after the end of the unit: {}", remaining),
+            ));
         }
     }
 }
@@ -317,47 +316,53 @@ fn read_expr(stream: &mut Vec<Token>) -> Result<UnitExpr, ParseError> {
             Token::Value(unit) => {
                 match FACTORS.get(&*unit) {
                     Some(&value) => Ok(UnitExpr::Val(value)),
-                    None => Err(ParseError::NotFound{unit: unit})
+                    None => Err(ParseError::NotFound { unit: unit }),
                 }
-            },
+            }
             Token::Mul => {
-                let rhs = try!(read_expr(stream).map_err(|err| ParseError::MalformedExpr(
-                    format!("Error in unit at the right of '*': {}", err)
-                )));
-                let lhs = try!(read_expr(stream).map_err(|err| ParseError::MalformedExpr(
-                    format!("Error in unit at the left of '*': {}", err)
-                )));
+                let rhs = try!(read_expr(stream).map_err(|err| {
+                    ParseError::MalformedExpr(format!("Error in unit at the right of '*': {}", err))
+                }));
+                let lhs = try!(read_expr(stream).map_err(|err| {
+                    ParseError::MalformedExpr(format!("Error in unit at the left of '*': {}", err))
+                }));
                 Ok(UnitExpr::Mul(Box::new(lhs), Box::new(rhs)))
-            },
+            }
             Token::Div => {
-                let rhs = try!(read_expr(stream).map_err(|err| ParseError::MalformedExpr(
-                    format!("Error in unit at the right of '/': {}", err)
-                )));
-                let lhs = try!(read_expr(stream).map_err(|err| ParseError::MalformedExpr(
-                    format!("Error in unit at the left of '/': {}", err)
-                )));
+                let rhs = try!(read_expr(stream).map_err(|err| {
+                    ParseError::MalformedExpr(format!("Error in unit at the right of '/': {}", err))
+                }));
+                let lhs = try!(read_expr(stream).map_err(|err| {
+                    ParseError::MalformedExpr(format!("Error in unit at the left of '/': {}", err))
+                }));
                 Ok(UnitExpr::Div(Box::new(lhs), Box::new(rhs)))
-            },
+            }
             Token::Pow => {
                 let pow = match stream.pop() {
-                    Some(pow) => match pow {
-                        Token::Value(value) => try!(value.parse()),
-                        _ => return Err(ParseError::MalformedExpr(
-                            format!("Invalid value after ^: {}", pow.as_str())
-                        ))
-                    },
-                    None => return Err(ParseError::MalformedExpr(String::from(
-                        "Missing value after '^'"
-                    )))
+                    Some(pow) => {
+                        match pow {
+                            Token::Value(value) => try!(value.parse()),
+                            _ => {
+                                return Err(ParseError::MalformedExpr(
+                                    format!("Invalid value after ^: {}", pow.as_str()),
+                                ))
+                            }
+                        }
+                    }
+                    None => {
+                        return Err(
+                            ParseError::MalformedExpr(String::from("Missing value after '^'")),
+                        )
+                    }
                 };
-                let expr = try!(read_expr(stream).map_err(|err| ParseError::MalformedExpr(
-                    format!("Error in unit at the left of '*': {}", err)
-                )));
+                let expr = try!(read_expr(stream).map_err(|err| {
+                    ParseError::MalformedExpr(format!("Error in unit at the left of '*': {}", err))
+                }));
                 Ok(UnitExpr::Pow(Box::new(expr), pow))
             }
-            Token::LParen | Token::RParen => internal_error!(
-                "there should not be any parenthese here"
-            )
+            Token::LParen | Token::RParen => {
+                internal_error!("there should not be any parenthese here")
+            }
         }
     } else {
         Err(ParseError::MalformedExpr(String::from("missing a value")))
@@ -410,8 +415,8 @@ pub fn to(value: f64, unit: &str) -> Result<f64, ParseError> {
 #[cfg(test)]
 mod test {
     use super::*;
-    use super::{tokenize, shunting_yard};
     use super::{Token, UnitExpr};
+    use super::{shunting_yard, tokenize};
 
     #[test]
     fn tokens() {
@@ -463,7 +468,7 @@ mod test {
         assert_eq!(UnitExpr::parse("bar/(m * fs^2)").unwrap().eval(), 6.0221417942167636e-19);
         assert_eq!(UnitExpr::parse("kJ/mol/deg^2").unwrap().eval(), 0.3282806352310398);
 
-        assert_ulps_eq!(UnitExpr::parse("kcal/mol/A^2").unwrap().eval(), 4.184e-4, epsilon=1e-9);
+        assert_ulps_eq!(UnitExpr::parse("kcal/mol/A^2").unwrap().eval(), 4.184e-4, epsilon = 1e-9);
     }
 
     #[test]

@@ -2,7 +2,7 @@
 // Copyright (C) Lumol's contributors — BSD license
 
 //! Data about bonds and angles in the system.
-use std::cmp::{min, max};
+use std::cmp::{max, min};
 
 /// A `Bond` between the particles at indexes `i` and `j`
 ///
@@ -20,14 +20,20 @@ impl Bond {
         assert_ne!(first, second);
         let i = min(first, second);
         let j = max(first, second);
-        Bond{i: i, j: j}
+        Bond { i: i, j: j }
     }
 
     /// Get the first particle in the bond
-    #[inline] pub fn i(&self) -> usize {self.i}
+    #[inline]
+    pub fn i(&self) -> usize {
+        self.i
+    }
 
     /// Get the second particle in the bond
-    #[inline] pub fn j(&self) -> usize {self.j}
+    #[inline]
+    pub fn j(&self) -> usize {
+        self.j
+    }
 }
 
 /// An `Angle` formed by the particles at indexes `i`, `j` and `k`
@@ -49,17 +55,30 @@ impl Angle {
         assert_ne!(second, third);
         let i = min(first, third);
         let k = max(first, third);
-        Angle{i: i, j: second, k: k}
+        Angle {
+            i: i,
+            j: second,
+            k: k,
+        }
     }
 
     /// Get the first particle in the angle
-    #[inline] pub fn i(&self) -> usize {self.i}
+    #[inline]
+    pub fn i(&self) -> usize {
+        self.i
+    }
 
     /// Get the second particle in the angle
-    #[inline] pub fn j(&self) -> usize {self.j}
+    #[inline]
+    pub fn j(&self) -> usize {
+        self.j
+    }
 
     /// Get the third particle in the angle
-    #[inline] pub fn k(&self) -> usize {self.k}
+    #[inline]
+    pub fn k(&self) -> usize {
+        self.k
+    }
 }
 
 
@@ -84,20 +103,37 @@ impl Dihedral {
         } else {
             (fourth, third, second, first)
         };
-        Dihedral{i: i, j: j, k: k, m: m}
+        Dihedral {
+            i: i,
+            j: j,
+            k: k,
+            m: m,
+        }
     }
 
     /// Get the first particle in the dihedral angle
-    #[inline] pub fn i(&self) -> usize {self.i}
+    #[inline]
+    pub fn i(&self) -> usize {
+        self.i
+    }
 
     /// Get the second particle in the dihedral angle
-    #[inline] pub fn j(&self) -> usize {self.j}
+    #[inline]
+    pub fn j(&self) -> usize {
+        self.j
+    }
 
     /// Get the third particle in the dihedral angle
-    #[inline] pub fn k(&self) -> usize {self.k}
+    #[inline]
+    pub fn k(&self) -> usize {
+        self.k
+    }
 
     /// Get the fourth particle in the dihedral angle
-    #[inline] pub fn m(&self) -> usize {self.m}
+    #[inline]
+    pub fn m(&self) -> usize {
+        self.m
+    }
 }
 
 

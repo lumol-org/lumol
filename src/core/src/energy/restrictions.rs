@@ -29,7 +29,7 @@ pub enum PairRestriction {
     /// Only apply the interaction to pairs which are not in 1-2 or 1-3
     /// position, and scale the interaction for pairs in 1-4 position (separated
     /// by three bonds).
-    Scale14(f64)
+    Scale14(f64),
 }
 
 /// Restriction information attached to a pair of `Particles` in a `System`.
@@ -39,7 +39,7 @@ pub struct RestrictionInfo {
     pub excluded: bool,
     /// Scaling factor for the potential. This value is contained between 0 and
     /// 1.
-    pub scaling: f64
+    pub scaling: f64,
 }
 
 impl PairRestriction {
@@ -74,21 +74,23 @@ impl PairRestriction {
             PairRestriction::Exclude12 => distance == 1,
             PairRestriction::Exclude13 | PairRestriction::Scale14(..) => {
                 distance == 1 || distance == 2
-            },
-            PairRestriction::Exclude14 => {
-                distance == 1 || distance == 2 || distance == 3
             }
+            PairRestriction::Exclude14 => distance == 1 || distance == 2 || distance == 3,
         };
 
         let scaling = if let PairRestriction::Scale14(scaling) = *self {
-            if distance == 3 {scaling} else {1.0}
+            if distance == 3 {
+                scaling
+            } else {
+                1.0
+            }
         } else {
             1.0
         };
 
         RestrictionInfo {
             excluded: excluded,
-            scaling: scaling
+            scaling: scaling,
         }
     }
 }
@@ -97,7 +99,7 @@ impl PairRestriction {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use sys::{System, Particle};
+    use sys::{Particle, System};
 
     fn testing_system() -> System {
         // Creating 2 pentane molecule

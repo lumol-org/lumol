@@ -1,16 +1,16 @@
 // Cymbalum, an extensible molecular simulation engine
 // Copyright (C) 2015-2016 G. Fraux — BSD license
 
-use rand::distributions::{Sample, Range};
 use rand::Rng;
+use rand::distributions::{Range, Sample};
 
 use std::f64;
 use std::mem;
 
 use super::MCMove;
 
+use sys::{Configuration, EnergyCache, System};
 use types::{Matrix3, One};
-use sys::{System, Configuration, EnergyCache};
 
 /// Monte Carlo move that changes the size of the simulation cell
 pub struct Resize {
@@ -72,9 +72,11 @@ impl MCMove for Resize {
         // Abort simulation when box gets smaller than twice the cutoff radius.
         if let Some(maximum_cutoff) = self.maximum_cutoff {
             if system.cell.lengths().iter().any(|&d| 0.5 * d <= maximum_cutoff) {
-                fatal_error!("Tried to decrease the cell size but new size \
-                              conflicts with the cut off radius. Increase the number of \
-                              particles to get rid of this problem.");
+                fatal_error!(
+                    "Tried to decrease the cell size but new size \
+                     conflicts with the cut off radius. Increase the number of \
+                     particles to get rid of this problem."
+                );
             }
         };
 
@@ -100,8 +102,8 @@ impl MCMove for Resize {
         let old_volume = self.previous.cell.volume();
         let delta_volume = new_volume - old_volume;
         // Build and return the cost function.
-        beta * (delta_energy + self.pressure * delta_volume) -
-        (system.molecules().len() as f64) * f64::ln(new_volume / old_volume)
+        beta * (delta_energy + self.pressure * delta_volume)
+            - (system.molecules().len() as f64) * f64::ln(new_volume / old_volume)
     }
 
     fn apply(&mut self, _: &mut System) {
