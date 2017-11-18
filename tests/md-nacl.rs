@@ -2,9 +2,9 @@
 // Copyright (C) Lumol's contributors — BSD license
 
 //! Testing physical properties of a sodium chloride crystal
+extern crate env_logger;
 extern crate lumol;
 extern crate lumol_input as input;
-extern crate env_logger;
 
 use std::sync::{Once, ONCE_INIT};
 pub static START: Once = ONCE_INIT;
@@ -13,14 +13,17 @@ mod utils;
 
 mod wolf {
     use START;
-    use lumol::units;
     use input::Input;
+    use lumol::units;
     use std::path::Path;
 
     #[test]
     fn constant_energy() {
-        START.call_once(|| {::env_logger::init().unwrap();});
-        let path = Path::new(file!()).parent().unwrap()
+        START.call_once(|| {
+            ::env_logger::init().unwrap();
+        });
+        let path = Path::new(file!()).parent()
+                                     .unwrap()
                                      .join("data")
                                      .join("md-nacl")
                                      .join("nve-wolf-small.toml");
@@ -35,8 +38,11 @@ mod wolf {
 
     #[test]
     fn anisotropic_berendsen() {
-        START.call_once(|| {::env_logger::init().unwrap();});
-        let path = Path::new(file!()).parent().unwrap()
+        START.call_once(|| {
+            ::env_logger::init().unwrap();
+        });
+        let path = Path::new(file!()).parent()
+                                     .unwrap()
                                      .join("data")
                                      .join("md-nacl")
                                      .join("npt-wolf-small.toml");
@@ -61,14 +67,17 @@ mod wolf {
 
 mod ewald {
     use START;
-    use lumol::units;
     use input::Input;
+    use lumol::units;
     use std::path::Path;
 
     #[test]
     fn constant_energy() {
-        START.call_once(|| {::env_logger::init().unwrap();});
-        let path = Path::new(file!()).parent().unwrap()
+        START.call_once(|| {
+            ::env_logger::init().unwrap();
+        });
+        let path = Path::new(file!()).parent()
+                                     .unwrap()
                                      .join("data")
                                      .join("md-nacl")
                                      .join("nve-ewald-small.toml");
@@ -82,8 +91,11 @@ mod ewald {
 
     #[test]
     fn energy() {
-        START.call_once(|| {::env_logger::init().unwrap();});
-        let path = Path::new(file!()).parent().unwrap()
+        START.call_once(|| {
+            ::env_logger::init().unwrap();
+        });
+        let path = Path::new(file!()).parent()
+                                     .unwrap()
                                      .join("data")
                                      .join("md-nacl")
                                      .join("energy-ewald-big.toml");

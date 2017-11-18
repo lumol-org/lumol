@@ -3,12 +3,12 @@
 
 //! Testing physical properties of a Lennard-Jones gaz of Helium using
 //! Monte Carlo simulation
+extern crate env_logger;
 extern crate lumol;
 extern crate lumol_input as input;
-extern crate env_logger;
 
-use lumol::units;
 use lumol::consts::K_BOLTZMANN;
+use lumol::units;
 
 use input::Input;
 
@@ -19,8 +19,11 @@ static START: Once = ONCE_INIT;
 
 #[test]
 fn perfect_gas() {
-    START.call_once(|| {env_logger::init().unwrap();});
-    let path = Path::new(file!()).parent().unwrap()
+    START.call_once(|| {
+        env_logger::init().unwrap();
+    });
+    let path = Path::new(file!()).parent()
+                                 .unwrap()
                                  .join("data")
                                  .join("mc-helium")
                                  .join("nvt.toml");

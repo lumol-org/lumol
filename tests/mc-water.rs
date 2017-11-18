@@ -1,7 +1,7 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) Lumol's contributors — BSD license
-extern crate lumol_input as input;
 extern crate env_logger;
+extern crate lumol_input as input;
 
 use input::Input;
 
@@ -14,8 +14,11 @@ static START: Once = ONCE_INIT;
 // anything for now. It should test the g(r) function someday.
 #[test]
 fn wolf() {
-    START.call_once(|| {env_logger::init().unwrap();});
-    let path = Path::new(file!()).parent().unwrap()
+    START.call_once(|| {
+        env_logger::init().unwrap();
+    });
+    let path = Path::new(file!()).parent()
+                                 .unwrap()
                                  .join("data")
                                  .join("mc-water")
                                  .join("nvt-wolf.toml");
@@ -26,8 +29,11 @@ fn wolf() {
 
 #[test]
 fn ewald() {
-    START.call_once(|| {env_logger::init().unwrap();});
-    let path = Path::new(file!()).parent().unwrap()
+    START.call_once(|| {
+        env_logger::init().unwrap();
+    });
+    let path = Path::new(file!()).parent()
+                                 .unwrap()
                                  .join("data")
                                  .join("mc-water")
                                  .join("nvt-ewald.toml");

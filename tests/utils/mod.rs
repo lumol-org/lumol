@@ -38,7 +38,7 @@ impl Collecter {
 impl Output for Collecter {
     fn write(&mut self, system: &System) {
         if system.step() < self.start {
-            return
+            return;
         }
 
         self.pressures.write().unwrap().push(system.pressure());

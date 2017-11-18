@@ -2,8 +2,8 @@
 // Copyright (C) Lumol's contributors — BSD license
 
 //! Testing molecular dynamics of methane
-extern crate lumol_input as input;
 extern crate env_logger;
+extern crate lumol_input as input;
 
 use input::Input;
 
@@ -14,8 +14,11 @@ static START: Once = ONCE_INIT;
 
 #[test]
 fn bonds_detection() {
-    START.call_once(|| {env_logger::init().unwrap();});
-    let path = Path::new(file!()).parent().unwrap()
+    START.call_once(|| {
+        env_logger::init().unwrap();
+    });
+    let path = Path::new(file!()).parent()
+                                 .unwrap()
                                  .join("data")
                                  .join("md-methane")
                                  .join("nve.toml");
@@ -31,8 +34,11 @@ fn bonds_detection() {
 
 #[test]
 fn constant_energy() {
-    START.call_once(|| {env_logger::init().unwrap();});
-    let path = Path::new(file!()).parent().unwrap()
+    START.call_once(|| {
+        env_logger::init().unwrap();
+    });
+    let path = Path::new(file!()).parent()
+                                 .unwrap()
                                  .join("data")
                                  .join("md-methane")
                                  .join("nve.toml");
