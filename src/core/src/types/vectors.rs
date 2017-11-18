@@ -115,17 +115,19 @@ impl Vector3D {
     /// # use lumol_core::types::Matrix3;
     /// let a = Vector3D::new(1.0, 0.0, -4.0);
     /// let b = Vector3D::new(1.0, 2.0, 3.0);
-    /// let matrix = Matrix3::new(
-    ///     1.0, 2.0, 3.0,
-    ///     0.0, 0.0, 0.0,
-    ///     -4.0, -8.0, -12.0
-    /// );
+    /// let matrix = Matrix3::new([
+    ///     [1.0, 2.0, 3.0],
+    ///     [0.0, 0.0, 0.0],
+    ///     [-4.0, -8.0, -12.0]
+    /// ]);
     /// assert_eq!(a.tensorial(&b), matrix);
     /// ```
     pub fn tensorial(&self, other: &Vector3D) -> Matrix3 {
-        Matrix3::new(self[0] * other[0], self[0] * other[1], self[0] * other[2],
-                     self[1] * other[0], self[1] * other[1], self[1] * other[2],
-                     self[2] * other[0], self[2] * other[1], self[2] * other[2])
+        Matrix3::new([
+            [self[0] * other[0], self[0] * other[1], self[0] * other[2]],
+            [self[1] * other[0], self[1] * other[1], self[1] * other[2]],
+            [self[2] * other[0], self[2] * other[1], self[2] * other[2]]
+        ])
     }
 }
 
@@ -476,11 +478,11 @@ mod tests {
     fn tensorial() {
         let a = Vector3D::new(1.0, 0.0, -4.0);
         let b = Vector3D::new(1.0, 2.0, 3.0);
-        let matrix = Matrix3::new(
-            1.0, 2.0, 3.0,
-            0.0, 0.0, 0.0,
-            -4.0, -8.0, -12.0
-        );
+        let matrix = Matrix3::new([
+            [1.0, 2.0, 3.0],
+            [0.0, 0.0, 0.0],
+            [-4.0, -8.0, -12.0],
+        ]);
         assert_eq!(a.tensorial(&b), matrix);
         assert_eq!(b.tensorial(&a), matrix.transposed());
     }
