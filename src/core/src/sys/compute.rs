@@ -203,7 +203,7 @@ impl Compute for Virial {
             let ni = composition[i] as f64;
             for j in system.particle_kinds() {
                 let nj = composition[j] as f64;
-                for potential in system.interactions().pairs(i, j) {
+                for potential in system.interactions().pairs((i, j)) {
                     virial += 2.0 * PI * ni * nj * potential.tail_virial() / volume;
                 }
             }
@@ -339,10 +339,10 @@ mod test {
             5.0,
         );
         interaction.enable_tail_corrections();
-        system.add_pair_potential("F", "F", interaction);
+        system.add_pair_potential(("F", "F"), interaction);
 
         // unused interaction to check that we do handle this right
-        system.add_pair_potential("H", "O", PairInteraction::new(Box::new(NullPotential), 0.0));
+        system.add_pair_potential(("H", "O"), PairInteraction::new(Box::new(NullPotential), 0.0));
 
         let mut velocities = BoltzmannVelocities::new(unit_from(300.0, "K"));
         velocities.init(&mut system);
@@ -365,11 +365,10 @@ mod test {
         assert_eq!(system.molecules().len(), 1);
         assert_eq!(system.molecule(0).bonds().len(), 3);
 
-        system.add_pair_potential("F", "F", PairInteraction::new(Box::new(NullPotential), 0.0));
+        system.add_pair_potential(("F", "F"), PairInteraction::new(Box::new(NullPotential), 0.0));
 
         system.add_bond_potential(
-            "F",
-            "F",
+            ("F", "F"),
             Box::new(Harmonic {
                 k: unit_from(100.0, "kJ/mol/A^2"),
                 x0: unit_from(2.0, "A"),
@@ -377,9 +376,7 @@ mod test {
         );
 
         system.add_angle_potential(
-            "F",
-            "F",
-            "F",
+            ("F", "F", "F"),
             Box::new(Harmonic {
                 k: unit_from(100.0, "kJ/mol/deg^2"),
                 x0: unit_from(88.0, "deg"),
@@ -387,10 +384,7 @@ mod test {
         );
 
         system.add_dihedral_potential(
-            "F",
-            "F",
-            "F",
-            "F",
+            ("F", "F", "F", "F"),
             Box::new(Harmonic {
                 k: unit_from(100.0, "kJ/mol/deg^2"),
                 x0: unit_from(185.0, "deg"),
@@ -398,7 +392,7 @@ mod test {
         );
 
         // unused interaction to check that we do handle this right
-        system.add_pair_potential("H", "O", PairInteraction::new(Box::new(NullPotential), 0.0));
+        system.add_pair_potential(("H", "O"), PairInteraction::new(Box::new(NullPotential), 0.0));
 
         return system;
     }

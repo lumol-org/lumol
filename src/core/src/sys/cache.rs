@@ -394,8 +394,7 @@ mod tests {
         assert!(system.molecules().len() == 2);
 
         system.add_pair_potential(
-            "H",
-            "H",
+            ("H", "H"),
             PairInteraction::new(
                 Box::new(LennardJones {
                     sigma: 3.0,
@@ -405,11 +404,10 @@ mod tests {
             ),
         );
 
-        system.add_pair_potential("O", "O", PairInteraction::new(Box::new(NullPotential), 3.0));
+        system.add_pair_potential(("O", "O"), PairInteraction::new(Box::new(NullPotential), 3.0));
 
         system.add_pair_potential(
-            "O",
-            "H",
+            ("O", "H"),
             PairInteraction::new(
                 Box::new(LennardJones {
                     sigma: 1.0,
@@ -420,8 +418,7 @@ mod tests {
         );
 
         system.add_bond_potential(
-            "O",
-            "H",
+            ("O", "H"),
             Box::new(Harmonic {
                 x0: 3.4,
                 k: unit_from(522.0, "kJ/mol/A^2"),
@@ -429,9 +426,7 @@ mod tests {
         );
 
         system.add_angle_potential(
-            "O",
-            "O",
-            "H",
+            ("O", "O", "H"),
             Box::new(Harmonic {
                 x0: f64::to_radians(120.0),
                 k: unit_from(150.0, "kJ/mol/deg^2"),
@@ -439,10 +434,7 @@ mod tests {
         );
 
         system.add_dihedral_potential(
-            "H",
-            "O",
-            "O",
-            "H",
+            ("H", "O", "O", "H"),
             Box::new(Harmonic {
                 x0: f64::to_radians(180.0),
                 k: unit_from(800.0, "kJ/mol/deg^2"),

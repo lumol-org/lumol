@@ -84,7 +84,7 @@ mod tests {
         );
 
         let pair = PairInteraction::new(Box::new(Harmonic { x0: 2.3, k: 0.1 }), 10.0);
-        system.add_pair_potential("Cl", "Cl", pair);
+        system.add_pair_potential(("Cl", "Cl"), pair);
         return system;
     }
 
