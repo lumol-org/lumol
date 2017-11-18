@@ -278,11 +278,11 @@ impl PairInteraction {
     /// interaction.enable_tail_corrections();
     ///
     /// let w = -0.02187143961588542;
-    /// let virial = Matrix3::new(
-    ///      w , 0.0, 0.0,
-    ///     0.0,  w , 0.0,
-    ///     0.0, 0.0,  w
-    /// );
+    /// let virial = Matrix3::new([
+    ///     [w, 0.0, 0.0],
+    ///     [0.0, w, 0.0],
+    ///     [0.0, 0.0, w],
+    /// ]);
     ///
     /// assert_eq!(interaction.tail_virial(), virial);
     /// ```

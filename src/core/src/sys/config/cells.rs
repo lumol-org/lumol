@@ -50,9 +50,11 @@ impl UnitCell {
     /// Create an orthorhombic unit cell, with side lengths `a, b, c`.
     pub fn ortho(a: f64, b: f64, c: f64) -> UnitCell {
         assert!(a > 0.0 && b > 0.0 && c > 0.0, "Cell lengths must be positive");
-        let cell = Matrix3::new(a, 0.0, 0.0,
-                                0.0, b, 0.0,
-                                0.0, 0.0, c);
+        let cell = Matrix3::new([
+            [a, 0.0, 0.0],
+            [0.0, b, 0.0],
+            [0.0, 0.0, c]
+        ]);
         UnitCell{
             cell: cell,
             inv: cell.inverse(),
@@ -62,9 +64,11 @@ impl UnitCell {
     /// Create a cubic unit cell, with side lengths `length, length, length`.
     pub fn cubic(length: f64) -> UnitCell {
         assert!(length > 0.0, "Cell lengths must be positive");
-        let cell = Matrix3::new(length,  0.0  ,  0.0  ,
-                                  0.0 , length,  0.0  ,
-                                  0.0 ,  0.0  , length);
+        let cell = Matrix3::new([
+            [length, 0.0, 0.0],
+            [0.0, length, 0.0],
+            [0.0, 0.0, length],
+        ]);
         UnitCell{
             cell: cell,
             inv: cell.inverse(),
@@ -86,9 +90,11 @@ impl UnitCell {
         let c_y = c * (cos_alpha - cos_beta * cos_gamma) / sin_gamma;
         let c_z = sqrt(c * c - c_y * c_y - c_x * c_x);
 
-        let cell = Matrix3::new(a,   b_x, c_x,
-                                0.0, b_y, c_y,
-                                0.0, 0.0, c_z);
+        let cell = Matrix3::new([
+            [a, b_x, c_x],
+            [0.0, b_y, c_y],
+            [0.0, 0.0, c_z]
+        ]);
 
         UnitCell{
             cell: cell,
