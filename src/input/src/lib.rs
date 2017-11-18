@@ -44,30 +44,25 @@
 //! }
 //! ```
 //!
-#![warn(
-    missing_docs, trivial_casts, unused_import_braces, variant_size_differences,
-    unused_qualifications, unused_results
-)]
-
+#![warn(missing_docs, trivial_casts, unused_import_braces, variant_size_differences)]
+#![warn(unused_qualifications, unused_results)]
+// Clippy configuration
 #![allow(unknown_lints)]
 #![warn(clippy, clippy_pedantic)]
-// List of allowed clippy lints
-#![allow(
-    float_arithmetic, integer_arithmetic, indexing_slicing, needless_return,
-    needless_range_loop, shadow_reuse, shadow_same, shadow_unrelated,
-    cast_possible_truncation, cast_precision_loss, cast_sign_loss,
-    cast_possible_wrap, float_cmp, or_fun_call, string_add, non_ascii_literal,
-    doc_markdown, missing_docs_in_private_items, module_inception, stutter,
-    unseparated_literal_suffix, new_without_default_derive, use_self
-)]
+#![allow(float_arithmetic, integer_arithmetic, indexing_slicing, needless_return)]
+#![allow(needless_range_loop, shadow_reuse, shadow_same, shadow_unrelated)]
+#![allow(cast_possible_truncation, cast_precision_loss, cast_sign_loss, cast_possible_wrap)]
+#![allow(float_cmp, or_fun_call, string_add, non_ascii_literal, doc_markdown)]
+#![allow(missing_docs_in_private_items, module_inception, stutter, unseparated_literal_suffix)]
+#![allow(new_without_default_derive, use_self)]
 
+extern crate chemfiles;
 extern crate lumol_core as lumol;
 extern crate toml;
-extern crate chemfiles;
 
+extern crate log4rs;
 #[macro_use]
 extern crate log;
-extern crate log4rs;
 
 use toml::value::Table;
 
@@ -89,7 +84,7 @@ mod simulations;
 
 pub use self::error::{Error, Result};
 pub use self::interactions::InteractionsInput;
-pub use self::simulations::{Input, Config};
+pub use self::simulations::{Config, Input};
 
 /// Convert a TOML table to a Rust type.
 pub trait FromToml: Sized {
@@ -106,22 +101,20 @@ pub trait FromTomlWithData: Sized {
 }
 
 fn validate(config: &Table) -> Result<()> {
-    let input = try!(config.get("input").ok_or(
-        Error::from("Missing 'input' table")
-    ));
+    let input = try!(config.get("input").ok_or(Error::from("Missing 'input' table")));
 
-    let version = try!(input.get("version").ok_or(
-        Error::from("Missing 'version' key in 'input' table")
-    ));
+    let version = try!(
+        input.get("version")
+             .ok_or(Error::from("Missing 'version' key in 'input' table"))
+    );
 
-    let version = try!(version.as_integer().ok_or(
-        Error::from("'input.version' must be an integer")
-    ));
+    let version =
+        try!(version.as_integer().ok_or(Error::from("'input.version' must be an integer")));
 
     if version != 1 {
         return Err(Error::from(
-            format!("Can only read version 1 of input, got version {}", version)
-        ))
+            format!("Can only read version 1 of input, got version {}", version),
+        ));
     }
     Ok(())
 }

@@ -5,8 +5,8 @@ use toml::value::Table;
 use lumol::sim::min::*;
 use lumol::units;
 
-use error::{Error, Result};
 use FromToml;
+use error::{Error, Result};
 use extract;
 
 impl FromToml for Minimization {
@@ -14,18 +14,14 @@ impl FromToml for Minimization {
         let minimizer = try!(extract::table("minimizer", config, "minimization propagator"));
 
         let minimizer: Box<Minimizer> = match try!(extract::typ(minimizer, "minimizer")) {
-            "SteepestDescent" => Box::new(try!(
-                SteepestDescent::from_toml(minimizer)
-            )),
-            other => return Err(Error::from(
-                format!("Unknown minimizer '{}'", other)
-            ))
+            "SteepestDescent" => Box::new(try!(SteepestDescent::from_toml(minimizer))),
+            other => return Err(Error::from(format!("Unknown minimizer '{}'", other))),
         };
 
         if let Some(tolerance) = config.get("tolerance") {
-            let tolerance = try!(tolerance.as_table().ok_or(Error::from(
-                "'tolerance' must be a table in minimization propagator"
-            )));
+            let tolerance = try!(tolerance.as_table().ok_or(
+                Error::from("'tolerance' must be a table in minimization propagator")
+            ));
             let tolerance = try!(Tolerance::from_toml(tolerance));
             Ok(Minimization::with_tolerance(minimizer, tolerance))
         } else {
@@ -43,7 +39,6 @@ impl FromToml for Tolerance {
             energy: try!(units::from_str(energy)),
             force2: try!(units::from_str(force2)),
         })
-
     }
 }
 

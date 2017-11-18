@@ -1,14 +1,14 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) Lumol's contributors — BSD license
-use toml::value::Table;
 use std::path::PathBuf;
+use toml::value::Table;
 
-use lumol::sys::{read_molecule, molecule_type};
 use lumol::sim::mc::*;
+use lumol::sys::{molecule_type, read_molecule};
 use lumol::units;
 
-use error::{Error, Result};
 use FromTomlWithData;
+use error::{Error, Result};
 use extract;
 use simulations::get_input_path;
 
@@ -29,8 +29,9 @@ impl FromTomlWithData for MonteCarlo {
 
         let moves = try!(extract::slice("moves", config, "Monte Carlo propagator"));
         for mc_move in moves {
-            let mc_move = try!(mc_move.as_table()
-                .ok_or(Error::from("All moves must be tables in Monte Carlo")));
+            let mc_move = try!(
+                mc_move.as_table().ok_or(Error::from("All moves must be tables in Monte Carlo"))
+            );
 
             let frequency = if mc_move.get("frequency").is_some() {
                 try!(extract::number("frequency", mc_move, "Monte Carlo move"))
@@ -56,12 +57,12 @@ impl FromTomlWithData for MonteCarlo {
                     if !has_update_frequency {
                         return Err(Error::from(
                             "No 'update_frequency' found. Please specify \
-                            'update_frequency' in combination with 'target_acceptance'"
+                             'update_frequency' in combination with 'target_acceptance'",
                         ));
                     } else if ta < 0.0 || ta > 1.0 {
-                        return Err(Error::from(
-                            "'target_acceptance' has to be between 0.0 and 1.0"
-                        ));
+                        return Err(
+                            Error::from("'target_acceptance' has to be between 0.0 and 1.0"),
+                        );
                     } else {
                         mc.add_move_with_acceptance(mc_move, frequency, ta)
                     }

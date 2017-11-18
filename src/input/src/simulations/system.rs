@@ -2,13 +2,13 @@
 // Copyright (C) Lumol's contributors — BSD license
 use toml::value::{Table, Value};
 
-use lumol::units;
 use lumol::sys::*;
 use lumol::sys::veloc::{BoltzmannVelocities, InitVelocities};
+use lumol::units;
 
+use {Input, InteractionsInput};
 use error::{Error, Result};
 use extract;
-use {Input, InteractionsInput};
 use simulations::get_input_path;
 
 impl Input {
@@ -36,7 +36,9 @@ impl Input {
             try!(guess_bonds.as_bool().ok_or(
                 Error::from("'guess_bonds' should be a boolean value in system")
             ))
-        } else { false };
+        } else {
+            false
+        };
 
         let mut system = if guess_bonds {
             try!(trajectory.read_guess_bonds())
@@ -50,8 +52,8 @@ impl Input {
         if !with_cell && system.cell.is_infinite() {
             warn!(
                 "No unit cell in the system, using an infinite unit cell.\n\
-                You can get rid of this warning by using `cell = []` in the \
-                input file if this is what you want."
+                 You can get rid of this warning by using `cell = []` in the \
+                 input file if this is what you want."
             );
         }
 
@@ -94,22 +96,20 @@ impl Input {
                         let b = try!(get_cell_number(&cell[1]));
                         let c = try!(get_cell_number(&cell[2]));
                         let alpha = try!(get_cell_number(&cell[3]));
-                        let beta  = try!(get_cell_number(&cell[4]));
+                        let beta = try!(get_cell_number(&cell[4]));
                         let gamma = try!(get_cell_number(&cell[5]));
 
                         Ok(Some(UnitCell::triclinic(a, b, c, alpha, beta, gamma)))
                     } else {
                         Err(Error::from("'cell' array must have a size of 3 or 6"))
                     }
-                },
+                }
                 Value::Integer(lenght) => {
                     let lenght = lenght as f64;
                     Ok(Some(UnitCell::cubic(lenght)))
-                },
-                Value::Float(lenght) => {
-                    Ok(Some(UnitCell::cubic(lenght)))
-                },
-                _ => Err(Error::from("'cell' must be a number or an array in system"))
+                }
+                Value::Float(lenght) => Ok(Some(UnitCell::cubic(lenght))),
+                _ => Err(Error::from("'cell' must be a number or an array in system")),
             }
         } else {
             Ok(None)
@@ -120,9 +120,10 @@ impl Input {
         let config = try!(self.system_table());
 
         if let Some(velocities) = config.get("velocities") {
-            let velocities = try!(velocities.as_table().ok_or(
-                Error::from("'velocities' must be a table in system")
-            ));
+            let velocities = try!(
+                velocities.as_table()
+                          .ok_or(Error::from("'velocities' must be a table in system"))
+            );
 
             if velocities.get("init").is_some() {
                 let temperature = try!(extract::str("init", velocities, "velocities initializer"));
@@ -148,7 +149,7 @@ impl Input {
                 let input = try!(InteractionsInput::from_toml(potentials.clone()));
                 try!(input.read(system));
             } else {
-                return Err(Error::from("'potentials' must be a string or a table in system"))
+                return Err(Error::from("'potentials' must be a string or a table in system"));
             }
         } else {
             warn!("No potentials found in input file");

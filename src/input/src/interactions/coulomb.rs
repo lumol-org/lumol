@@ -2,33 +2,31 @@
 // Copyright (C) Lumol's contributors — BSD license
 use toml::Value;
 
+use lumol::energy::{CoulombicPotential, Ewald, SharedEwald, Wolf};
 use lumol::sys::System;
-use lumol::energy::{Wolf, Ewald, SharedEwald, CoulombicPotential};
 
-use error::{Error, Result};
-use FromToml;
-use super::read_restriction;
 use super::InteractionsInput;
+use super::read_restriction;
+use FromToml;
+use error::{Error, Result};
 
 impl InteractionsInput {
     /// Read the "coulomb" section from the potential configuration.
     pub(crate) fn read_coulomb(&self, system: &mut System) -> Result<()> {
         let coulomb = match self.config.get("coulomb") {
             Some(coulomb) => coulomb,
-            None => return Ok(())
+            None => return Ok(()),
         };
 
-        let coulomb = try!(coulomb.as_table().ok_or(
-            Error::from("The 'coulomb' section must be a table")
-        ));
+        let coulomb =
+            try!(coulomb.as_table().ok_or(Error::from("The 'coulomb' section must be a table")));
 
-        let solvers = coulomb.keys().cloned()
-                             .filter(|key| key != "restriction")
-                             .collect::<Vec<_>>();
+        let solvers =
+            coulomb.keys().cloned().filter(|key| key != "restriction").collect::<Vec<_>>();
 
         if solvers.len() != 1 {
             return Err(Error::from(
-                format!("Got more than one coulombic solver: {}", solvers.join(" and "))
+                format!("Got more than one coulombic solver: {}", solvers.join(" and ")),
             ));
         }
 
@@ -40,9 +38,7 @@ impl InteractionsInput {
                     let ewald = try!(Ewald::from_toml(table));
                     Box::new(SharedEwald::new(ewald))
                 }
-                other => {
-                    return Err(Error::from(format!("Unknown coulomb solver '{}'", other)))
-                },
+                other => return Err(Error::from(format!("Unknown coulomb solver '{}'", other))),
             };
 
             if let Some(restriction) = try!(read_restriction(coulomb)) {
@@ -52,9 +48,7 @@ impl InteractionsInput {
             system.set_coulomb_potential(potential);
             Ok(())
         } else {
-            Err(
-                Error::from(format!("Coulombic solver '{}' must be a table", key))
-            )
+            Err(Error::from(format!("Coulombic solver '{}' must be a table", key)))
         }
     }
 
@@ -62,12 +56,11 @@ impl InteractionsInput {
     pub(crate) fn read_charges(&self, system: &mut System) -> Result<()> {
         let charges = match self.config.get("charges") {
             Some(charges) => charges,
-            None => return Ok(())
+            None => return Ok(()),
         };
 
-        let charges = try!(charges.as_table().ok_or(
-            Error::from("The 'charges' section must be a table")
-        ));
+        let charges =
+            try!(charges.as_table().ok_or(Error::from("The 'charges' section must be a table")));
 
         let mut total_charge = 0.0;
         for (name, charge) in charges.iter() {

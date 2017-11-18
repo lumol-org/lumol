@@ -1,37 +1,39 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) Lumol's contributors — BSD license
-use toml::value::Table;
 use std::path::PathBuf;
+use toml::value::Table;
 
 use lumol::out::*;
 
-use error::{Error, Result};
-use FromToml;
-use extract;
 use super::Input;
+use FromToml;
+use error::{Error, Result};
+use extract;
 
 impl Input {
     /// Get the the simulation outputs.
     pub(crate) fn read_outputs(&self) -> Result<Vec<(Box<Output>, u64)>> {
         let config = try!(self.simulation_table());
         if let Some(outputs) = config.get("outputs") {
-            let outputs = try!(outputs.as_array().ok_or(
-                Error::from("'outputs' must be an array of tables in simulation")
-            ));
+            let outputs = try!(
+                outputs.as_array()
+                       .ok_or(Error::from("'outputs' must be an array of tables in simulation"))
+            );
 
             let mut result = Vec::new();
             for output in outputs {
-                let output = try!(output.as_table().ok_or(
-                    Error::from("'outputs' must be an array of tables in simulation")
-                ));
+                let output = try!(
+                    output.as_table()
+                          .ok_or(Error::from("'outputs' must be an array of tables in simulation"))
+                );
 
                 let frequency = match output.get("frequency") {
                     Some(frequency) => {
                         try!(frequency.as_integer().ok_or(
                             Error::from("'frequency' must be an integer in output")
                         )) as u64
-                    },
-                    None => 1u64
+                    }
+                    None => 1u64,
                 };
 
                 let typ = try!(extract::typ(output, "output"));
@@ -43,11 +45,7 @@ impl Input {
                     "forces" => Box::new(try!(ForcesOutput::from_toml(output))),
                     "cell" => Box::new(try!(CellOutput::from_toml(output))),
                     "custom" => Box::new(try!(CustomOutput::from_toml(output))),
-                    other => {
-                        return Err(Error::from(
-                            format!("Unknown output type '{}'", other)
-                        ))
-                    }
+                    other => return Err(Error::from(format!("Unknown output type '{}'", other))),
                 };
 
                 result.push((output, frequency));
@@ -60,13 +58,9 @@ impl Input {
 }
 
 fn get_file(config: &Table) -> Result<&str> {
-    let file = try!(config.get("file").ok_or(
-        Error::from("Missing 'file' key in output")
-    ));
+    let file = try!(config.get("file").ok_or(Error::from("Missing 'file' key in output")));
 
-    file.as_str().ok_or(
-        Error::from("'file' must be a string in output")
-    )
+    file.as_str().ok_or(Error::from("'file' must be a string in output"))
 }
 
 impl FromToml for TrajectoryOutput {
