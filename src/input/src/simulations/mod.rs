@@ -3,12 +3,12 @@
 use toml::de::from_str as parse;
 use toml::value::Table;
 
+use std::fs::File;
 use std::io::prelude::*;
 use std::path::{Path, PathBuf};
-use std::fs::File;
 
-use validate;
 use error::{Error, Result};
+use validate;
 
 use lumol::sim::Simulation;
 use lumol::sys::System;
@@ -54,11 +54,12 @@ impl Input {
 
     /// Read the `Input` from a TOML formatted string.
     pub(crate) fn from_str(path: PathBuf, string: &str) -> Result<Input> {
-        let config = try!(parse(string).map_err(|err| {
-            Error::TOML(Box::new(err))
-        }));
+        let config = try!(parse(string).map_err(|err| { Error::TOML(Box::new(err)) }));
         try!(validate(&config));
-        Ok(Input{path: path, config: config.clone()})
+        Ok(Input {
+            path: path,
+            config: config.clone(),
+        })
     }
 
     /// Read input file and get the corresponding `Config`
