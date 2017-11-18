@@ -400,7 +400,6 @@ mod test {
 
         assert_eq!(molecule.size(), 8);
 
-        /**********************************************************************/
         let bonds = vec![Bond::new(0, 1), Bond::new(0, 2), Bond::new(0, 3),
                          Bond::new(0, 4), Bond::new(1, 5), Bond::new(1, 6),
                          Bond::new(1, 7)];
@@ -410,7 +409,6 @@ mod test {
             assert!(molecule.bonds().contains(bond));
         }
 
-        /**********************************************************************/
         let angles = vec![Angle::new(0, 1, 5), Angle::new(0, 1, 6), Angle::new(0, 1, 7),
                           Angle::new(1, 0, 2), Angle::new(1, 0, 3), Angle::new(1, 0, 4),
                           Angle::new(2, 0, 3), Angle::new(3, 0, 4), Angle::new(2, 0, 4),
@@ -421,7 +419,6 @@ mod test {
             assert!(molecule.angles().contains(angle));
         }
 
-        /**********************************************************************/
         let dihedrals = vec![Dihedral::new(2, 0, 1, 5), Dihedral::new(2, 0, 1, 6),
                              Dihedral::new(2, 0, 1, 7), Dihedral::new(3, 0, 1, 5),
                              Dihedral::new(3, 0, 1, 6), Dihedral::new(3, 0, 1, 7),
@@ -433,7 +430,6 @@ mod test {
             assert!(molecule.dihedrals().contains(dihedral));
         }
 
-        /**********************************************************************/
         assert!(molecule.bond_distance(0, 1).contains(BondDistance::ONE));
         assert!(molecule.bond_distance(1, 0).contains(BondDistance::ONE));
 
@@ -442,8 +438,6 @@ mod test {
 
         assert!(molecule.bond_distance(3, 5).contains(BondDistance::THREE));
         assert!(molecule.bond_distance(5, 3).contains(BondDistance::THREE));
-
-        /**********************************************************************/
 
         molecule.remove_particle(6);
         assert_eq!(molecule.bonds().len(), 6);

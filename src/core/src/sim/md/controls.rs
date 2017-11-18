@@ -27,7 +27,6 @@ pub trait Control {
 /// Trait for controls usable as thermostats
 pub trait Thermostat: Control {}
 
-/******************************************************************************/
 /// Velocity rescaling thermostat.
 ///
 /// This algorithm controls the temperature by rescaling all the velocities when
@@ -69,7 +68,6 @@ impl Control for RescaleThermostat {
 
 impl Thermostat for RescaleThermostat {}
 
-/******************************************************************************/
 /// Berendsen thermostat.
 ///
 /// The Berendsen thermostat sets the simulation temperature by exponentially
@@ -106,8 +104,6 @@ impl Control for BerendsenThermostat {
 }
 impl Thermostat for BerendsenThermostat {}
 
-/******************************************************************************/
-
 impl<T> Control for Alternator<T> where T: Control {
     fn control(&mut self, system: &mut System) {
         if self.can_run() {
@@ -141,7 +137,6 @@ impl Control for RemoveTranslation {
     }
 }
 
-/******************************************************************************/
 /// Remove global rotation from the system
 pub struct RemoveRotation;
 
@@ -180,8 +175,6 @@ impl Control for RemoveRotation {
     }
 }
 
-
-/******************************************************************************/
 /// Rewrap all molecules' centers of mass to lie within the unit cell.
 /// Individual atoms in a molecule may still lie outside of the cell.
 pub struct Rewrap;

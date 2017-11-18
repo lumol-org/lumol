@@ -67,7 +67,6 @@ impl Integrator for VelocityVerlet {
     }
 }
 
-/******************************************************************************/
 /// Verlet integrator. This one is reversible and symplectic.
 pub struct Verlet {
     /// Timestep for the integrator
@@ -120,7 +119,6 @@ impl Integrator for Verlet {
     }
 }
 
-/******************************************************************************/
 /// Leap-frog integrator. This one is reversible and symplectic.
 pub struct LeapFrog {
     /// Timestep for the integrator
@@ -165,7 +163,6 @@ impl Integrator for LeapFrog {
     }
 }
 
-/******************************************************************************/
 /// This is needed for the `BerendsenBarostat` implementation. The value comes
 /// from the DL_POLY source code.
 const WATER_COMPRESSIBILITY: f64 = 7372.0;

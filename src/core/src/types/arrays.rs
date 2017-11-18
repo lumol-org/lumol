@@ -117,8 +117,6 @@ impl<T> DerefMut for Array2<T> {
     }
 }
 
-/******************************************************************************/
-
 /// Three dimensional tensors, based on ndarray
 ///
 /// Most of the methods are simply forwarded to ndarray, so also look the doc
