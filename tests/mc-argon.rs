@@ -1,11 +1,11 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) Lumol's contributors — BSD license
+extern crate env_logger;
 extern crate lumol;
 extern crate lumol_input as input;
-extern crate env_logger;
 
-use lumol::units;
 use input::Input;
+use lumol::units;
 
 use std::path::Path;
 use std::sync::{Once, ONCE_INIT};
@@ -15,8 +15,11 @@ mod utils;
 
 #[test]
 fn npt() {
-    START.call_once(|| {env_logger::init().unwrap();});
-    let path = Path::new(file!()).parent().unwrap()
+    START.call_once(|| {
+        env_logger::init().unwrap();
+    });
+    let path = Path::new(file!()).parent()
+                                 .unwrap()
                                  .join("data")
                                  .join("mc-argon")
                                  .join("npt.toml");

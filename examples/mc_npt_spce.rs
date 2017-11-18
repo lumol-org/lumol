@@ -2,30 +2,29 @@
 // Copyright (C) Lumol's contributors — BSD license
 extern crate lumol;
 
-use lumol::sys::{UnitCell, System, TrajectoryBuilder};
-use lumol::units;
-use lumol::sim::Simulation;
-use lumol::energy::{PairInteraction, PairRestriction};
-use lumol::energy::{LennardJones, NullPotential};
 use lumol::energy::{Ewald, SharedEwald};
-use lumol::sim::mc::{MonteCarlo, Translate, Rotate, Resize};
+use lumol::energy::{LennardJones, NullPotential};
+use lumol::energy::{PairInteraction, PairRestriction};
 use lumol::out::{EnergyOutput, PropertiesOutput, TrajectoryOutput};
+use lumol::sim::Simulation;
+use lumol::sim::mc::{MonteCarlo, Resize, Rotate, Translate};
+use lumol::sys::{System, TrajectoryBuilder, UnitCell};
+use lumol::units;
 
 use std::path::Path;
 
 fn get_system() -> System {
     let data_dir = Path::new(file!()).parent().unwrap().join("data");
     let configuration = data_dir.join("spce.xyz");
-    let mut system = TrajectoryBuilder::new()
-                                       .open(configuration)
-                                       .and_then(|mut traj| traj.read_guess_bonds())
-                                       .unwrap();
+    let mut system = TrajectoryBuilder::new().open(configuration)
+                                             .and_then(|mut traj| traj.read_guess_bonds())
+                                             .unwrap();
     system.cell = UnitCell::cubic(20.0);
 
     // Add intermolecular interactions
-    let lj = Box::new(LennardJones{
+    let lj = Box::new(LennardJones {
         sigma: units::from(3.16555789, "A").unwrap(),
-        epsilon: units::from(0.65017254, "kJ/mol").unwrap()
+        epsilon: units::from(0.65017254, "kJ/mol").unwrap(),
     });
     let mut pairs = PairInteraction::new(lj, 6.0);
     // Restrict interactions to act only between different molecules.
@@ -37,9 +36,9 @@ fn get_system() -> System {
     // the equilibrium bond length. This means that both
     // energy as well as virial for the bond potential are
     // zero. Hence, we use a `NullPotential`.
-    let bond = Box::new(NullPotential{});
+    let bond = Box::new(NullPotential {});
     system.add_bond_potential("O", "H", bond);
-    let angle = Box::new(NullPotential{});
+    let angle = Box::new(NullPotential {});
     system.add_angle_potential("H", "O", "H", angle);
 
     // Set charges
@@ -82,12 +81,9 @@ fn main() {
     // I.e. for a dilute gas, translation amplitudes grow infinitely
     // since the system has so few particles that almost all moves are
     // accepted no matter what the amplitude will be.
-    mc.add_move_with_acceptance(
-        Box::new(Translate::new(delta_trans)), 45.0, 0.5);
-    mc.add_move_with_acceptance(
-        Box::new(Rotate::new(delta_rot)), 45.0, 0.5);
-    mc.add_move_with_acceptance(
-        Box::new(Resize::new(pressure, delta_vol)), 2.0, 0.5);
+    mc.add_move_with_acceptance(Box::new(Translate::new(delta_trans)), 45.0, 0.5);
+    mc.add_move_with_acceptance(Box::new(Rotate::new(delta_rot)), 45.0, 0.5);
+    mc.add_move_with_acceptance(Box::new(Resize::new(pressure, delta_vol)), 2.0, 0.5);
     mc.set_amplitude_update_frequency(500);
 
     // Setup simulation.
@@ -95,11 +91,17 @@ fn main() {
 
     // Add output.
     simulation.add_output_with_frequency(
-        Box::new(PropertiesOutput::new("npt_spce_prp.dat").unwrap()), 500);
+        Box::new(PropertiesOutput::new("npt_spce_prp.dat").unwrap()),
+        500,
+    );
     simulation.add_output_with_frequency(
-        Box::new(EnergyOutput::new("npt_spce_ener.dat").unwrap()), 500);
+        Box::new(EnergyOutput::new("npt_spce_ener.dat").unwrap()),
+        500,
+    );
     simulation.add_output_with_frequency(
-        Box::new(TrajectoryOutput::new("npt_spce_conf.xyz").unwrap()), 10_000);
+        Box::new(TrajectoryOutput::new("npt_spce_conf.xyz").unwrap()),
+        10_000,
+    );
 
     // Often, a simulation is described using `MC cycles`.
     // We define a `cycle` to contain `nmols+2` moves.
@@ -112,8 +114,11 @@ fn main() {
     println!("Simuation of 90 spce molecules.");
     let ener_init = units::to(system.total_energy(), "kJ/mol").unwrap();
     println!("Initial energy: {}", ener_init);
-    println!("Simulating {} cycles with a total of {} moves",
-        cycles, cycles * moves_per_cycle);
+    println!(
+        "Simulating {} cycles with a total of {} moves",
+        cycles,
+        cycles * moves_per_cycle
+    );
     println!("  running ....");
     simulation.run(&mut system, cycles * moves_per_cycle);
     println!("Done.");

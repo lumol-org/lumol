@@ -3,22 +3,21 @@
 extern crate lumol;
 extern crate lumol_input;
 
+extern crate chrono;
+extern crate clap;
 #[macro_use]
 extern crate log;
-extern crate clap;
-extern crate chrono;
 
-use lumol_input::Input;
-use clap::{App, ArgMatches};
-use chrono::offset::Local;
 use chrono::Duration;
+use chrono::offset::Local;
+use clap::{App, ArgMatches};
+use lumol_input::Input;
 
 fn parse_args<'a>() -> ArgMatches<'a> {
-    App::new("lumol")
-        .version(lumol::VERSION)
-        .about("An extensible molecular simulation engine")
-        .args_from_usage("<input.toml>      'Simulation input file'")
-        .get_matches()
+    App::new("lumol").version(lumol::VERSION)
+                     .about("An extensible molecular simulation engine")
+                     .args_from_usage("<input.toml>      'Simulation input file'")
+                     .get_matches()
 }
 
 fn main() {
@@ -35,13 +34,21 @@ fn main() {
     info!("Running lumol version {}", lumol::VERSION);
 
     let start = Local::now();
-    info!("Simulation started the {} at {}", start.format("%Y-%m-%d"), start.format("%H:%M:%S"));
+    info!(
+        "Simulation started the {} at {}",
+        start.format("%Y-%m-%d"),
+        start.format("%H:%M:%S")
+    );
     info!(" "); // Skip a line
 
     config.simulation.run(&mut config.system, config.nsteps);
 
     let end = Local::now();
-    info!("\nSimulation ended the {} at {}", end.format("%Y-%m-%d"), end.format("%H:%M:%S"));
+    info!(
+        "\nSimulation ended the {} at {}",
+        end.format("%Y-%m-%d"),
+        end.format("%H:%M:%S")
+    );
     let elapsed = end.signed_duration_since(start);
     info!("Simulation ran for {}", format_elapsed(elapsed));
 }

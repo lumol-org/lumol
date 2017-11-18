@@ -4,12 +4,12 @@
 //! Geometry minization of a molecule of water
 extern crate lumol;
 
-use lumol::sys::{System, Particle};
-use lumol::types::Vector3D;
-use lumol::energy::{PairInteraction, NullPotential, Harmonic};
-use lumol::sim::{Simulation, Minimization};
-use lumol::sim::min::SteepestDescent;
+use lumol::energy::{Harmonic, NullPotential, PairInteraction};
 use lumol::out::EnergyOutput;
+use lumol::sim::{Minimization, Simulation};
+use lumol::sim::min::SteepestDescent;
+use lumol::sys::{Particle, System};
+use lumol::types::Vector3D;
 use lumol::units;
 
 fn main() {
@@ -30,20 +30,26 @@ fn main() {
     system.add_pair_potential("O", "O", null_interaction.clone());
     system.add_pair_potential("H", "H", null_interaction.clone());
 
-    system.add_bond_potential("O", "H", Box::new(Harmonic{
-        x0: units::from(1.1, "A").unwrap(),
-        k: units::from(100.0, "kJ/mol/A^2").unwrap(),
-    }));
-    system.add_angle_potential("H", "O", "H", Box::new(Harmonic{
-        x0: units::from(109.0, "deg").unwrap(),
-        k: units::from(30.0, "kJ/mol/deg").unwrap(),
-    }));
-
-    let mut simulation = Simulation::new(
-        Box::new(Minimization::new(
-            Box::new(SteepestDescent::new()))
-        )
+    system.add_bond_potential(
+        "O",
+        "H",
+        Box::new(Harmonic {
+            x0: units::from(1.1, "A").unwrap(),
+            k: units::from(100.0, "kJ/mol/A^2").unwrap(),
+        }),
     );
+    system.add_angle_potential(
+        "H",
+        "O",
+        "H",
+        Box::new(Harmonic {
+            x0: units::from(109.0, "deg").unwrap(),
+            k: units::from(30.0, "kJ/mol/deg").unwrap(),
+        }),
+    );
+
+    let mut simulation =
+        Simulation::new(Box::new(Minimization::new(Box::new(SteepestDescent::new()))));
     simulation.add_output(Box::new(EnergyOutput::new("energy.dat").unwrap()));
     simulation.run(&mut system, 500);
 }

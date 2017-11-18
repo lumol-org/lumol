@@ -5,10 +5,10 @@
 extern crate lumol;
 extern crate lumol_input as input;
 
-use lumol::sys::{Molecule, Particle, ParticleVec, TrajectoryBuilder, UnitCell};
-use lumol::sys::{read_molecule, molecule_type};
 use lumol::sim::Simulation;
-use lumol::sim::mc::{MonteCarlo, Translate, Rotate};
+use lumol::sim::mc::{MonteCarlo, Rotate, Translate};
+use lumol::sys::{Molecule, Particle, ParticleVec, TrajectoryBuilder, UnitCell};
+use lumol::sys::{molecule_type, read_molecule};
 use lumol::units;
 
 use input::InteractionsInput;
@@ -19,7 +19,7 @@ fn main() {
                                              .unwrap();
     // Add bonds in the system
     for i in 0..system.molecules().len() / 3 {
-        system.add_bond(3 * i,     3 * i + 1);
+        system.add_bond(3 * i, 3 * i + 1);
         system.add_bond(3 * i + 1, 3 * i + 2);
     }
 

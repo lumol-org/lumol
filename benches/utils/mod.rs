@@ -5,19 +5,19 @@ use lumol::sys::{System, TrajectoryBuilder};
 use lumol_input::InteractionsInput;
 use std::path::Path;
 
-use rand::{XorShiftRng, SeedableRng};
+use rand::{SeedableRng, XorShiftRng};
 
 pub fn get_system(name: &str) -> System {
     let data = Path::new(file!()).parent().unwrap().join("..").join("data");
 
-    let mut system = TrajectoryBuilder::new()
-                                       .open(data.join(String::from(name) + ".pdb"))
-                                       .and_then(|mut trajectory| trajectory.read())
-                                       .unwrap();
+    let system = data.join(String::from(name) + ".pdb");
+    let mut system = TrajectoryBuilder::new().open(system)
+                                             .and_then(|mut trajectory| trajectory.read())
+                                             .unwrap();
 
-    InteractionsInput::new(data.join(String::from(name) + ".toml"))
-                      .and_then(|input| input.read(&mut system))
-                      .unwrap();
+    let interactions = data.join(String::from(name) + ".toml");
+    InteractionsInput::new(interactions).and_then(|input| input.read(&mut system))
+                                        .unwrap();
 
     return system;
 }

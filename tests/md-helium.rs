@@ -3,13 +3,13 @@
 
 //! Testing physical properties of a Lennard-Jones gas of Helium using Molecular
 //! dynamics
+extern crate env_logger;
 extern crate lumol;
 extern crate lumol_input as input;
-extern crate env_logger;
 
+use input::Input;
 use lumol::consts::K_BOLTZMANN;
 use lumol::units;
-use input::Input;
 
 use std::path::Path;
 use std::sync::{Once, ONCE_INIT};
@@ -20,8 +20,11 @@ mod utils;
 
 #[test]
 fn constant_energy_velocity_verlet() {
-    START.call_once(|| {env_logger::init().unwrap();});
-    let path = Path::new(file!()).parent().unwrap()
+    START.call_once(|| {
+        env_logger::init().unwrap();
+    });
+    let path = Path::new(file!()).parent()
+                                 .unwrap()
                                  .join("data")
                                  .join("md-helium")
                                  .join("nve-velocity-verlet.toml");
@@ -36,8 +39,11 @@ fn constant_energy_velocity_verlet() {
 
 #[test]
 fn constant_energy_verlet() {
-    START.call_once(|| {env_logger::init().unwrap();});
-    let path = Path::new(file!()).parent().unwrap()
+    START.call_once(|| {
+        env_logger::init().unwrap();
+    });
+    let path = Path::new(file!()).parent()
+                                 .unwrap()
                                  .join("data")
                                  .join("md-helium")
                                  .join("nve-verlet.toml");
@@ -52,8 +58,11 @@ fn constant_energy_verlet() {
 
 #[test]
 fn constant_energy_leap_frog() {
-    START.call_once(|| {env_logger::init().unwrap();});
-    let path = Path::new(file!()).parent().unwrap()
+    START.call_once(|| {
+        env_logger::init().unwrap();
+    });
+    let path = Path::new(file!()).parent()
+                                 .unwrap()
                                  .join("data")
                                  .join("md-helium")
                                  .join("nve-leap-frog.toml");
@@ -67,8 +76,11 @@ fn constant_energy_leap_frog() {
 
 #[test]
 fn perfect_gas() {
-    START.call_once(|| {env_logger::init().unwrap();});
-    let path = Path::new(file!()).parent().unwrap()
+    START.call_once(|| {
+        env_logger::init().unwrap();
+    });
+    let path = Path::new(file!()).parent()
+                                 .unwrap()
                                  .join("data")
                                  .join("md-helium")
                                  .join("nve-perfect-gas.toml");
@@ -86,8 +98,11 @@ fn perfect_gas() {
 
 #[test]
 fn berendsen_barostat() {
-    START.call_once(|| {env_logger::init().unwrap();});
-    let path = Path::new(file!()).parent().unwrap()
+    START.call_once(|| {
+        env_logger::init().unwrap();
+    });
+    let path = Path::new(file!()).parent()
+                                 .unwrap()
                                  .join("data")
                                  .join("md-helium")
                                  .join("npt-berendsen-barostat.toml");
@@ -111,8 +126,11 @@ fn berendsen_barostat() {
 
 #[test]
 fn shifted() {
-    START.call_once(|| {env_logger::init().unwrap();});
-    let path = Path::new(file!()).parent().unwrap()
+    START.call_once(|| {
+        env_logger::init().unwrap();
+    });
+    let path = Path::new(file!()).parent()
+                                 .unwrap()
                                  .join("data")
                                  .join("md-helium")
                                  .join("nve-shifted.toml");
@@ -127,8 +145,11 @@ fn shifted() {
 
 #[test]
 fn table_computation() {
-    START.call_once(|| {env_logger::init().unwrap();});
-    let path = Path::new(file!()).parent().unwrap()
+    START.call_once(|| {
+        env_logger::init().unwrap();
+    });
+    let path = Path::new(file!()).parent()
+                                 .unwrap()
                                  .join("data")
                                  .join("md-helium")
                                  .join("nve-table.toml");
