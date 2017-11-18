@@ -334,8 +334,6 @@ impl_arithmetic!(
     }
 );
 
-/******************************************************************************/
-
 lsh_scal_arithmetic!(
     Matrix3, Mul, mul, Matrix3,
     self, other,

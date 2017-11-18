@@ -99,8 +99,6 @@ impl FromToml for MolecularDynamics {
     }
 }
 
-/******************************************************************************/
-
 impl FromTomlWithData for Verlet {
     type Data = f64;
     fn from_toml(_: &Table, timestep: f64) -> Result<Verlet> {
@@ -141,8 +139,6 @@ impl FromTomlWithData for AnisoBerendsenBarostat {
         Ok(AnisoBerendsenBarostat::hydrostatic(timestep, pressure, tau))
     }
 }
-
-/******************************************************************************/
 
 impl FromToml for BerendsenThermostat {
     fn from_toml(config: &Table) -> Result<BerendsenThermostat> {

@@ -23,7 +23,6 @@ pub trait Compute {
     fn compute(&self, system: &System) -> Self::Output;
 }
 
-/******************************************************************************/
 /// Compute all the forces acting on the system, and return a vector of
 /// force acting on each particles
 pub struct Forces;
@@ -107,7 +106,6 @@ impl Compute for Forces {
     }
 }
 
-/******************************************************************************/
 /// Compute the potential energy of the system
 pub struct PotentialEnergy;
 impl Compute for PotentialEnergy {
@@ -128,7 +126,6 @@ impl Compute for PotentialEnergy {
     }
 }
 
-/******************************************************************************/
 /// Compute the kinetic energy of the system
 pub struct KineticEnergy;
 impl Compute for KineticEnergy {
@@ -143,7 +140,6 @@ impl Compute for KineticEnergy {
     }
 }
 
-/******************************************************************************/
 /// Compute the total energy of the system
 pub struct TotalEnergy;
 impl Compute for TotalEnergy {
@@ -155,7 +151,6 @@ impl Compute for TotalEnergy {
     }
 }
 
-/******************************************************************************/
 /// Compute the instantaneous temperature of the system
 pub struct Temperature;
 impl Compute for Temperature {
@@ -167,7 +162,6 @@ impl Compute for Temperature {
     }
 }
 
-/******************************************************************************/
 /// Compute the volume of the system
 pub struct Volume;
 impl Compute for Volume {
@@ -178,7 +172,6 @@ impl Compute for Volume {
     }
 }
 
-/******************************************************************************/
 /// Compute the virial tensor of the system, defined by
 /// $$ W = \sum_i \sum_{j > i} \vec r_{ij} \otimes \vec f_{ij} $$
 pub struct Virial;
@@ -243,7 +236,6 @@ impl Compute for Virial {
     }
 }
 
-/******************************************************************************/
 /// Compute the pressure of the system from the virial equation, at the given
 /// temperature. This pressure is given by the following formula:
 /// $$ p = \frac{N k_B T}{V} + \frac{1}{3V} \sum_i \vec f_i \cdot \vec r_i $$
@@ -265,7 +257,6 @@ impl Compute for PressureAtTemperature {
     }
 }
 
-/******************************************************************************/
 /// Compute the stress tensor of the system from the virial equation, at the
 /// given temperature. The stress tensor is defined by
 /// $$ \sigma = \sigma = \frac{1}{V} (\sum_i m_i v_i \otimes v_i + \sum_i \sum_{j > i} \vec r_{ij} \otimes \vec f_{ij}) $$
@@ -289,7 +280,6 @@ impl Compute for StressAtTemperature {
     }
 }
 
-/******************************************************************************/
 /// Compute the stress tensor of the system, defined by:
 /// $$ \sigma = \frac{1}{V} (\sum_i m_i v_i \otimes v_i + \sum_i \sum_{j > i} \vec r_{ij} \otimes \vec f_{ij}) $$
 pub struct Stress;
@@ -309,7 +299,6 @@ impl Compute for Stress {
     }
 }
 
-/******************************************************************************/
 /// Compute the virial pressure of the system. This pressure is given by the
 /// following formula:
 /// $$ p = \frac{N k_B T}{V} + \frac{1}{3V} \sum_i \vec f_i \cdot \vec r_i $$

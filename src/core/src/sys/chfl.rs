@@ -132,8 +132,6 @@ fn apply_particle_permutation(bonds: &mut Vec<[u64; 2]>, permutations: &[(usize,
     }
 }
 
-/******************************************************************************/
-
 /// Convert Lumol types to Chemfiles types
 pub trait ToChemfiles {
     /// Output type
@@ -218,8 +216,6 @@ impl ToChemfiles for System {
         Ok(frame)
     }
 }
-
-/******************************************************************************/
 
 /// A Trajectory is a file containing one or more successive simulation steps.
 ///

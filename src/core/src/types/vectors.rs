@@ -172,8 +172,6 @@ impl_arithmetic!(
     Vector3D::new(x, y, z)}
 );
 
-/******************************************************************************/
-
 lsh_scal_arithmetic!(
     Vector3D, Mul, mul, Vector3D,
     self, other,
@@ -216,8 +214,6 @@ impl_inplace_arithmetic!(
     }
 );
 
-/******************************************************************************/
-
 impl Neg for Vector3D {
     type Output = Vector3D;
     #[inline] fn neg(self) -> Vector3D {
@@ -238,8 +234,6 @@ impl<'a> Neg for &'a mut Vector3D {
         Vector3D::new(-self[0], -self[1], -self[2])
     }
 }
-
-/******************************************************************************/
 
 impl Deref for Vector3D {
     type Target = [f64; 3];
@@ -272,8 +266,6 @@ impl From<[f64; 3]> for Vector3D {
         Vector3D(data)
     }
 }
-
-/******************************************************************************/
 
 #[cfg(test)]
 mod tests {
