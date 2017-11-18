@@ -1,14 +1,14 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) Lumol's contributors — BSD license
 
-use std::io::prelude::*;
-use std::io;
 use std::error;
 use std::fmt;
 use std::fs::File;
+use std::io;
+use std::io::prelude::*;
 use std::path::{Path, PathBuf};
 
-use caldyn::{Expr, Context};
+use caldyn::{Context, Expr};
 use caldyn::Error as CaldynError;
 
 use super::Output;
@@ -79,7 +79,7 @@ struct FormatArgs {
     /// Pairs of "constant string", "format expression"
     args: Vec<(String, Expr)>,
     /// Any remaining tail after the last expression
-    tail: String
+    tail: String,
 }
 
 impl FormatArgs {
@@ -102,14 +102,12 @@ impl FormatArgs {
                     expr.clear();
                 }
                 '{' if in_expr => {
-                    return Err(CustomOutputError::Custom(
-                        "found { in an expression".into()
-                    ));
+                    return Err(CustomOutputError::Custom("found { in an expression".into()));
                 }
                 '}' if !in_expr => {
-                    return Err(CustomOutputError::Custom(
-                        "found } outside of an expression".into()
-                    ));
+                    return Err(
+                        CustomOutputError::Custom("found } outside of an expression".into()),
+                    );
                 }
                 c => {
                     if in_expr {
@@ -121,9 +119,7 @@ impl FormatArgs {
             }
         }
         if in_expr {
-            return Err(CustomOutputError::Custom(
-                "mismatched braces".into()
-            ));
+            return Err(CustomOutputError::Custom("mismatched braces".into()));
         }
 
         Ok(FormatArgs {
@@ -168,7 +164,7 @@ impl FormatArgs {
                         // other atomic properties
                         "mass" => Some(get_particle_data!(index, mass)),
                         "charge" => Some(get_particle_data!(index, charge)),
-                        _ => None
+                        _ => None,
                     }
                 } else {
                     // scalar data
@@ -189,7 +185,7 @@ impl FormatArgs {
                         "stress.xy" => Some(system.stress()[0][1]),
                         "stress.xz" => Some(system.stress()[0][2]),
                         "stress.yz" => Some(system.stress()[1][2]),
-                        _ => None
+                        _ => None,
                     }
                 }
             })
@@ -272,7 +268,10 @@ impl CustomOutput {
     /// Create a new `CustomOutput` writing to the file at `filename` using
     /// the given `template`. The `template` is only partially validated at
     /// this stage.
-    pub fn new<P: AsRef<Path>>(filename: P, template: &str) -> Result<CustomOutput, CustomOutputError> {
+    pub fn new<P: AsRef<Path>>(
+        filename: P,
+        template: &str,
+    ) -> Result<CustomOutput, CustomOutputError> {
         Ok(CustomOutput {
             file: try!(File::create(filename.as_ref())),
             path: filename.as_ref().to_owned(),
@@ -346,7 +345,7 @@ mod tests {
         assert_eq!(format("{cell.b / A}"), "10");
         assert_eq!(format("{cell.c / A}"), "10");
         assert_eq!(format("{cell.alpha}"), "90");
-        assert_eq!(format("{cell.beta}"),  "90");
+        assert_eq!(format("{cell.beta}"), "90");
         assert_eq!(format("{cell.gamma}"), "90");
 
         assert_eq!(format("{stress.xx / bar}"), "30899.975184239443");
@@ -367,13 +366,13 @@ mod tests {
 
     #[test]
     fn custom() {
-        test_output(|path| {
-            Box::new(CustomOutput::new(path, "p {pressure/bar} t {3 * 5} \tff").unwrap())
-        },
-"# Custom output
-# p {pressure/bar} t {3 * 5} \tff
-p 10299.991728079816 t 15 \tff
-"
+        let template = "p {pressure/bar} t {3 * 5} \tff";
+        test_output(
+            |path| Box::new(CustomOutput::new(path, template).unwrap()),
+            "# Custom output
+            # p {pressure/bar} t {3 * 5} \tff
+            p 10299.991728079816 t 15 \tff
+            ",
         );
     }
 }

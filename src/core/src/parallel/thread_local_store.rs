@@ -40,13 +40,16 @@ use thread_local::CachedThreadLocal;
 /// ```
 ///
 pub struct ThreadLocalStore<T, F>
-    where T: Send, F: Fn() -> T {
+where
+    T: Send,
+    F: Fn() -> T,
+{
     inner: CachedThreadLocal<RefCell<T>>,
-    init: F
+    init: F,
 }
 
 pub struct IntoIter<T: Send> {
-    inner: <CachedThreadLocal<RefCell<T>> as IntoIterator>::IntoIter
+    inner: <CachedThreadLocal<RefCell<T>> as IntoIterator>::IntoIter,
 }
 
 impl<T: Send> Iterator for IntoIter<T> {
@@ -54,37 +57,49 @@ impl<T: Send> Iterator for IntoIter<T> {
 
     #[inline]
     fn next(&mut self) -> Option<Self::Item> {
-        self.inner.next().map(|rc| {
-            rc.into_inner()
-        })
+        self.inner.next().map(|rc| rc.into_inner())
     }
 }
 
 impl<T, F> IntoIterator for ThreadLocalStore<T, F>
-    where T: Send, F: Fn() -> T {
+where
+    T: Send,
+    F: Fn() -> T,
+{
     type Item = T;
     type IntoIter = IntoIter<T>;
 
     #[inline]
     fn into_iter(self) -> Self::IntoIter {
-        IntoIter { inner: self.inner.into_iter() }
+        IntoIter {
+            inner: self.inner.into_iter(),
+        }
     }
 }
 
 impl<T, F> ThreadLocalStore<T, F>
-    where T: Send, F: Fn() -> T {
+where
+    T: Send,
+    F: Fn() -> T,
+{
     /// Create a new `ThreadLocalStore`.
     ///
     /// Takes a closure that returns the initial value
     /// of the thread local data.
     pub fn new(init: F) -> Self {
-        ThreadLocalStore { inner: CachedThreadLocal::new(), init: init }
+        ThreadLocalStore {
+            inner: CachedThreadLocal::new(),
+            init: init,
+        }
     }
 
     /// Shortcut to sum the local values if the local data
     /// can be iterated into `AddAssign` items.
     pub fn sum_local_values<I>(self, output: &mut [I])
-        where T: IntoIterator<Item=I>, I: AddAssign<I> {
+    where
+        T: IntoIterator<Item = I>,
+        I: AddAssign<I>,
+    {
         for local_values in self {
             for (o, v) in output.iter_mut().zip(local_values) {
                 *o += v;
@@ -94,7 +109,10 @@ impl<T, F> ThreadLocalStore<T, F>
 }
 
 impl<T, F> Deref for ThreadLocalStore<T, F>
-    where T: Send, F: Fn() -> T{
+where
+    T: Send,
+    F: Fn() -> T,
+{
     type Target = RefCell<T>;
 
     fn deref(&self) -> &Self::Target {

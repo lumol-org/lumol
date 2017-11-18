@@ -1,16 +1,16 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) 2015-2016 G. Fraux — BSD license
-use rand::distributions::{Normal, Range, Sample};
 use rand::Rng;
+use rand::distributions::{Normal, Range, Sample};
 
-use std::usize;
 use std::f64;
+use std::usize;
 
 use super::MCMove;
 use super::select_molecule;
 
+use sys::{EnergyCache, System};
 use types::{Matrix3, Vector3D};
-use sys::{System, EnergyCache};
 
 /// Monte Carlo move for rotating a rigid molecule
 pub struct Rotate {
@@ -66,7 +66,7 @@ impl MCMove for Rotate {
         "molecular rotation"
     }
 
-    fn setup(&mut self, _: &System) { }
+    fn setup(&mut self, _: &System) {}
 
     fn prepare(&mut self, system: &mut System, rng: &mut Box<Rng>) -> bool {
         if let Some(id) = select_molecule(system, self.moltype, rng) {
@@ -81,7 +81,7 @@ impl MCMove for Rotate {
         let axis = Vector3D::new(
             self.axis_rng.sample(rng),
             self.axis_rng.sample(rng),
-            self.axis_rng.sample(rng)
+            self.axis_rng.sample(rng),
         ).normalized();
         let theta = self.range.sample(rng);
 

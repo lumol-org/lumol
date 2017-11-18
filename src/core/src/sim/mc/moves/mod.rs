@@ -10,7 +10,7 @@
 //! In all this module, beta refers to the Boltzmann factor 1/(kB T)
 use rand::Rng;
 
-use sys::{System, EnergyCache};
+use sys::{EnergyCache, System};
 
 /// The `MCMove` trait correspond to the set of methods used in Monte Carlo
 /// simulations.

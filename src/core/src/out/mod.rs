@@ -23,17 +23,22 @@ pub trait Output {
 mod tests;
 
 mod cell;
-mod stress;
-mod energy;
-mod custom;
-mod forces;
-mod properties;
-mod trajectory;
-
 pub use self::cell::CellOutput;
-pub use self::energy::EnergyOutput;
+
+mod stress;
 pub use self::stress::StressOutput;
-pub use self::forces::ForcesOutput;
+
+mod energy;
+pub use self::energy::EnergyOutput;
+
+mod custom;
 pub use self::custom::{CustomOutput, CustomOutputError};
+
+mod forces;
+pub use self::forces::ForcesOutput;
+
+mod properties;
 pub use self::properties::PropertiesOutput;
+
+mod trajectory;
 pub use self::trajectory::TrajectoryOutput;

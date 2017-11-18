@@ -10,7 +10,7 @@
 use std::mem;
 
 use sys::System;
-use types::{Vector3D, Array2};
+use types::{Array2, Vector3D};
 
 /// Callback for updating a cache. It also take an `&mut System` argument for
 /// updating the cache inside the global potentials.
@@ -39,7 +39,7 @@ pub struct EnergyCache {
     /// Energy of global interactions
     global: f64,
     /// Callback to be called to update the cache if the system is modified
-    updater: Option<UpdateCallback>
+    updater: Option<UpdateCallback>,
 }
 
 impl EnergyCache {
@@ -120,8 +120,10 @@ impl EnergyCache {
         if let Some(updater) = updater {
             updater(self, system);
         } else {
-            fatal_error!("Error in `EnergyCache::update`: \
-                         This function MUST be called after a call to a `*_cost` function");
+            fatal_error!(
+                "Error in `EnergyCache::update`: \
+                 This function MUST be called after a call to a `*_cost` function"
+            );
         }
     }
 
@@ -142,7 +144,12 @@ impl EnergyCache {
     /// This function ***DOES NOT*** update the cache, the
     /// `update_particles_moved` function MUST be called if the particles are
     /// effectively moved.
-    pub fn move_particles_cost(&mut self, system: &System, idxes: Vec<usize>, newpos: &[Vector3D]) -> f64 {
+    pub fn move_particles_cost(
+        &mut self,
+        system: &System,
+        idxes: Vec<usize>,
+        newpos: &[Vector3D],
+    ) -> f64 {
         let evaluator = system.energy_evaluator();
         let positions = system.particles().position;
 
@@ -153,7 +160,9 @@ impl EnergyCache {
         for (i, &part_i) in idxes.iter().enumerate() {
             for part_j in 0..system.size() {
                 // Exclude interactions inside the sub-system.
-                if idxes.contains(&part_j) {continue}
+                if idxes.contains(&part_j) {
+                    continue;
+                }
 
                 let r = system.cell.distance(&positions[part_j], &newpos[i]);
                 let energy = evaluator.pair(r, part_i, part_j);
@@ -227,11 +236,9 @@ impl EnergyCache {
 
         let pairs_tail = evaluator.pairs_tail();
 
-        let cost = pairs_delta + (pairs_tail - self.pairs_tail)
-                               + (bonds - self.bonds)
-                               + (angles - self.angles)
-                               + (dihedrals - self.dihedrals)
-                               + coulomb_delta + global_delta;
+        let cost = pairs_delta + (pairs_tail - self.pairs_tail) + (bonds - self.bonds)
+            + (angles - self.angles) + (dihedrals - self.dihedrals)
+            + coulomb_delta + global_delta;
 
         self.updater = Some(Box::new(move |cache, system| {
             cache.pairs_tail = pairs_tail;
@@ -249,7 +256,9 @@ impl EnergyCache {
             // only loop over the indices that actually changed
             for &i in &idxes {
                 for j in 0..n {
-                    if idxes.contains(&j) {continue}
+                    if idxes.contains(&j) {
+                        continue;
+                    }
                     cache.pairs_cache[(i, j)] = new_pairs[(i, j)];
                     cache.pairs_cache[(j, i)] = new_pairs[(i, j)];
                 }
@@ -317,9 +326,8 @@ impl EnergyCache {
         // compute the new tail correction
         let pairs_tail = evaluator.pairs_tail();
 
-        let cost = pairs_delta + (pairs_tail - self.pairs_tail)
-                               + (new_coulomb - self.coulomb)
-                               + (new_global - self.global);
+        let cost = pairs_delta + (pairs_tail - self.pairs_tail) + (new_coulomb - self.coulomb)
+            + (new_global - self.global);
 
         self.updater = Some(Box::new(move |cache, system| {
             cache.pairs += pairs_delta;
@@ -347,7 +355,12 @@ impl EnergyCache {
 
 /// Return either the new position of a particle (from `newpos`) if its index
 /// is in `idxes`, or its old position in the system.
-fn new_position<'a>(system: &'a System, i: usize, idxes: &[usize], newpos: &'a[Vector3D]) -> &'a Vector3D {
+fn new_position<'a>(
+    system: &'a System,
+    i: usize,
+    idxes: &[usize],
+    newpos: &'a [Vector3D],
+) -> &'a Vector3D {
     for (idx, &particle) in idxes.iter().enumerate() {
         if particle == i {
             return &newpos[idx];
@@ -359,47 +372,81 @@ fn new_position<'a>(system: &'a System, i: usize, idxes: &[usize], newpos: &'a[V
 #[cfg(test)]
 mod tests {
     use super::*;
-    use sys::System;
+    use energy::{Harmonic, LennardJones, NullPotential, Wolf};
     use energy::PairInteraction;
-    use energy::{LennardJones, NullPotential, Harmonic, Wolf};
-    use utils::{system_from_xyz, unit_from};
+    use sys::System;
     use types::Vector3D;
+    use utils::{system_from_xyz, unit_from};
 
     fn testing_system() -> System {
-        let mut system = system_from_xyz("8
-        bonds cell: 10.0
-        O     0.000000     0.000000     0.000000
-        O     0.000000     0.000000     1.480000
-        H     0.895669     0.000000    -0.316667
-        H    -0.895669     0.000000     1.796667
-        O     3.000000     0.000000     0.000000
-        O     3.000000     0.000000     1.480000
-        H     3.895669     0.000000    -0.316667
-        H     2.104330     0.000000     1.796667");
+        let mut system = system_from_xyz(
+            "8
+            bonds cell: 10.0
+            O     0.000000     0.000000     0.000000
+            O     0.000000     0.000000     1.480000
+            H     0.895669     0.000000    -0.316667
+            H    -0.895669     0.000000     1.796667
+            O     3.000000     0.000000     0.000000
+            O     3.000000     0.000000     1.480000
+            H     3.895669     0.000000    -0.316667
+            H     2.104330     0.000000     1.796667",
+        );
         assert!(system.molecules().len() == 2);
 
-        system.add_pair_potential("H", "H", PairInteraction::new(
-            Box::new(LennardJones{sigma: 3.0, epsilon: unit_from(0.5, "kJ/mol")}), 3.0
-        ));
-
-        system.add_pair_potential("O", "O", PairInteraction::new(
-            Box::new(NullPotential), 3.0
-        ));
-
-        system.add_pair_potential("O", "H", PairInteraction::new(
-            Box::new(LennardJones{sigma: 1.0, epsilon: unit_from(0.3, "kJ/mol")}), 3.0
-        ));
-
-        system.add_bond_potential("O", "H",
-            Box::new(Harmonic{x0: 3.4, k: unit_from(522.0, "kJ/mol/A^2")})
+        system.add_pair_potential(
+            "H",
+            "H",
+            PairInteraction::new(
+                Box::new(LennardJones {
+                    sigma: 3.0,
+                    epsilon: unit_from(0.5, "kJ/mol"),
+                }),
+                3.0,
+            ),
         );
 
-        system.add_angle_potential("O", "O", "H",
-            Box::new(Harmonic{x0: f64::to_radians(120.0), k: unit_from(150.0, "kJ/mol/deg^2")})
+        system.add_pair_potential("O", "O", PairInteraction::new(Box::new(NullPotential), 3.0));
+
+        system.add_pair_potential(
+            "O",
+            "H",
+            PairInteraction::new(
+                Box::new(LennardJones {
+                    sigma: 1.0,
+                    epsilon: unit_from(0.3, "kJ/mol"),
+                }),
+                3.0,
+            ),
         );
 
-        system.add_dihedral_potential("H", "O", "O", "H",
-            Box::new(Harmonic{x0: f64::to_radians(180.0), k: unit_from(800.0, "kJ/mol/deg^2")})
+        system.add_bond_potential(
+            "O",
+            "H",
+            Box::new(Harmonic {
+                x0: 3.4,
+                k: unit_from(522.0, "kJ/mol/A^2"),
+            }),
+        );
+
+        system.add_angle_potential(
+            "O",
+            "O",
+            "H",
+            Box::new(Harmonic {
+                x0: f64::to_radians(120.0),
+                k: unit_from(150.0, "kJ/mol/deg^2"),
+            }),
+        );
+
+        system.add_dihedral_potential(
+            "H",
+            "O",
+            "O",
+            "H",
+            Box::new(Harmonic {
+                x0: f64::to_radians(180.0),
+                k: unit_from(800.0, "kJ/mol/deg^2"),
+            }),
         );
 
         system.set_coulomb_potential(Box::new(Wolf::new(8.0)));
@@ -470,9 +517,9 @@ mod tests {
         }
         let cost = cache.move_all_rigid_molecules_cost(&new_system);
         let new_e = new_system.potential_energy();
-        assert_ulps_eq!(cost, new_e - old_e, epsilon=1e-12);
+        assert_ulps_eq!(cost, new_e - old_e, epsilon = 1e-12);
         cache.update(&mut new_system);
-        assert_ulps_eq!(cache.energy(), new_e, epsilon=1e-12);
+        assert_ulps_eq!(cache.energy(), new_e, epsilon = 1e-12);
 
         // Check that the cache is really updated
         // move the other molecule
@@ -485,6 +532,6 @@ mod tests {
         }
         let cost = cache.move_all_rigid_molecules_cost(&new_system);
         let new_e = new_system.potential_energy();
-        assert_ulps_eq!(cost, new_e - old_e, epsilon=1e-12);
+        assert_ulps_eq!(cost, new_e - old_e, epsilon = 1e-12);
     }
 }

@@ -4,8 +4,8 @@
 //! Read static string using the XYZ file format, and create the corresponding
 //! system.
 
+use sys::{Particle, System, UnitCell};
 use types::Vector3D;
-use sys::{System, Particle, UnitCell};
 
 /// Read the `content` string, assuming XYZ format, and create the corresponding
 /// system. This function is intended for testing purposes only, and will
@@ -59,11 +59,13 @@ mod tests {
 
     #[test]
     fn bonds() {
-        let system = system_from_xyz("3
-        bonds
-        O 0 0 -1.5
-        C 0 0 0
-        O 0 0 1.5");
+        let system = system_from_xyz(
+            "3
+            bonds
+            O 0 0 -1.5
+            C 0 0 0
+            O 0 0 1.5",
+        );
         assert_eq!(system.size(), 3);
 
         assert_eq!(system.particles().name[0], "O");
@@ -80,12 +82,14 @@ mod tests {
 
     #[test]
     fn cell() {
-        let system = system_from_xyz("4
-        cell: 67
-        He 0 0 0
-        He 1 0 0
-        He 0 1 0
-        He 0 0 1");
+        let system = system_from_xyz(
+            "4
+            cell: 67
+            He 0 0 0
+            He 1 0 0
+            He 0 1 0
+            He 0 0 1",
+        );
         assert_eq!(system.size(), 4);
         assert_eq!(system.molecules().len(), 4);
         assert_eq!(system.cell, UnitCell::cubic(67.0));
@@ -98,13 +102,15 @@ mod tests {
 
     #[test]
     fn velocities() {
-        let system = system_from_xyz("4
-        cell: 67
-        He 0 0 0 0 0 0
-        He 1 0 0 1 2 3
-        He 0 1 0 0 1 0
-        He 0 0 1 2 2 3
-        ");
+        let system = system_from_xyz(
+            "4
+            cell: 67
+            He 0 0 0 0 0 0
+            He 1 0 0 1 2 3
+            He 0 1 0 0 1 0
+            He 0 0 1 2 2 3
+            ",
+        );
         assert_eq!(system.size(), 4);
         assert_eq!(system.molecules().len(), 4);
         assert_eq!(system.cell, UnitCell::cubic(67.0));

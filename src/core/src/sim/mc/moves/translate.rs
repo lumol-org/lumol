@@ -1,17 +1,17 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) 2015-2016 G. Fraux — BSD license
 
-use rand::distributions::{Sample, Range};
 use rand::Rng;
+use rand::distributions::{Range, Sample};
 
-use std::usize;
 use std::f64;
+use std::usize;
 
 use super::MCMove;
 use super::select_molecule;
 
+use sys::{EnergyCache, System};
 use types::Vector3D;
-use sys::{System, EnergyCache};
 
 /// Monte Carlo move for translating a molecule
 pub struct Translate {
@@ -73,8 +73,10 @@ impl MCMove for Translate {
         self.maximum_cutoff = system.maximum_cutoff();
         if let Some(max) = self.maximum_cutoff {
             if self.delta > max {
-                warn!("Changing the maximal displacement for Translate, because the interactions \
-                       cutoff is too low.");
+                warn!(
+                    "Changing the maximal displacement for Translate, \
+                     because the interactions cutoff is too low."
+                );
                 self.delta = max
             }
         }
@@ -89,9 +91,8 @@ impl MCMove for Translate {
         }
 
         // Create random displacement vector.
-        let delta = Vector3D::new(self.range.sample(rng),
-                                  self.range.sample(rng),
-                                  self.range.sample(rng));
+        let delta =
+            Vector3D::new(self.range.sample(rng), self.range.sample(rng), self.range.sample(rng));
 
         // Generate displaced coordinates
         // Note that this may move a particles' center-of-mass (com) out of
@@ -134,8 +135,10 @@ impl MCMove for Translate {
         if let Some(s) = scaling_factor {
             if let Some(max) = self.maximum_cutoff {
                 if (self.delta * s) > max {
-                    warn_once!("Tried to increase the maximum amplitude for translations to more \
-                                than the maximum cutoff -- ignoring.");
+                    warn_once!(
+                        "Tried to increase the maximum amplitude for translations \
+                         to more than the maximum cutoff -- ignoring."
+                    );
                     return;
                 }
             }

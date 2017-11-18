@@ -3,10 +3,10 @@
 
 use std::ops::Range;
 
-use rayon::prelude::{ParallelIterator, IntoParallelIterator};
-use rayon::iter::Map;
-use ndarray_parallel::NdarrayIntoParallelIterator;
 use ndarray::Zip;
+use ndarray_parallel::NdarrayIntoParallelIterator;
+use rayon::iter::Map;
+use rayon::prelude::{IntoParallelIterator, ParallelIterator};
 
 
 /// Utility trait that adds shortcuts for `IntoParallelIterator` structs.
@@ -31,25 +31,31 @@ pub trait ParallelShortcuts: Sized {
 }
 
 impl<T> ParallelShortcuts for Range<T>
-    where Range<T>: IntoParallelIterator {
+where
+    Range<T>: IntoParallelIterator,
+{
     type Iter = <Range<T> as IntoParallelIterator>::Iter;
 
     fn par_map<F, R>(self, map_op: F) -> Map<Self::Iter, F>
     where
         F: Fn(<Self::Iter as ParallelIterator>::Item) -> R + Sync + Send,
-        R: Send {
+        R: Send,
+    {
         self.into_par_iter().map(map_op)
     }
 }
 
 impl<Parts, D> ParallelShortcuts for Zip<Parts, D>
-    where Zip<Parts, D>: NdarrayIntoParallelIterator {
+where
+    Zip<Parts, D>: NdarrayIntoParallelIterator,
+{
     type Iter = <Zip<Parts, D> as NdarrayIntoParallelIterator>::Iter;
 
     fn par_map<F, R>(self, map_op: F) -> Map<Self::Iter, F>
     where
         F: Fn(<Self::Iter as ParallelIterator>::Item) -> R + Sync + Send,
-        R: Send {
+        R: Send,
+    {
         self.into_par_iter().map(map_op)
     }
 }

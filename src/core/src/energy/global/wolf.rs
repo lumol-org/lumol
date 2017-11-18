@@ -2,15 +2,15 @@
 // Copyright (C) Lumol's contributors — BSD license
 use std::f64::consts::PI;
 
-use math::*;
-use sys::Configuration;
-use types::{Matrix3, Vector3D, Zero};
 use consts::ELCC;
 use energy::{PairRestriction, RestrictionInfo};
-use parallel::prelude::*;
+use math::*;
 use parallel::ThreadLocalStore;
+use parallel::prelude::*;
+use sys::Configuration;
+use types::{Matrix3, Vector3D, Zero};
 
-use super::{GlobalPotential, CoulombicPotential, GlobalCache};
+use super::{CoulombicPotential, GlobalCache, GlobalPotential};
 
 /// Wolf summation for coulombic interactions.
 ///
@@ -73,8 +73,8 @@ impl Wolf {
         let alpha = PI / cutoff;
         let e_cst = erfc(alpha * cutoff) / cutoff;
         let f_cst = erfc(alpha * cutoff) / (cutoff * cutoff)
-                    + 2.0 * alpha / sqrt(PI) * exp(-alpha * alpha * cutoff * cutoff) / cutoff;
-        Wolf{
+            + 2.0 * alpha / sqrt(PI) * exp(-alpha * alpha * cutoff * cutoff) / cutoff;
+        Wolf {
             alpha: alpha,
             cutoff: cutoff,
             energy_cst: e_cst,
@@ -109,14 +109,19 @@ impl Wolf {
         if d > self.cutoff || info.excluded {
             return Vector3D::zero();
         }
-        let factor = erfc(self.alpha * d) / (d * d) +
-                     2.0 * self.alpha / sqrt(PI) * exp(-self.alpha * self.alpha * d * d) / d;
+        let factor = erfc(self.alpha * d) / (d * d)
+            + 2.0 * self.alpha / sqrt(PI) * exp(-self.alpha * self.alpha * d * d) / d;
         return info.scaling * qiqj * (factor - self.force_cst) * rij.normalized() / ELCC;
     }
 }
 
 impl GlobalCache for Wolf {
-    fn move_particles_cost(&self, config: &Configuration, idxes: &[usize], newpos: &[Vector3D]) -> f64 {
+    fn move_particles_cost(
+        &self,
+        config: &Configuration,
+        idxes: &[usize],
+        newpos: &[Vector3D],
+    ) -> f64 {
         let mut e_old = 0.0;
         let mut e_new = 0.0;
 
@@ -126,10 +131,14 @@ impl GlobalCache for Wolf {
         let positions = config.particles().position;
         for (idx, &i) in idxes.iter().enumerate() {
             let qi = charges[i];
-            if qi == 0.0 {continue;}
+            if qi == 0.0 {
+                continue;
+            }
             for j in (0..config.size()).filter(|x| !idxes.contains(x)) {
                 let qj = charges[j];
-                if qj == 0.0 {continue;}
+                if qj == 0.0 {
+                    continue;
+                }
 
                 let r_old = config.cell.distance(&positions[i], &positions[j]);
                 let r_new = config.cell.distance(&newpos[idx], &positions[j]);
@@ -145,10 +154,14 @@ impl GlobalCache for Wolf {
         // Iterate over all interactions between two moved particles
         for (idx, &i) in idxes.iter().enumerate() {
             let qi = charges[i];
-            if qi == 0.0 {continue;}
+            if qi == 0.0 {
+                continue;
+            }
             for (jdx, &j) in idxes.iter().enumerate().skip(idx + 1) {
                 let qj = charges[j];
-                if qj == 0.0 {continue;}
+                if qj == 0.0 {
+                    continue;
+                }
 
                 let r_old = config.distance(i, j);
                 let r_new = config.cell.distance(&newpos[idx], &newpos[jdx]);
@@ -178,27 +191,32 @@ impl GlobalPotential for Wolf {
         let natoms = configuration.size();
         let charges = configuration.particles().charge;
 
-        (0..natoms).par_map(|i| {
+        let energies = (0..natoms).par_map(|i| {
             let mut local_energy = 0.0;
             let qi = charges[i];
-            if qi == 0.0 { return 0.0; }
+            if qi == 0.0 {
+                return 0.0;
+            }
 
-            for j in i+1..natoms {
+            for j in i + 1..natoms {
                 let qj = charges[j];
-                if qj == 0.0 {continue}
+                if qj == 0.0 {
+                    continue;
+                }
 
                 let distance = configuration.bond_distance(i, j);
                 let info = self.restriction.information(distance);
 
                 let rij = configuration.distance(i, j);
-                local_energy  += self.energy_pair(info, qi * qj, rij);
+                local_energy += self.energy_pair(info, qi * qj, rij);
             }
 
             local_energy - self.energy_self(qi)
-        }).sum()
+        });
+        return energies.sum();
     }
 
-    fn forces(&self, configuration: &Configuration, forces: &mut [Vector3D])  {
+    fn forces(&self, configuration: &Configuration, forces: &mut [Vector3D]) {
         assert_eq!(forces.len(), configuration.size());
 
         // To avoid race conditions, each thread needs its
@@ -212,10 +230,14 @@ impl GlobalPotential for Wolf {
             let mut thread_forces = thread_forces_store.borrow_mut();
 
             let qi = charges[i];
-            if qi == 0.0 { return; }
+            if qi == 0.0 {
+                return;
+            }
             for j in i + 1..natoms {
                 let qj = charges[j];
-                if qj == 0.0 { continue }
+                if qj == 0.0 {
+                    continue;
+                }
 
                 let distance = configuration.bond_distance(i, j);
                 let info = self.restriction.information(distance);
@@ -237,14 +259,18 @@ impl GlobalPotential for Wolf {
         let natoms = configuration.size();
         let charges = configuration.particles().charge;
 
-        (0..natoms).par_map(|i| {
+        let virials = (0..natoms).par_map(|i| {
             let qi = charges[i];
-            if qi == 0.0 { return Matrix3::zero(); }
+            if qi == 0.0 {
+                return Matrix3::zero();
+            }
             let mut local_virial = Matrix3::zero();
 
-            for j in i+1..natoms {
+            for j in i + 1..natoms {
                 let qj = charges[j];
-                if qj == 0.0 {continue}
+                if qj == 0.0 {
+                    continue;
+                }
 
                 let distance = configuration.bond_distance(i, j);
                 let info = self.restriction.information(distance);
@@ -255,7 +281,9 @@ impl GlobalPotential for Wolf {
             }
 
             local_virial
-        }).sum()
+        });
+
+        return virials.sum();
     }
 }
 
@@ -268,18 +296,20 @@ impl CoulombicPotential for Wolf {
 #[cfg(test)]
 mod tests {
     pub use super::*;
-    use sys::System;
     use energy::GlobalPotential;
+    use sys::System;
     use utils::system_from_xyz;
 
     const E_BRUTE_FORCE: f64 = -0.09262397663346732;
 
     pub fn testing_system() -> System {
-        let mut system = system_from_xyz("2
-        cell: 20.0
-        Cl 0.0 0.0 0.0
-        Na 1.5 0.0 0.0
-        ");
+        let mut system = system_from_xyz(
+            "2
+            cell: 20.0
+            Cl 0.0 0.0 0.0
+            Na 1.5 0.0 0.0
+            ",
+        );
         system.particles_mut().charge[0] = -1.0;
         system.particles_mut().charge[1] = 1.0;
         return system;
@@ -292,7 +322,7 @@ mod tests {
 
         let e = wolf.energy(&system);
         // Wolf is not very good for heterogeneous systems
-        assert_ulps_eq!(e, E_BRUTE_FORCE, epsilon=1e-2);
+        assert_ulps_eq!(e, E_BRUTE_FORCE, epsilon = 1e-2);
     }
 
     #[test]
@@ -314,26 +344,28 @@ mod tests {
         let e1 = wolf.energy(&system);
         let mut forces = vec![Vector3D::zero(); system.size()];
         wolf.forces(&system, &mut forces);
-        assert_relative_eq!((e - e1) / eps, forces[0][0], epsilon=1e-6);
+        assert_relative_eq!((e - e1) / eps, forces[0][0], epsilon = 1e-6);
     }
 
     mod cache {
         use super::*;
+        use energy::{CoulombicPotential, GlobalCache, GlobalPotential, PairRestriction};
         use sys::System;
         use types::Vector3D;
-        use energy::{GlobalPotential, PairRestriction, CoulombicPotential, GlobalCache};
 
         pub fn testing_system() -> System {
             use utils::system_from_xyz;
-            let mut system = system_from_xyz("6
-            bonds cell: 20.0
-            O  0.0  0.0  0.0
-            H -0.7 -0.7  0.3
-            H  0.3 -0.3 -0.8
-            O  2.0  2.0  0.0
-            H  1.3  1.3  0.3
-            H  2.3  1.7 -0.8
-            ");
+            let mut system = system_from_xyz(
+                "6
+                bonds cell: 20.0
+                O  0.0  0.0  0.0
+                H -0.7 -0.7  0.3
+                H  0.3 -0.3 -0.8
+                O  2.0  2.0  0.0
+                H  1.3  1.3  0.3
+                H  2.3  1.7 -0.8
+                ",
+            );
             assert!(system.molecules().len() == 2);
 
             for particle in system.particles_mut() {

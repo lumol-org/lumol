@@ -4,12 +4,12 @@
 //! [Chemfiles][Chemfiles] conversion for Lumol.
 //!
 //! [Chemfiles]: https://chemfiles.org/
-use sys::{System, Particle, ParticleRef, ParticleVec, Molecule, UnitCell, CellShape};
-use types::Vector3D;
 use chemfiles;
+use sys::{CellShape, Molecule, Particle, ParticleRef, ParticleVec, System, UnitCell};
+use types::Vector3D;
 
-use std::fmt;
 use std::error;
+use std::fmt;
 use std::path::Path;
 use std::sync::{Once, ONCE_INIT};
 
@@ -65,7 +65,7 @@ impl ToLumol for chemfiles::UnitCell {
             chemfiles::CellShape::Orthorhombic => {
                 let (a, b, c) = try!(self.lengths());
                 UnitCell::ortho(a, b, c)
-            },
+            }
             chemfiles::CellShape::Triclinic => {
                 let (a, b, c) = try!(self.lengths());
                 let (alpha, beta, gamma) = try!(self.angles());
@@ -91,11 +91,7 @@ impl ToLumol for chemfiles::Frame {
             let particle = try!(atom.to_lumol());
 
             system.add_particle(particle);
-            let position = Vector3D::new(
-                positions[i][0],
-                positions[i][1],
-                positions[i][2]
-            );
+            let position = Vector3D::new(positions[i][0], positions[i][1], positions[i][2]);
             system.particles_mut().position[i] = position;
         }
 
@@ -153,18 +149,16 @@ impl ToChemfiles for UnitCell {
     type Output = chemfiles::UnitCell;
     fn to_chemfiles(&self) -> TrajectoryResult<chemfiles::UnitCell> {
         let res = match self.shape() {
-            CellShape::Infinite => {
-                try!(chemfiles::UnitCell::infinite())
-            }
+            CellShape::Infinite => try!(chemfiles::UnitCell::infinite()),
             CellShape::Orthorhombic => {
                 let (a, b, c) = (self.a(), self.b(), self.c());
                 try!(chemfiles::UnitCell::new(a, b, c))
-            },
+            }
             CellShape::Triclinic => {
                 let (a, b, c) = (self.a(), self.b(), self.c());
                 let (alpha, beta, gamma) = (self.alpha(), self.beta(), self.gamma());
                 try!(chemfiles::UnitCell::triclinic(a, b, c, alpha, beta, gamma))
-            },
+            }
         };
         return Ok(res);
     }
@@ -342,9 +336,7 @@ impl<'a> TrajectoryBuilder<'a> {
             OpenMode::Write => 'w',
             OpenMode::Append => 'a',
         };
-        let trajectory = try!(chemfiles::Trajectory::open_with_format(
-            path, mode, self.format
-        ));
+        let trajectory = try!(chemfiles::Trajectory::open_with_format(path, mode, self.format));
         return Ok(Trajectory(trajectory));
     }
 }
@@ -476,10 +468,7 @@ pub fn read_molecule<P: AsRef<Path>>(path: P) -> TrajectoryResult<(Molecule, Par
     }
     let system = try!(frame.to_lumol());
 
-    assert!(
-        !system.is_empty(),
-        "No molecule in the file at {}", path.as_ref().display()
-    );
+    assert!(!system.is_empty(), "No molecule in the file at {}", path.as_ref().display());
     let molecule = system.molecule(0).clone();
     return Ok((molecule, system.particles().to_vec()));
 }
@@ -492,8 +481,8 @@ mod tests {
 
     use super::*;
     use std::io::prelude::*;
+    use sys::{Angle, Bond};
     use sys::molecule_type;
-    use sys::{Bond, Angle};
 
     static WATER: &'static str = "3
 

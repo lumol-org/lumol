@@ -47,7 +47,7 @@
 pub struct Alternator<T> {
     every: u64,
     count: u64,
-    base: T
+    base: T,
 }
 
 
@@ -55,7 +55,11 @@ impl<T> Alternator<T> {
     /// Wrap the algorithm `base` to call it only
     /// every `every` time.
     pub fn new(every: u64, base: T) -> Alternator<T> {
-        Alternator { every: every, base: base, count: 0 }
+        Alternator {
+            every: every,
+            base: base,
+            count: 0,
+        }
     }
 
     /// Check if this is the appropriate time to run the algorithm.

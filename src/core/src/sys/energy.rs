@@ -8,8 +8,8 @@
 
 use std::f64::consts::PI;
 
-use sys::System;
 use parallel::prelude::*;
+use sys::System;
 
 /// An helper struct to evaluate energy components of a system.
 pub struct EnergyEvaluator<'a> {
@@ -19,9 +19,7 @@ pub struct EnergyEvaluator<'a> {
 impl<'a> EnergyEvaluator<'a> {
     /// Create a new `EnergyEvaluator` acting on the given `system`.
     pub fn new(system: &'a System) -> EnergyEvaluator<'a> {
-        EnergyEvaluator {
-            system: system,
-        }
+        EnergyEvaluator { system: system }
     }
 }
 
@@ -43,16 +41,16 @@ impl<'a> EnergyEvaluator<'a> {
 
     /// Compute the energy of all the pairs in the system
     pub fn pairs(&self) -> f64 {
-
-        (0..self.system.size()).par_map(|i| {
+        let energies = (0..self.system.size()).par_map(|i| {
             let mut local_energy = 0.0;
 
-            for j in (i+1)..self.system.size() {
+            for j in (i + 1)..self.system.size() {
                 let r = self.system.nearest_image(i, j).norm();
                 local_energy += self.pair(r, i, j);
             }
             local_energy
-        }).sum()
+        });
+        return energies.sum();
     }
 
     /// Compute the energy due to long range corrections for the pairs
@@ -171,52 +169,67 @@ impl<'a> EnergyEvaluator<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use sys::{System, UnitCell};
     use energy::{Harmonic, LennardJones, NullPotential, PairInteraction};
-    use utils::{unit_from, system_from_xyz};
+    use sys::{System, UnitCell};
+    use utils::{system_from_xyz, unit_from};
 
     fn testing_system() -> System {
-        let mut system = system_from_xyz("4
-        cell: 10.0
-        F 0.0 0.0 0.0
-        F 1.0 0.0 0.0
-        F 1.0 1.0 0.0
-        F 2.0 1.0 0.0
-        ");
+        let mut system = system_from_xyz(
+            "4
+            cell: 10.0
+            F 0.0 0.0 0.0
+            F 1.0 0.0 0.0
+            F 1.0 1.0 0.0
+            F 2.0 1.0 0.0
+            ",
+        );
         assert!(system.add_bond(0, 1).is_empty());
         assert!(system.add_bond(1, 2).is_empty());
         assert!(system.add_bond(2, 3).is_empty());
 
-        let mut pair = PairInteraction::new(Box::new(LennardJones {
-            epsilon: unit_from(100.0, "kJ/mol/A^2"),
-            sigma: unit_from(0.8, "A")
-        }), 5.0);
+        let mut pair = PairInteraction::new(
+            Box::new(LennardJones {
+                epsilon: unit_from(100.0, "kJ/mol/A^2"),
+                sigma: unit_from(0.8, "A"),
+            }),
+            5.0,
+        );
         pair.enable_tail_corrections();
 
         system.add_pair_potential("F", "F", pair);
 
-        system.add_bond_potential("F", "F",
-            Box::new(Harmonic{
+        system.add_bond_potential(
+            "F",
+            "F",
+            Box::new(Harmonic {
                 k: unit_from(100.0, "kJ/mol/A^2"),
-                x0: unit_from(2.0, "A")
-        }));
+                x0: unit_from(2.0, "A"),
+            }),
+        );
 
-        system.add_angle_potential("F", "F", "F",
-            Box::new(Harmonic{
+        system.add_angle_potential(
+            "F",
+            "F",
+            "F",
+            Box::new(Harmonic {
                 k: unit_from(100.0, "kJ/mol/deg^2"),
-                x0: unit_from(88.0, "deg")
-        }));
+                x0: unit_from(88.0, "deg"),
+            }),
+        );
 
-        system.add_dihedral_potential("F", "F", "F", "F",
-            Box::new(Harmonic{
+        system.add_dihedral_potential(
+            "F",
+            "F",
+            "F",
+            "F",
+            Box::new(Harmonic {
                 k: unit_from(100.0, "kJ/mol/deg^2"),
-                x0: unit_from(185.0, "deg")
-        }));
+                x0: unit_from(185.0, "deg"),
+            }),
+        );
 
         // unused interaction to check that we do handle this right
-        system.add_pair_potential("H", "O",
-            PairInteraction::new(Box::new(NullPotential), 0.0)
-        );
+        system.add_pair_potential("H", "O", PairInteraction::new(Box::new(NullPotential), 0.0));
 
         return system;
     }
@@ -256,6 +269,6 @@ mod tests {
     fn dihedrals() {
         let system = testing_system();
         let evaluator = EnergyEvaluator::new(&system);
-        assert_ulps_eq!(evaluator.dihedrals(), unit_from(1250.0, "kJ/mol"), max_ulps=15);
+        assert_ulps_eq!(evaluator.dihedrals(), unit_from(1250.0, "kJ/mol"), max_ulps = 15);
     }
 }

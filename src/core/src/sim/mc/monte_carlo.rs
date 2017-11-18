@@ -5,8 +5,8 @@
 use rand::{self, SeedableRng};
 
 use consts::K_BOLTZMANN;
-use sys::{System, EnergyCache};
 use sim::{Propagator, TemperatureStrategy};
+use sys::{EnergyCache, System};
 
 use super::MCMove;
 
@@ -42,8 +42,7 @@ impl MonteCarlo {
     /// Create a Monte Carlo propagator at temperature `T`, using the `rng`
     /// random number generator.
     pub fn from_rng(temperature: f64, rng: Box<rand::Rng>) -> MonteCarlo {
-        assert!(temperature >= 0.0,
-                "Monte Carlo temperature must be positive");
+        assert!(temperature >= 0.0, "Monte Carlo temperature must be positive");
         MonteCarlo {
             beta: 1.0 / (K_BOLTZMANN * temperature),
             moves: Vec::new(),
@@ -64,8 +63,10 @@ impl MonteCarlo {
     /// If called after a simulation run.
     pub fn add(&mut self, mcmove: Box<MCMove>, frequency: f64) {
         if self.initialized {
-            fatal_error!("Monte Carlo simulation has already been initialized, we can not add \
-                          new moves.");
+            fatal_error!(
+                "Monte Carlo simulation has already been initialized, we can not add \
+                 new moves."
+            );
         }
         self.moves.push((mcmove, MoveCounter::new(None)));
         self.frequencies.push(frequency);
@@ -79,13 +80,17 @@ impl MonteCarlo {
     ///
     /// If called after a simulation run.
     /// If `target_acceptance` is either negative or larger than one.
-    pub fn add_move_with_acceptance(&mut self,
-                                    mcmove: Box<MCMove>,
-                                    frequency: f64,
-                                    target_acceptance: f64) {
+    pub fn add_move_with_acceptance(
+        &mut self,
+        mcmove: Box<MCMove>,
+        frequency: f64,
+        target_acceptance: f64,
+    ) {
         if self.initialized {
-            fatal_error!("Monte Carlo simulation has already been initialized, we can not add \
-                          new moves.");
+            fatal_error!(
+                "Monte Carlo simulation has already been initialized, we can not add \
+                 new moves."
+            );
         }
         self.moves.push((mcmove, MoveCounter::new(Some(target_acceptance))));
         self.frequencies.push(frequency);
@@ -151,11 +156,10 @@ impl Propagator for MonteCarlo {
         let mcmove = {
             let probability = self.rng.next_f64();
             // Get the index of the first move with frequency >= probability.
-            let (i, _) = self.frequencies
-                .iter()
-                .enumerate()
-                .find(|&(_, f)| probability <= *f)
-                .expect("Could not find a move in MonteCarlo moves list");
+            let (i, _) = self.frequencies.iter()
+                             .enumerate()
+                             .find(|&(_, f)| probability <= *f)
+                             .expect("Could not find a move in MonteCarlo moves list");
             &mut self.moves[i]
         };
         trace!("Selected move is '{}'", mcmove.0.describe());
@@ -270,8 +274,10 @@ impl MoveCounter {
     pub fn set_acceptance(&mut self, target_acceptance: Option<f64>) {
         // Check if `target_acceptance` has a valid value.
         if let Some(acceptance) = target_acceptance {
-            assert!(0.0 < acceptance && acceptance < 1.0,
-                    "The target acceptance ratio has to be a value between 0 and 1")
+            assert!(
+                0.0 < acceptance && acceptance < 1.0,
+                "The target acceptance ratio has to be a value between 0 and 1"
+            )
         }
         self.target_acceptance = target_acceptance;
     }
@@ -331,10 +337,10 @@ impl MoveCounter {
 
 #[cfg(test)]
 mod tests {
-    use sim::mc::{MonteCarlo, MCMove, MoveCounter};
-    use sim::Propagator;
-    use sys::{System, EnergyCache};
     use rand::Rng;
+    use sim::Propagator;
+    use sim::mc::{MCMove, MonteCarlo, MoveCounter};
+    use sys::{EnergyCache, System};
 
     struct DummyMove;
     impl MCMove for DummyMove {

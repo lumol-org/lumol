@@ -1,10 +1,10 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) Lumol's contributors — BSD license
 
-use sys::System;
 use sim::{Propagator, TemperatureStrategy};
+use sys::System;
 
-use super::{Integrator, Control, Thermostat};
+use super::{Control, Integrator, Thermostat};
 use super::VelocityVerlet;
 
 /// Molecular Dynamics propagator for the simulation.
@@ -27,7 +27,7 @@ impl MolecularDynamics {
     /// Create a new `MolecularDynamics` propagator using the specified
     /// `integrator`.
     pub fn from_integrator(integrator: Box<Integrator>) -> MolecularDynamics {
-        MolecularDynamics{
+        MolecularDynamics {
             integrator: integrator,
             thermostat: None,
             controls: Vec::new(),
@@ -35,7 +35,7 @@ impl MolecularDynamics {
     }
 
     /// Add a control algorithm to the internal list of controls.
-    pub fn add_control(&mut self, control: Box<Control>){
+    pub fn add_control(&mut self, control: Box<Control>) {
         self.controls.push(control);
     }
 

@@ -5,8 +5,8 @@ use std::path::Path;
 
 use super::Output;
 
+use sys::{OpenMode, Trajectory, TrajectoryBuilder, TrajectoryError};
 use sys::System;
-use sys::{Trajectory, TrajectoryBuilder, OpenMode, TrajectoryError};
 
 /// The `TrajectoryOutput` allows to write the trajectory of the system to a
 /// file, using any format supported by the [Chemfiles][chemfiles] library.
@@ -23,12 +23,13 @@ impl TrajectoryOutput {
     /// for more information.
     ///
     /// [formats]: http://chemfiles.org/chemfiles/latest/formats.html
-    pub fn new<P>(path: P) -> Result<TrajectoryOutput, TrajectoryError> where P: AsRef<Path> {
+    pub fn new<P>(path: P) -> Result<TrajectoryOutput, TrajectoryError>
+    where
+        P: AsRef<Path>,
+    {
         let builder = TrajectoryBuilder::new().mode(OpenMode::Write);
         let file = try!(builder.open(path));
-        Ok(TrajectoryOutput{
-            file: file,
-        })
+        Ok(TrajectoryOutput { file: file })
     }
 
     /// Create a new `TrajectoryOutput` writing to `filename` using the given
@@ -38,14 +39,13 @@ impl TrajectoryOutput {
     /// information.
     ///
     /// [formats]: http://chemfiles.org/chemfiles/latest/formats.html
-    pub fn with_format<P>(path: P, format: &str) -> Result<TrajectoryOutput, TrajectoryError> where P: AsRef<Path> {
-        let builder = TrajectoryBuilder::new()
-                                        .mode(OpenMode::Write)
-                                        .format(format);
+    pub fn with_format<P>(path: P, format: &str) -> Result<TrajectoryOutput, TrajectoryError>
+    where
+        P: AsRef<Path>,
+    {
+        let builder = TrajectoryBuilder::new().mode(OpenMode::Write).format(format);
         let file = try!(builder.open(path));
-        Ok(TrajectoryOutput{
-            file: file,
-        })
+        Ok(TrajectoryOutput { file: file })
     }
 }
 
@@ -67,14 +67,13 @@ mod tests {
 
     #[test]
     fn cell() {
-        test_output(|path| {
-            Box::new(TrajectoryOutput::with_format(path, "XYZ").unwrap())
-        },
-"2
-Written by the chemfiles library
-F 0 0 0
-F 1.3 0 0
-"
+        test_output(
+            |path| Box::new(TrajectoryOutput::with_format(path, "XYZ").unwrap()),
+            "2
+            Written by the chemfiles library
+            F 0 0 0
+            F 1.3 0 0
+            ",
         );
     }
 }

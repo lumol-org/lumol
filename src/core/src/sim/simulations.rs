@@ -4,9 +4,9 @@
 use sys::System;
 use types::Vector3D;
 
+use out::Output;
 use sim::Propagator;
 use sim::TemperatureStrategy;
-use out::Output;
 
 /// Writing an output at a given frequency
 struct OutputFrequency {
@@ -19,14 +19,14 @@ struct OutputFrequency {
 
 impl OutputFrequency {
     pub fn new(output: Box<Output>) -> OutputFrequency {
-        OutputFrequency{
+        OutputFrequency {
             frequency: 1,
             output: output,
         }
     }
 
     pub fn with_frequency(output: Box<Output>, frequency: u64) -> OutputFrequency {
-        OutputFrequency{
+        OutputFrequency {
             frequency: frequency,
             output: output,
         }
@@ -54,7 +54,7 @@ impl Output for OutputFrequency {
 /// simulation.
 pub struct Simulation {
     propagator: Box<Propagator>,
-    outputs: Vec<OutputFrequency>
+    outputs: Vec<OutputFrequency>,
 }
 
 impl Simulation {
@@ -126,7 +126,7 @@ impl Simulation {
             if any(position, |x| x.abs() > 1e6) {
                 warn!(
                     "Some particles have moved very far from the origin, \
-                    the simulation might be exploding"
+                     the simulation might be exploding"
                 );
                 // we don't want to spam the output, so we return early if a
                 // problem was found
@@ -139,7 +139,7 @@ impl Simulation {
             if any(velocity, |x| x.abs() > 1000.0) {
                 warn!(
                     "Some particles have a very high velocity, \
-                    the simulation might be exploding"
+                     the simulation might be exploding"
                 );
                 return;
             }

@@ -2,14 +2,14 @@
 // Copyright (C) Lumol's contributors — BSD license
 
 //! This module provides some ways to initialize the velocities in a `System`
-use rand::distributions::{Range, Normal, Sample};
 use rand::Isaac64Rng;
 use rand::SeedableRng;
+use rand::distributions::{Normal, Range, Sample};
 
 use consts::K_BOLTZMANN;
-use types::Vector3D;
+use sim::md::{Control, RemoveRotation, RemoveTranslation};
 use sys::System;
-use sim::md::{RemoveRotation, RemoveTranslation, Control};
+use types::Vector3D;
 
 /// Scale all velocities in the `System` such that the `system` temperature
 /// is `temperature`.
@@ -39,7 +39,7 @@ pub struct BoltzmannVelocities {
 impl BoltzmannVelocities {
     /// Create a new `BoltzmannVelocities` at the given `temperature`.
     pub fn new(temperature: f64) -> BoltzmannVelocities {
-        BoltzmannVelocities{
+        BoltzmannVelocities {
             temperature: temperature,
             dist: Normal::new(0.0, f64::sqrt(K_BOLTZMANN * temperature)),
             rng: Isaac64Rng::from_seed(&[42]),
@@ -77,7 +77,7 @@ impl UniformVelocities {
     /// Create a new `UniformVelocities` at the given `temperature`.
     pub fn new(temperature: f64) -> UniformVelocities {
         let factor = f64::sqrt(3.0 * K_BOLTZMANN * temperature);
-        UniformVelocities{
+        UniformVelocities {
             temperature: temperature,
             dist: Range::new(-factor, factor),
             rng: Isaac64Rng::from_seed(&[42]),
@@ -108,7 +108,7 @@ impl InitVelocities for UniformVelocities {
 mod test {
     use super::*;
     use rand::random;
-    use sys::{System, Particle};
+    use sys::{Particle, System};
     use utils::system_from_xyz;
 
     fn testing_system() -> System {
@@ -116,7 +116,9 @@ mod test {
         for _ in 0..10000 {
             let mut particle = Particle::new("F");
             particle.position = Vector3D::new(
-                random::<f64>() * 100.0, random::<f64>() * 100.0, random::<f64>() * 100.0
+                random::<f64>() * 100.0,
+                random::<f64>() * 100.0,
+                random::<f64>() * 100.0,
             );
             system.add_particle(particle);
         }
@@ -142,7 +144,7 @@ mod test {
         velocities.seed(1234);
         velocities.init(&mut system);
         let temperature = system.temperature();
-        assert_ulps_eq!(temperature, 300.0, epsilon=1e-9);
+        assert_ulps_eq!(temperature, 300.0, epsilon = 1e-9);
         assert_ulps_eq!(global_translation(&system), 0.0);
     }
 
@@ -153,22 +155,24 @@ mod test {
         velocities.seed(1234);
         velocities.init(&mut system);
         let temperature = system.temperature();
-        assert_ulps_eq!(temperature, 300.0, epsilon=1e-9);
+        assert_ulps_eq!(temperature, 300.0, epsilon = 1e-9);
         assert_ulps_eq!(global_translation(&system), 0.0);
     }
 
     #[test]
     fn scaling_keeps_global_velocity() {
-        let mut system = system_from_xyz("2
-        cell: 20.0
-        Ag 0 0 0 1 0 0
-        Ag 1 1 1 2 0 0
-        ");
+        let mut system = system_from_xyz(
+            "2
+            cell: 20.0
+            Ag 0 0 0 1 0 0
+            Ag 1 1 1 2 0 0
+            ",
+        );
         assert!(global_translation(&system) > 1.0);
 
         scale(&mut system, 452.0);
         let temperature = system.temperature();
-        assert_ulps_eq!(temperature, 452.0, epsilon=1e-9);
+        assert_ulps_eq!(temperature, 452.0, epsilon = 1e-9);
 
         println!("{:?}", global_translation(&system));
         assert!(global_translation(&system) > 1e-5);

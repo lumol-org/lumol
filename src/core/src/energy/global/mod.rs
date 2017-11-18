@@ -5,9 +5,9 @@
 //!
 //! They can be coulombic potentials, or external provided potential function
 //! for example.
+use energy::PairRestriction;
 use sys::Configuration;
 use types::{Matrix3, Vector3D};
-use energy::PairRestriction;
 
 /// A potential acting on the whole [System][System] at once.
 ///
@@ -169,7 +169,12 @@ pub trait GlobalCache {
     /// the first moved particle is a call to `system[idxes[0]]`); and `newpos`
     /// contains the new positions of the particles. The previous positions of
     /// the particles are still in the system.
-    fn move_particles_cost(&self, configuration: &Configuration, idxes: &[usize], newpos: &[Vector3D]) -> f64;
+    fn move_particles_cost(
+        &self,
+        configuration: &Configuration,
+        idxes: &[usize],
+        newpos: &[Vector3D],
+    ) -> f64;
 
     /// Update the cache as needed after a call to `move_particles_cost`.
     ///
@@ -185,7 +190,7 @@ pub trait GlobalCache {
 /// are actually coulombic potential solvers.
 ///
 /// [GlobalPotential]: trait.GlobalPotential.html
-pub trait CoulombicPotential : GlobalPotential + BoxCloneCoulombic {
+pub trait CoulombicPotential: GlobalPotential + BoxCloneCoulombic {
     /// Set the pair restriction scheme to use to the given `restriction`. All
     /// future call to `GlobalPotential::energy`, `GlobalPotential::force` or
     /// `GlobalPotential::virial` should use this restriction.

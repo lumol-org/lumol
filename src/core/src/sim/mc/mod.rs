@@ -6,5 +6,5 @@ mod monte_carlo;
 pub use self::monte_carlo::{MonteCarlo, MoveCounter};
 
 mod moves;
+pub use self::moves::{Resize, Rotate, Translate};
 pub use self::moves::MCMove;
-pub use self::moves::{Translate, Rotate, Resize};
