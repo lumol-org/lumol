@@ -61,11 +61,6 @@ cd lumol
 cargo build
 ```
 
-Make sure your editor is configured to read the [`.editorconfig`](.editorconfig)
-file. This file is used to specify code formatting rules your editor. Most
-editors
-[support it natively or have plugin that does](http://editorconfig.org/#download).
-
 Then create a new branch for your changes
 
 ```bash
@@ -88,8 +83,18 @@ cargo test --all --release
 Finally, you can push your code to Github, and create a [Pull-Request][PR] to
 the `lumol-org/lumol` repository.
 
+We would appreciate if you run the rust formatting tool ([rustfmt]) on the code
+before pushing the code to Github:
+
+```bash
+rustup toolchain add nightly
+cargo +nightly install rustfmt
+cargo +nightly fmt
+```
+
 [Gitter]: https://gitter.im/lumol-org/lumol
 [issues]: https://github.com/lumol-org/lumol/issues/new
 [PR]: https://help.github.com/articles/using-pull-requests/
 [E-Easy]: https://github.com/lumol-org/lumol/labels/E-Easy
 [fork]: https://help.github.com/articles/fork-a-repo/
+[rustfmt]: https://github.com/rust-lang-nursery/rustfmt
