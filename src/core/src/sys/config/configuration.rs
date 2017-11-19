@@ -208,17 +208,21 @@ impl Configuration {
         return permutations;
     }
 
-    /// Removes particle at index `i` and any associated bonds, angle or dihedral
+    /// Removes particle at index `i` and any associated bonds, angle or
+    /// dihedral.
     pub fn remove_particle(&mut self, i: usize) {
-        let id = self.molids[i];
-        self.molecules[id].remove_particle(i);
+        let molid = self.molids[i];
 
-        for molecule in self.molecules.iter_mut().skip(id + 1) {
-            molecule.translate_by(-1);
+        if self.molecules[molid].size() == 1 {
+            self.remove_molecule(molid);
+        } else {
+            self.molecules[molid].remove_particle(i);
+            for molecule in self.molecules.iter_mut().skip(molid + 1) {
+                molecule.translate_by(-1);
+            }
+            let _ = self.molids.remove(i);
+            let _ = self.particles.remove(i);
         }
-
-        let _ = self.particles.remove(i);
-        let _ = self.molids.remove(i);
     }
 
     /// Insert a particle at the end of the internal list. The new particle
@@ -523,6 +527,25 @@ mod tests {
         configuration.remove_molecule(molid);
         assert_eq!(configuration.molecules().len(), 0);
         assert_eq!(configuration.size(), 0);
+    }
+
+    #[test]
+    fn remove_particles() {
+        let mut configuration = Configuration::new();
+        configuration.add_particle(particle("H"));
+        configuration.add_particle(particle("F"));
+        configuration.add_particle(particle("Na"));
+        configuration.add_particle(particle("H"));
+
+        assert_eq!(configuration.add_bond(0, 1), vec![]);
+        assert_eq!(configuration.molecules().len(), 3);
+
+        configuration.remove_particle(0);
+        // Still 3 molecules
+        assert_eq!(configuration.molecules().len(), 3);
+
+        configuration.remove_particle(1);
+        assert_eq!(configuration.molecules().len(), 2);
     }
 
     #[test]
