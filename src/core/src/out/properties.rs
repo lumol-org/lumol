@@ -66,7 +66,7 @@ mod tests {
             |path| Box::new(PropertiesOutput::new(path).unwrap()),
             "# Physical properties of the simulation
             # Step Volume/A^3 Temperature/K Pressure/bar
-            0 1000 38083.04389172312 10299.991728079816
+            42 1000 38083.04389172312 10299.991728079816
             ",
         );
     }
