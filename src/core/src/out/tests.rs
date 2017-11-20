@@ -47,6 +47,9 @@ pub fn testing_system() -> System {
         x0: unit_from(1.2, "A"),
     });
     system.add_pair_potential(("F", "F"), PairInteraction::new(harmonic, 5.0));
+    for _ in 0..42 {
+        system.increment_step();
+    }
     return system;
 }
 

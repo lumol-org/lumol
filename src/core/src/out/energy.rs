@@ -61,7 +61,7 @@ mod tests {
             |path| Box::new(EnergyOutput::new(path).unwrap()),
             "# Energy of the simulation (kJ/mol)
             # Step Potential Kinetic Total
-            0 1.5000000000000027 949.9201593348566 951.4201593348566
+            42 1.5000000000000027 949.9201593348566 951.4201593348566
             ",
         );
     }

@@ -68,7 +68,7 @@ mod tests {
             |path| Box::new(StressOutput::new(path).unwrap()),
             "# Stress tensor of the simulation (bar)
             # step stress.xx stress.yy stress.zz stress.xy stress.xz stress.yz
-            0 30899.975184239443 0 0 0 0 0
+            42 30899.975184239443 0 0 0 0 0
             ",
         );
     }

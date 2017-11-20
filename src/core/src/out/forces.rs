@@ -68,7 +68,7 @@ mod tests {
         test_output(
             |path| Box::new(ForcesOutput::new(path).unwrap()),
             "2
-            forces in kJ/mol/A at step 0
+            forces in kJ/mol/A at step 42
             F 30.000000000000025 0 0
             F -30.000000000000025 0 0
             ",

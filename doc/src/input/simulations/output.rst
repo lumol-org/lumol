@@ -71,6 +71,6 @@ Here is a list of all properties available to custom outputs:
   `charge` for the atomic charge.
 - Physical properties: `pressure`, `volume`, `temperature`, `natoms`, stress
   tensor components: `stress.xx`, `stress.yy`, `stress.zz`, `stress.xy`,
-  `stress.xz`, `stress.yz`.
+  `stress.xz`, `stress.yz`, simulation `step`.
 - Unit Cell properties: `cell.a`, `cell.b`, `cell.c` are the unit cell vector
   lengths; `cell.alpha`, `cell.beta` and `cell.gamma` are the unit cell angles.

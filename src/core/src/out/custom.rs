@@ -169,6 +169,7 @@ impl FormatArgs {
                 } else {
                     // scalar data
                     match name {
+                        "step" => Some(system.step() as f64),
                         "pressure" => Some(system.pressure()),
                         "volume" => Some(system.volume()),
                         "temperature" => Some(system.temperature()),
@@ -241,7 +242,8 @@ fn parse_index(input: &str) -> (&str, usize) {
 /// enclosed in braces (`{}`). Here are some examples:
 ///
 /// - A constant string is reproduced as it is: `some data`;
-/// - Anything in braces is replaced by the corresponding values: `{pressure} {volume}`;
+/// - Anything in braces is replaced by the corresponding values: `{pressure}
+///   {volume}`;
 /// - Mathematical operators are allowed in braces: `{pressure / volume}`. You
 ///   can use `+`, `-`, `/`, `*`, `^` for exponentiation and parentheses;
 /// - Some properties are arrays of atomic properties `{x[0] + y[20]}`;
@@ -253,7 +255,9 @@ fn parse_index(input: &str) -> (&str, usize) {
 /// - Atomic properties: `x`, `y` and `z` for cartesian coordinates, `vx`, `vy`
 ///   and `vz` for cartesian components of the velocity , `mass` for the atomic
 ///   mass, `charge` for the atomic charge.
-/// - Physical properties: `pressure`, `volume`, `temperature`, `natoms`
+/// - Physical properties: `pressure`, `volume`, `temperature`, `natoms`, stress
+///   tensor components: `stress.xx`, `stress.yy`, `stress.zz`, `stress.xy`,
+///   `stress.xz`, `stress.yz`, simulation `step`.
 /// - Unit Cell properties: `cell.a`, `cell.b`, `cell.c` are the unit cell
 ///   vector lengths; `cell.alpha`, `cell.beta` and `cell.gamma` are the unit
 ///   cell angles.
@@ -362,6 +366,8 @@ mod tests {
         assert_eq!(format("{cell.a / bohr}"), "18.897261328856434");
         assert_eq!(format("{cell.a / nm}"), "1");
         assert_eq!(format("{cell.a / m}"), "0.000000001");
+
+        assert_eq!(format("{step}"), "42");
     }
 
     #[test]

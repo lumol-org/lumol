@@ -68,7 +68,7 @@ mod tests {
             |path| Box::new(CellOutput::new(path).unwrap()),
             "# Unit cell of the simulation
             # Step A/Å B/Å C/Å α/deg β/deg γ/deg
-            0 10 10 10 90 90 90
+            42 10 10 10 90 90 90
             ",
         );
     }
