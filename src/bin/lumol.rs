@@ -22,8 +22,18 @@ fn parse_args<'a>() -> ArgMatches<'a> {
 
 fn main() {
     let args = parse_args();
+
     let input = args.value_of("input.toml").unwrap();
-    let mut config = match Input::new(input).and_then(|input| input.read()) {
+    let input = match Input::new(input) {
+        Ok(input) => input,
+        Err(err) => {
+            lumol_input::setup_default_logger();
+            error!("invalid input file: {}", err);
+            std::process::exit(2)
+        }
+    };
+
+    let mut config = match input.read() {
         Ok(config) => config,
         Err(err) => {
             error!("bad input file: {}", err);
