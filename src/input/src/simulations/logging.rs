@@ -128,7 +128,8 @@ impl Input {
     }
 }
 
-fn setup_default_logger() {
+/// Setup a default logger to be able to print error messages
+pub fn setup_default_logger() {
     // We just log everything to stdout
     let stdout = ConsoleAppender::builder().target(console::Target::Stdout)
                                            .encoder(Box::new(LogEncoder))

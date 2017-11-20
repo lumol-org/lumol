@@ -22,6 +22,8 @@ mod min;
 mod md;
 mod mc;
 
+pub use self::logging::setup_default_logger;
+
 /// A configuration about how to run a single simulation. This contains the
 /// system to simulate, the simulation itself and the number of steps to run
 /// the simulation.
