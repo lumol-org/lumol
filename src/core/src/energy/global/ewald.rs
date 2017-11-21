@@ -1020,7 +1020,7 @@ mod tests {
 
     mod virial {
         use super::*;
-        use types::{Vector3D, Zero};
+        use types::{Vector3D, Matrix3, Zero, One};
         use energy::{GlobalPotential, PairRestriction, CoulombicPotential};
 
         #[test]
@@ -1073,6 +1073,48 @@ mod tests {
             ewald.forces(&system, &mut forces);
             let expected = (-forces[0]).tensorial(&Vector3D::new(1.5, 0.0, 0.0));
             assert_ulps_eq!(virial, expected, max_ulps=25);
+        }
+
+        // Checking the virial through finites differences on the unit cell
+        #[test]
+        fn finite_differences() {
+            fn scale(system: &mut System, i: usize, j: usize, eps: f64) {
+                let mut scaling = Matrix3::one();
+                scaling[i][j] += eps;
+                let old_cell = system.cell.clone();
+                let new_cell = system.cell.scale(scaling);
+
+                for position in system.particles_mut().position {
+                    *position = new_cell.cartesian(&old_cell.fractional(&position));
+                }
+                system.cell = new_cell;
+            }
+
+            let eps = 1e-9;
+            let mut system = nacl_pair();
+            let ewald = SharedEwald::new(Ewald::new(8.0, 10));
+
+            let virial = ewald.virial(&system);
+
+            let mut finite_diff = Matrix3::zero();
+            let energy_0 = ewald.energy(&system);
+
+            scale(&mut system, 0, 0, eps);
+            let energy_1 = ewald.energy(&system);
+            finite_diff[0][0] = (energy_0 - energy_1) / eps;
+
+            scale(&mut system, 1, 0, eps);
+            let energy_2 = ewald.energy(&system);
+            finite_diff[1][0] = (energy_1 - energy_2) / eps;
+
+            scale(&mut system, 2, 0, eps);
+            let energy_3 = ewald.energy(&system);
+            finite_diff[2][0] = (energy_2 - energy_3) / eps;
+
+            // FIXME: this is a very bad accuray, but we don't compute the
+            // kspace contribution to the virial due to a non-zero dU/dV term.
+            // See https://github.com/lumol-org/lumol/issues/120
+            assert_relative_eq!(virial, finite_diff, epsilon = 1e-2);
         }
     }
 
