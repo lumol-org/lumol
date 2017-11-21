@@ -266,7 +266,7 @@ impl Ewald {
 
                 let rij = configuration.nearest_image(i, j);
                 let force = self.real_space_force_pair(info, qi, qj, &rij);
-                virial -= force.tensorial(&rij);
+                virial += force.tensorial(&rij);
             }
         }
         return virial;
@@ -429,8 +429,8 @@ impl Ewald {
                 for j in (i + 1)..configuration.size() {
                     let qj = charges[j];
                     let force = f * self.kspace_force_factor(j, (ikx, iky, ikz), qi * qj, fourier_i) * k;
-                    force_i -= force;
-                    thread_forces[j] += force;
+                    force_i += force;
+                    thread_forces[j] -= force;
                 }
 
                 thread_forces[i] += force_i;
@@ -451,7 +451,7 @@ impl Ewald {
                         self.fourier_phases[(ikz, j, 2)];
         let fourier_j = fourier_j.imag();
 
-        return qiqj * (fourier_i - fourier_j);
+        return qiqj * (fourier_j - fourier_i);
     }
 
     /// k-space contribution to the virial
@@ -666,7 +666,7 @@ impl Ewald {
 
                 let rij = configuration.nearest_image(i, j);
                 let force = self.molcorrect_force_pair(info, qi, qj, &rij);
-                virial -= force.tensorial(&rij);
+                virial += force.tensorial(&rij);
             }
         }
         return virial;
@@ -1036,7 +1036,7 @@ mod tests {
             let virial = ewald.real_space_virial(&system);
             let mut forces = vec![Vector3D::zero(); 2];
             ewald.real_space_forces(&system, &mut forces);
-            let expected = forces[0].tensorial(&Vector3D::new(1.5, 0.0, 0.0));
+            let expected = (-forces[0]).tensorial(&Vector3D::new(1.5, 0.0, 0.0));
             assert_ulps_eq!(virial, expected);
         }
 
@@ -1048,7 +1048,7 @@ mod tests {
             let virial = ewald.kspace_virial(&system);
             let mut forces = vec![Vector3D::zero(); 2];
             ewald.kspace_forces(&system, &mut forces);
-            let expected = forces[0].tensorial(&Vector3D::new(1.5, 0.0, 0.0));
+            let expected = (-forces[0]).tensorial(&Vector3D::new(1.5, 0.0, 0.0));
             assert_ulps_eq!(virial, expected);
         }
 
@@ -1063,7 +1063,7 @@ mod tests {
             let virial = ewald.read().molcorrect_virial(&system);
             let mut forces = vec![Vector3D::zero(); 2];
             ewald.read().molcorrect_forces(&system, &mut forces);
-            let expected = forces[0].tensorial(&Vector3D::new(1.5, 0.0, 0.0));
+            let expected = (-forces[0]).tensorial(&Vector3D::new(1.5, 0.0, 0.0));
             assert_ulps_eq!(virial, expected);
         }
 
@@ -1075,7 +1075,7 @@ mod tests {
 
             let virial = ewald.virial(&system);
             ewald.forces(&system, &mut forces);
-            let expected = forces[0].tensorial(&Vector3D::new(1.5, 0.0, 0.0));
+            let expected = (-forces[0]).tensorial(&Vector3D::new(1.5, 0.0, 0.0));
             assert_ulps_eq!(virial, expected, max_ulps=25);
         }
     }
