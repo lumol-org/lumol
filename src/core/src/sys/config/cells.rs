@@ -97,19 +97,12 @@ impl UnitCell {
         self.shape
     }
 
-    /// Check if this unit cell is infinite, *i.e.* if it does not have periodic boundary
-    /// conditions.
+    /// Check if this unit cell is infinite, *i.e.* if it does not have
+    /// periodic boundary conditions.
     pub fn is_infinite(&self) -> bool {
         self.shape() == CellShape::Infinite
     }
 
-    /// Get the first vector of the cell
-    pub fn vect_a(&self) -> Vector3D {
-        let x = self.cell[0][0];
-        let y = self.cell[1][0];
-        let z = self.cell[2][0];
-        Vector3D::new(x, y, z)
-    }
     /// Get the first length of the cell (i.e. the norm of the first vector of
     /// the cell)
     pub fn a(&self) -> f64 {
@@ -119,14 +112,6 @@ impl UnitCell {
         }
     }
 
-    /// Get the second vector of the cell
-    pub fn vect_b(&self) -> Vector3D {
-        let x = self.cell[0][1];
-        let y = self.cell[1][1];
-        let z = self.cell[2][1];
-        Vector3D::new(x, y, z)
-    }
-
     /// Get the second length of the cell (i.e. the norm of the second vector of
     /// the cell)
     pub fn b(&self) -> f64 {
@@ -134,14 +119,6 @@ impl UnitCell {
             CellShape::Triclinic => self.vect_b().norm(),
             CellShape::Orthorhombic | CellShape::Infinite => self.cell[1][1],
         }
-    }
-
-    /// Get the third vector of the cell
-    pub fn vect_c(&self) -> Vector3D {
-        let x = self.cell[0][2];
-        let y = self.cell[1][2];
-        let z = self.cell[2][2];
-        Vector3D::new(x, y, z)
     }
 
     /// Get the third length of the cell (i.e. the norm of the third vector of
@@ -253,6 +230,35 @@ impl UnitCell {
         let rec_c = (2.0 * PI / volume) * (a ^ b);
 
         return (rec_a, rec_b, rec_c);
+    }
+
+    /// Get the matricial representation of the unit cell
+    pub fn matrix(&self) -> Matrix3 {
+        self.cell
+    }
+
+    /// Get the first vector of the cell
+    fn vect_a(&self) -> Vector3D {
+        let x = self.cell[0][0];
+        let y = self.cell[1][0];
+        let z = self.cell[2][0];
+        Vector3D::new(x, y, z)
+    }
+
+    /// Get the second vector of the cell
+    fn vect_b(&self) -> Vector3D {
+        let x = self.cell[0][1];
+        let y = self.cell[1][1];
+        let z = self.cell[2][1];
+        Vector3D::new(x, y, z)
+    }
+
+    /// Get the third vector of the cell
+    fn vect_c(&self) -> Vector3D {
+        let x = self.cell[0][2];
+        let y = self.cell[1][2];
+        let z = self.cell[2][2];
+        Vector3D::new(x, y, z)
     }
 }
 
