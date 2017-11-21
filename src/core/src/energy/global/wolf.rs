@@ -347,6 +347,19 @@ mod tests {
         assert_relative_eq!((e - e1) / eps, forces[0][0], epsilon = 1e-6);
     }
 
+    #[test]
+    fn virial() {
+        let system = testing_system();
+        let wolf = Wolf::new(8.0);
+
+        let mut forces = vec![Vector3D::zero(); system.size()];
+        wolf.forces(&system, &mut forces);
+        let force = forces[0][0];
+        let expected = Matrix3::new([[-force * 1.5, 0.0, 0.0], [0.0; 3], [0.0; 3]]);
+
+        assert_eq!(wolf.virial(&system), expected);
+    }
+
     mod cache {
         use super::*;
         use energy::{CoulombicPotential, GlobalCache, GlobalPotential, PairRestriction};
