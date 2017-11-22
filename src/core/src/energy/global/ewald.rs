@@ -77,9 +77,9 @@ pub struct Ewald {
     restriction: PairRestriction,
     /// Caching exponential factors exp(-k^2 / (4 alpha^2)) / k^2
     expfactors: Array3<f64>,
-    /// Phases for the Fourier transform, cached allocation
-    fourier_phases: Array3<Complex>,
-    /// Fourier transform of the electrostatic density
+    /// cached phase factors (e^{i k r})
+    eikr: Array3<Complex>,
+    /// Fourier transform of the electrostatic density (\sum q_i e^{i k r})
     rho: Array3<Complex>,
     /// Fourier transform of the electrostatic density modifications, cached
     /// allocation and for updating `self.rho`
@@ -101,7 +101,7 @@ impl Ewald {
             kmax2: 0.0,
             restriction: PairRestriction::None,
             expfactors: expfactors,
-            fourier_phases: Array3::zeros((0, 0, 0)),
+            eikr: Array3::zeros((0, 0, 0)),
             rho: rho.clone(),
             delta_rho: rho,
             previous_cell: None,
@@ -342,14 +342,14 @@ impl Ewald {
         let natoms = configuration.size();
         let charges = configuration.particles().charge;
         let positions = configuration.particles().position;
-        self.fourier_phases.resize_if_different((self.kmax, natoms, 3));
+        self.eikr.resize_if_different((self.kmax, natoms, 3));
 
         // Do the k=0, 1 cases first
         for i in 0..natoms {
             let ri = configuration.cell.fractional(&positions[i]);
             for j in 0..3 {
-                self.fourier_phases[(0, i, j)] = Complex::polar(1.0, 0.0);
-                self.fourier_phases[(1, i, j)] = Complex::polar(1.0, -2.0 * PI * ri[j]);
+                self.eikr[(0, i, j)] = Complex::polar(1.0, 0.0);
+                self.eikr[(1, i, j)] = Complex::polar(1.0, -2.0 * PI * ri[j]);
             }
         }
 
@@ -357,8 +357,8 @@ impl Ewald {
         for k in 2..self.kmax {
             for i in 0..natoms {
                 for j in 0..3 {
-                    self.fourier_phases[(k, i, j)] = self.fourier_phases[(k - 1, i, j)]
-                                                   * self.fourier_phases[(1, i, j)];
+                    self.eikr[(k, i, j)] = self.eikr[(k - 1, i, j)]
+                                         * self.eikr[(    1, i, j)];
                 }
             }
         }
@@ -368,7 +368,9 @@ impl Ewald {
                 for ikz in 0..self.kmax {
                     let mut rho = Complex::zero();
                     for j in 0..natoms {
-                        let phi = self.fourier_phases[(ikx, j, 0)] * self.fourier_phases[(iky, j, 1)] * self.fourier_phases[(ikz, j, 2)];
+                        let phi = self.eikr[(ikx, j, 0)] *
+                                  self.eikr[(iky, j, 1)] *
+                                  self.eikr[(ikz, j, 2)];
                         rho += charges[j] * phi;
                     }
                     self.rho[(ikx, iky, ikz)] = rho;
@@ -388,8 +390,7 @@ impl Ewald {
                     // The k = 0 case and the cutoff in k-space are already
                     // handled in `expfactors`
                     if self.expfactors[(ikx, iky, ikz)].abs() < f64::EPSILON {continue}
-                    let density = self.rho[(ikx, iky, ikz)].norm();
-                    energy += self.expfactors[(ikx, iky, ikz)] * density * density;
+                    energy += self.expfactors[(ikx, iky, ikz)] * self.rho[(ikx, iky, ikz)].norm2();
                 }
             }
         }
@@ -418,9 +419,9 @@ impl Ewald {
             for i in 0..configuration.size() {
                 let qi = charges[i];
 
-                let fourier_i = self.fourier_phases[(ikx, i, 0)] *
-                                self.fourier_phases[(iky, i, 1)] *
-                                self.fourier_phases[(ikz, i, 2)];
+                let fourier_i = self.eikr[(ikx, i, 0)] *
+                                self.eikr[(iky, i, 1)] *
+                                self.eikr[(ikz, i, 2)];
                 let fourier_i = fourier_i.imag();
 
                 let mut thread_forces = thread_forces_store.borrow_mut();
@@ -428,7 +429,13 @@ impl Ewald {
 
                 for j in (i + 1)..configuration.size() {
                     let qj = charges[j];
-                    let force = f * self.kspace_force_factor(j, (ikx, iky, ikz), qi * qj, fourier_i) * k;
+
+                    let fourier_j = self.eikr[(ikx, j, 0)] *
+                                    self.eikr[(iky, j, 1)] *
+                                    self.eikr[(ikz, j, 2)];
+                    let fourier_j = fourier_j.imag();
+
+                    let force = f * qi * qj * (fourier_j - fourier_i) * k;
                     force_i += force;
                     thread_forces[j] -= force;
                 }
@@ -438,20 +445,6 @@ impl Ewald {
         });
 
         thread_forces_store.sum_local_values(forces);
-    }
-
-    /// Get the force factor for particles `i` and `j` with charges `qi` and
-    /// `qj`, at k point  `(ikx, iky, ikz)`
-    #[inline]
-    fn kspace_force_factor(&self, j: usize, (ikx, iky, ikz): (usize, usize, usize), qiqj: f64, fourier_i: f64) -> f64 {
-        // Here the compiler is smart enough to optimize away
-        // the useless computation of the last real part.
-        let fourier_j = self.fourier_phases[(ikx, j, 0)] *
-                        self.fourier_phases[(iky, j, 1)] *
-                        self.fourier_phases[(ikz, j, 2)];
-        let fourier_j = fourier_j.imag();
-
-        return qiqj * (fourier_j - fourier_i);
     }
 
     /// k-space contribution to the virial
@@ -472,14 +465,21 @@ impl Ewald {
             for i in 0..configuration.size() {
                 let qi = charges[i];
 
-                let fourier_i = self.fourier_phases[(ikx, i, 0)] *
-                                self.fourier_phases[(iky, i, 1)] *
-                                self.fourier_phases[(ikz, i, 2)];
+                let fourier_i = self.eikr[(ikx, i, 0)] *
+                                self.eikr[(iky, i, 1)] *
+                                self.eikr[(ikz, i, 2)];
                 let fourier_i = fourier_i.imag();
 
                 for j in (i + 1)..configuration.size() {
                     let qj = charges[j];
-                    let force = f * self.kspace_force_factor(j, (ikx, iky, ikz), qi * qj, fourier_i) * k;
+
+                    let fourier_j = self.eikr[(ikx, j, 0)] *
+                                    self.eikr[(iky, j, 1)] *
+                                    self.eikr[(ikz, j, 2)];
+                    let fourier_j = fourier_j.imag();
+
+                    let force = f * qi * qj * (fourier_j - fourier_i) * k;
+
                     let rij = configuration.nearest_image(i, j);
                     local_virial += force.tensorial(&rij);
                 }
@@ -493,19 +493,19 @@ impl Ewald {
         let positions = configuration.particles().position;
         let charges = configuration.particles().charge;
 
-        let mut new_fourier_phases = Array3::zeros((self.kmax, natoms, 3));
-        let mut old_fourier_phases = Array3::zeros((self.kmax, natoms, 3));
+        let mut new_eikr = Array3::zeros((self.kmax, natoms, 3));
+        let mut old_eikr = Array3::zeros((self.kmax, natoms, 3));
 
         // Do the k=0, 1 cases first
         for (idx, &i) in idxes.iter().enumerate() {
             let old_ri = configuration.cell.fractional(&positions[i]);
             let new_ri = configuration.cell.fractional(&newpos[idx]);
             for j in 0..3 {
-                old_fourier_phases[(0, idx, j)] = Complex::polar(1.0, 0.0);
-                old_fourier_phases[(1, idx, j)] = Complex::polar(1.0, -2.0 * PI * old_ri[j]);
+                old_eikr[(0, idx, j)] = Complex::polar(1.0, 0.0);
+                old_eikr[(1, idx, j)] = Complex::polar(1.0, -2.0 * PI * old_ri[j]);
 
-                new_fourier_phases[(0, idx, j)] = Complex::polar(1.0, 0.0);
-                new_fourier_phases[(1, idx, j)] = Complex::polar(1.0, -2.0 * PI * new_ri[j]);
+                new_eikr[(0, idx, j)] = Complex::polar(1.0, 0.0);
+                new_eikr[(1, idx, j)] = Complex::polar(1.0, -2.0 * PI * new_ri[j]);
             }
         }
 
@@ -513,11 +513,11 @@ impl Ewald {
         for k in 2..self.kmax {
             for idx in 0..natoms {
                 for j in 0..3 {
-                    old_fourier_phases[(k, idx, j)] = old_fourier_phases[(k - 1, idx, j)]
-                                                    * old_fourier_phases[(1, idx, j)];
+                    old_eikr[(k, idx, j)] = old_eikr[(k - 1, idx, j)]
+                                          * old_eikr[(    1, idx, j)];
 
-                    new_fourier_phases[(k, idx, j)] = new_fourier_phases[(k - 1, idx, j)]
-                                                    * new_fourier_phases[(1, idx, j)];
+                    new_eikr[(k, idx, j)] = new_eikr[(k - 1, idx, j)]
+                                          * new_eikr[(    1, idx, j)];
                 }
             }
         }
@@ -527,12 +527,12 @@ impl Ewald {
                 for ikz in 0..self.kmax {
                     self.delta_rho[(ikx, iky, ikz)] = Complex::polar(0.0, 0.0);
                     for (idx, &i) in idxes.iter().enumerate() {
-                        let old_phi = old_fourier_phases[(ikx, idx, 0)] *
-                                      old_fourier_phases[(iky, idx, 1)] *
-                                      old_fourier_phases[(ikz, idx, 2)];
-                        let new_phi = new_fourier_phases[(ikx, idx, 0)] *
-                                      new_fourier_phases[(iky, idx, 1)] *
-                                      new_fourier_phases[(ikz, idx, 2)];
+                        let old_phi = old_eikr[(ikx, idx, 0)] *
+                                      old_eikr[(iky, idx, 1)] *
+                                      old_eikr[(ikz, idx, 2)];
+                        let new_phi = new_eikr[(ikx, idx, 0)] *
+                                      new_eikr[(iky, idx, 1)] *
+                                      new_eikr[(ikz, idx, 2)];
 
                         self.delta_rho[(ikx, iky, ikz)] -= charges[i] * old_phi;
                         self.delta_rho[(ikx, iky, ikz)] += charges[i] * new_phi;
