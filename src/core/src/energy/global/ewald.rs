@@ -422,7 +422,6 @@ impl Ewald {
                 let fourier_i = self.eikr[(ikx, i, 0)] *
                                 self.eikr[(iky, i, 1)] *
                                 self.eikr[(ikz, i, 2)];
-                let fourier_i = fourier_i.imag();
 
                 let mut thread_forces = thread_forces_store.borrow_mut();
                 let mut force_i = Vector3D::zero();
@@ -433,9 +432,8 @@ impl Ewald {
                     let fourier_j = self.eikr[(ikx, j, 0)] *
                                     self.eikr[(iky, j, 1)] *
                                     self.eikr[(ikz, j, 2)];
-                    let fourier_j = fourier_j.imag();
 
-                    let force = f * qi * qj * (fourier_j - fourier_i) * k;
+                    let force = f * qi * qj * (fourier_j / fourier_i).imag() * k;
                     force_i += force;
                     thread_forces[j] -= force;
                 }
@@ -468,7 +466,6 @@ impl Ewald {
                 let fourier_i = self.eikr[(ikx, i, 0)] *
                                 self.eikr[(iky, i, 1)] *
                                 self.eikr[(ikz, i, 2)];
-                let fourier_i = fourier_i.imag();
 
                 for j in (i + 1)..configuration.size() {
                     let qj = charges[j];
@@ -476,9 +473,8 @@ impl Ewald {
                     let fourier_j = self.eikr[(ikx, j, 0)] *
                                     self.eikr[(iky, j, 1)] *
                                     self.eikr[(ikz, j, 2)];
-                    let fourier_j = fourier_j.imag();
 
-                    let force = f * qi * qj * (fourier_j - fourier_i) * k;
+                    let force = f * qi * qj * (fourier_j / fourier_i).imag() * k;
 
                     let rij = configuration.nearest_image(i, j);
                     local_virial += force.tensorial(&rij);
@@ -786,7 +782,7 @@ impl GlobalPotential for SharedEwald {
         ewald.precompute(&configuration.cell);
 
         ewald.real_space_forces(configuration, forces);
-        /* No self force */
+        // No self force
         ewald.kspace_forces(configuration, forces);
         ewald.molcorrect_forces(configuration, forces);
     }
@@ -795,7 +791,7 @@ impl GlobalPotential for SharedEwald {
         let mut ewald = self.write();
         ewald.precompute(&configuration.cell);
         let real = ewald.real_space_virial(configuration);
-        /* No self virial */
+        // No self virial
         let kspace = ewald.kspace_virial(configuration);
         let molecular = ewald.molcorrect_virial(configuration);
         return real + kspace + molecular;

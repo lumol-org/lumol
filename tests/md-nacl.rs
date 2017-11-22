@@ -90,6 +90,24 @@ mod ewald {
     }
 
     #[test]
+    fn constant_energy_kspace() {
+        START.call_once(|| {
+            ::env_logger::init().unwrap();
+        });
+        let path = Path::new(file!()).parent()
+                                     .unwrap()
+                                     .join("data")
+                                     .join("md-nacl")
+                                     .join("nve-ewald-kspace.toml");
+        let mut config = Input::new(path).unwrap().read().unwrap();
+
+        let e_initial = config.system.total_energy();
+        config.simulation.run(&mut config.system, config.nsteps);
+        let e_final = config.system.total_energy();
+        assert!(f64::abs((e_initial - e_final) / e_final) < 5e-3);
+    }
+
+    #[test]
     fn energy() {
         START.call_once(|| {
             ::env_logger::init().unwrap();
