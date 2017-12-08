@@ -112,14 +112,14 @@ impl PairPotential for LennardJones {
 /// Lennard Jones if r>= 2^1/6 * sigma
 
 #[derive(Clone, Copy)]
-pub struct WCARepulsive {
+pub struct WCA {
     /// Distance constant
     pub sigma: f64,
     /// Energy Constant
     pub epsilon: f64,
 }
 
-impl Potential for WCARepulsive {
+impl Potential for WCA {
     fn energy(&self, r: f64) -> f64 {
         if r < f64::powf(2., 1./6.) * self.sigma {
             let s6 = f64::powi(self.sigma / r, 6);
@@ -131,34 +131,6 @@ impl Potential for WCARepulsive {
 
     fn force(&self, r: f64) -> f64 {
         if r < f64::powf(2., 1./6.) * self.sigma {
-            let s6 = f64::powi(self.sigma / r, 6);
-            -24.0 * self.epsilon * (s6 - 2.0 * f64::powi(s6, 2)) / r
-        } else {
-            0.
-        }
-    }
-}
-
-
-#[derive(Clone, Copy)]
-pub struct WCAAttractive {
-    /// Distance constant
-    pub sigma: f64,
-    /// Energy Constant
-    pub epsilon: f64,
-}
-
-impl Potential for WCAAttractive {
-    fn energy(&self, r: f64) -> f64 {
-        if r >= f64::powf(2., 1./6.) * self.sigma {
-            let s6 = f64::powi(self.sigma / r, 6);
-            4.0 * self.epsilon * (f64::powi(s6, 2) - s6)
-        } else {
-            -self.epsilon
-        }
-    }
-    fn force(&self, r: f64) -> f64 {
-        if r >= f64::powf(2., 1./6.) * self.sigma {
             let s6 = f64::powi(self.sigma / r, 6);
             -24.0 * self.epsilon * (s6 - 2.0 * f64::powi(s6, 2)) / r
         } else {
