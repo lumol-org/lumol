@@ -1,8 +1,8 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) Lumol's contributors — BSD license
-use types::{Vector3D, Matrix3, One, Zero};
 use sys::System;
 use sys::zip_particle::*;
+use types::{Matrix3, One, Vector3D, Zero};
 
 /// The `Integrator` trait define integrator interface for molecular dynamics.
 /// An integrator is an algorithm responsible for propagating the equations of
@@ -21,13 +21,13 @@ pub struct VelocityVerlet {
     /// Timestep for the integrator
     timestep: f64,
     /// Storing the accelerations
-    accelerations: Vec<Vector3D>
+    accelerations: Vec<Vector3D>,
 }
 
 impl VelocityVerlet {
     /// Create a new integrator with a timestep of `timestep`.
     pub fn new(timestep: f64) -> VelocityVerlet {
-        VelocityVerlet{
+        VelocityVerlet {
             timestep: timestep,
             accelerations: Vec::new(),
         }
@@ -44,7 +44,7 @@ impl Integrator for VelocityVerlet {
 
         // Update velocities at t + ∆t/2 and positions at t + ∆t
         for (position, velocity, acceleration) in system.particles_mut().zip_mut(
-            (&mut Position, &mut Velocity, &self.accelerations)
+            (&mut Position, &mut Velocity, &self.accelerations),
         ) {
             *velocity += 0.5 * dt * acceleration;
             *position += velocity * dt;
@@ -52,22 +52,21 @@ impl Integrator for VelocityVerlet {
 
         let forces = system.forces();
         // Update accelerations at t + ∆t
-        for (&mass, acceleration, force) in system.particles().zip(
-            (&Mass, &mut self.accelerations, forces)
-        ) {
+        for (&mass, acceleration, force) in
+            system.particles().zip((&Mass, &mut self.accelerations, forces))
+        {
             *acceleration = force / mass;
         }
 
         // Update velocities at t + ∆t
-        for (velocity, acceleration) in system.particles_mut().zip_mut(
-            (&mut Velocity, &self.accelerations)
-        ) {
+        for (velocity, acceleration) in
+            system.particles_mut().zip_mut((&mut Velocity, &self.accelerations))
+        {
             *velocity += 0.5 * dt * acceleration;
         }
     }
 }
 
-/******************************************************************************/
 /// Verlet integrator. This one is reversible and symplectic.
 pub struct Verlet {
     /// Timestep for the integrator
@@ -79,7 +78,7 @@ pub struct Verlet {
 impl Verlet {
     /// Create a new integrator with a timestep of `timestep`.
     pub fn new(timestep: f64) -> Verlet {
-        Verlet{
+        Verlet {
             timestep: timestep,
             prevpos: Vec::new(),
         }
@@ -92,9 +91,9 @@ impl Integrator for Verlet {
 
         let dt = self.timestep;
         // Approximate the positions at t - ∆t
-        for (position, velocity, prevpos) in system.particles().zip(
-            (&Position, &Velocity, &mut self.prevpos)
-        ) {
+        for (position, velocity, prevpos) in
+            system.particles().zip((&Position, &Velocity, &mut self.prevpos))
+        {
             *prevpos = position - velocity * dt;
         }
     }
@@ -105,9 +104,9 @@ impl Integrator for Verlet {
         let dt2 = dt * dt;
 
         let mut particles = system.particles_mut();
-        for (position, velocity, mass, prevpos, force) in particles.zip_mut(
-            (&mut Position, &mut Velocity, &Mass, &mut self.prevpos, forces)
-        ) {
+        for (position, velocity, mass, prevpos, force) in
+            particles.zip_mut((&mut Position, &mut Velocity, &Mass, &mut self.prevpos, forces))
+        {
             // Save positions at t
             let tmp = *position;
             // Update positions at t + ∆t
@@ -120,19 +119,18 @@ impl Integrator for Verlet {
     }
 }
 
-/******************************************************************************/
 /// Leap-frog integrator. This one is reversible and symplectic.
 pub struct LeapFrog {
     /// Timestep for the integrator
     timestep: f64,
     /// Storing the accelerations
-    accelerations: Vec<Vector3D>
+    accelerations: Vec<Vector3D>,
 }
 
 impl LeapFrog {
     /// Create a new integrator with a timestep of `timestep`.
     pub fn new(timestep: f64) -> LeapFrog {
-        LeapFrog{
+        LeapFrog {
             timestep: timestep,
             accelerations: Vec::new(),
         }
@@ -148,15 +146,15 @@ impl Integrator for LeapFrog {
         let dt = self.timestep;
         let dt2 = dt * dt;
 
-        for (position, velocity, acceleration) in system.particles_mut().zip_mut(
-            (&mut Position, &Velocity, &self.accelerations)
-        ) {
+        for (position, velocity, acceleration) in
+            system.particles_mut().zip_mut((&mut Position, &Velocity, &self.accelerations))
+        {
             *position += velocity * dt + 0.5 * acceleration * dt2;
         }
 
         let forces = system.forces();
         for (velocity, &mass, acceleration, force) in system.particles_mut().zip_mut(
-            (&mut Velocity, &Mass, &mut self.accelerations, &forces)
+            (&mut Velocity, &Mass, &mut self.accelerations, &forces),
         ) {
             let new_acceleration = force / mass;
             *velocity += 0.5 * ((*acceleration) + new_acceleration) * dt;
@@ -165,7 +163,6 @@ impl Integrator for LeapFrog {
     }
 }
 
-/******************************************************************************/
 /// This is needed for the `BerendsenBarostat` implementation. The value comes
 /// from the DL_POLY source code.
 const WATER_COMPRESSIBILITY: f64 = 7372.0;
@@ -190,7 +187,7 @@ impl BerendsenBarostat {
     /// `timestep`, and a target pressure of `pressure` and the barostat time
     /// scale `tau`.
     pub fn new(timestep: f64, pressure: f64, tau: f64) -> BerendsenBarostat {
-        BerendsenBarostat{
+        BerendsenBarostat {
             timestep: timestep,
             pressure: pressure,
             tau: tau,
@@ -210,7 +207,7 @@ impl Integrator for BerendsenBarostat {
 
         // Update velocities at t + ∆t/2 and positions at t + ∆t
         for (position, velocity, acceleration) in system.particles_mut().zip_mut(
-            (&mut Position, &mut Velocity, &self.accelerations)
+            (&mut Position, &mut Velocity, &self.accelerations),
         ) {
             *velocity += 0.5 * dt * acceleration;
             // Scale all positions
@@ -219,12 +216,13 @@ impl Integrator for BerendsenBarostat {
         }
 
         system.cell.scale_mut(self.eta * self.eta * self.eta * Matrix3::one());
-        self.eta = f64::cbrt(1.0 - WATER_COMPRESSIBILITY / self.tau * (self.pressure - system.pressure()));
+        self.eta =
+            f64::cbrt(1.0 - WATER_COMPRESSIBILITY / self.tau * (self.pressure - system.pressure()));
 
         let forces = system.forces();
         // Update accelerations at t + ∆t and velocities at t + ∆t
         for (velocity, &mass, acceleration, force) in system.particles_mut().zip_mut(
-            (&mut Velocity, &Mass, &mut self.accelerations, &forces)
+            (&mut Velocity, &Mass, &mut self.accelerations, &forces),
         ) {
             *acceleration = force / mass;
             *velocity += 0.5 * dt * acceleration;
@@ -252,7 +250,7 @@ impl AnisoBerendsenBarostat {
     /// of `timestep`, and a target stress matrix of `stress` and the barostat
     /// time scale `tau`.
     pub fn new(timestep: f64, stress: Matrix3, tau: f64) -> AnisoBerendsenBarostat {
-        AnisoBerendsenBarostat{
+        AnisoBerendsenBarostat {
             timestep: timestep,
             stress: stress,
             tau: tau,
@@ -279,7 +277,7 @@ impl Integrator for AnisoBerendsenBarostat {
 
         // Update velocities at t + ∆t/2 and positions at t + ∆t
         for (position, velocity, acceleration) in system.particles_mut().zip_mut(
-            (&mut Position, &mut Velocity, &self.accelerations)
+            (&mut Position, &mut Velocity, &self.accelerations),
         ) {
             *velocity += 0.5 * dt * acceleration;
             // Scale all positions
@@ -303,7 +301,7 @@ impl Integrator for AnisoBerendsenBarostat {
         let forces = system.forces();
         // Update accelerations at t + ∆t and velocities at t + ∆t
         for (&mass, velocity, acceleration, force) in system.particles_mut().zip_mut(
-            (&Mass, &mut Velocity, &mut self.accelerations, &forces)
+            (&Mass, &mut Velocity, &mut self.accelerations, &forces),
         ) {
             *acceleration = force / mass;
             *velocity += 0.5 * dt * acceleration;

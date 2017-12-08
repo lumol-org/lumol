@@ -1,8 +1,8 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) Lumol's contributors — BSD license
+use Input;
 use error::Error;
 use extract;
-use Input;
 
 use toml::value::Table;
 
@@ -10,12 +10,12 @@ use log::{LogLevel, LogLevelFilter};
 use log::LogRecord;
 
 use log4rs;
-use log4rs::encode::{Encode, Write, Color, Style};
 use log4rs::append::Append;
 use log4rs::append::console;
 use log4rs::append::console::ConsoleAppender;
 use log4rs::append::file::FileAppender;
-use log4rs::config::{Config, Appender, Root};
+use log4rs::config::{Appender, Config, Root};
+use log4rs::encode::{Color, Encode, Style, Write};
 use log4rs::filter::threshold::ThresholdFilter;
 
 type LogError = Box<::std::error::Error + Sync + Send>;
@@ -29,7 +29,7 @@ impl Encode for LogEncoder {
         match record.level() {
             LogLevel::Trace => try!(write!(out, "[trace] ")),
             LogLevel::Debug => try!(write!(out, "[debug] ")),
-            LogLevel::Info => {},
+            LogLevel::Info => {}
             LogLevel::Warn => {
                 try!(out.set_style(Style::new().text(Color::Red)));
                 try!(write!(out, "[warning] "));
@@ -38,19 +38,19 @@ impl Encode for LogEncoder {
             LogLevel::Error => {
                 try!(out.set_style(Style::new().text(Color::Red).intense(true)));
                 try!(write!(out, "[error] "));
-            },
+            }
         }
 
         try!(write!(out, "{}", record.args()));
 
         match record.level() {
-            LogLevel::Trace | LogLevel::Debug =>{
+            LogLevel::Trace | LogLevel::Debug => {
                 let location = record.location();
                 try!(write!(out, " [from {}:{}]", location.file(), location.line()))
             }
             LogLevel::Error => {
                 try!(out.set_style(&Style::new()));
-            },
+            }
             _ => {}
         }
 
@@ -76,33 +76,34 @@ impl Input {
     pub(crate) fn setup_logging(&self) -> Result<(), Error> {
         let _guard = EnsureLogger;
         if let Some(loggers) = self.config.get("log") {
-            let loggers = try!(loggers.as_table().ok_or(
-                Error::from("'log' section must be a table")
-            ));
+            let loggers =
+                try!(loggers.as_table().ok_or(Error::from("'log' section must be a table")));
 
             if loggers.get("target").is_some() {
                 if loggers.get("targets").is_some() {
-                    return Err(Error::from(
-                        "Can not have both 'target' and 'targets' in the log section"
-                    ));
+                    return Err(
+                        Error::from("Can not have both 'target' and 'targets' in the log section"),
+                    );
                 }
 
                 let appender = try!(read_appender(loggers, "main"));
-                let config = Config::builder()
-                    .appender(appender)
-                    .build(Root::builder().appender("main").build(LogLevelFilter::Trace))
-                    .expect("Error in logging initialization");
+                let config = Config::builder().appender(appender)
+                                              .build(
+                    Root::builder().appender("main").build(LogLevelFilter::Trace),
+                )
+                                              .expect("Error in logging initialization");
                 let _ = log4rs::init_config(config);
             } else if let Some(targets) = loggers.get("targets") {
-                let targets = try!(targets.as_array().ok_or(
-                    Error::from("'targets' must be an array in 'log' section")
-                ));
+                let targets = try!(
+                    targets.as_array()
+                           .ok_or(Error::from("'targets' must be an array in 'log' section"))
+                );
 
                 let mut appenders = Vec::new();
                 for (i, target) in targets.into_iter().enumerate() {
-                    let target = try!(target.as_table().ok_or(Error::from(
-                        "'targets' must be an array of tables in 'log' section"
-                    )));
+                    let target = try!(target.as_table().ok_or(
+                        Error::from("'targets' must be an array of tables in 'log' section")
+                    ));
                     let appender = try!(read_appender(target, &i.to_string()));
                     appenders.push(appender);
                 }
@@ -117,9 +118,7 @@ impl Input {
                                    .expect("Error in logging initialization");
                 let _ = log4rs::init_config(config);
             } else {
-                return Err(Error::from(
-                    "Missing 'target' or 'targets' in log section"
-                ));
+                return Err(Error::from("Missing 'target' or 'targets' in log section"));
             }
         } else {
             setup_default_logger();
@@ -129,21 +128,20 @@ impl Input {
     }
 }
 
-fn setup_default_logger() {
+/// Setup a default logger to be able to print error messages
+pub fn setup_default_logger() {
     // We just log everything to stdout
-    let stdout = ConsoleAppender::builder()
-        .target(console::Target::Stdout)
-        .encoder(Box::new(LogEncoder))
-        .build();
+    let stdout = ConsoleAppender::builder().target(console::Target::Stdout)
+                                           .encoder(Box::new(LogEncoder))
+                                           .build();
 
-    let appender = Appender::builder()
-        .filter(Box::new(ThresholdFilter::new(LogLevelFilter::Info)))
-        .build("main", Box::new(stdout));
+    let appender = Appender::builder().filter(Box::new(ThresholdFilter::new(LogLevelFilter::Info)))
+                                      .build("main", Box::new(stdout));
 
-    let config = Config::builder()
-        .appender(appender)
-        .build(Root::builder().appender("main").build(LogLevelFilter::Info))
-        .expect("Error in logging initialization");
+    let config =
+        Config::builder().appender(appender)
+                         .build(Root::builder().appender("main").build(LogLevelFilter::Info))
+                         .expect("Error in logging initialization");
 
     // We ignore the result of this call, because it can only fail if a
     // logger has already been initialized.
@@ -154,61 +152,55 @@ fn read_appender(config: &Table, name: &str) -> Result<Appender, Error> {
     let allowed_keys = ["target", "targets", "level", "append"];
     for key in config.keys() {
         if !allowed_keys.contains(&&**key) {
-            return Err(Error::from(format!(
-                "Unknown '{}' key in log section", key
-            )))
+            return Err(Error::from(format!("Unknown '{}' key in log section", key)));
         }
     }
 
-    let level = try!(config.get("level")
-                           .map_or(Some("info"), |level| level.as_str())
-                           .ok_or(Error::from(
-                               "'level' must be a string in log target"
-                           )));
+    let level = try!(
+        config.get("level")
+              .map_or(Some("info"), |level| level.as_str())
+              .ok_or(Error::from("'level' must be a string in log target"))
+    );
     let level = match level {
         "trace" => LogLevelFilter::Trace,
         "debug" => LogLevelFilter::Debug,
         "info" => LogLevelFilter::Info,
         "warning" => LogLevelFilter::Warn,
         "error" => LogLevelFilter::Error,
-        other => return Err(Error::from(format!(
-            "Unknown logging level '{}'", other
-        )))
+        other => return Err(Error::from(format!("Unknown logging level '{}'", other))),
     };
 
     let target = try!(extract::str("target", config, "log target"));
     let appender: Box<Append> = match target {
         "<stdout>" => {
-            Box::new(ConsoleAppender::builder()
-                                     .target(console::Target::Stdout)
-                                     .encoder(Box::new(LogEncoder))
-                                     .build())
+            Box::new(
+                ConsoleAppender::builder().target(console::Target::Stdout)
+                                          .encoder(Box::new(LogEncoder))
+                                          .build(),
+            )
         }
         "<stderr>" => {
-            Box::new(ConsoleAppender::builder()
-                                     .target(console::Target::Stderr)
-                                     .encoder(Box::new(LogEncoder))
-                                     .build())
+            Box::new(
+                ConsoleAppender::builder().target(console::Target::Stderr)
+                                          .encoder(Box::new(LogEncoder))
+                                          .build(),
+            )
         }
-        "" => return Err(Error::from(
-            "'target' can not be an empty string in log target"
-        )),
+        "" => return Err(Error::from("'target' can not be an empty string in log target")),
         filename => {
-            let append_mode = try!(config.get("append")
-                                         .map_or(Some(false), |x| x.as_bool())
-                                         .ok_or(Error::from(
-                                             "'append' must be a boolean in log file target"
-                                         )));
-            let appender = FileAppender::builder()
-                                        .append(append_mode)
-                                        .encoder(Box::new(LogEncoder));
+            let append_mode = try!(
+                config.get("append")
+                      .map_or(Some(false), |x| x.as_bool())
+                      .ok_or(Error::from("'append' must be a boolean in log file target"))
+            );
+            let appender =
+                FileAppender::builder().append(append_mode).encoder(Box::new(LogEncoder));
             let appender = try_io!(appender.build(filename), filename.into());
             Box::new(appender)
         }
     };
 
-    let appender = Appender::builder()
-        .filter(Box::new(ThresholdFilter::new(level)))
-        .build(name, appender);
+    let appender = Appender::builder().filter(Box::new(ThresholdFilter::new(level)))
+                                      .build(name, appender);
     Ok(appender)
 }

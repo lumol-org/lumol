@@ -6,25 +6,19 @@
 //! https://www.nist.gov/mml/csd/chemical-informatics-research-group/spce-water-reference-calculations-10å-cutoff
 extern crate lumol;
 
+use lumol::consts::K_BOLTZMANN;
+use lumol::energy::{CoulombicPotential, Ewald, PairRestriction, SharedEwald};
+use lumol::energy::{LennardJones, NullPotential, PairInteraction};
 use lumol::sys::{System, UnitCell};
 use lumol::sys::TrajectoryBuilder;
-use lumol::energy::{PairInteraction, LennardJones, NullPotential};
-use lumol::energy::{Ewald, SharedEwald, PairRestriction, CoulombicPotential};
-use lumol::consts::K_BOLTZMANN;
 
-use std::path::Path;
 use std::fs::File;
 use std::io::prelude::*;
+use std::path::Path;
 
 pub fn get_system(path: &str, cutoff: f64) -> System {
-    let path = Path::new(file!()).parent().unwrap()
-                                 .join("data")
-                                 .join("nist-spce")
-                                 .join(path);
-    let mut system = TrajectoryBuilder::new()
-                                       .open(&path)
-                                       .and_then(|mut traj| traj.read())
-                                       .unwrap();
+    let path = Path::new(file!()).parent().unwrap().join("data").join("nist-spce").join(path);
+    let mut system = TrajectoryBuilder::new().open(&path).and_then(|mut traj| traj.read()).unwrap();
 
     let mut file = File::open(path).unwrap();
     let mut buffer = String::new();
@@ -32,12 +26,18 @@ pub fn get_system(path: &str, cutoff: f64) -> System {
     let line = buffer.lines().nth(1).unwrap();
     let mut splited = line.split_whitespace();
     assert_eq!(splited.next(), Some("cell:"));
-    let a: f64 = splited.next().expect("Missing 'a' cell parameter")
-                        .parse().expect("'a' cell parameter is not a float");
-    let b: f64 = splited.next().expect("Missing 'b' cell parameter")
-                        .parse().expect("'b' cell parameter is not a float");
-    let c: f64 = splited.next().expect("Missing 'c' cell parameter")
-                        .parse().expect("'c' cell parameter is not a float");
+    let a: f64 = splited.next()
+                        .expect("Missing 'a' cell parameter")
+                        .parse()
+                        .expect("'a' cell parameter is not a float");
+    let b: f64 = splited.next()
+                        .expect("Missing 'b' cell parameter")
+                        .parse()
+                        .expect("'b' cell parameter is not a float");
+    let c: f64 = splited.next()
+                        .expect("Missing 'c' cell parameter")
+                        .parse()
+                        .expect("'c' cell parameter is not a float");
 
     system.cell = UnitCell::ortho(a, b, c);
 
@@ -52,23 +52,21 @@ pub fn get_system(path: &str, cutoff: f64) -> System {
         match particle.name.as_ref() {
             "H" => *particle.charge = 0.42380,
             "O" => *particle.charge = -2.0 * 0.42380,
-            other => panic!("Unknown particle name: {}", other)
+            other => panic!("Unknown particle name: {}", other),
         }
     }
 
-    let mut lj = PairInteraction::new(Box::new(LennardJones{
-        epsilon: 78.19743111 * K_BOLTZMANN,
-        sigma: 3.16555789
-    }), cutoff);
+    let mut lj = PairInteraction::new(
+        Box::new(LennardJones {
+            epsilon: 78.19743111 * K_BOLTZMANN,
+            sigma: 3.16555789,
+        }),
+        cutoff,
+    );
     lj.enable_tail_corrections();
-    system.add_pair_potential("O", "O", lj);
-
-    system.add_pair_potential("O", "H",
-        PairInteraction::new(Box::new(NullPotential), cutoff)
-    );
-    system.add_pair_potential("H", "H",
-        PairInteraction::new(Box::new(NullPotential), cutoff)
-    );
+    system.add_pair_potential(("O", "O"), lj);
+    system.add_pair_potential(("O", "H"), PairInteraction::new(Box::new(NullPotential), cutoff));
+    system.add_pair_potential(("H", "H"), PairInteraction::new(Box::new(NullPotential), cutoff));
 
     let mut ewald = Ewald::new(cutoff, 5);
     ewald.set_alpha(5.6 / f64::min(f64::min(a, b), c));

@@ -2,12 +2,12 @@
 // Copyright (C) Lumol's contributors — BSD license
 use toml::value::Table;
 
+use lumol::sim::Alternator;
 use lumol::sim::md::*;
 use lumol::units;
-use lumol::sim::Alternator;
 
-use error::{Error, Result};
 use {FromToml, FromTomlWithData};
+use error::{Error, Result};
 use extract;
 
 impl FromToml for MolecularDynamics {
@@ -23,24 +23,16 @@ impl FromToml for MolecularDynamics {
             ));
 
             let integrator: Box<Integrator> = match try!(extract::typ(integrator, "integrator")) {
-                "BerendsenBarostat" => Box::new(try!(
-                    BerendsenBarostat::from_toml(integrator, timestep)
-                )),
-                "AnisoBerendsenBarostat" => Box::new(try!(
-                    AnisoBerendsenBarostat::from_toml(integrator, timestep)
-                )),
-                "Verlet" => Box::new(try!(
-                    Verlet::from_toml(integrator, timestep)
-                )),
-                "VelocityVerlet" => Box::new(try!(
-                    VelocityVerlet::from_toml(integrator, timestep)
-                )),
-                "LeapFrog" => Box::new(try!(
-                    LeapFrog::from_toml(integrator, timestep)
-                )),
-                other => return Err(Error::from(
-                    format!("Unknown integrator '{}'", other)
-                ))
+                "BerendsenBarostat" => {
+                    Box::new(try!(BerendsenBarostat::from_toml(integrator, timestep)))
+                }
+                "AnisoBerendsenBarostat" => {
+                    Box::new(try!(AnisoBerendsenBarostat::from_toml(integrator, timestep)))
+                }
+                "Verlet" => Box::new(try!(Verlet::from_toml(integrator, timestep))),
+                "VelocityVerlet" => Box::new(try!(VelocityVerlet::from_toml(integrator, timestep))),
+                "LeapFrog" => Box::new(try!(LeapFrog::from_toml(integrator, timestep))),
+                other => return Err(Error::from(format!("Unknown integrator '{}'", other))),
             };
 
             md = MolecularDynamics::from_integrator(integrator);
@@ -54,42 +46,32 @@ impl FromToml for MolecularDynamics {
             ));
 
             let thermostat: Box<Thermostat> = match try!(extract::typ(thermostat, "thermostat")) {
-                "Berendsen" => Box::new(try!(
-                    BerendsenThermostat::from_toml(thermostat)
-                )),
-                "Rescale" => Box::new(try!(
-                    RescaleThermostat::from_toml(thermostat)
-                )),
-                other => return Err(Error::from(
-                    format!("Unknown thermostat type '{}'", other)
-                ))
+                "Berendsen" => Box::new(try!(BerendsenThermostat::from_toml(thermostat))),
+                "Rescale" => Box::new(try!(RescaleThermostat::from_toml(thermostat))),
+                other => return Err(Error::from(format!("Unknown thermostat type '{}'", other))),
             };
             md.set_thermostat(thermostat);
         }
 
         if let Some(controls) = config.get("controls") {
-            let controls = try!(controls.as_array().ok_or(Error::from(
-                "'controls' must be an array of tables in molecular dynamics"
-            )));
+            let controls = try!(controls.as_array().ok_or(
+                Error::from("'controls' must be an array of tables in molecular dynamics")
+            ));
 
             for control in controls {
-                let control = try!(control.as_table().ok_or(Error::from(
-                    "'controls' must be an array of tables in molecular dynamics"
-                )));
+                let control = try!(control.as_table().ok_or(
+                    Error::from("'controls' must be an array of tables in molecular dynamics")
+                ));
 
                 let control: Box<Control> = match try!(extract::typ(control, "control")) {
-                    "RemoveTranslation" => Box::new(try!(
-                        Alternator::<RemoveTranslation>::from_toml(control)
-                    )),
-                    "RemoveRotation" => Box::new(try!(
-                        Alternator::<RemoveRotation>::from_toml(control)
-                    )),
-                    "Rewrap" => Box::new(try!(
-                        Alternator::<Rewrap>::from_toml(control)
-                    )),
-                    other => return Err(Error::from(
-                        format!("Unknown control '{}'", other)
-                    ))
+                    "RemoveTranslation" => {
+                        Box::new(try!(Alternator::<RemoveTranslation>::from_toml(control)))
+                    }
+                    "RemoveRotation" => {
+                        Box::new(try!(Alternator::<RemoveRotation>::from_toml(control)))
+                    }
+                    "Rewrap" => Box::new(try!(Alternator::<Rewrap>::from_toml(control))),
+                    other => return Err(Error::from(format!("Unknown control '{}'", other))),
                 };
                 md.add_control(control);
             }
@@ -98,8 +80,6 @@ impl FromToml for MolecularDynamics {
         Ok(md)
     }
 }
-
-/******************************************************************************/
 
 impl FromTomlWithData for Verlet {
     type Data = f64;
@@ -142,8 +122,6 @@ impl FromTomlWithData for AnisoBerendsenBarostat {
     }
 }
 
-/******************************************************************************/
-
 impl FromToml for BerendsenThermostat {
     fn from_toml(config: &Table) -> Result<BerendsenThermostat> {
         let temperature = try!(extract::str("temperature", config, "Berendsen thermostat"));
@@ -159,9 +137,10 @@ impl FromToml for RescaleThermostat {
         let temperature = try!(units::from_str(temperature));
 
         if let Some(tolerance) = config.get("tolerance") {
-            let tolerance = try!(tolerance.as_str().ok_or(
-                Error::from("'tolerance' must be a string rescale thermostat")
-            ));
+            let tolerance = try!(
+                tolerance.as_str()
+                         .ok_or(Error::from("'tolerance' must be a string rescale thermostat"))
+            );
             let tolerance = try!(units::from_str(tolerance));
 
             Ok(RescaleThermostat::with_tolerance(temperature, tolerance))
@@ -176,7 +155,7 @@ impl FromToml for Alternator<RemoveTranslation> {
         let every = if config.contains_key("every") {
             try!(extract::uint("every", config, "RemoveTranslation control"))
         } else {
-           1
+            1
         };
         Ok(Alternator::new(every, RemoveTranslation::new()))
     }
@@ -187,7 +166,7 @@ impl FromToml for Alternator<RemoveRotation> {
         let every = if config.contains_key("every") {
             try!(extract::uint("every", config, "RemoveRotation control"))
         } else {
-           1
+            1
         };
         Ok(Alternator::new(every, RemoveRotation::new()))
     }
@@ -198,7 +177,7 @@ impl FromToml for Alternator<Rewrap> {
         let every = if config.contains_key("every") {
             try!(extract::uint("every", config, "Rewrap control"))
         } else {
-           1
+            1
         };
         Ok(Alternator::new(every, Rewrap::new()))
     }

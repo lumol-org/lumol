@@ -6,22 +6,19 @@
 
 #![allow(unknown_lints, float_cmp, needless_pass_by_value)]
 
+extern crate env_logger;
 extern crate lumol;
 extern crate lumol_input as input;
-extern crate env_logger;
 
-use lumol::sys::{System};
 use input::Input;
+use lumol::sys::System;
 use std::path::Path;
 use std::sync::{Once, ONCE_INIT};
 
 static START: Once = ONCE_INIT;
 
 pub fn get_system(name: &str) -> System {
-    let path = Path::new(file!()).parent().unwrap()
-                                 .join("data")
-                                 .join("nist-lj")
-                                 .join(name);
+    let path = Path::new(file!()).parent().unwrap().join("data").join("nist-lj").join(name);
     return Input::new(path).unwrap().read_system().unwrap();
 }
 
@@ -39,28 +36,34 @@ impl RoundAt for f64 {
 
 mod cutoff_3_lrc {
     use super::*;
+    use lumol::energy::{LennardJones, PairInteraction};
     use lumol::sys::System;
-    use lumol::energy::{PairInteraction, LennardJones};
 
     enum PairKind {
         None,
-        Tail
+        Tail,
     }
 
     fn set_interaction(system: &mut System, kind: PairKind) {
-        let mut lj = PairInteraction::new(Box::new(LennardJones{
-            epsilon: 1.0, sigma: 1.0
-        }), 3.0);
+        let mut lj = PairInteraction::new(
+            Box::new(LennardJones {
+                epsilon: 1.0,
+                sigma: 1.0,
+            }),
+            3.0,
+        );
 
         if let PairKind::Tail = kind {
             lj.enable_tail_corrections();
         }
-        system.add_pair_potential("X", "X", lj);
+        system.add_pair_potential(("X", "X"), lj);
     }
 
     #[test]
     fn nist1() {
-        START.call_once(|| {env_logger::init().unwrap();});
+        START.call_once(|| {
+            env_logger::init().unwrap();
+        });
         let path = "lj-1.toml";
         let mut system = get_system(path);
         set_interaction(&mut system, PairKind::None);
@@ -80,7 +83,9 @@ mod cutoff_3_lrc {
 
     #[test]
     fn nist2() {
-        START.call_once(|| {env_logger::init().unwrap();});
+        START.call_once(|| {
+            env_logger::init().unwrap();
+        });
         let path = "lj-2.toml";
         let mut system = get_system(path);
         set_interaction(&mut system, PairKind::None);
@@ -100,7 +105,9 @@ mod cutoff_3_lrc {
 
     #[test]
     fn nist3() {
-        START.call_once(|| {env_logger::init().unwrap();});
+        START.call_once(|| {
+            env_logger::init().unwrap();
+        });
         let path = "lj-3.toml";
         let mut system = get_system(path);
         set_interaction(&mut system, PairKind::None);
@@ -120,7 +127,9 @@ mod cutoff_3_lrc {
 
     #[test]
     fn nist4() {
-        START.call_once(|| {env_logger::init().unwrap();});
+        START.call_once(|| {
+            env_logger::init().unwrap();
+        });
         let path = "lj-4.toml";
         let mut system = get_system(path);
         set_interaction(&mut system, PairKind::None);
@@ -141,27 +150,33 @@ mod cutoff_3_lrc {
 
 mod cutoff_4_lrc {
     use super::*;
+    use lumol::energy::{LennardJones, PairInteraction};
     use lumol::sys::System;
-    use lumol::energy::{PairInteraction, LennardJones};
 
     enum PairKind {
         None,
-        Tail
+        Tail,
     }
 
     fn set_interaction(system: &mut System, kind: PairKind) {
-        let mut lj = PairInteraction::new(Box::new(LennardJones{
-            epsilon: 1.0, sigma: 1.0
-        }), 4.0);
+        let mut lj = PairInteraction::new(
+            Box::new(LennardJones {
+                epsilon: 1.0,
+                sigma: 1.0,
+            }),
+            4.0,
+        );
         if let PairKind::Tail = kind {
             lj.enable_tail_corrections();
         }
-        system.add_pair_potential("X", "X", lj);
+        system.add_pair_potential(("X", "X"), lj);
     }
 
     #[test]
     fn nist1() {
-        START.call_once(|| {env_logger::init().unwrap();});
+        START.call_once(|| {
+            env_logger::init().unwrap();
+        });
         let path = "lj-1.toml";
         let mut system = get_system(path);
         set_interaction(&mut system, PairKind::None);
@@ -181,7 +196,9 @@ mod cutoff_4_lrc {
 
     #[test]
     fn nist2() {
-        START.call_once(|| {env_logger::init().unwrap();});
+        START.call_once(|| {
+            env_logger::init().unwrap();
+        });
         let path = "lj-2.toml";
         let mut system = get_system(path);
         set_interaction(&mut system, PairKind::None);
@@ -201,7 +218,9 @@ mod cutoff_4_lrc {
 
     #[test]
     fn nist3() {
-        START.call_once(|| {env_logger::init().unwrap();});
+        START.call_once(|| {
+            env_logger::init().unwrap();
+        });
         let path = "lj-3.toml";
         let mut system = get_system(path);
         set_interaction(&mut system, PairKind::None);
@@ -221,7 +240,9 @@ mod cutoff_4_lrc {
 
     #[test]
     fn nist4() {
-        START.call_once(|| {env_logger::init().unwrap();});
+        START.call_once(|| {
+            env_logger::init().unwrap();
+        });
         let path = "lj-4.toml";
         let mut system = get_system(path);
         set_interaction(&mut system, PairKind::None);

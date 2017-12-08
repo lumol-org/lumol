@@ -2,9 +2,9 @@
 // Copyright (C) Lumol's contributors — BSD license
 
 //! Energy minimization algorithms
-use utils;
-use sys::System;
 use sim::{Propagator, TemperatureStrategy};
+use sys::System;
+use utils;
 
 use std::f64;
 
@@ -38,7 +38,7 @@ pub struct Minimization {
     minimizer: Box<Minimizer>,
     is_converged: bool,
     last_energy: f64,
-    tolerance: Tolerance
+    tolerance: Tolerance,
 }
 
 impl Minimization {
@@ -58,7 +58,7 @@ impl Minimization {
             minimizer: minimizer,
             is_converged: false,
             last_energy: 0.0,
-            tolerance: tolerance
+            tolerance: tolerance,
         }
     }
 

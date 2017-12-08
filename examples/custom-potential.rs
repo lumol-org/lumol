@@ -3,10 +3,10 @@
 
 //! Using a custom potential in simulations
 extern crate lumol;
+use lumol::energy::{PairInteraction, PairPotential, Potential};
+use lumol::sim::{MolecularDynamics, Simulation};
+use lumol::sys::{Particle, System};
 use lumol::types::Vector3D;
-use lumol::sys::{System, Particle};
-use lumol::energy::{Potential, PairPotential, PairInteraction};
-use lumol::sim::{Simulation, MolecularDynamics};
 use lumol::units;
 
 /// Let's define a new version of the Lennard-Jones potential, using the
@@ -19,7 +19,7 @@ use lumol::units;
 #[derive(Clone)]
 struct LJ {
     a: f64,
-    b: f64
+    b: f64,
 }
 
 // All we need to do is to implement the Potential trait
@@ -39,12 +39,12 @@ impl Potential for LJ {
 impl PairPotential for LJ {
     // The long-range correction to the energy at the given cutoff
     fn tail_energy(&self, cutoff: f64) -> f64 {
-        - (1.0 / 9.0 * self.a / cutoff.powi(9) - 1.0 / 3.0 * self.b / cutoff.powi(3))
+        -(1.0 / 9.0 * self.a / cutoff.powi(9) - 1.0 / 3.0 * self.b / cutoff.powi(3))
     }
 
     // The long-range correction to the virial at the given cutoff
     fn tail_virial(&self, cutoff: f64) -> f64 {
-        - (12.0 / 9.0 * self.a / cutoff.powi(9) - 6.0 / 3.0 * self.b / cutoff.powi(3))
+        -(12.0 / 9.0 * self.a / cutoff.powi(9) - 6.0 / 3.0 * self.b / cutoff.powi(3))
     }
 }
 
@@ -56,12 +56,11 @@ fn main() {
     // We can now use our new potential in the system
     let lj = Box::new(LJ {
         a: units::from(675.5, "kJ/mol/A^12").unwrap(),
-        b: units::from(40.26, "kJ/mol/A^6").unwrap()
+        b: units::from(40.26, "kJ/mol/A^6").unwrap(),
     });
-    system.add_pair_potential("F", "F", PairInteraction::new(lj, 10.0));
+    system.add_pair_potential(("F", "F"), PairInteraction::new(lj, 10.0));
 
-    let mut simulation = Simulation::new(Box::new(
-        MolecularDynamics::new(units::from(1.0, "fs").unwrap())
-    ));
+    let mut simulation =
+        Simulation::new(Box::new(MolecularDynamics::new(units::from(1.0, "fs").unwrap())));
     simulation.run(&mut system, 1000);
 }

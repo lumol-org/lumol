@@ -4,7 +4,7 @@
 //! Multi-dimensional arrays based on ndarray
 use ndarray;
 
-use std::ops::{Index, IndexMut, Deref, DerefMut};
+use std::ops::{Deref, DerefMut, Index, IndexMut};
 use types::Zero;
 
 /// Two dimensional tensors, based on ndarray.
@@ -117,8 +117,6 @@ impl<T> DerefMut for Array2<T> {
     }
 }
 
-/******************************************************************************/
-
 /// Three dimensional tensors, based on ndarray
 ///
 /// Most of the methods are simply forwarded to ndarray, so also look the doc
@@ -148,7 +146,10 @@ impl<T> Array3<T> {
     /// let a: Array3<f64> = Array3::zeros((8, 5, 2));
     /// assert_eq!(a[(6, 2, 0)], 0.0);
     /// ```
-    pub fn zeros(size: (usize, usize, usize)) -> Array3<T> where T: Zero + Clone {
+    pub fn zeros(size: (usize, usize, usize)) -> Array3<T>
+    where
+        T: Zero + Clone,
+    {
         Array3(ndarray::Array3::zeros(size))
     }
 
@@ -171,7 +172,10 @@ impl<T> Array3<T> {
     /// a.resize_if_different((8, 5, 6));
     /// assert_eq!(a[(3, 3, 3)], 0.0);
     /// ```
-    pub fn resize_if_different(&mut self, size: (usize, usize, usize)) where T: Zero + Clone {
+    pub fn resize_if_different(&mut self, size: (usize, usize, usize))
+    where
+        T: Zero + Clone,
+    {
         if self.0.shape() != [size.0, size.1, size.2] {
             *self = Array3::zeros(size);
         }
@@ -190,7 +194,10 @@ impl<T> Array3<T> {
     ///
     /// assert_eq!(a, b);
     /// ```
-    pub fn default(size: (usize, usize, usize)) -> Array3<T> where T: Default{
+    pub fn default(size: (usize, usize, usize)) -> Array3<T>
+    where
+        T: Default,
+    {
         Array3(ndarray::Array3::default(size))
     }
 }
@@ -245,8 +252,13 @@ mod tests {
 
         #[test]
         fn default() {
-            #[derive(Clone)] struct F64(f64);
-            impl Default for F64 {fn default() -> F64 { F64(42.0) }}
+            #[derive(Clone)]
+            struct F64(f64);
+            impl Default for F64 {
+                fn default() -> F64 {
+                    F64(42.0)
+                }
+            }
 
             let a: Array2<F64> = Array2::default((3, 4));
             for i in 0..3 {
@@ -315,8 +327,13 @@ mod tests {
 
         #[test]
         fn default() {
-            #[derive(Clone)] struct F64(f64);
-            impl Default for F64 {fn default() -> F64 { F64(42.0) }}
+            #[derive(Clone)]
+            struct F64(f64);
+            impl Default for F64 {
+                fn default() -> F64 {
+                    F64(42.0)
+                }
+            }
 
             let a: Array3<F64> = Array3::default((3, 4, 8));
             for i in 0..3 {

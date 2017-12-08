@@ -240,8 +240,8 @@ pub trait DihedralPotential: Potential + BoxCloneDihedral {}
 impl_box_clone!(DihedralPotential, BoxCloneDihedral, box_clone_dihedral);
 
 mod functions;
-pub use self::functions::{NullPotential, LennardJones, Harmonic, CosineHarmonic};
-pub use self::functions::{Torsion, Buckingham, BornMayerHuggins, MorsePotential, Gaussian};
+pub use self::functions::{BornMayerHuggins, Buckingham, Gaussian, MorsePotential, Torsion};
+pub use self::functions::{CosineHarmonic, Harmonic, LennardJones, NullPotential};
 
 mod computations;
 pub use self::computations::{Computation, TableComputation};
@@ -250,8 +250,8 @@ mod restrictions;
 pub use self::restrictions::{PairRestriction, RestrictionInfo};
 
 mod global;
-pub use self::global::{GlobalPotential, GlobalCache, CoulombicPotential};
-pub use self::global::{Wolf, Ewald, SharedEwald};
+pub use self::global::{CoulombicPotential, GlobalCache, GlobalPotential};
+pub use self::global::{Ewald, SharedEwald, Wolf};
 
 mod pairs;
 pub use self::pairs::PairInteraction;

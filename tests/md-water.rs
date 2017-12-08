@@ -2,8 +2,8 @@
 // Copyright (C) Lumol's contributors — BSD license
 
 //! Testing physical properties of f-SPC water
-extern crate lumol_input as input;
 extern crate env_logger;
+extern crate lumol_input as input;
 
 use input::Input;
 
@@ -14,8 +14,11 @@ static START: Once = ONCE_INIT;
 
 #[test]
 fn constant_energy_ewald() {
-    START.call_once(|| {env_logger::init().unwrap();});
-    let path = Path::new(file!()).parent().unwrap()
+    START.call_once(|| {
+        env_logger::init().unwrap();
+    });
+    let path = Path::new(file!()).parent()
+                                 .unwrap()
                                  .join("data")
                                  .join("md-water")
                                  .join("nve-ewald.toml");
@@ -33,8 +36,11 @@ fn constant_energy_ewald() {
 
 #[test]
 fn constant_energy_wolf() {
-    START.call_once(|| {env_logger::init().unwrap();});
-    let path = Path::new(file!()).parent().unwrap()
+    START.call_once(|| {
+        env_logger::init().unwrap();
+    });
+    let path = Path::new(file!()).parent()
+                                 .unwrap()
                                  .join("data")
                                  .join("md-water")
                                  .join("nve-wolf.toml");

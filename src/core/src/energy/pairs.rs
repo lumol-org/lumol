@@ -2,7 +2,7 @@
 // Copyright (C) Lumol's contributors — BSD license
 
 use energy::{PairPotential, PairRestriction};
-use types::{Vector3D, Matrix3, One, Zero};
+use types::{Matrix3, One, Vector3D, Zero};
 
 /// The different way to compute non-bonded pair interactions
 #[derive(Clone, Copy, Debug)]
@@ -278,11 +278,11 @@ impl PairInteraction {
     /// interaction.enable_tail_corrections();
     ///
     /// let w = -0.02187143961588542;
-    /// let virial = Matrix3::new(
-    ///      w , 0.0, 0.0,
-    ///     0.0,  w , 0.0,
-    ///     0.0, 0.0,  w
-    /// );
+    /// let virial = Matrix3::new([
+    ///     [w, 0.0, 0.0],
+    ///     [0.0, w, 0.0],
+    ///     [0.0, 0.0, w],
+    /// ]);
     ///
     /// assert_eq!(interaction.tail_virial(), virial);
     /// ```
@@ -299,7 +299,7 @@ impl PairInteraction {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use energy::{NullPotential, LennardJones, PairRestriction};
+    use energy::{LennardJones, NullPotential, PairRestriction};
     use energy::Potential;
 
     #[test]
@@ -313,7 +313,10 @@ mod tests {
 
     #[test]
     fn test_cutoff() {
-        let lj = LennardJones{sigma: 1.0, epsilon: 2.0};
+        let lj = LennardJones {
+            sigma: 1.0,
+            epsilon: 2.0,
+        };
         let pairs = PairInteraction::new(Box::new(lj), 4.0);
 
         assert_eq!(pairs.force(2.5), lj.force(2.5));
@@ -327,7 +330,10 @@ mod tests {
 
     #[test]
     fn shifted() {
-        let lj = LennardJones{sigma: 1.0, epsilon: 2.0};
+        let lj = LennardJones {
+            sigma: 1.0,
+            epsilon: 2.0,
+        };
         let pairs = PairInteraction::shifted(Box::new(lj), 4.0);
 
         assert_eq!(pairs.force(2.5), lj.force(2.5));
@@ -339,7 +345,10 @@ mod tests {
 
     #[test]
     fn tail_corrections() {
-        let lj = LennardJones{sigma: 1.0, epsilon: 2.0};
+        let lj = LennardJones {
+            sigma: 1.0,
+            epsilon: 2.0,
+        };
         let mut pairs = PairInteraction::shifted(Box::new(lj), 4.0);
         pairs.enable_tail_corrections();
 

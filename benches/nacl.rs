@@ -3,14 +3,14 @@
 
 #[macro_use]
 extern crate bencher;
-extern crate rand;
 extern crate lumol;
 extern crate lumol_input;
+extern crate rand;
 
 use bencher::Bencher;
 use rand::Rng;
 
-use lumol::energy::{Ewald, SharedEwald, Wolf, GlobalPotential};
+use lumol::energy::{Ewald, GlobalPotential, SharedEwald, Wolf};
 use lumol::sys::EnergyCache;
 use lumol::types::{Vector3D, Zero};
 
@@ -21,7 +21,7 @@ fn energy_ewald(bencher: &mut Bencher) {
     let system = utils::get_system("nacl");
     let ewald = SharedEwald::new(Ewald::new(9.5, 7));
 
-    bencher.iter(||{
+    bencher.iter(|| {
         let _ = ewald.energy(&system);
     })
 }
@@ -31,7 +31,7 @@ fn forces_ewald(bencher: &mut Bencher) {
     let ewald = SharedEwald::new(Ewald::new(9.5, 7));
     let mut forces = vec![Vector3D::zero(); system.size()];
 
-    bencher.iter(||{
+    bencher.iter(|| {
         ewald.forces(&system, &mut forces);
     })
 }
@@ -40,7 +40,7 @@ fn virial_ewald(bencher: &mut Bencher) {
     let system = utils::get_system("nacl");
     let ewald = SharedEwald::new(Ewald::new(9.5, 7));
 
-    bencher.iter(||{
+    bencher.iter(|| {
         let _ = ewald.virial(&system);
     })
 }
@@ -49,7 +49,7 @@ fn energy_wolf(bencher: &mut Bencher) {
     let system = utils::get_system("nacl");
     let wolf = Wolf::new(12.0);
 
-    bencher.iter(||{
+    bencher.iter(|| {
         let _ = wolf.energy(&system);
     })
 }
@@ -59,7 +59,7 @@ fn forces_wolf(bencher: &mut Bencher) {
     let wolf = Wolf::new(12.0);
     let mut forces = vec![Vector3D::zero(); system.size()];
 
-    bencher.iter(||{
+    bencher.iter(|| {
         wolf.forces(&system, &mut forces);
     })
 }
@@ -68,16 +68,14 @@ fn virial_wolf(bencher: &mut Bencher) {
     let system = utils::get_system("nacl");
     let wolf = Wolf::new(12.0);
 
-    bencher.iter(||{
+    bencher.iter(|| {
         let _ = wolf.virial(&system);
     })
 }
 
 fn cache_move_particle_ewald(bencher: &mut Bencher) {
     let mut system = utils::get_system("nacl");
-    system.set_coulomb_potential(
-        Box::new(SharedEwald::new(Ewald::new(9.5, 7)))
-    );
+    system.set_coulomb_potential(Box::new(SharedEwald::new(Ewald::new(9.5, 7))));
 
     let mut cache = EnergyCache::new();
     cache.init(&system);
@@ -88,9 +86,7 @@ fn cache_move_particle_ewald(bencher: &mut Bencher) {
     let mut delta = system.particles().position[i];
     delta += Vector3D::new(rng.gen(), rng.gen(), rng.gen());
 
-    bencher.iter(||{
-        cache.move_particles_cost(&system, vec![i], &[delta])
-    })
+    bencher.iter(|| cache.move_particles_cost(&system, vec![i], &[delta]))
 }
 
 fn cache_move_particle_wolf(bencher: &mut Bencher) {
@@ -106,9 +102,7 @@ fn cache_move_particle_wolf(bencher: &mut Bencher) {
     let mut delta = system.particles().position[i];
     delta += Vector3D::new(rng.gen(), rng.gen(), rng.gen());
 
-    bencher.iter(||{
-        cache.move_particles_cost(&system, vec![i], &[delta])
-    })
+    bencher.iter(|| cache.move_particles_cost(&system, vec![i], &[delta]))
 }
 
 benchmark_group!(ewald, energy_ewald, forces_ewald, virial_ewald);

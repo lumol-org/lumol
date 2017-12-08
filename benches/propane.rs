@@ -3,9 +3,9 @@
 
 #[macro_use]
 extern crate bencher;
-extern crate rand;
 extern crate lumol;
 extern crate lumol_input;
+extern crate rand;
 
 use bencher::Bencher;
 use rand::Rng;
@@ -18,21 +18,21 @@ mod utils;
 
 fn energy(bencher: &mut Bencher) {
     let system = utils::get_system("propane");
-    bencher.iter(||{
+    bencher.iter(|| {
         let _ = system.potential_energy();
     })
 }
 
 fn forces(bencher: &mut Bencher) {
     let system = utils::get_system("propane");
-    bencher.iter(||{
+    bencher.iter(|| {
         let _ = system.forces();
     })
 }
 
 fn virial(bencher: &mut Bencher) {
     let system = utils::get_system("propane");
-    bencher.iter(||{
+    bencher.iter(|| {
         let _ = system.virial();
     })
 }
@@ -51,9 +51,7 @@ fn cache_move_particles(bencher: &mut Bencher) {
         delta.push(position + Vector3D::new(rng.gen(), rng.gen(), rng.gen()));
     }
 
-    bencher.iter(||{
-        cache.move_particles_cost(&system, molecule.iter().collect(), &delta)
-    })
+    bencher.iter(|| cache.move_particles_cost(&system, molecule.iter().collect(), &delta))
 }
 
 fn cache_move_all_rigid_molecules(bencher: &mut Bencher) {
@@ -70,9 +68,7 @@ fn cache_move_all_rigid_molecules(bencher: &mut Bencher) {
         }
     }
 
-    bencher.iter(||{
-        cache.move_all_rigid_molecules_cost(&system)
-    })
+    bencher.iter(|| cache.move_all_rigid_molecules_cost(&system))
 }
 
 

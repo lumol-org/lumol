@@ -4,10 +4,10 @@
 //! While running a simulation, we often want to have control over some
 //! simulation parameters: the temperature, the pressure, etc. This is the goal
 //! of the control algorithms, all implementing of the `Control` trait.
-use types::{Matrix3, Vector3D, Zero};
+use sim::Alternator;
 use sys::System;
 use sys::veloc;
-use sim::Alternator;
+use types::{Matrix3, Vector3D, Zero};
 
 use sys::zip_particle::*;
 
@@ -27,7 +27,6 @@ pub trait Control {
 /// Trait for controls usable as thermostats
 pub trait Thermostat: Control {}
 
-/******************************************************************************/
 /// Velocity rescaling thermostat.
 ///
 /// This algorithm controls the temperature by rescaling all the velocities when
@@ -54,7 +53,10 @@ impl RescaleThermostat {
     /// Create a new `RescaleThermostat` acting at temperature `T`, with a
     /// tolerance of `tol`. For rescaling all the steps, use `tol = 0`.
     pub fn with_tolerance(temperature: f64, tol: f64) -> RescaleThermostat {
-        RescaleThermostat{temperature: temperature, tol: tol}
+        RescaleThermostat {
+            temperature: temperature,
+            tol: tol,
+        }
     }
 }
 
@@ -69,7 +71,6 @@ impl Control for RescaleThermostat {
 
 impl Thermostat for RescaleThermostat {}
 
-/******************************************************************************/
 /// Berendsen thermostat.
 ///
 /// The Berendsen thermostat sets the simulation temperature by exponentially
@@ -91,14 +92,18 @@ impl BerendsenThermostat {
     pub fn new(temperature: f64, tau: f64) -> BerendsenThermostat {
         assert!(temperature >= 0.0, "The temperature must be positive in thermostats.");
         assert!(tau >= 0.0, "The timestep must be positive in berendsen thermostat.");
-        BerendsenThermostat{temperature: temperature, tau: tau}
+        BerendsenThermostat {
+            temperature: temperature,
+            tau: tau,
+        }
     }
 }
 
 impl Control for BerendsenThermostat {
     fn control(&mut self, system: &mut System) {
         let instant_temperature = system.temperature();
-        let factor = f64::sqrt(1.0 + 1.0 / self.tau * (self.temperature / instant_temperature - 1.0));
+        let factor =
+            f64::sqrt(1.0 + 1.0 / self.tau * (self.temperature / instant_temperature - 1.0));
         for velocity in system.particles_mut().velocity {
             *velocity *= factor;
         }
@@ -106,9 +111,10 @@ impl Control for BerendsenThermostat {
 }
 impl Thermostat for BerendsenThermostat {}
 
-/******************************************************************************/
-
-impl<T> Control for Alternator<T> where T: Control {
+impl<T> Control for Alternator<T>
+where
+    T: Control,
+{
     fn control(&mut self, system: &mut System) {
         if self.can_run() {
             self.as_mut().control(system)
@@ -141,7 +147,6 @@ impl Control for RemoveTranslation {
     }
 }
 
-/******************************************************************************/
 /// Remove global rotation from the system
 pub struct RemoveRotation;
 
@@ -163,7 +168,7 @@ impl Control for RemoveRotation {
         for (&mass, position, velocity) in system.particles().zip((&Mass, &Position, &Velocity)) {
             let delta = position - com;
             moment += mass * (delta ^ velocity);
-            inertia += - mass * delta.tensorial(&delta);
+            inertia += -mass * delta.tensorial(&delta);
         }
 
         let trace = inertia.trace();
@@ -180,8 +185,6 @@ impl Control for RemoveRotation {
     }
 }
 
-
-/******************************************************************************/
 /// Rewrap all molecules' centers of mass to lie within the unit cell.
 /// Individual atoms in a molecule may still lie outside of the cell.
 pub struct Rewrap;
@@ -204,20 +207,19 @@ impl Control for Rewrap {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use sys::{System, UnitCell, Particle};
+    use sys::{Particle, System, UnitCell};
     use sys::veloc::{BoltzmannVelocities, InitVelocities};
     use utils::system_from_xyz;
 
     fn testing_system() -> System {
-        let mut system = System::with_cell(UnitCell::cubic(20.0));;
+        let mut system = System::with_cell(UnitCell::cubic(20.0));
 
         for i in 0..10 {
             for j in 0..10 {
                 for k in 0..10 {
                     let mut particle = Particle::new("Cl");
-                    particle.position = Vector3D::new(
-                        i as f64 * 2.0, j as f64 * 2.0, k as f64 * 2.0
-                    );
+                    particle.position =
+                        Vector3D::new(i as f64 * 2.0, j as f64 * 2.0, k as f64 * 2.0);
                     system.add_particle(particle);
                 }
             }
@@ -232,31 +234,31 @@ mod tests {
     fn rescale_thermostat() {
         let mut system = testing_system();
         let temperature = system.temperature();
-        assert_ulps_eq!(temperature, 300.0, epsilon=1e-12);
+        assert_ulps_eq!(temperature, 300.0, epsilon = 1e-12);
 
         let mut thermostat = RescaleThermostat::with_tolerance(250.0, 100.0);
         thermostat.control(&mut system);
         let temperature = system.temperature();
-        assert_ulps_eq!(temperature, 300.0, epsilon=1e-12);
+        assert_ulps_eq!(temperature, 300.0, epsilon = 1e-12);
 
         let mut thermostat = RescaleThermostat::with_tolerance(250.0, 10.0);
         thermostat.control(&mut system);
         let temperature = system.temperature();
-        assert_ulps_eq!(temperature, 250.0, epsilon=1e-12);
+        assert_ulps_eq!(temperature, 250.0, epsilon = 1e-12);
     }
 
     #[test]
     fn berendsen_thermostat() {
         let mut system = testing_system();
         let temperature = system.temperature();
-        assert_ulps_eq!(temperature, 300.0, epsilon=1e-9);
+        assert_ulps_eq!(temperature, 300.0, epsilon = 1e-9);
 
         let mut thermostat = BerendsenThermostat::new(250.0, 100.0);
         for _ in 0..3000 {
             thermostat.control(&mut system);
         }
         let temperature = system.temperature();
-        assert_ulps_eq!(temperature, 250.0, epsilon=1e-9);
+        assert_ulps_eq!(temperature, 250.0, epsilon = 1e-9);
     }
 
     #[test]
@@ -273,11 +275,13 @@ mod tests {
 
     #[test]
     fn remove_translation() {
-        let mut system = system_from_xyz("2
-        cell: 20.0
-        Ag 0 0 0 1 2 0
-        Ag 1 1 1 1 0 0
-        ");
+        let mut system = system_from_xyz(
+            "2
+            cell: 20.0
+            Ag 0 0 0 1 2 0
+            Ag 1 1 1 1 0 0
+            ",
+        );
 
         RemoveTranslation::new().control(&mut system);
         assert_ulps_eq!(system.particles().velocity[0], Vector3D::new(0.0, 1.0, 0.0));
@@ -286,11 +290,13 @@ mod tests {
 
     #[test]
     fn remove_rotation() {
-        let mut system = system_from_xyz("2
-        cell: 20.0
-        Ag 0 0 0 0 1 0
-        Ag 1 0 0 0 -1 2
-        ");
+        let mut system = system_from_xyz(
+            "2
+            cell: 20.0
+            Ag 0 0 0 0 1 0
+            Ag 1 0 0 0 -1 2
+            ",
+        );
 
         RemoveRotation::new().control(&mut system);
         assert_ulps_eq!(system.particles().velocity[0], Vector3D::new(0.0, 0.0, 1.0));
@@ -299,11 +305,13 @@ mod tests {
 
     #[test]
     fn rewrap() {
-        let mut system = system_from_xyz("2
-        cell: 20.0
-        Ag 0 0 0
-        Ag 25 0 0
-        ");
+        let mut system = system_from_xyz(
+            "2
+            cell: 20.0
+            Ag 0 0 0
+            Ag 25 0 0
+            ",
+        );
 
         Rewrap::new().control(&mut system);
         assert_ulps_eq!(system.particles().position[0], Vector3D::new(0.0, 0.0, 0.0));

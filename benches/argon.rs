@@ -3,9 +3,9 @@
 
 #[macro_use]
 extern crate bencher;
-extern crate rand;
 extern crate lumol;
 extern crate lumol_input;
+extern crate rand;
 
 use bencher::Bencher;
 use rand::Rng;
@@ -18,21 +18,21 @@ mod utils;
 
 fn energy(bencher: &mut Bencher) {
     let system = utils::get_system("argon");
-    bencher.iter(||{
+    bencher.iter(|| {
         let _ = system.potential_energy();
     })
 }
 
 fn forces(bencher: &mut Bencher) {
     let system = utils::get_system("argon");
-    bencher.iter(||{
+    bencher.iter(|| {
         let _ = system.forces();
     })
 }
 
 fn virial(bencher: &mut Bencher) {
     let system = utils::get_system("argon");
-    bencher.iter(||{
+    bencher.iter(|| {
         let _ = system.virial();
     })
 }
@@ -48,9 +48,7 @@ fn cache_move_particle(bencher: &mut Bencher) {
     let mut delta = system.particles().position[i];
     delta += Vector3D::new(rng.gen(), rng.gen(), rng.gen());
 
-    bencher.iter(||{
-        cache.move_particles_cost(&system, vec![i], &[delta])
-    })
+    bencher.iter(|| cache.move_particles_cost(&system, vec![i], &[delta]))
 }
 
 benchmark_group!(energy_computation, energy, forces, virial);

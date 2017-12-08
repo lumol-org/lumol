@@ -7,16 +7,19 @@
 extern crate tempfile;
 use self::tempfile::NamedTempFile;
 
-use std::io::prelude::*;
 use std::fs::File;
+use std::io::prelude::*;
 use std::path::Path;
 
 use super::Output;
+use energy::{Harmonic, PairInteraction};
 use sys::System;
-use energy::{PairInteraction, Harmonic};
-use utils::{unit_from, system_from_xyz};
+use utils::{system_from_xyz, unit_from};
 
-pub fn test_output<F>(function: F, expected: &str) where F: Fn(&Path) -> Box<Output> {
+pub fn test_output<F>(function: F, expected: &str)
+where
+    F: Fn(&Path) -> Box<Output>,
+{
     let tempfile = NamedTempFile::new().unwrap();
     let system = testing_system();
     {
@@ -31,19 +34,22 @@ pub fn test_output<F>(function: F, expected: &str) where F: Fn(&Path) -> Box<Out
 }
 
 pub fn testing_system() -> System {
-    let mut system = system_from_xyz("2
-    cell: 10
-    F 0.0 0.0 0.0 0.1 0.0 0.0
-    F 1.3 0.0 0.0 0.0 0.0 0.0
-    ");
-
-    let harmonic = Box::new(Harmonic{
-        k: unit_from(300.0, "kJ/mol/A^2"),
-        x0: unit_from(1.2, "A")
-    });
-    system.add_pair_potential("F", "F",
-        PairInteraction::new(harmonic, 5.0)
+    let mut system = system_from_xyz(
+        "2
+        cell: 10
+        F 0.0 0.0 0.0 0.1 0.0 0.0
+        F 1.3 0.0 0.0 0.0 0.0 0.0
+        ",
     );
+
+    let harmonic = Box::new(Harmonic {
+        k: unit_from(300.0, "kJ/mol/A^2"),
+        x0: unit_from(1.2, "A"),
+    });
+    system.add_pair_potential(("F", "F"), PairInteraction::new(harmonic, 5.0));
+    for _ in 0..42 {
+        system.increment_step();
+    }
     return system;
 }
 
@@ -51,5 +57,7 @@ fn check_file_content(mut file: File, content: &str) {
     let mut buffer = String::new();
     let _ = file.read_to_string(&mut buffer).unwrap();
 
-    assert_eq!(buffer, content);
+    for (l1, l2) in buffer.lines().zip(content.lines()) {
+        assert_eq!(l1, l2.trim_left());
+    }
 }

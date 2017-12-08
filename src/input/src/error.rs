@@ -1,16 +1,16 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) Lumol's contributors — BSD license
-use std::io;
 use std::error;
 use std::fmt;
-use std::result;
+use std::io;
 use std::path::PathBuf;
+use std::result;
 
 use chemfiles;
 
-use lumol::units::ParseError;
-use lumol::sys::TrajectoryError;
 use lumol::out::CustomOutputError;
+use lumol::sys::TrajectoryError;
+use lumol::units::ParseError;
 
 /// Custom `Result` type for input files
 pub type Result<T> = result::Result<T, Error>;
@@ -29,15 +29,19 @@ pub enum Error {
     /// Unit parsing error
     Unit(ParseError),
     /// Specific error from the custom outputs
-    CustomOutput(CustomOutputError)
+    CustomOutput(CustomOutputError),
 }
 
 impl From<(io::Error, PathBuf)> for Error {
-    fn from((err, path): (io::Error, PathBuf)) -> Error {Error::Io(err, path)}
+    fn from((err, path): (io::Error, PathBuf)) -> Error {
+        Error::Io(err, path)
+    }
 }
 
 impl From<TrajectoryError> for Error {
-    fn from(err: TrajectoryError) -> Error {Error::Trajectory(err)}
+    fn from(err: TrajectoryError) -> Error {
+        Error::Trajectory(err)
+    }
 }
 
 impl From<chemfiles::Error> for Error {
@@ -59,14 +63,16 @@ impl From<String> for Error {
 }
 
 impl From<ParseError> for Error {
-    fn from(err: ParseError) -> Error {Error::Unit(err)}
+    fn from(err: ParseError) -> Error {
+        Error::Unit(err)
+    }
 }
 
 impl From<(CustomOutputError, PathBuf)> for Error {
     fn from((err, path): (CustomOutputError, PathBuf)) -> Error {
         match err {
             CustomOutputError::Io(err) => Error::Io(err, path),
-            other => Error::CustomOutput(other)
+            other => Error::CustomOutput(other),
         }
     }
 }

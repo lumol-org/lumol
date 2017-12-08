@@ -2,8 +2,8 @@
 // Copyright (C) Lumol's contributors — BSD license
 
 //! 3-dimensional vector type
-use std::ops::{Add, Sub, Neg, Mul, Div, BitXor};
-use std::ops::{AddAssign, SubAssign, MulAssign, DivAssign};
+use std::ops::{Add, BitXor, Div, Mul, Neg, Sub};
+use std::ops::{AddAssign, DivAssign, MulAssign, SubAssign};
 use std::ops::{Deref, DerefMut};
 
 use types::{Matrix3, Zero};
@@ -76,7 +76,8 @@ impl Vector3D {
     /// let vec = Vector3D::new(1.0, 0.0, -4.0);
     /// assert_eq!(vec.norm2(), 17.0);
     /// ```
-    #[inline] pub fn norm2(&self) -> f64 {
+    #[inline]
+    pub fn norm2(&self) -> f64 {
         self * self
     }
 
@@ -88,7 +89,8 @@ impl Vector3D {
     /// let vec = Vector3D::new(1.0, 0.0, -4.0);
     /// assert_eq!(vec.norm(), f64::sqrt(17.0));
     /// ```
-    #[inline] pub fn norm(&self) -> f64 {
+    #[inline]
+    pub fn norm(&self) -> f64 {
         f64::sqrt(self.norm2())
     }
 
@@ -100,7 +102,8 @@ impl Vector3D {
     /// let n = vec.normalized();
     /// assert_eq!(n.norm(), 1.0);
     /// ```
-    #[inline] pub fn normalized(&self) -> Vector3D {
+    #[inline]
+    pub fn normalized(&self) -> Vector3D {
         self / self.norm()
     }
 
@@ -115,38 +118,44 @@ impl Vector3D {
     /// # use lumol_core::types::Matrix3;
     /// let a = Vector3D::new(1.0, 0.0, -4.0);
     /// let b = Vector3D::new(1.0, 2.0, 3.0);
-    /// let matrix = Matrix3::new(
-    ///     1.0, 2.0, 3.0,
-    ///     0.0, 0.0, 0.0,
-    ///     -4.0, -8.0, -12.0
-    /// );
+    /// let matrix = Matrix3::new([
+    ///     [1.0, 2.0, 3.0],
+    ///     [0.0, 0.0, 0.0],
+    ///     [-4.0, -8.0, -12.0]
+    /// ]);
     /// assert_eq!(a.tensorial(&b), matrix);
     /// ```
     pub fn tensorial(&self, other: &Vector3D) -> Matrix3 {
-        Matrix3::new(self[0] * other[0], self[0] * other[1], self[0] * other[2],
-                     self[1] * other[0], self[1] * other[1], self[1] * other[2],
-                     self[2] * other[0], self[2] * other[1], self[2] * other[2])
+        Matrix3::new([
+            [self[0] * other[0], self[0] * other[1], self[0] * other[2]],
+            [self[1] * other[0], self[1] * other[1], self[1] * other[2]],
+            [self[2] * other[0], self[2] * other[1], self[2] * other[2]],
+        ])
     }
 }
 
+#[cfg_attr(rustfmt, rustfmt_skip)]
 impl_arithmetic!(
     Vector3D, Vector3D, Add, add, Vector3D,
     self, other,
     Vector3D::new(self[0] + other[0], self[1] + other[1], self[2] + other[2])
 );
 
+#[cfg_attr(rustfmt, rustfmt_skip)]
 impl_inplace_arithmetic!(
     Vector3D, Vector3D, AddAssign, add_assign,
     self, other,
     {self[0] += other[0]; self[1] += other[1]; self[2] += other[2]}
 );
 
+#[cfg_attr(rustfmt, rustfmt_skip)]
 impl_arithmetic!(
     Vector3D, Vector3D, Sub, sub, Vector3D,
     self, other,
     Vector3D::new(self[0] - other[0], self[1] - other[1], self[2] - other[2])
 );
 
+#[cfg_attr(rustfmt, rustfmt_skip)]
 impl_inplace_arithmetic!(
     Vector3D, Vector3D, SubAssign, sub_assign,
     self, other,
@@ -154,6 +163,7 @@ impl_inplace_arithmetic!(
 );
 
 // Dot product
+#[cfg_attr(rustfmt, rustfmt_skip)]
 impl_arithmetic!(
     Vector3D, Vector3D, Mul, mul, f64,
     self, other,
@@ -161,6 +171,7 @@ impl_arithmetic!(
 );
 
 // Cross product
+#[cfg_attr(rustfmt, rustfmt_skip)]
 impl_arithmetic!(
     Vector3D, Vector3D, BitXor, bitxor, Vector3D,
     self, other,
@@ -170,20 +181,21 @@ impl_arithmetic!(
     Vector3D::new(x, y, z)}
 );
 
-/******************************************************************************/
-
+#[cfg_attr(rustfmt, rustfmt_skip)]
 lsh_scal_arithmetic!(
     Vector3D, Mul, mul, Vector3D,
     self, other,
     Vector3D::new(self[0] * other, self[1] * other, self[2] * other)
 );
 
+#[cfg_attr(rustfmt, rustfmt_skip)]
 rhs_scal_arithmetic!(
     Vector3D, Mul, mul, Vector3D,
     self, other,
     Vector3D::new(self * other[0], self * other[1], self * other[2])
 );
 
+#[cfg_attr(rustfmt, rustfmt_skip)]
 impl_inplace_arithmetic!(
     Vector3D, f64, MulAssign, mul_assign,
     self, other,
@@ -196,12 +208,14 @@ impl_inplace_arithmetic!(
     }
 );
 
+#[cfg_attr(rustfmt, rustfmt_skip)]
 lsh_scal_arithmetic!(
     Vector3D, Div, div, Vector3D,
     self, other,
     Vector3D::new(self[0] / other, self[1] / other, self[2] / other)
 );
 
+#[cfg_attr(rustfmt, rustfmt_skip)]
 impl_inplace_arithmetic!(
     Vector3D, f64, DivAssign, div_assign,
     self, other,
@@ -214,30 +228,29 @@ impl_inplace_arithmetic!(
     }
 );
 
-/******************************************************************************/
-
 impl Neg for Vector3D {
     type Output = Vector3D;
-    #[inline] fn neg(self) -> Vector3D {
+    #[inline]
+    fn neg(self) -> Vector3D {
         Vector3D::new(-self[0], -self[1], -self[2])
     }
 }
 
 impl<'a> Neg for &'a Vector3D {
     type Output = Vector3D;
-    #[inline] fn neg(self) -> Vector3D {
+    #[inline]
+    fn neg(self) -> Vector3D {
         Vector3D::new(-self[0], -self[1], -self[2])
     }
 }
 
 impl<'a> Neg for &'a mut Vector3D {
     type Output = Vector3D;
-    #[inline] fn neg(self) -> Vector3D {
+    #[inline]
+    fn neg(self) -> Vector3D {
         Vector3D::new(-self[0], -self[1], -self[2])
     }
 }
-
-/******************************************************************************/
 
 impl Deref for Vector3D {
     type Target = [f64; 3];
@@ -271,11 +284,9 @@ impl From<[f64; 3]> for Vector3D {
     }
 }
 
-/******************************************************************************/
-
 #[cfg(test)]
 mod tests {
-    use types::{Vector3D, Matrix3};
+    use types::{Matrix3, Vector3D};
 
     use approx::ApproxEq;
     impl ApproxEq for Vector3D {
@@ -293,12 +304,14 @@ mod tests {
             f64::default_max_ulps()
         }
 
+        #[cfg_attr(rustfmt, rustfmt_skip)]
         fn relative_eq(&self, other: &Self, epsilon: Self::Epsilon, max_relative: Self::Epsilon) -> bool {
             f64::relative_eq(&self[0], &other[0], epsilon, max_relative) &&
             f64::relative_eq(&self[1], &other[1], epsilon, max_relative) &&
             f64::relative_eq(&self[2], &other[2], epsilon, max_relative)
         }
 
+        #[cfg_attr(rustfmt, rustfmt_skip)]
         fn ulps_eq(&self, other: &Self, epsilon: Self::Epsilon, max_ulps: u32) -> bool {
             f64::ulps_eq(&self[0], &other[0], epsilon, max_ulps) &&
             f64::ulps_eq(&self[1], &other[1], epsilon, max_ulps) &&
@@ -476,11 +489,7 @@ mod tests {
     fn tensorial() {
         let a = Vector3D::new(1.0, 0.0, -4.0);
         let b = Vector3D::new(1.0, 2.0, 3.0);
-        let matrix = Matrix3::new(
-            1.0, 2.0, 3.0,
-            0.0, 0.0, 0.0,
-            -4.0, -8.0, -12.0
-        );
+        let matrix = Matrix3::new([[1.0, 2.0, 3.0], [0.0, 0.0, 0.0], [-4.0, -8.0, -12.0]]);
         assert_eq!(a.tensorial(&b), matrix);
         assert_eq!(b.tensorial(&a), matrix.transposed());
     }

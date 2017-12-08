@@ -3,13 +3,13 @@
 
 //! Data about molecules in the system.
 use std::collections::HashSet;
+use std::collections::hash_map::DefaultHasher;
+use std::hash::{Hash, Hasher};
 use std::iter::IntoIterator;
 use std::ops::Range;
-use std::hash::{Hash, Hasher};
-use std::collections::hash_map::DefaultHasher;
 
+use sys::{Angle, Bond, BondDistance, Dihedral, ParticleSlice};
 use types::Array2;
-use sys::{ParticleSlice, Bond, Angle, Dihedral, BondDistance};
 
 #[derive(Debug, Clone)]
 /// A molecule is the basic building block for a topology. It contains data
@@ -30,7 +30,7 @@ pub struct Molecule {
     /// Range of atomic indexes in this molecule.
     range: Range<usize>,
     /// Hashed value of the set of bonds in the system
-    cached_hash: u64
+    cached_hash: u64,
 }
 
 impl Hash for Molecule {
@@ -47,8 +47,8 @@ impl Molecule {
             angles: HashSet::new(),
             dihedrals: HashSet::new(),
             distances: Array2::default((1, 1)),
-            range: i..i+1,
-            cached_hash: 0
+            range: i..i + 1,
+            cached_hash: 0,
         }
     }
 
@@ -78,8 +78,8 @@ impl Molecule {
         self.range.len().hash(&mut hasher);
 
         let mut bonds = self.bonds.iter()
-                              .map(|bond| Bond::new(bond.i() - self.start(), bond.j() - self.start()))
-                              .collect::<Vec<_>>();
+                            .map(|bond| Bond::new(bond.i() - self.start(), bond.j() - self.start()))
+                            .collect::<Vec<_>>();
         bonds.sort();
         for bond in &bonds {
             bond.i().hash(&mut hasher);
@@ -212,10 +212,9 @@ impl Molecule {
 
         let mut new_bonds = HashSet::new();
         for bond in &self.bonds {
-            let _ = new_bonds.insert(Bond::new(
-                bond.i().wrapping_add(delta),
-                bond.j().wrapping_add(delta)
-            ));
+            let _ = new_bonds.insert(
+                Bond::new(bond.i().wrapping_add(delta), bond.j().wrapping_add(delta)),
+            );
         }
         self.bonds = new_bonds;
 
@@ -224,7 +223,7 @@ impl Molecule {
             let _ = new_angles.insert(Angle::new(
                 angle.i().wrapping_add(delta),
                 angle.j().wrapping_add(delta),
-                angle.k().wrapping_add(delta)
+                angle.k().wrapping_add(delta),
             ));
         }
         self.angles = new_angles;
@@ -235,7 +234,7 @@ impl Molecule {
                 dihedral.i().wrapping_add(delta),
                 dihedral.j().wrapping_add(delta),
                 dihedral.k().wrapping_add(delta),
-                dihedral.m().wrapping_add(delta)
+                dihedral.m().wrapping_add(delta),
             ));
         }
         self.dihedrals = new_dihedrals;
@@ -243,7 +242,7 @@ impl Molecule {
 
     /// Add a bond between the particles at indexes `i` and `j`. These particles
     /// are assumed to be in the molecule
-    pub fn add_bond(&mut self, i: usize, j: usize)  {
+    pub fn add_bond(&mut self, i: usize, j: usize) {
         assert!(self.contains(i));
         assert!(self.contains(j));
         assert_ne!(i, j);
@@ -280,28 +279,33 @@ impl Molecule {
     }
 
     /// Get the internal list of bonds
-    #[inline] pub fn bonds(&self) -> &HashSet<Bond> {
+    #[inline]
+    pub fn bonds(&self) -> &HashSet<Bond> {
         &self.bonds
     }
 
     /// Get the internal list of angles
-    #[inline] pub fn angles(&self) -> &HashSet<Angle> {
+    #[inline]
+    pub fn angles(&self) -> &HashSet<Angle> {
         &self.angles
     }
 
     /// Get the internal list of dihedrals
-    #[inline] pub fn dihedrals(&self) -> &HashSet<Dihedral> {
+    #[inline]
+    pub fn dihedrals(&self) -> &HashSet<Dihedral> {
         &self.dihedrals
     }
 
     /// Get the bond distance between the particles `i` and `j`
-    #[inline] pub fn bond_distance(&self, i: usize, j: usize) -> BondDistance {
+    #[inline]
+    pub fn bond_distance(&self, i: usize, j: usize) -> BondDistance {
         assert!(self.contains(i) && self.contains(j));
         return self.distances[(i - self.start(), j - self.start())];
     }
 
     /// Get an iterator over the particles in the molecule
-    #[inline] pub fn iter(&self) -> Range<usize> {
+    #[inline]
+    pub fn iter(&self) -> Range<usize> {
         self.into_iter()
     }
 }
@@ -340,7 +344,7 @@ impl<'a> IntoIterator for &'a Molecule {
 #[cfg(test)]
 mod test {
     use super::*;
-    use sys::{Bond, Angle, Dihedral, BondDistance};
+    use sys::{Angle, Bond, BondDistance, Dihedral};
 
     #[test]
     fn translate() {
@@ -400,40 +404,58 @@ mod test {
 
         assert_eq!(molecule.size(), 8);
 
-        /**********************************************************************/
-        let bonds = vec![Bond::new(0, 1), Bond::new(0, 2), Bond::new(0, 3),
-                         Bond::new(0, 4), Bond::new(1, 5), Bond::new(1, 6),
-                         Bond::new(1, 7)];
+        let bonds = vec![
+            Bond::new(0, 1),
+            Bond::new(0, 2),
+            Bond::new(0, 3),
+            Bond::new(0, 4),
+            Bond::new(1, 5),
+            Bond::new(1, 6),
+            Bond::new(1, 7),
+        ];
 
         assert_eq!(molecule.bonds().len(), bonds.len());
         for bond in &bonds {
             assert!(molecule.bonds().contains(bond));
         }
 
-        /**********************************************************************/
-        let angles = vec![Angle::new(0, 1, 5), Angle::new(0, 1, 6), Angle::new(0, 1, 7),
-                          Angle::new(1, 0, 2), Angle::new(1, 0, 3), Angle::new(1, 0, 4),
-                          Angle::new(2, 0, 3), Angle::new(3, 0, 4), Angle::new(2, 0, 4),
-                          Angle::new(5, 1, 6), Angle::new(6, 1, 7), Angle::new(5, 1, 7)];
+        let angles = vec![
+            Angle::new(0, 1, 5),
+            Angle::new(0, 1, 6),
+            Angle::new(0, 1, 7),
+            Angle::new(1, 0, 2),
+            Angle::new(1, 0, 3),
+            Angle::new(1, 0, 4),
+            Angle::new(2, 0, 3),
+            Angle::new(3, 0, 4),
+            Angle::new(2, 0, 4),
+            Angle::new(5, 1, 6),
+            Angle::new(6, 1, 7),
+            Angle::new(5, 1, 7),
+        ];
 
         assert_eq!(molecule.angles().len(), angles.len());
         for angle in &angles {
             assert!(molecule.angles().contains(angle));
         }
 
-        /**********************************************************************/
-        let dihedrals = vec![Dihedral::new(2, 0, 1, 5), Dihedral::new(2, 0, 1, 6),
-                             Dihedral::new(2, 0, 1, 7), Dihedral::new(3, 0, 1, 5),
-                             Dihedral::new(3, 0, 1, 6), Dihedral::new(3, 0, 1, 7),
-                             Dihedral::new(4, 0, 1, 5), Dihedral::new(4, 0, 1, 6),
-                             Dihedral::new(4, 0, 1, 7)];
+        let dihedrals = vec![
+            Dihedral::new(2, 0, 1, 5),
+            Dihedral::new(2, 0, 1, 6),
+            Dihedral::new(2, 0, 1, 7),
+            Dihedral::new(3, 0, 1, 5),
+            Dihedral::new(3, 0, 1, 6),
+            Dihedral::new(3, 0, 1, 7),
+            Dihedral::new(4, 0, 1, 5),
+            Dihedral::new(4, 0, 1, 6),
+            Dihedral::new(4, 0, 1, 7),
+        ];
 
         assert_eq!(molecule.dihedrals().len(), dihedrals.len());
         for dihedral in &dihedrals {
             assert!(molecule.dihedrals().contains(dihedral));
         }
 
-        /**********************************************************************/
         assert!(molecule.bond_distance(0, 1).contains(BondDistance::ONE));
         assert!(molecule.bond_distance(1, 0).contains(BondDistance::ONE));
 
@@ -442,8 +464,6 @@ mod test {
 
         assert!(molecule.bond_distance(3, 5).contains(BondDistance::THREE));
         assert!(molecule.bond_distance(5, 3).contains(BondDistance::THREE));
-
-        /**********************************************************************/
 
         molecule.remove_particle(6);
         assert_eq!(molecule.bonds().len(), 6);

@@ -1,10 +1,10 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) Lumol's contributors — BSD license
 
-use std::f64::consts::PI;
-use math::*;
+use energy::{AnglePotential, BondPotential, DihedralPotential, PairPotential};
 use energy::Potential;
-use energy::{PairPotential, BondPotential, AnglePotential, DihedralPotential};
+use math::*;
+use std::f64::consts::PI;
 
 /// No-op potential.
 ///
@@ -373,8 +373,8 @@ impl PairPotential for Buckingham {
         let rc2 = rc * rc;
         let rc3 = rc2 * rc;
         let exp = exp(-rc / self.rho);
-        let factor = rc3 + 3.0 * rc2 * self.rho + 6.0 * rc * self.rho * self.rho +
-                     6.0 * self.rho * self.rho * self.rho;
+        let factor = rc3 + 3.0 * rc2 * self.rho + 6.0 * rc * self.rho * self.rho
+            + 6.0 * self.rho * self.rho * self.rho;
         self.a * exp * factor - 20.0 * self.c / rc3 + 8.0
     }
 }
@@ -439,8 +439,8 @@ impl PairPotential for BornMayerHuggins {
         let rc2 = rc * rc;
         let rc3 = rc2 * rc;
         let exp = exp((self.sigma - rc) / self.rho);
-        let factor = rc3 + 3.0 * rc2 * self.rho + 6.0 * rc * self.rho * self.rho +
-                     6.0 * self.rho * self.rho * self.rho;
+        let factor = rc3 + 3.0 * rc2 * self.rho + 6.0 * rc * self.rho * self.rho
+            + 6.0 * self.rho * self.rho * self.rho;
         self.a * exp * factor - 20.0 * self.c / rc3 + 8.0 * self.d / (5.0 * rc2 * rc3)
     }
 }
@@ -546,20 +546,20 @@ impl Potential for Gaussian {
 
 impl PairPotential for Gaussian {
     fn tail_energy(&self, rc: f64) -> f64 {
-        self.energy(rc) * rc / (2.0 * self.b) -
-        self.a * sqrt(PI) * erfc(sqrt(self.b) * rc) / (4.0 * self.b.powf(3.0 / 2.0))
+        self.energy(rc) * rc / (2.0 * self.b)
+            - self.a * sqrt(PI) * erfc(sqrt(self.b) * rc) / (4.0 * self.b.powf(3.0 / 2.0))
     }
 
     fn tail_virial(&self, rc: f64) -> f64 {
-        3.0 * sqrt(PI) * self.a * erfc(sqrt(self.b) * rc) / (4.0 * self.b.powf(3.0 / 2.0)) -
-        self.energy(rc) * rc * (2.0 * self.b * rc * rc + 3.0) / (2.0 * self.b)
+        3.0 * sqrt(PI) * self.a * erfc(sqrt(self.b) * rc) / (4.0 * self.b.powf(3.0 / 2.0))
+            - self.energy(rc) * rc * (2.0 * self.b * rc * rc + 3.0) / (2.0 * self.b)
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use energy::{Potential, PairPotential};
+    use energy::{PairPotential, Potential};
     const EPS: f64 = 1e-9;
 
     #[test]

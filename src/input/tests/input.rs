@@ -1,24 +1,24 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) Lumol's contributors — BSD license
+extern crate env_logger;
 extern crate test;
 extern crate walkdir;
-extern crate env_logger;
 
 extern crate lumol_core;
 extern crate lumol_input;
 
 use std::{env, fs, io};
-use std::path::{Path, PathBuf};
 use std::fs::File;
 use std::io::prelude::*;
+use std::path::{Path, PathBuf};
 
 use walkdir::WalkDir;
 
-use test::{TestDesc, TestDescAndFn, DynTestName, DynTestFn};
+use test::{DynTestFn, DynTestName, TestDesc, TestDescAndFn};
 use test::ShouldPanic::No;
 
 use lumol_core::sys::System;
-use lumol_input::{InteractionsInput, Input, Error};
+use lumol_input::{Error, Input, InteractionsInput};
 
 fn main() {
     env_logger::init().expect("could not set logger");
@@ -43,48 +43,55 @@ fn main() {
 fn all_tests() -> Vec<TestDescAndFn> {
     let mut tests = Vec::new();
 
-    tests.extend(generate_tests("simulation/good", |path| {
-        Box::new(move || {
-            let input = Input::new(path.clone()).unwrap();
-            input.read().unwrap();
-        })
-    }).expect("Could not generate the tests"));
+    tests.extend(
+        generate_tests("simulation/good", |path| {
+            Box::new(move || {
+                let input = Input::new(path.clone()).unwrap();
+                input.read().unwrap();
+            })
+        }).expect("Could not generate the tests"),
+    );
 
-    tests.extend(generate_tests("simulation/bad", |path| {
-        Box::new(move || {
-            let message = get_error_message(&path);
-            let result = Input::new(path.clone())
-                               .and_then(|input| input.read());
+    tests.extend(
+        generate_tests("simulation/bad", |path| {
+            Box::new(move || {
+                let message = get_error_message(&path);
+                let result = Input::new(path.clone()).and_then(|input| input.read());
 
-            match result {
-                Err(Error::Config(reason)) => assert_eq!(reason, message),
-                _ => panic!("This test should fail with a Config error")
-            }
-        })
-    }).expect("Could not generate the tests"));
+                match result {
+                    Err(Error::Config(reason)) => assert_eq!(reason, message),
+                    _ => panic!("This test should fail with a Config error"),
+                }
+            })
+        }).expect("Could not generate the tests"),
+    );
 
-    tests.extend(generate_tests("interactions/good", |path| {
-        Box::new(move || {
-            let mut system = System::new();
-            let input = InteractionsInput::new(path.clone()).unwrap();
-            input.read(&mut system).unwrap();
-        })
-    }).expect("Could not generate the tests"));
+    tests.extend(
+        generate_tests("interactions/good", |path| {
+            Box::new(move || {
+                let mut system = System::new();
+                let input = InteractionsInput::new(path.clone()).unwrap();
+                input.read(&mut system).unwrap();
+            })
+        }).expect("Could not generate the tests"),
+    );
 
-    tests.extend(generate_tests("interactions/bad", |path| {
-        Box::new(move || {
-            let message = get_error_message(&path);
+    tests.extend(
+        generate_tests("interactions/bad", |path| {
+            Box::new(move || {
+                let message = get_error_message(&path);
 
-            let mut system = System::new();
-            let result = InteractionsInput::new(path.clone())
-                                           .and_then(|input| input.read(&mut system));
+                let mut system = System::new();
+                let result =
+                    InteractionsInput::new(path.clone()).and_then(|input| input.read(&mut system));
 
-            match result {
-                Err(Error::Config(reason)) => assert_eq!(reason, message),
-                _ => panic!("This test should fail with a Config error")
-            }
-        })
-    }).expect("Could not generate the tests"));
+                match result {
+                    Err(Error::Config(reason)) => assert_eq!(reason, message),
+                    _ => panic!("This test should fail with a Config error"),
+                }
+            })
+        }).expect("Could not generate the tests"),
+    );
 
     return tests;
 }
@@ -92,12 +99,12 @@ fn all_tests() -> Vec<TestDescAndFn> {
 /// Generate the tests by calling `callback` for every TOML files at the given
 /// `root`.
 fn generate_tests<F>(root: &str, callback: F) -> Result<Vec<TestDescAndFn>, io::Error>
-    where F: Fn(PathBuf) -> Box<FnMut() + Send> {
+where
+    F: Fn(PathBuf) -> Box<FnMut() + Send>,
+{
     let mut tests = Vec::new();
 
-    let dir = PathBuf::new().join(env!("CARGO_MANIFEST_DIR"))
-                            .join("tests")
-                            .join(root);
+    let dir = PathBuf::new().join(env!("CARGO_MANIFEST_DIR")).join("tests").join(root);
     for entry in WalkDir::new(dir) {
         let entry = try!(entry);
         let file_type = entry.file_type();
@@ -106,10 +113,10 @@ fn generate_tests<F>(root: &str, callback: F) -> Result<Vec<TestDescAndFn>, io::
                 if extension == "toml" {
                     let path = entry.path();
                     let name = String::from(root) + "/";
-                    let name = name + path.file_name()
-                                          .expect("Missing file name")
-                                          .to_str()
-                                          .expect("File name is invalid UTF-8");
+                    let name = name
+                        + path.file_name().expect("Missing file name")
+                              .to_str()
+                              .expect("File name is invalid UTF-8");
 
                     let test = TestDescAndFn {
                         desc: TestDesc {
@@ -134,15 +141,21 @@ struct TestsCleanup;
 impl Drop for TestsCleanup {
     fn drop(&mut self) {
         const REMOVE: &[&str] = &[
-            "energy.dat", "filename.xyz", "cell.dat", "properties.dat",
-            "file.log", "custom.dat", "stress.dat", "forces.xyz"
+            "energy.dat",
+            "filename.xyz",
+            "cell.dat",
+            "properties.dat",
+            "file.log",
+            "custom.dat",
+            "stress.dat",
+            "forces.xyz",
         ];
 
         for file in REMOVE {
             if let Err(err) = fs::remove_file(file) {
                 match err.kind() {
-                    io::ErrorKind::NotFound => {},
-                    _ => panic!("io error in cleanup code: {}", err)
+                    io::ErrorKind::NotFound => {}
+                    _ => panic!("io error in cleanup code: {}", err),
                 }
             }
         }
@@ -151,16 +164,18 @@ impl Drop for TestsCleanup {
 
 fn get_error_message(path: &Path) -> String {
     let mut buffer = String::new();
-    File::open(path)
-          .and_then(|mut file| file.read_to_string(&mut buffer))
-          .expect("Could not read the input file");
+    File::open(path).and_then(|mut file| file.read_to_string(&mut buffer))
+                    .expect("Could not read the input file");
 
     for line in buffer.lines() {
         let line = line.trim();
         if line.starts_with("#^ ") {
-            return String::from(&line[3..])
+            return String::from(&line[3..]);
         }
     }
 
-    panic!("No error message found in {}. Please add one with the '#^ <message>' syntax.", path.display());
+    panic!(
+        "No error message found in {}. Please add one with the '#^ <message>' syntax.",
+        path.display()
+    );
 }

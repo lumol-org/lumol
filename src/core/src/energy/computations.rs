@@ -1,8 +1,8 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) Lumol's contributors — BSD license
 
+use energy::{PairPotential, Potential};
 use math::*;
-use energy::{Potential, PairPotential};
 
 /// Alternative energy and forces computation.
 ///
@@ -49,11 +49,13 @@ pub trait Computation: Sync + Send {
 }
 
 impl<P: Computation + Clone + 'static> Potential for P {
-    #[inline] fn energy(&self, r:f64) -> f64 {
+    #[inline]
+    fn energy(&self, r: f64) -> f64 {
         self.compute_energy(r)
     }
 
-    #[inline] fn force(&self, r:f64) -> f64 {
+    #[inline]
+    fn force(&self, r: f64) -> f64 {
         self.compute_force(r)
     }
 }
@@ -145,18 +147,26 @@ impl Computation for TableComputation {
 impl PairPotential for TableComputation {
     fn tail_energy(&self, cutoff: f64) -> f64 {
         if cutoff > self.cutoff {
-            warn_once!("Cutoff in table computation ({}) is smaller than the \
-            pair interaction cutoff ({}) when computing tail correction. This \
-            may lead to wrong values for energy.", cutoff, self.cutoff);
+            warn_once!(
+                "Cutoff in table computation ({}) is smaller than the \
+                 pair interaction cutoff ({}) when computing tail correction. \
+                 This may lead to wrong values for energy.",
+                cutoff,
+                self.cutoff
+            );
         }
         return self.potential.tail_energy(cutoff);
     }
 
     fn tail_virial(&self, cutoff: f64) -> f64 {
         if cutoff > self.cutoff {
-            warn_once!("Cutoff in table computation ({}) is smaller than the \
-            pair interaction cutoff ({}) when computing tail correction. This \
-            may lead to wrong values for pressure.", cutoff, self.cutoff);
+            warn_once!(
+                "Cutoff in table computation ({}) is smaller than the \
+                 pair interaction cutoff ({}) when computing tail correction. \
+                 This may lead to wrong values for pressure.",
+                cutoff,
+                self.cutoff
+            );
         }
         return self.potential.tail_virial(cutoff);
     }
@@ -170,9 +180,7 @@ mod test {
 
     #[test]
     fn table() {
-        let table = TableComputation::new(
-            Box::new(Harmonic{k: 50.0, x0: 2.0}), 1000, 4.0
-        );
+        let table = TableComputation::new(Box::new(Harmonic { k: 50.0, x0: 2.0 }), 1000, 4.0);
 
         assert_eq!(table.compute_energy(2.5), 6.25);
         assert_eq!(table.compute_force(2.5), -25.0);
@@ -192,7 +200,10 @@ mod test {
         assert_eq!(table.compute_force(4.1), 0.0);
 
 
-        let lj = LennardJones{epsilon: 50.0, sigma: 2.0};
+        let lj = LennardJones {
+            epsilon: 50.0,
+            sigma: 2.0,
+        };
         let table = TableComputation::new(Box::new(lj.clone()), 1000, 4.0);
         assert_eq!(table.tail_energy(5.0), lj.tail_energy(5.0));
         assert_eq!(table.tail_virial(5.0), lj.tail_virial(5.0));

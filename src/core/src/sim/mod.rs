@@ -11,10 +11,10 @@ pub mod mc;
 pub mod min;
 
 mod simulations;
-pub use self::simulations::Simulation;
-pub use self::md::MolecularDynamics;
 pub use self::mc::MonteCarlo;
+pub use self::md::MolecularDynamics;
 pub use self::min::Minimization;
+pub use self::simulations::Simulation;
 
 mod utils;
 pub use self::utils::Alternator;
