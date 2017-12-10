@@ -205,22 +205,29 @@ impl Ewald {
         let natoms = configuration.size();
         let charges = configuration.particles().charge;
 
-        let mut energy = 0.0;
-        for i in 0..natoms {
+        let energies = (0..natoms).par_map(|i| {
+            let mut local_energy = 0.0;
             let qi = charges[i];
-            if qi == 0.0 {continue}
-            for j in i+1..natoms {
+            if qi == 0.0 {
+                return 0.0;
+            }
+
+            for j in i + 1..natoms {
                 let qj = charges[j];
-                if qj == 0.0 {continue}
+                if qj == 0.0 {
+                    continue;
+                }
 
                 let distance = configuration.bond_distance(i, j);
                 let info = self.restriction.information(distance);
 
                 let r = configuration.distance(i, j);
-                energy += self.real_space_energy_pair(info, qi, qj, r);
+                local_energy += self.real_space_energy_pair(info, qi, qj, r);
             }
-        }
-        return energy;
+
+            local_energy
+        });
+        return energies.sum();
     }
 
     /// Real space contribution to the forces
@@ -230,22 +237,35 @@ impl Ewald {
         let natoms = configuration.size();
         let charges = configuration.particles().charge;
 
-        for i in 0..natoms {
+        let thread_forces_store = ThreadLocalStore::new(|| vec![Vector3D::zero(); natoms]);
+
+        (0..natoms).into_par_iter().for_each(|i| {
+            // Get the thread local forces Vec
+            let mut thread_forces = thread_forces_store.borrow_mut();
+
             let qi = charges[i];
-            if qi == 0.0 {continue}
-            for j in i+1..natoms {
+            if qi == 0.0 {
+                return;
+            }
+
+            for j in i + 1..natoms {
                 let qj = charges[j];
-                if qj == 0.0 {continue}
+                if qj == 0.0 {
+                    continue;
+                }
 
                 let distance = configuration.bond_distance(i, j);
                 let info = self.restriction.information(distance);
 
                 let rij = configuration.nearest_image(i, j);
                 let force = self.real_space_force_pair(info, qi, qj, &rij);
-                forces[i] += force;
-                forces[j] -= force;
+                thread_forces[i] += force;
+                thread_forces[j] -= force;
             }
-        }
+        });
+
+        // reduce the thread local values
+        thread_forces_store.sum_local_values(forces);
     }
 
     /// Real space contribution to the virial
@@ -253,23 +273,29 @@ impl Ewald {
         let natoms = configuration.size();
         let charges = configuration.particles().charge;
 
-        let mut virial = Matrix3::zero();
-        for i in 0..natoms {
+        let virials = (0..natoms).par_map(|i| {
             let qi = charges[i];
-            if qi == 0.0 {continue}
-            for j in i+1..natoms {
+            if qi == 0.0 {
+                return Matrix3::zero();
+            }
+            let mut local_virial = Matrix3::zero();
+
+            for j in i + 1..natoms {
                 let qj = charges[j];
-                if qj == 0.0 {continue}
+                if qj == 0.0 {
+                    continue;
+                }
 
                 let distance = configuration.bond_distance(i, j);
                 let info = self.restriction.information(distance);
 
                 let rij = configuration.nearest_image(i, j);
                 let force = self.real_space_force_pair(info, qi, qj, &rij);
-                virial += force.tensorial(&rij);
+                local_virial += force.tensorial(&rij);
             }
-        }
-        return virial;
+            local_virial
+        });
+        return virials.sum();
     }
 
     fn real_space_move_particles_cost(&self, configuration: &Configuration, idxes: &[usize], newpos: &[Vector3D]) -> f64 {
