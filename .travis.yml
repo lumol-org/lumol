@@ -1,6 +1,5 @@
 language: rust
 sudo: false
-dist: precise
 addons:
   apt:
     sources:
@@ -27,10 +26,10 @@ install:
 script:
     - cd $TRAVIS_BUILD_DIR
     # Run all tests in release mode
-    - cargo test --all --release
+    - cargo test --all --release -- --test-threads=2
     # Run unit tests and doc tests in debug mode
-    - cargo test -p lumol-core
-    - cargo test -p lumol-input
+    - cargo test -p lumol-core -- --test-threads=2
+    - cargo test -p lumol-input -- --test-threads=2
     # Check that benchmarks still compile
     - cargo bench --no-run
     # Check if tutorials compile
