@@ -24,9 +24,9 @@ fn main() {
     env_logger::init().expect("could not set logger");
     let _cleanup = TestsCleanup;
 
-    let mut args: Vec<_> = env::args()
-                              .filter(|arg| !arg.contains("test-threads"))
-                              .collect();
+    let args: Vec<_> = env::args()
+                           .filter(|arg| !arg.contains("test-threads"))
+                           .collect();
 
     let mut opts = match test::parse_opts(&args).expect("no options") {
         Ok(opts) => opts,
