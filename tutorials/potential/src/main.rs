@@ -24,7 +24,7 @@ fn main() {
     // use tail corrections to account for our truncation
     pairs.enable_tail_corrections();
     // finally add this interaction to the system for Argon atoms
-    system.add_pair_potential("Ar", "Ar", pairs);
+    system.add_pair_potential(("Ar", "Ar"), pairs);
 
     // report the initial system energy
     let ener_init = units::to(system.total_energy(), "kJ/mol").unwrap();
