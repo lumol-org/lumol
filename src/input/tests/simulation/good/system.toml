@@ -2,7 +2,7 @@
 version = 1
 
 [[systems]]
-cell = 20
+cell = 50.0
 file = "../CO2.xyz"
 guess_bonds = true
 velocities = {init = "300 K"}

@@ -144,6 +144,13 @@ impl System {
 
     /// Add the `potential` pair interaction for atoms with types `i` and `j`
     pub fn add_pair_potential(&mut self, (i, j): (&str, &str), potential: PairInteraction) {
+        if self.cell.lengths().iter().any(|&d| 0.5 * d < potential.cutoff()) {
+            fatal_error!(
+                "Can not add a potential with a cutoff bigger than half of the \
+                smallest cell length. Try increasing the cell size or decreasing \
+                the cutoff."
+            );
+        }
         let kind_i = self.get_kind(i);
         let kind_j = self.get_kind(j);
         self.interactions.add_pair((kind_i, kind_j), potential)
@@ -184,6 +191,15 @@ impl System {
 
     /// Set the coulombic interaction for all pairs to `potential`
     pub fn set_coulomb_potential(&mut self, potential: Box<CoulombicPotential>) {
+        if let Some(cutoff) = potential.cutoff() {
+            if self.cell.lengths().iter().any(|&d| 0.5 * d < cutoff) {
+                fatal_error!(
+                    "Can not add a potential with a cutoff bigger than half of the \
+                    smallest cell length. Try increasing the cell size or decreasing \
+                    the cutoff."
+                );
+            }
+        }
         self.interactions.coulomb = Some(potential);
     }
 

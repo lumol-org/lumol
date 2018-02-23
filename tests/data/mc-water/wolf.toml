@@ -2,7 +2,7 @@
 version = 1
 
 [global]
-cutoff = "14 A"
+cutoff = "9 A"
 
 # f-SPC model of water, using ewald summation for electrostatics
 [[pairs]]

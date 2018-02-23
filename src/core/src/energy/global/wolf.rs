@@ -32,7 +32,7 @@ use super::{CoulombicPotential, GlobalCache, GlobalPotential};
 /// use lumol_core::types::Vector3D;
 ///
 /// // Setup a system containing a NaCl pair
-/// let mut system = System::with_cell(UnitCell::cubic(10.0));
+/// let mut system = System::with_cell(UnitCell::cubic(30.0));
 ///
 /// let mut na = Particle::new("Na");
 /// na.charge = 1.0;

@@ -73,9 +73,10 @@ impl MCMove for Resize {
         if let Some(maximum_cutoff) = self.maximum_cutoff {
             if system.cell.lengths().iter().any(|&d| 0.5 * d <= maximum_cutoff) {
                 fatal_error!(
-                    "Tried to decrease the cell size but new size \
-                     conflicts with the cut off radius. Increase the number of \
-                     particles to get rid of this problem."
+                    "Tried to decrease the cell size in Monte Carlo Resize move \
+                     but the new size is smaller than the interactions cut off \
+                     radius. You can try to increase the cell size or the number \
+                     of particles."
                 );
             }
         };
