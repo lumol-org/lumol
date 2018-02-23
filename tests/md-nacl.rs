@@ -33,7 +33,7 @@ mod wolf {
         config.simulation.run(&mut config.system, config.nsteps);
 
         let e_final = config.system.total_energy();
-        assert!(f64::abs((e_initial - e_final) / e_final) < 1e-6);
+        assert!(f64::abs((e_initial - e_final) / e_final) < 1e-4);
     }
 
     #[test]
@@ -57,7 +57,7 @@ mod wolf {
 
         let expected = units::from(50000.0, "bar").unwrap();
         let pressure = ::utils::mean(pressures.clone());
-        assert!(f64::abs(pressure - expected) / expected < 1e-3);
+        assert!(f64::abs(pressure - expected) / expected < 2e-3);
 
         let expected = units::from(273.0, "K").unwrap();
         let temperature = ::utils::mean(temperatures.clone());
@@ -122,6 +122,6 @@ mod ewald {
 
         // Energy of this system given by LAMMPS in kcal/mol
         const LAMMPS_ENERGY: f64 = -48610.136;
-        assert!(f64::abs((energy - LAMMPS_ENERGY) / LAMMPS_ENERGY) < 1e-3);
+        assert!(f64::abs((energy - LAMMPS_ENERGY) / LAMMPS_ENERGY) < 2e-3);
     }
 }

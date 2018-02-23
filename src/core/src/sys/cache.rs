@@ -441,7 +441,7 @@ mod tests {
             }),
         );
 
-        system.set_coulomb_potential(Box::new(Wolf::new(8.0)));
+        system.set_coulomb_potential(Box::new(Wolf::new(5.0)));
 
         for particle in system.particles_mut() {
             if particle.name == "O" {

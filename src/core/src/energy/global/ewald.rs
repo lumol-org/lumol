@@ -43,7 +43,7 @@ use super::{GlobalPotential, CoulombicPotential, GlobalCache};
 /// use lumol_core::types::Vector3D;
 ///
 /// // Setup a system containing a NaCl pair
-/// let mut system = System::with_cell(UnitCell::cubic(10.0));
+/// let mut system = System::with_cell(UnitCell::cubic(30.0));
 ///
 /// let mut na = Particle::new("Na");
 /// na.charge = 1.0;
@@ -59,7 +59,7 @@ use super::{GlobalPotential, CoulombicPotential, GlobalCache};
 /// // Use Ewald summation for electrostatic interactions
 /// system.set_coulomb_potential(Box::new(ewald));
 ///
-/// assert_eq!(system.potential_energy(), -0.07042996180522723);
+/// assert_eq!(system.potential_energy(), -0.06951109741775707);
 /// ```
 ///
 /// [FS2002] Frenkel, D. & Smith, B. Understanding molecular simulation. (Academic press, 2002).

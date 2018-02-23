@@ -216,8 +216,20 @@ impl Integrator for BerendsenBarostat {
         }
 
         system.cell.scale_mut(self.eta * self.eta * self.eta * Matrix3::one());
-        self.eta =
-            f64::cbrt(1.0 - WATER_COMPRESSIBILITY / self.tau * (self.pressure - system.pressure()));
+
+        if let Some(maximum_cutoff) = system.maximum_cutoff() {
+            if system.cell.lengths().iter().any(|&d| 0.5 * d <= maximum_cutoff) {
+                fatal_error!(
+                    "Tried to decrease the cell size in Berendesen barostat \
+                     but the new size is smaller than the interactions cut off \
+                     radius. You can try to increase the cell size or the number \
+                     of particles."
+                );
+            }
+        };
+
+        let eta3 = 1.0 - WATER_COMPRESSIBILITY / self.tau * (self.pressure - system.pressure());
+        self.eta = f64::cbrt(eta3);
 
         let forces = system.forces();
         // Update accelerations at t + ∆t and velocities at t + ∆t
@@ -286,6 +298,17 @@ impl Integrator for AnisoBerendsenBarostat {
         }
 
         system.cell.scale_mut(self.eta);
+
+        if let Some(maximum_cutoff) = system.maximum_cutoff() {
+            if system.cell.lengths().iter().any(|&d| 0.5 * d <= maximum_cutoff) {
+                fatal_error!(
+                    "Tried to decrease the cell size in anisotropic Berendesen \
+                     barostat but the new size is smaller than the interactions \
+                     cut off radius. You can try to increase the cell size or \
+                     the number of particles."
+                );
+            }
+        };
 
         let factor = self.timestep * WATER_COMPRESSIBILITY / self.tau;
         self.eta = Matrix3::one() - factor * (self.stress - system.stress());
