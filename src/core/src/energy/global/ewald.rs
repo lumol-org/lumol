@@ -43,7 +43,7 @@ use super::{GlobalPotential, CoulombicPotential, GlobalCache};
 /// use lumol_core::types::Vector3D;
 ///
 /// // Setup a system containing a NaCl pair
-/// let mut system = System::with_cell(UnitCell::cubic(10.0));
+/// let mut system = System::with_cell(UnitCell::cubic(30.0));
 ///
 /// let mut na = Particle::new("Na");
 /// na.charge = 1.0;
@@ -59,7 +59,7 @@ use super::{GlobalPotential, CoulombicPotential, GlobalCache};
 /// // Use Ewald summation for electrostatic interactions
 /// system.set_coulomb_potential(Box::new(ewald));
 ///
-/// assert_eq!(system.potential_energy(), -0.07042996180522723);
+/// assert_eq!(system.potential_energy(), -0.06951109741775707);
 /// ```
 ///
 /// [FS2002] Frenkel, D. & Smith, B. Understanding molecular simulation. (Academic press, 2002).
@@ -77,9 +77,9 @@ pub struct Ewald {
     restriction: PairRestriction,
     /// Caching exponential factors exp(-k^2 / (4 alpha^2)) / k^2
     expfactors: Array3<f64>,
-    /// Phases for the Fourier transform, cached allocation
-    fourier_phases: Array3<Complex>,
-    /// Fourier transform of the electrostatic density
+    /// cached phase factors (e^{i k r})
+    eikr: Array3<Complex>,
+    /// Fourier transform of the electrostatic density (\sum q_i e^{i k r})
     rho: Array3<Complex>,
     /// Fourier transform of the electrostatic density modifications, cached
     /// allocation and for updating `self.rho`
@@ -101,7 +101,7 @@ impl Ewald {
             kmax2: 0.0,
             restriction: PairRestriction::None,
             expfactors: expfactors,
-            fourier_phases: Array3::zeros((0, 0, 0)),
+            eikr: Array3::zeros((0, 0, 0)),
             rho: rho.clone(),
             delta_rho: rho,
             previous_cell: None,
@@ -205,22 +205,29 @@ impl Ewald {
         let natoms = configuration.size();
         let charges = configuration.particles().charge;
 
-        let mut energy = 0.0;
-        for i in 0..natoms {
+        let energies = (0..natoms).par_map(|i| {
+            let mut local_energy = 0.0;
             let qi = charges[i];
-            if qi == 0.0 {continue}
-            for j in i+1..natoms {
+            if qi == 0.0 {
+                return 0.0;
+            }
+
+            for j in i + 1..natoms {
                 let qj = charges[j];
-                if qj == 0.0 {continue}
+                if qj == 0.0 {
+                    continue;
+                }
 
                 let distance = configuration.bond_distance(i, j);
                 let info = self.restriction.information(distance);
 
                 let r = configuration.distance(i, j);
-                energy += self.real_space_energy_pair(info, qi, qj, r);
+                local_energy += self.real_space_energy_pair(info, qi, qj, r);
             }
-        }
-        return energy;
+
+            local_energy
+        });
+        return energies.sum();
     }
 
     /// Real space contribution to the forces
@@ -230,22 +237,35 @@ impl Ewald {
         let natoms = configuration.size();
         let charges = configuration.particles().charge;
 
-        for i in 0..natoms {
+        let thread_forces_store = ThreadLocalStore::new(|| vec![Vector3D::zero(); natoms]);
+
+        (0..natoms).into_par_iter().for_each(|i| {
+            // Get the thread local forces Vec
+            let mut thread_forces = thread_forces_store.borrow_mut();
+
             let qi = charges[i];
-            if qi == 0.0 {continue}
-            for j in i+1..natoms {
+            if qi == 0.0 {
+                return;
+            }
+
+            for j in i + 1..natoms {
                 let qj = charges[j];
-                if qj == 0.0 {continue}
+                if qj == 0.0 {
+                    continue;
+                }
 
                 let distance = configuration.bond_distance(i, j);
                 let info = self.restriction.information(distance);
 
                 let rij = configuration.nearest_image(i, j);
                 let force = self.real_space_force_pair(info, qi, qj, &rij);
-                forces[i] += force;
-                forces[j] -= force;
+                thread_forces[i] += force;
+                thread_forces[j] -= force;
             }
-        }
+        });
+
+        // reduce the thread local values
+        thread_forces_store.sum_local_values(forces);
     }
 
     /// Real space contribution to the virial
@@ -253,23 +273,29 @@ impl Ewald {
         let natoms = configuration.size();
         let charges = configuration.particles().charge;
 
-        let mut virial = Matrix3::zero();
-        for i in 0..natoms {
+        let virials = (0..natoms).par_map(|i| {
             let qi = charges[i];
-            if qi == 0.0 {continue}
-            for j in i+1..natoms {
+            if qi == 0.0 {
+                return Matrix3::zero();
+            }
+            let mut local_virial = Matrix3::zero();
+
+            for j in i + 1..natoms {
                 let qj = charges[j];
-                if qj == 0.0 {continue}
+                if qj == 0.0 {
+                    continue;
+                }
 
                 let distance = configuration.bond_distance(i, j);
                 let info = self.restriction.information(distance);
 
                 let rij = configuration.nearest_image(i, j);
                 let force = self.real_space_force_pair(info, qi, qj, &rij);
-                virial -= force.tensorial(&rij);
+                local_virial += force.tensorial(&rij);
             }
-        }
-        return virial;
+            local_virial
+        });
+        return virials.sum();
     }
 
     fn real_space_move_particles_cost(&self, configuration: &Configuration, idxes: &[usize], newpos: &[Vector3D]) -> f64 {
@@ -342,14 +368,14 @@ impl Ewald {
         let natoms = configuration.size();
         let charges = configuration.particles().charge;
         let positions = configuration.particles().position;
-        self.fourier_phases.resize_if_different((self.kmax, natoms, 3));
+        self.eikr.resize_if_different((self.kmax, natoms, 3));
 
         // Do the k=0, 1 cases first
         for i in 0..natoms {
             let ri = configuration.cell.fractional(&positions[i]);
             for j in 0..3 {
-                self.fourier_phases[(0, i, j)] = Complex::polar(1.0, 0.0);
-                self.fourier_phases[(1, i, j)] = Complex::polar(1.0, -2.0 * PI * ri[j]);
+                self.eikr[(0, i, j)] = Complex::polar(1.0, 0.0);
+                self.eikr[(1, i, j)] = Complex::polar(1.0, -2.0 * PI * ri[j]);
             }
         }
 
@@ -357,8 +383,8 @@ impl Ewald {
         for k in 2..self.kmax {
             for i in 0..natoms {
                 for j in 0..3 {
-                    self.fourier_phases[(k, i, j)] = self.fourier_phases[(k - 1, i, j)]
-                                                   * self.fourier_phases[(1, i, j)];
+                    self.eikr[(k, i, j)] = self.eikr[(k - 1, i, j)]
+                                         * self.eikr[(    1, i, j)];
                 }
             }
         }
@@ -368,7 +394,9 @@ impl Ewald {
                 for ikz in 0..self.kmax {
                     let mut rho = Complex::zero();
                     for j in 0..natoms {
-                        let phi = self.fourier_phases[(ikx, j, 0)] * self.fourier_phases[(iky, j, 1)] * self.fourier_phases[(ikz, j, 2)];
+                        let phi = self.eikr[(ikx, j, 0)] *
+                                  self.eikr[(iky, j, 1)] *
+                                  self.eikr[(ikz, j, 2)];
                         rho += charges[j] * phi;
                     }
                     self.rho[(ikx, iky, ikz)] = rho;
@@ -388,8 +416,7 @@ impl Ewald {
                     // The k = 0 case and the cutoff in k-space are already
                     // handled in `expfactors`
                     if self.expfactors[(ikx, iky, ikz)].abs() < f64::EPSILON {continue}
-                    let density = self.rho[(ikx, iky, ikz)].norm();
-                    energy += self.expfactors[(ikx, iky, ikz)] * density * density;
+                    energy += self.expfactors[(ikx, iky, ikz)] * self.rho[(ikx, iky, ikz)].norm2();
                 }
             }
         }
@@ -418,19 +445,23 @@ impl Ewald {
             for i in 0..configuration.size() {
                 let qi = charges[i];
 
-                let fourier_i = self.fourier_phases[(ikx, i, 0)] *
-                                self.fourier_phases[(iky, i, 1)] *
-                                self.fourier_phases[(ikz, i, 2)];
-                let fourier_i = fourier_i.imag();
+                let fourier_i = self.eikr[(ikx, i, 0)] *
+                                self.eikr[(iky, i, 1)] *
+                                self.eikr[(ikz, i, 2)];
 
                 let mut thread_forces = thread_forces_store.borrow_mut();
                 let mut force_i = Vector3D::zero();
 
                 for j in (i + 1)..configuration.size() {
                     let qj = charges[j];
-                    let force = f * self.kspace_force_factor(j, (ikx, iky, ikz), qi * qj, fourier_i) * k;
-                    force_i -= force;
-                    thread_forces[j] += force;
+
+                    let fourier_j = self.eikr[(ikx, j, 0)] *
+                                    self.eikr[(iky, j, 1)] *
+                                    self.eikr[(ikz, j, 2)];
+
+                    let force = f * qi * qj * (fourier_j / fourier_i).imag() * k;
+                    force_i += force;
+                    thread_forces[j] -= force;
                 }
 
                 thread_forces[i] += force_i;
@@ -438,20 +469,6 @@ impl Ewald {
         });
 
         thread_forces_store.sum_local_values(forces);
-    }
-
-    /// Get the force factor for particles `i` and `j` with charges `qi` and
-    /// `qj`, at k point  `(ikx, iky, ikz)`
-    #[inline]
-    fn kspace_force_factor(&self, j: usize, (ikx, iky, ikz): (usize, usize, usize), qiqj: f64, fourier_i: f64) -> f64 {
-        // Here the compiler is smart enough to optimize away
-        // the useless computation of the last real part.
-        let fourier_j = self.fourier_phases[(ikx, j, 0)] *
-                        self.fourier_phases[(iky, j, 1)] *
-                        self.fourier_phases[(ikz, j, 2)];
-        let fourier_j = fourier_j.imag();
-
-        return qiqj * (fourier_i - fourier_j);
     }
 
     /// k-space contribution to the virial
@@ -472,14 +489,19 @@ impl Ewald {
             for i in 0..configuration.size() {
                 let qi = charges[i];
 
-                let fourier_i = self.fourier_phases[(ikx, i, 0)] *
-                                self.fourier_phases[(iky, i, 1)] *
-                                self.fourier_phases[(ikz, i, 2)];
-                let fourier_i = fourier_i.imag();
+                let fourier_i = self.eikr[(ikx, i, 0)] *
+                                self.eikr[(iky, i, 1)] *
+                                self.eikr[(ikz, i, 2)];
 
                 for j in (i + 1)..configuration.size() {
                     let qj = charges[j];
-                    let force = f * self.kspace_force_factor(j, (ikx, iky, ikz), qi * qj, fourier_i) * k;
+
+                    let fourier_j = self.eikr[(ikx, j, 0)] *
+                                    self.eikr[(iky, j, 1)] *
+                                    self.eikr[(ikz, j, 2)];
+
+                    let force = f * qi * qj * (fourier_j / fourier_i).imag() * k;
+
                     let rij = configuration.nearest_image(i, j);
                     local_virial += force.tensorial(&rij);
                 }
@@ -493,19 +515,19 @@ impl Ewald {
         let positions = configuration.particles().position;
         let charges = configuration.particles().charge;
 
-        let mut new_fourier_phases = Array3::zeros((self.kmax, natoms, 3));
-        let mut old_fourier_phases = Array3::zeros((self.kmax, natoms, 3));
+        let mut new_eikr = Array3::zeros((self.kmax, natoms, 3));
+        let mut old_eikr = Array3::zeros((self.kmax, natoms, 3));
 
         // Do the k=0, 1 cases first
         for (idx, &i) in idxes.iter().enumerate() {
             let old_ri = configuration.cell.fractional(&positions[i]);
             let new_ri = configuration.cell.fractional(&newpos[idx]);
             for j in 0..3 {
-                old_fourier_phases[(0, idx, j)] = Complex::polar(1.0, 0.0);
-                old_fourier_phases[(1, idx, j)] = Complex::polar(1.0, -2.0 * PI * old_ri[j]);
+                old_eikr[(0, idx, j)] = Complex::polar(1.0, 0.0);
+                old_eikr[(1, idx, j)] = Complex::polar(1.0, -2.0 * PI * old_ri[j]);
 
-                new_fourier_phases[(0, idx, j)] = Complex::polar(1.0, 0.0);
-                new_fourier_phases[(1, idx, j)] = Complex::polar(1.0, -2.0 * PI * new_ri[j]);
+                new_eikr[(0, idx, j)] = Complex::polar(1.0, 0.0);
+                new_eikr[(1, idx, j)] = Complex::polar(1.0, -2.0 * PI * new_ri[j]);
             }
         }
 
@@ -513,11 +535,11 @@ impl Ewald {
         for k in 2..self.kmax {
             for idx in 0..natoms {
                 for j in 0..3 {
-                    old_fourier_phases[(k, idx, j)] = old_fourier_phases[(k - 1, idx, j)]
-                                                    * old_fourier_phases[(1, idx, j)];
+                    old_eikr[(k, idx, j)] = old_eikr[(k - 1, idx, j)]
+                                          * old_eikr[(    1, idx, j)];
 
-                    new_fourier_phases[(k, idx, j)] = new_fourier_phases[(k - 1, idx, j)]
-                                                    * new_fourier_phases[(1, idx, j)];
+                    new_eikr[(k, idx, j)] = new_eikr[(k - 1, idx, j)]
+                                          * new_eikr[(    1, idx, j)];
                 }
             }
         }
@@ -527,12 +549,12 @@ impl Ewald {
                 for ikz in 0..self.kmax {
                     self.delta_rho[(ikx, iky, ikz)] = Complex::polar(0.0, 0.0);
                     for (idx, &i) in idxes.iter().enumerate() {
-                        let old_phi = old_fourier_phases[(ikx, idx, 0)] *
-                                      old_fourier_phases[(iky, idx, 1)] *
-                                      old_fourier_phases[(ikz, idx, 2)];
-                        let new_phi = new_fourier_phases[(ikx, idx, 0)] *
-                                      new_fourier_phases[(iky, idx, 1)] *
-                                      new_fourier_phases[(ikz, idx, 2)];
+                        let old_phi = old_eikr[(ikx, idx, 0)] *
+                                      old_eikr[(iky, idx, 1)] *
+                                      old_eikr[(ikz, idx, 2)];
+                        let new_phi = new_eikr[(ikx, idx, 0)] *
+                                      new_eikr[(iky, idx, 1)] *
+                                      new_eikr[(ikz, idx, 2)];
 
                         self.delta_rho[(ikx, iky, ikz)] -= charges[i] * old_phi;
                         self.delta_rho[(ikx, iky, ikz)] += charges[i] * new_phi;
@@ -666,7 +688,7 @@ impl Ewald {
 
                 let rij = configuration.nearest_image(i, j);
                 let force = self.molcorrect_force_pair(info, qi, qj, &rij);
-                virial -= force.tensorial(&rij);
+                virial += force.tensorial(&rij);
             }
         }
         return virial;
@@ -786,7 +808,7 @@ impl GlobalPotential for SharedEwald {
         ewald.precompute(&configuration.cell);
 
         ewald.real_space_forces(configuration, forces);
-        /* No self force */
+        // No self force
         ewald.kspace_forces(configuration, forces);
         ewald.molcorrect_forces(configuration, forces);
     }
@@ -795,7 +817,7 @@ impl GlobalPotential for SharedEwald {
         let mut ewald = self.write();
         ewald.precompute(&configuration.cell);
         let real = ewald.real_space_virial(configuration);
-        /* No self virial */
+        // No self virial
         let kspace = ewald.kspace_virial(configuration);
         let molecular = ewald.molcorrect_virial(configuration);
         return real + kspace + molecular;
@@ -1024,7 +1046,7 @@ mod tests {
 
     mod virial {
         use super::*;
-        use types::{Vector3D, Zero};
+        use types::{Vector3D, Matrix3, Zero, One};
         use energy::{GlobalPotential, PairRestriction, CoulombicPotential};
 
         #[test]
@@ -1036,7 +1058,7 @@ mod tests {
             let virial = ewald.real_space_virial(&system);
             let mut forces = vec![Vector3D::zero(); 2];
             ewald.real_space_forces(&system, &mut forces);
-            let expected = forces[0].tensorial(&Vector3D::new(1.5, 0.0, 0.0));
+            let expected = (-forces[0]).tensorial(&Vector3D::new(1.5, 0.0, 0.0));
             assert_ulps_eq!(virial, expected);
         }
 
@@ -1048,7 +1070,7 @@ mod tests {
             let virial = ewald.kspace_virial(&system);
             let mut forces = vec![Vector3D::zero(); 2];
             ewald.kspace_forces(&system, &mut forces);
-            let expected = forces[0].tensorial(&Vector3D::new(1.5, 0.0, 0.0));
+            let expected = (-forces[0]).tensorial(&Vector3D::new(1.5, 0.0, 0.0));
             assert_ulps_eq!(virial, expected);
         }
 
@@ -1063,7 +1085,7 @@ mod tests {
             let virial = ewald.read().molcorrect_virial(&system);
             let mut forces = vec![Vector3D::zero(); 2];
             ewald.read().molcorrect_forces(&system, &mut forces);
-            let expected = forces[0].tensorial(&Vector3D::new(1.5, 0.0, 0.0));
+            let expected = (-forces[0]).tensorial(&Vector3D::new(1.5, 0.0, 0.0));
             assert_ulps_eq!(virial, expected);
         }
 
@@ -1075,8 +1097,50 @@ mod tests {
 
             let virial = ewald.virial(&system);
             ewald.forces(&system, &mut forces);
-            let expected = forces[0].tensorial(&Vector3D::new(1.5, 0.0, 0.0));
+            let expected = (-forces[0]).tensorial(&Vector3D::new(1.5, 0.0, 0.0));
             assert_ulps_eq!(virial, expected, max_ulps=25);
+        }
+
+        // Checking the virial through finites differences on the unit cell
+        #[test]
+        fn finite_differences() {
+            fn scale(system: &mut System, i: usize, j: usize, eps: f64) {
+                let mut scaling = Matrix3::one();
+                scaling[i][j] += eps;
+                let old_cell = system.cell.clone();
+                let new_cell = system.cell.scale(scaling);
+
+                for position in system.particles_mut().position {
+                    *position = new_cell.cartesian(&old_cell.fractional(&position));
+                }
+                system.cell = new_cell;
+            }
+
+            let eps = 1e-9;
+            let mut system = nacl_pair();
+            let ewald = SharedEwald::new(Ewald::new(8.0, 10));
+
+            let virial = ewald.virial(&system);
+
+            let mut finite_diff = Matrix3::zero();
+            let energy_0 = ewald.energy(&system);
+
+            scale(&mut system, 0, 0, eps);
+            let energy_1 = ewald.energy(&system);
+            finite_diff[0][0] = (energy_0 - energy_1) / eps;
+
+            scale(&mut system, 1, 0, eps);
+            let energy_2 = ewald.energy(&system);
+            finite_diff[1][0] = (energy_1 - energy_2) / eps;
+
+            scale(&mut system, 2, 0, eps);
+            let energy_3 = ewald.energy(&system);
+            finite_diff[2][0] = (energy_2 - energy_3) / eps;
+
+            // FIXME: this is a very bad accuray, but we don't compute the
+            // kspace contribution to the virial due to a non-zero dU/dV term.
+            // See https://github.com/lumol-org/lumol/issues/120
+            assert_relative_eq!(virial, finite_diff, epsilon = 1e-2);
         }
     }
 

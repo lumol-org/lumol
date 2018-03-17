@@ -336,7 +336,7 @@ mod tests {
         };
         let pairs = PairInteraction::shifted(Box::new(lj), 4.0);
 
-        assert_eq!(pairs.force(2.5), lj.force(2.5));
+        assert_ulps_eq!(pairs.force(2.5), lj.force(2.5));
         assert_ulps_eq!(pairs.energy(2.5), -0.030681134109158216);
 
         assert_eq!(pairs.force(4.1), 0.0);

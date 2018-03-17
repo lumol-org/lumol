@@ -104,22 +104,36 @@ impl PairPotential for LennardJones {
     }
 }
 
-/// Weeks Chandler Andersen Potential
+/// Weeks Chandler Andersen Potential (WCA)
 ///
-/// The following energy expression is used: V(r) (repulsive) = Lennard Jones + epsilon if r < 2^1/6 * sigma
-/// 0 if r >= 2^1/6 * sigma
-/// V(r) (attractive) = - epsilon if r < 2^1/6 * sigma
-/// Lennard Jones if r>= 2^1/6 * sigma
+/// The following energy expression is used: `V(r) = 4 *
+/// epsilon * ((sigma/r)^12 - (sigma/r)^6) + epsilon` if `r < 2^1/6 * sigma
+/// 0 if r >= 2^1/6 * sigma`
+/// where `sigma` is the WCA
+/// distance constant, and `epsilon` the WCA energetic constant.
+/// # Examples
+///
+/// ```
+/// use lumol_core::energy::Potential;
+/// use lumol_core::energy::WeeksChandlerAndersen;
+///
+/// let potential = WeeksChandlerAndersen{sigma: 2.0, epsilon: 10.0};
+/// assert_eq!(potential.energy(2.0), 10.0);
+/// assert_eq!(potential.energy(3.0), 0.0);
+/// assert_eq!(potential.energy(1.0), 161290.0);
+///
+/// assert_eq!(potential.force(2.0), 120.0);
+/// ```
 
 #[derive(Clone, Copy)]
-pub struct WCA {
-    /// Distance constant
+pub struct WeeksChandlerAndersen {
+    /// Distance constant for the WeeksChandlerAndersen Potential
     pub sigma: f64,
-    /// Energy Constant
+    /// Energy Constant for the WeeksChandlerAndersen Potential
     pub epsilon: f64,
 }
 
-impl Potential for WCA {
+impl Potential for WeeksChandlerAndersen {
     fn energy(&self, r: f64) -> f64 {
         if r < f64::powf(2., 1./6.) * self.sigma {
             let s6 = f64::powi(self.sigma / r, 6);
@@ -136,6 +150,15 @@ impl Potential for WCA {
         } else {
             0.
         }
+    }
+}
+
+impl PairPotential for WeeksChandlerAndersen {
+    fn tail_energy(&self, _cutoff: f64) -> f64 {
+        f64::powf(2., 1./6.) * self.sigma
+    }
+    fn tail_virial(&self, _cutoff: f64) -> f64 {
+        0.0
     }
 }
 /// Harmonic potential.

@@ -32,7 +32,7 @@ use super::{CoulombicPotential, GlobalCache, GlobalPotential};
 /// use lumol_core::types::Vector3D;
 ///
 /// // Setup a system containing a NaCl pair
-/// let mut system = System::with_cell(UnitCell::cubic(10.0));
+/// let mut system = System::with_cell(UnitCell::cubic(30.0));
 ///
 /// let mut na = Particle::new("Na");
 /// na.charge = 1.0;
@@ -298,6 +298,7 @@ mod tests {
     pub use super::*;
     use energy::GlobalPotential;
     use sys::System;
+    use types::{Matrix3, One};
     use utils::system_from_xyz;
 
     const E_BRUTE_FORCE: f64 = -0.09262397663346732;
@@ -345,6 +346,57 @@ mod tests {
         let mut forces = vec![Vector3D::zero(); system.size()];
         wolf.forces(&system, &mut forces);
         assert_relative_eq!((e - e1) / eps, forces[0][0], epsilon = 1e-6);
+    }
+
+    #[test]
+    fn virial() {
+        let system = testing_system();
+        let wolf = Wolf::new(8.0);
+
+        let mut forces = vec![Vector3D::zero(); system.size()];
+        wolf.forces(&system, &mut forces);
+        let force = forces[0][0];
+        let expected = Matrix3::new([[-force * 1.5, 0.0, 0.0], [0.0; 3], [0.0; 3]]);
+
+        assert_eq!(wolf.virial(&system), expected);
+    }
+
+    #[test]
+    fn virial_finite_differences() {
+        fn scale(system: &mut System, i: usize, j: usize, eps: f64) {
+            let mut scaling = Matrix3::one();
+            scaling[i][j] += eps;
+            let old_cell = system.cell.clone();
+            let new_cell = system.cell.scale(scaling);
+
+            for position in system.particles_mut().position {
+                *position = new_cell.cartesian(&old_cell.fractional(&position));
+            }
+            system.cell = new_cell;
+        }
+
+        let eps = 1e-9;
+        let mut system = testing_system();
+        let wolf = Wolf::new(8.0);
+
+        let virial = wolf.virial(&system);
+
+        let mut finite_diff = Matrix3::zero();
+        let energy_0 = wolf.energy(&system);
+
+        scale(&mut system, 0, 0, eps);
+        let energy_1 = wolf.energy(&system);
+        finite_diff[0][0] = (energy_0 - energy_1) / eps;
+
+        scale(&mut system, 1, 0, eps);
+        let energy_2 = wolf.energy(&system);
+        finite_diff[1][0] = (energy_1 - energy_2) / eps;
+
+        scale(&mut system, 2, 0, eps);
+        let energy_3 = wolf.energy(&system);
+        finite_diff[2][0] = (energy_2 - energy_3) / eps;
+
+        assert_relative_eq!(virial, finite_diff, epsilon = 1e-5);
     }
 
     mod cache {
