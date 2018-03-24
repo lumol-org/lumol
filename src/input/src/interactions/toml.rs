@@ -10,7 +10,7 @@ use error::{Error, Result};
 use extract;
 
 use lumol::energy::{BornMayerHuggins, Buckingham, Gaussian, MorsePotential, Torsion};
-use lumol::energy::{CosineHarmonic, Harmonic, LennardJones, NullPotential};
+use lumol::energy::{CosineHarmonic, Harmonic, LennardJones, NullPotential, Mie};
 use lumol::energy::{Ewald, Wolf};
 use lumol::energy::{PairPotential, TableComputation};
 use lumol::units;
@@ -40,6 +40,25 @@ impl FromToml for LennardJones {
             sigma: units::from_str(sigma)?,
             epsilon: units::from_str(epsilon)?,
         })
+    }
+}
+
+impl FromToml for Mie {
+    fn from_toml(table: &Table) -> Result<Mie> {
+        let sigma = try_extract_parameter!(table, "sigma", "Mie potential");
+        let epsilon = try_extract_parameter!(table, "epsilon", "Mie potential");
+        let m = try_extract_parameter!(table, "m", "Mie potential");
+        let n = try_extract_parameter!(table, "n", "Mie potential");
+
+        if let (Some(sigma), Some(epsilon), Some(m), Some(n)) =
+            (sigma.as_str(), epsilon.as_str(), m.as_float(), n.as_float()) {
+            let sigma = try!(::lumol::units::from_str(sigma));
+            let epsilon = try!(::lumol::units::from_str(epsilon));
+            Ok(Mie::new(sigma, epsilon, n, m))
+        } else {
+            Err(Error::from("'epsilon' and 'sigma' must be strings \
+                            and 'm' and 'n' must be floats in Mie potential"))
+        }
     }
 }
 

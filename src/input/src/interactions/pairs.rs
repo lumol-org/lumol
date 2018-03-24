@@ -7,7 +7,7 @@ use lumol::units;
 
 use lumol::energy::{BondPotential, PairInteraction, PairPotential};
 use lumol::energy::{BornMayerHuggins, Buckingham, Gaussian, MorsePotential};
-use lumol::energy::{Harmonic, LennardJones, NullPotential};
+use lumol::energy::{Harmonic, LennardJones, NullPotential, Mie};
 use lumol::energy::TableComputation;
 
 use super::InteractionsInput;
@@ -223,6 +223,7 @@ fn read_pair_potential(pair: &Table) -> Result<Box<PairPotential>> {
             "born" => Ok(Box::new(try!(BornMayerHuggins::from_toml(table)))),
             "morse" => Ok(Box::new(try!(MorsePotential::from_toml(table)))),
             "gaussian" => Ok(Box::new(try!(Gaussian::from_toml(table)))),
+            "mie" => Ok(Box::new(try!(Mie::from_toml(table)))),
             other => Err(Error::from(format!("Unknown potential type '{}'", other))),
         }
     } else {
