@@ -137,7 +137,7 @@ impl Potential for WeeksChandlerAndersen {
     fn energy(&self, r: f64) -> f64 {
         if r < f64::powf(2., 1./6.) * self.sigma {
             let s6 = f64::powi(self.sigma / r, 6);
-            4.0 * self.epsilon * (f64::powi(s6, 2) - s6) + self.epsilon
+            4.0 * self.epsilon * (s6 * s6 - s6) + self.epsilon
         } else {
             0.
         }
@@ -146,7 +146,7 @@ impl Potential for WeeksChandlerAndersen {
     fn force(&self, r: f64) -> f64 {
         if r < f64::powf(2., 1./6.) * self.sigma {
             let s6 = f64::powi(self.sigma / r, 6);
-            -24.0 * self.epsilon * (s6 - 2.0 * f64::powi(s6, 2)) / r
+            -24.0 * self.epsilon * (s6 - 2.0 * s6 * s6) / r
         } else {
             0.
         }
@@ -154,10 +154,16 @@ impl Potential for WeeksChandlerAndersen {
 }
 
 impl PairPotential for WeeksChandlerAndersen {
-    fn tail_energy(&self, _cutoff: f64) -> f64 {
-        f64::powf(2., 1./6.) * self.sigma
+    fn tail_energy(&self, cutoff: f64) -> f64 {
+        if cutoff < f64::powf(2., 1./6.) * self.sigma {
+            panic!("Error: WCA Cutoff too small: {} < {}", cutoff, f64::powf(2., 1./6.) * self.sigma);
+        }
+        0.0
     }
-    fn tail_virial(&self, _cutoff: f64) -> f64 {
+    fn tail_virial(&self, cutoff: f64) -> f64 {
+        if cutoff < f64::powf(2., 1./6.) * self.sigma {
+            panic!("Error: WCA Cutoff too small: {} < {}", cutoff, f64::powf(2., 1./6.) * self.sigma);
+        }
         0.0
     }
 }
