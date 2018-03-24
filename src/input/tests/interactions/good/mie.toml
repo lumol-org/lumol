@@ -1,0 +1,58 @@
+[input]
+version = 1
+
+[global]
+cutoff = "3 A"
+tail_correction = true
+
+[[pairs]]
+atoms = ["A", "B"]
+mie = {sigma = "3 A", epsilon = "5.9 kJ/mol", n = 12.0, m = 6.0}
+
+[[pairs]]
+# Restrictions
+atoms = ["A", "B"]
+null = {}
+restriction = "intermolecular"
+
+[[pairs]]
+# Restrictions
+atoms = ["A", "B"]
+null = {}
+restriction = "intramolecular"
+
+[[pairs]]
+# Restrictions
+atoms = ["A", "B"]
+null = {}
+restriction = "exclude12"
+
+[[pairs]]
+# Restrictions
+atoms = ["A", "B"]
+null = {}
+restriction = "exclude13"
+
+[[pairs]]
+# Restrictions
+atoms = ["A", "B"]
+null = {}
+restriction = "exclude14"
+
+[[pairs]]
+# Restrictions
+atoms = ["A", "B"]
+null = {}
+restriction = {scale14 = 0.8}
+
+[[pairs]]
+# Cutoff
+atoms = ["A", "B"]
+harmonic = {x0 = "3 A", k = "5.9 kJ/mol/A^2"}
+cutoff = "18 A"
+
+[[pairs]]
+# Shifted cutoff treatment
+atoms = ["A", "B"]
+harmonic = {x0 = "3 A", k = "5.9 kJ/mol/A^2"}
+cutoff = {shifted = "18 A"}
