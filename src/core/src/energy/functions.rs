@@ -524,8 +524,6 @@ impl PairPotential for Gaussian {
 pub struct Mie {
     /// Distance constant
     sigma: f64,
-    /// Energy constant
-    epsilon: f64,
     /// Exponent of repulsive contribution
     n: f64,
     /// Exponent of attractive contribution
@@ -543,7 +541,6 @@ impl Mie {
         let prefac = n / (n - m) * (n / m).powf(m / (n - m)) * epsilon;
         Mie {
             sigma: sigma,
-            epsilon: epsilon,
             n: n,
             m: m,
             prefac: prefac,
