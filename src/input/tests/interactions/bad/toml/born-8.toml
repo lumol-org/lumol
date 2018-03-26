@@ -9,4 +9,4 @@ A = "4.2 kJ/mol"
 D = "7.6e-5 kJ/mol/A^8"
 sigma = "3.2 A"
 rho = "2.3 A"
-#^ Missing 'C' in Born-Mayer-Huggins potential
+#^ Missing 'C' key in Born-Mayer-Huggins potential

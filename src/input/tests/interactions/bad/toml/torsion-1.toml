@@ -4,4 +4,4 @@ version = 1
 [[dihedrals]]
 atoms = ["A", "B", "C", "D"]
 torsion = {n = 4, k = "67 kJ/mol"}
-#^ Missing 'delta' in torsion potential
+#^ Missing 'delta' key in torsion potential
