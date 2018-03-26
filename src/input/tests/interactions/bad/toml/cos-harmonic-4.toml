@@ -4,4 +4,4 @@ version = 1
 [[angles]]
 atoms = ["A", "A", "A"]
 cosine-harmonic = {k = "22 kJ/mol", x0 = false}
-#^ 'k' and 'x0' must be strings in cosine harmonic potential
+#^ 'x0' must be a string in cosine harmonic potential

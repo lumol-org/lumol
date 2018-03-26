@@ -5,4 +5,4 @@ version = 1
 atoms = ["A", "A"]
 cutoff = "3 A"
 buckingham = {A = "4.2 kJ/mol", rho = "2.3 A"}
-#^ Missing 'C' in Buckingham potential
+#^ Missing 'C' key in Buckingham potential

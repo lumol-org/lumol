@@ -4,4 +4,4 @@ version = 1
 [[pairs]]
 atoms = ["A", "B"]
 morse = {depth = "25 kJ/mol", x0 = "2.1 A"}
-#^ Missing 'a' in Morse potential
+#^ Missing 'a' key in Morse potential

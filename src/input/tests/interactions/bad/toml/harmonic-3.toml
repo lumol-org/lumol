@@ -4,4 +4,4 @@ version = 1
 [[pairs]]
 atoms = ["A", "A"]
 harmonic = {k = "22 kJ/mol"}
-#^ Missing 'x0' in harmonic potential
+#^ Missing 'x0' key in harmonic potential
