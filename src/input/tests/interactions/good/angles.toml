@@ -15,4 +15,4 @@ null = {}
 
 [[angles]]
 atoms = ["A", "B", "C"]
-morse = {a = "30 deg^-1", depth = "25 kJ/mol", x0 = "109 deg"}
+morse = {A = "30 deg^-1", depth = "25 kJ/mol", x0 = "109 deg"}

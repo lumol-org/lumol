@@ -19,4 +19,4 @@ torsion = {n = 4, k = "67 kJ/mol", delta = "80 deg"}
 
 [[dihedrals]]
 atoms = ["A", "B", "C", "D"]
-morse = {a = "30 deg^-1", depth = "25 kJ/mol", x0 = "109 deg"}
+morse = {A = "30 deg^-1", depth = "25 kJ/mol", x0 = "109 deg"}
