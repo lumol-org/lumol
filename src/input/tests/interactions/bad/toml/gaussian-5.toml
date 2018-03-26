@@ -1,0 +1,7 @@
+[input]
+version = 1
+
+[[pairs]]
+atoms = ["A", "A"]
+gaussian = {A = "3.0 A", B = -5.9}
+#^ 'B' must be a string in Gaussian potential
