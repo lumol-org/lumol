@@ -33,11 +33,11 @@ rho = "2.3 A"
 
 [[pairs]]
 atoms = ["A", "B"]
-morse = {a = "5 A^-1", depth = "25 kJ/mol", x0 = "2.1 A"}
+morse = {A = "5 A^-1", depth = "25 kJ/mol", x0 = "2.1 A"}
 
 [[pairs]]
 atoms = ["A", "B"]
-gaussian = {a = "8.0 kJ/mol", b = "50.0 A^-2"}
+gaussian = {A = "8.0 kJ/mol", B = "50.0 A^-2"}
 
 [[pairs]]
 # Table computations

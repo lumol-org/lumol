@@ -166,26 +166,25 @@ of the molecule than the Harmonic potential. It is expressed as:
 
 .. math::
 
-    V(r) = depth
-   (1 - \exp(- a (r - x_0))^2
+    V(x) = \text{depth} \times (1 - \exp(- A (x - x_0))^2
 
-The potential type keyword is ``morse``, and the parameters ``a``, ``x0`` and
+The potential type keyword is ``morse``, and the parameters ``A``, ``x0`` and
 ``depth`` should be provided as strings.
 
 .. code::
 
     [[pairs]]
     atoms = ["A", "B"]
-    morse = {depth = "40 kJ/mol", a = "2.0 A^-1", x0 = "1.3 A"}
+    morse = {depth = "40 kJ/mol", A = "2.0 A^-1", x0 = "1.3 A"}
 
-For angles and dihedral angles, ``x0`` and ``a`` should be provided in angle
+For angles and dihedral angles, ``x0`` and ``A`` should be provided in angle
 units:
 
 .. code::
 
     [[pairs]]
     atoms = ["A", "B"]
-    morse = {depth = "40 kJ/mol", a = "2.0 rad^-1", x0 = "109.7 deg"}
+    morse = {depth = "40 kJ/mol", A = "2.0 rad^-1", x0 = "109.7 deg"}
 
 
 Gaussian potential
@@ -195,16 +194,16 @@ This potential is usually used to describe energy wells and is expressed as:
 
 .. math::
 
-    V(r) = -a \exp(-b r^2)
+    V(r) = -A \exp(-B r^2)
 
-The potential type keyword is ``gaussian``, and the parameters ``a`` (well depth)
-and ``b`` (well width) should be provided as strings.
+The potential type keyword is ``gaussian``, and the parameters ``A`` (well depth)
+and ``B`` (well width) should be provided as strings.
 
 .. code::
 
     [[pairs]]
     atoms = ["A", "B"]
-    gaussian = {a = "8.0 kJ/mol", b = "0.2 A^-2"}
+    gaussian = {A = "8.0 kJ/mol", B = "0.2 A^-2"}
 
 .. caution::
-    ``b`` has to be positive
+    ``B`` has to be positive

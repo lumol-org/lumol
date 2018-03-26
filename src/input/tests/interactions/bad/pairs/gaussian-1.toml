@@ -3,5 +3,5 @@ version = 1
 
 [[pairs]]
 atoms = ["A", "A"]
-gaussian = {a = "3.0 A", b = "-5.9 kJ/mol"}
-#^ 'b' has to be positive
+gaussian = {A = "3.0 A", B = "-5.9 kJ/mol"}
+#^ 'B' parameter has to be positive in Gaussian potential

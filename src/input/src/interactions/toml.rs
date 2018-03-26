@@ -98,7 +98,7 @@ impl FromToml for BornMayerHuggins {
 
 impl FromToml for MorsePotential {
     fn from_toml(table: &Table) -> Result<MorsePotential> {
-        let a = extract::str("a", table, "Morse potential")?;
+        let a = extract::str("A", table, "Morse potential")?;
         let depth = extract::str("depth", table, "Morse potential")?;
         let x0 = extract::str("x0", table, "Morse potential")?;
         Ok(MorsePotential {
@@ -111,11 +111,11 @@ impl FromToml for MorsePotential {
 
 impl FromToml for Gaussian {
     fn from_toml(table: &Table) -> Result<Gaussian> {
-        let a = units::from_str(extract::str("a", table, "Gaussian")?)?;
-        let b = units::from_str(extract::str("b", table, "Gaussian")?)?;
+        let a = units::from_str(extract::str("A", table, "Gaussian potential")?)?;
+        let b = units::from_str(extract::str("B", table, "Gaussian potential")?)?;
 
         if b <= 0.0 {
-            Err(Error::from("'b' has to be positive"))
+            Err(Error::from("'B' parameter has to be positive in Gaussian potential"))
         } else {
             Ok(Gaussian::new(a, b))
         }
