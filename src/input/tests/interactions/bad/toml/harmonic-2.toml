@@ -1,7 +1,0 @@
-[input]
-version = 1
-
-[[pairs]]
-atoms = ["A", "A"]
-harmonic = {x0 = "3 A"}
-#^ Missing 'k' key in harmonic potential

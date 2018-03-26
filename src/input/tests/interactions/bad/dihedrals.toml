@@ -1,0 +1,44 @@
+[input]
+version = 1
+
+[[dihedrals]]
+atoms = ["A", "A", "A"]
+#^ Wrong size for 'atoms' array in dihedral potential. Should be 4, is 3
+
++++
+
+[input]
+version = 1
+
+[[dihedrals]]
+atoms = ["A", "B", "A", "B", "B"]
+#^ Wrong size for 'atoms' array in dihedral potential. Should be 4, is 5
+
++++
+
+[input]
+version = 1
+
+[[dihedrals]]
+atoms = {A=true, B=true, C="C"}
+#^ 'atoms' must be an array in dihedral potential
+
++++
+
+[input]
+version = 1
+
+[[dihedrals]]
+atoms = ["A", "A", "A", "A"]
+#^ Missing potential type in dihedral potential
+
++++
+
+[input]
+version = 1
+
+[[dihedrals]]
+atoms = ["A", "A", "A", "A"]
+null = true
+harmonic = {k = "3 A", x0 = "5.9 kJ/mol"}
+#^ Got more than one potential type in dihedral potential: harmonic and null

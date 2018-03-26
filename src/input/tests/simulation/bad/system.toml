@@ -1,0 +1,229 @@
+[input]
+version = 1
+
+#^ Missing 'systems' key in input file
+
+[[simulations]]
+nsteps = 1
+[simulations.propagator]
+type = "MolecularDynamics"
+timestep = "1 fs"
+
++++
+
+systems = "true"
+#^ 'systems' must be an array in input file
+
+[input]
+version = 1
+
+[[simulations]]
+nsteps = 1
+[simulations.propagator]
+type = "MolecularDynamics"
+timestep = "1 fs"
+
++++
+
+systems = ["true"]
+#^ 'systems' should be an array of tables in input file
+
+[input]
+version = 1
+
+[[simulations]]
+nsteps = 1
+[simulations.propagator]
+type = "MolecularDynamics"
+timestep = "1 fs"
+
++++
+
+[input]
+version = 1
+
+[[systems]]
+fil = false
+#^ Missing 'file' key in system
+
+[[simulations]]
+nsteps = 1
+[simulations.propagator]
+type = "MolecularDynamics"
+timestep = "1 fs"
+
++++
+
+[input]
+version = 1
+
+[[systems]]
+file = false
+#^ 'file' must be a string in system
+
+[[simulations]]
+nsteps = 1
+[simulations.propagator]
+type = "MolecularDynamics"
+timestep = "1 fs"
+
++++
+
+[input]
+version = 1
+
+[[systems]]
+file = "../CO2.xyz"
+cell = true
+#^ 'cell' must be a number or an array in system
+
+[[simulations]]
+nsteps = 1
+[simulations.propagator]
+type = "MolecularDynamics"
+timestep = "1 fs"
+
++++
+
+[input]
+version = 1
+
+[[systems]]
+file = "../CO2.xyz"
+cell = [true, false, false]
+#^ Values must be numbers in 'cell' array
+
+
+[[simulations]]
+nsteps = 1
+[simulations.propagator]
+type = "MolecularDynamics"
+timestep = "1 fs"
+
++++
+
+[input]
+version = 1
+
+[[systems]]
+file = "../CO2.xyz"
+cell = [3, 4, 5, 78]
+#^ 'cell' array must have a size of 3 or 6
+
+[[simulations]]
+nsteps = 1
+[simulations.propagator]
+type = "MolecularDynamics"
+timestep = "1 fs"
+
++++
+
+[input]
+version = 1
+
+[[systems]]
+file = "../CO2.xyz"
+guess_bonds = 1
+#^ 'guess_bonds' should be a boolean value in system
+
+[[simulations]]
+nsteps = 1
+[simulations.propagator]
+type = "MolecularDynamics"
+timestep = "1 fs"
+
++++
+
+[input]
+version = 1
+
+[[systems]]
+file = "../CO2.xyz"
+velocities = "300 K"
+#^ 'velocities' must be a table in system
+
+[[simulations]]
+nsteps = 1
+[simulations.propagator]
+type = "MolecularDynamics"
+timestep = "1 fs"
+
++++
+
+[input]
+version = 1
+
+[[systems]]
+file = "../CO2.xyz"
+topology = 34
+#^ 'topology' must be a string in system
+
+[[simulations]]
+nsteps = 1
+[simulations.propagator]
+type = "MolecularDynamics"
+timestep = "1 fs"
+
++++
+
+[input]
+version = 1
+
+[[systems]]
+file = "../CO2.xyz"
+velocities = {init = true}
+#^ 'init' must be a string in velocities initializer
+
+[[simulations]]
+nsteps = 1
+[simulations.propagator]
+type = "MolecularDynamics"
+timestep = "1 fs"
+
++++
+
+[input]
+version = 1
+
+[[systems]]
+file = "../CO2.xyz"
+potentials = 34
+#^ 'potentials' must be a string or a table in system
+
+[[simulations]]
+nsteps = 1
+[simulations.propagator]
+type = "MolecularDynamics"
+timestep = "1 fs"
+
++++
+
+[input]
+version = 1
+
+[[systems]]
+file = "../CO2.xyz"
+
+[[systems]]
+file = "../CO2.xyz"
+#^ Only one system is supported in input file
+
+[[simulations]]
+nsteps = 1
+[simulations.propagator]
+type = "MolecularDynamics"
+timestep = "1 fs"
+
++++
+
+systems = []
+#^ 'systems' array should contain a system
+
+[input]
+version = 1
+
+[[simulations]]
+nsteps = 1
+[simulations.propagator]
+type = "MolecularDynamics"
+timestep = "1 fs"

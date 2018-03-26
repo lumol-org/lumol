@@ -1,7 +1,0 @@
-[input]
-version = 1
-
-[[pairs]]
-atoms = ["A", "B"]
-morse = {A = "5 A", depth = true, x0 = "2.1 A"}
-#^ 'depth' must be a string in Morse potential

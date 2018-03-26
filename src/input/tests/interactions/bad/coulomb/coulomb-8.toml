@@ -1,6 +1,0 @@
-[input]
-version = 1
-
-[coulomb]
-unknown = {}
-#^ Unknown coulomb solver 'unknown'

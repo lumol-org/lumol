@@ -1,6 +1,0 @@
-[input]
-version = 1
-
-[[pairs]]
-atoms = ["A"]
-#^ Wrong size for 'atoms' array in pair potential. Should be 2, is 1

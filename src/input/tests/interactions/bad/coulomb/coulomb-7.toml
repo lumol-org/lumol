@@ -1,6 +1,0 @@
-[input]
-version = 1
-
-[coulomb]
-wolf = true
-#^ Coulombic solver 'wolf' must be a table

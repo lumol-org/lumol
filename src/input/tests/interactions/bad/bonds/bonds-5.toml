@@ -1,8 +1,0 @@
-[input]
-version = 1
-
-[[bonds]]
-atoms = ["A", "A"]
-lj = {sigma = "3 A", epsilon = "5.9 kJ/mol"}
-harmonic = {k = "3 A", x0 = "5.9 kJ/mol"}
-#^ Got more than one potential type in bond potential: harmonic and lj

@@ -10,7 +10,7 @@ extern crate lumol_input;
 use std::{env, fs, io};
 use std::fs::File;
 use std::io::prelude::*;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
 use walkdir::WalkDir;
 
@@ -47,19 +47,19 @@ fn all_tests() -> Vec<TestDescAndFn> {
     let mut tests = Vec::new();
 
     tests.extend(
-        generate_tests("simulation/good", |path| {
+        generate_tests("simulation/good", |path, content| {
             Box::new(move || {
-                let input = Input::new(path.clone()).unwrap();
+                let input = Input::from_str(path.clone(), &content).unwrap();
                 input.read().unwrap();
             })
         }).expect("Could not generate the tests"),
     );
 
     tests.extend(
-        generate_tests("simulation/bad", |path| {
+        generate_tests("simulation/bad", |path, content| {
             Box::new(move || {
-                let message = get_error_message(&path);
-                let result = Input::new(path.clone()).and_then(|input| input.read());
+                let message = get_error_message(&content);
+                let result = Input::from_str(path.clone(), &content).and_then(|input| input.read());
 
                 match result {
                     Err(Error::Config(reason)) => assert_eq!(reason, message),
@@ -70,23 +70,22 @@ fn all_tests() -> Vec<TestDescAndFn> {
     );
 
     tests.extend(
-        generate_tests("interactions/good", |path| {
+        generate_tests("interactions/good", |_, content| {
             Box::new(move || {
                 let mut system = System::new();
-                let input = InteractionsInput::new(path.clone()).unwrap();
+                let input = InteractionsInput::from_str(&content).unwrap();
                 input.read(&mut system).unwrap();
             })
         }).expect("Could not generate the tests"),
     );
 
     tests.extend(
-        generate_tests("interactions/bad", |path| {
+        generate_tests("interactions/bad", |_, content| {
             Box::new(move || {
-                let message = get_error_message(&path);
+                let message = get_error_message(&content);
 
                 let mut system = System::new();
-                let result =
-                    InteractionsInput::new(path.clone()).and_then(|input| input.read(&mut system));
+                let result = InteractionsInput::from_str(&content).and_then(|input| input.read(&mut system));
 
                 match result {
                     Err(Error::Config(reason)) => assert_eq!(reason, message),
@@ -103,7 +102,7 @@ fn all_tests() -> Vec<TestDescAndFn> {
 /// `root`.
 fn generate_tests<F>(root: &str, callback: F) -> Result<Vec<TestDescAndFn>, io::Error>
 where
-    F: Fn(PathBuf) -> Box<FnMut() + Send>,
+    F: Fn(PathBuf, String) -> Box<FnMut() + Send>,
 {
     let mut tests = Vec::new();
 
@@ -116,21 +115,32 @@ where
                 if extension == "toml" {
                     let path = entry.path();
                     let name = String::from(root) + "/";
-                    let name = name
-                        + path.file_name().expect("Missing file name")
-                              .to_str()
-                              .expect("File name is invalid UTF-8");
+                    let name = name + path.file_name()
+                                          .expect("Missing file name")
+                                          .to_str()
+                                          .expect("File name is invalid UTF-8");
 
-                    let test = TestDescAndFn {
-                        desc: TestDesc {
-                            name: DynTestName(name),
-                            ignore: false,
-                            should_panic: No,
-                        },
-                        testfn: DynTestFn(callback(path.to_path_buf())),
-                    };
+                    let mut content = String::new();
+                    File::open(path).and_then(|mut file| file.read_to_string(&mut content))
+                                    .expect("Could not read the input file");
 
-                    tests.push(test);
+                    let count = content.split("+++").count();
+                    for (i, test_case) in content.split("+++").enumerate() {
+                        let name = if count > 1 {
+                            format!("{} - {}/{}", name, i + 1, count)
+                        } else {
+                            name.clone()
+                        };
+                        let test = TestDescAndFn {
+                            desc: TestDesc {
+                                name: DynTestName(name),
+                                ignore: false,
+                                should_panic: No,
+                            },
+                            testfn: DynTestFn(callback(path.to_path_buf(), test_case.into())),
+                        };
+                        tests.push(test);
+                    }
                 }
             }
         }
@@ -165,20 +175,13 @@ impl Drop for TestsCleanup {
     }
 }
 
-fn get_error_message(path: &Path) -> String {
-    let mut buffer = String::new();
-    File::open(path).and_then(|mut file| file.read_to_string(&mut buffer))
-                    .expect("Could not read the input file");
-
-    for line in buffer.lines() {
+fn get_error_message(content: &str) -> String {
+    for line in content.lines() {
         let line = line.trim();
         if line.starts_with("#^ ") {
             return String::from(&line[3..]);
         }
     }
 
-    panic!(
-        "No error message found in {}. Please add one with the '#^ <message>' syntax.",
-        path.display()
-    );
+    panic!("No error message found. Please add one with the '#^ <message>' syntax.");
 }

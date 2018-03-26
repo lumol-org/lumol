@@ -1,0 +1,131 @@
+[input]
+version = 1
+
+[[pairs]]
+atoms = ["A"]
+#^ Wrong size for 'atoms' array in pair potential. Should be 2, is 1
+
++++
+
+[input]
+version = 1
+
+[[pairs]]
+atoms = ["A", "B", "A"]
+#^ Wrong size for 'atoms' array in pair potential. Should be 2, is 3
+
++++
+
+[input]
+version = 1
+
+[[pairs]]
+atoms = {A=true, B=true}
+#^ 'atoms' must be an array in pair potential
+
++++
+
+[input]
+version = 1
+
+[[pairs]]
+atoms = ["A", "A"]
+#^ Missing potential type in pair potential
+
++++
+
+[input]
+version = 1
+
+[[pairs]]
+atoms = ["A", "A"]
+lj = {sigma = "3 A", epsilon = "5.9 kJ/mol"}
+harmonic = {k = "3 A", x0 = "5.9 kJ/mol"}
+#^ Got more than one potential type in pair potential: harmonic and lj
+
++++
+
+[input]
+version = 1
+
+[[pairs]]
+atoms = ["A", "A"]
+lj = {sigma = "3 A", epsilon = "5.9 kJ/mol"}
+#^ Missing 'cutoff' value for pair potential
+
++++
+
+[input]
+version = 1
+
+[[pairs]]
+atoms = ["A", "A"]
+cutoff = 5
+#^ 'cutoff' must be a string or a table
+lj = {sigma = "3 A", epsilon = "5.9 kJ/mol"}
+
++++
+
+[input]
+version = 1
+
+[global]
+#^ 'cutoff' must be a string or a table
+cutoff = 2
+
+[[pairs]]
+atoms = ["A", "A"]
+lj = {sigma = "3 A", epsilon = "5.9 kJ/mol"}
+
++++
+
+[input]
+version = 1
+
+[global]
+cutoff = {foo = 6}
+#^ 'cutoff' table can only contain 'shifted' key
+
+[[pairs]]
+atoms = ["A", "A"]
+lj = {sigma = "3 A", epsilon = "5.9 kJ/mol"}
+
++++
+
+[input]
+version = 1
+
+[global]
+cutoff = {shifted = 6}
+#^ 'cutoff.shifted' value must be a string
+
+[[pairs]]
+atoms = ["A", "A"]
+lj = {sigma = "3 A", epsilon = "5.9 kJ/mol"}
+
++++
+
+[input]
+version = 1
+
+[global]
+tail_correction = "false"
+#^ The 'tail_correction' section must be a boolean value
+
+[[pairs]]
+atoms = ["A", "A"]
+lj = {sigma = "3 A", epsilon = "5.9 kJ/mol"}
+
++++
+
+[input]
+version = 1
+
+[global]
+cutoff = "67 A"
+
+[[pairs]]
+atoms = ["A", "A"]
+lj = {sigma = "3 A", epsilon = "5.9 kJ/mol"}
+tail_correction = "true"
+#^ The 'tail_correction' section must be a boolean value

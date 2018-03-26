@@ -1,0 +1,221 @@
+[input]
+version = 1
+
+[[systems]]
+file = "../CO2.xyz"
+
+[[simulations]]
+nsteps = 0
+outputs = ""
+#^ 'outputs' must be an array of tables in simulation
+
+[simulations.propagator]
+type = "MolecularDynamics"
+timestep = "1 fs"
+
++++
+
+[input]
+version = 1
+
+[[systems]]
+file = "../CO2.xyz"
+
+[[simulations]]
+nsteps = 0
+outputs = [1, 2, 3]
+#^ 'outputs' must be an array of tables in simulation
+
+[simulations.propagator]
+type = "MolecularDynamics"
+timestep = "1 fs"
+
++++
+
+[input]
+version = 1
+
+[[systems]]
+file = "../CO2.xyz"
+
+[[simulations]]
+nsteps = 0
+outputs = [
+    {bla = "hey"}
+    #^ Missing 'type' key in output
+]
+
+[simulations.propagator]
+type = "MolecularDynamics"
+timestep = "1 fs"
+
++++
+
+[input]
+version = 1
+
+[[systems]]
+file = "../CO2.xyz"
+
+[[simulations]]
+nsteps = 0
+outputs = [
+    {type = 4}
+    #^ 'type' key must be a string in output
+]
+
+[simulations.propagator]
+type = "MolecularDynamics"
+timestep = "1 fs"
+
++++
+
+[input]
+version = 1
+
+[[systems]]
+file = "../CO2.xyz"
+
+[[simulations]]
+nsteps = 0
+outputs = [
+    {type = "Trajectory", fli = "testing"}
+    #^ Missing 'file' key in output
+]
+
+[simulations.propagator]
+type = "MolecularDynamics"
+timestep = "1 fs"
+
++++
+
+[input]
+version = 1
+
+[[systems]]
+file = "../CO2.xyz"
+
+[[simulations]]
+nsteps = 0
+outputs = [
+    {type = "Trajectory", file = 56}
+    #^ 'file' must be a string in output
+]
+
+[simulations.propagator]
+type = "MolecularDynamics"
+timestep = "1 fs"
+
++++
+
+[input]
+version = 1
+
+[[systems]]
+file = "../CO2.xyz"
+
+[[simulations]]
+nsteps = 0
+outputs = [
+    {type = "null"}
+    #^ Unknown output type 'null'
+]
+
+[simulations.propagator]
+type = "MolecularDynamics"
+timestep = "1 fs"
+
++++
+
+[input]
+version = 1
+
+[[systems]]
+file = "../CO2.xyz"
+
+[[simulations]]
+nsteps = 0
+outputs = [
+    {type = "Energy", file = "energy.dat", frequency = true}
+    #^ 'frequency' must be an integer in output
+]
+
+[simulations.propagator]
+type = "MolecularDynamics"
+timestep = "1 fs"
+
++++
+
+[input]
+version = 1
+
+[[systems]]
+file = "../CO2.xyz"
+
+[[simulations]]
+nsteps = 0
+outputs = [
+    {type = "Custom", file = "custom.dat", custom = "foo"}
+    #^ Missing 'template' key in custom output
+]
+
+[simulations.propagator]
+type = "MolecularDynamics"
+timestep = "1 fs"
+
++++
+
+[input]
+version = 1
+
+[[systems]]
+file = "../CO2.xyz"
+
+[[simulations]]
+nsteps = 0
+outputs = [
+    {type = "Custom", file = "custom.dat", template = 45}
+    #^ 'template' must be a string in custom output
+]
+
+[simulations.propagator]
+type = "MolecularDynamics"
+timestep = "1 fs"
+
++++
+
+[input]
+version = 1
+
+[[systems]]
+file = "../CO2.xyz"
+
+[[simulations]]
+nsteps = 0
+outputs = [
+    {type = "Stress", fli = "testing"}
+    #^ Missing 'file' key in output
+]
+
+[simulations.propagator]
+type = "MolecularDynamics"
+timestep = "1 fs"
+
++++
+
+[input]
+version = 1
+
+[[systems]]
+file = "../CO2.xyz"
+
+[[simulations]]
+nsteps = 0
+outputs = [
+    {type = "Forces", fli = "testing"}
+    #^ Missing 'file' key in output
+]
+
+[simulations.propagator]
+type = "MolecularDynamics"
+timestep = "1 fs"

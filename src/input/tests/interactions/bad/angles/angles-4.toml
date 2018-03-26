@@ -1,6 +1,0 @@
-[input]
-version = 1
-
-[[angles]]
-atoms = ["A", "A", "A"]
-#^ Missing potential type in angle potential

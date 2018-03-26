@@ -1,0 +1,147 @@
+[input]
+version = 1
+
+[[systems]]
+file = "../CO2.xyz"
+
+[[simulations]]
+nsteps = 1
+
+[simulations.propagator]
+type = "MolecularDynamics"
+timestep = "1.0 fs"
+controls = "yes"
+#^ 'controls' must be an array of tables in molecular dynamics
+
++++
+
+[input]
+version = 1
+
+[[systems]]
+file = "../CO2.xyz"
+
+[[simulations]]
+nsteps = 1
+
+[simulations.propagator]
+type = "MolecularDynamics"
+timestep = "1.0 fs"
+controls = [
+    1, 2, 3
+]
+#^ 'controls' must be an array of tables in molecular dynamics
+
++++
+
+[input]
+version = 1
+
+[[systems]]
+file = "../CO2.xyz"
+
+[[simulations]]
+nsteps = 1
+
+[simulations.propagator]
+type = "MolecularDynamics"
+timestep = "1.0 fs"
+controls = [
+    {bla = "bla"}
+    #^ Missing 'type' key in control
+]
+
++++
+
+[input]
+version = 1
+
+[[systems]]
+file = "../CO2.xyz"
+
+[[simulations]]
+nsteps = 1
+
+[simulations.propagator]
+type = "MolecularDynamics"
+timestep = "1.0 fs"
+controls = [
+    {type = 67}
+    #^ 'type' key must be a string in control
+]
+
++++
+
+[input]
+version = 1
+
+[[systems]]
+file = "../CO2.xyz"
+
+[[simulations]]
+nsteps = 1
+
+[simulations.propagator]
+type = "MolecularDynamics"
+timestep = "1.0 fs"
+controls = [
+    {type = "null"}
+    #^ Unknown control 'null'
+]
+
++++
+
+[input]
+version = 1
+
+[[systems]]
+file = "../CO2.xyz"
+
+[[simulations]]
+nsteps = 1
+
+[simulations.propagator]
+type = "MolecularDynamics"
+timestep = "1.0 fs"
+controls = [
+    {type = "RemoveRotation", every = 667.23}
+    #^ 'every' must be a positive integer in RemoveRotation control
+]
+
++++
+
+[input]
+version = 1
+
+[[systems]]
+file = "../CO2.xyz"
+
+[[simulations]]
+nsteps = 1
+
+[simulations.propagator]
+type = "MolecularDynamics"
+timestep = "1.0 fs"
+controls = [
+    {type = "RemoveTranslation", every = 667.23}
+    #^ 'every' must be a positive integer in RemoveTranslation control
+]
+
++++
+
+[input]
+version = 1
+
+[[systems]]
+file = "../CO2.xyz"
+
+[[simulations]]
+nsteps = 1
+
+[simulations.propagator]
+type = "MolecularDynamics"
+timestep = "1.0 fs"
+controls = [
+    {type = "Rewrap", every = 667.23}
+    #^ 'every' must be a positive integer in Rewrap control
+]

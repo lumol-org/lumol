@@ -1,7 +1,0 @@
-[input]
-version = 1
-
-[[dihedrals]]
-atoms = ["A", "B", "C", "D"]
-torsion = {k = "67 kJ/mol", delta = "80 deg"}
-#^ Missing 'n' key in torsion potential
