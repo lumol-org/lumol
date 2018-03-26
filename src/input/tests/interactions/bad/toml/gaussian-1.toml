@@ -1,0 +1,7 @@
+[input]
+version = 1
+
+[[pairs]]
+atoms = ["A", "A"]
+gaussian = false
+#^ 'gaussian' potential must be a table
