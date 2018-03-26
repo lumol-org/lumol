@@ -1,6 +1,0 @@
-[input]
-version = 1
-
-[[bonds]]
-atoms = ["A", "B", "A"]
-#^ Wrong size for 'atoms' array in bond potential. Should be 2, is 3

@@ -1,0 +1,145 @@
+[input]
+version = 1
+
+[[systems]]
+file = "../CO2.xyz"
+
+[[simulations]]
+nsteps = 1
+
+[simulations.propagator]
+type = "Minimization"
+algo = "1 fs"
+#^ Missing 'minimizer' key in minimization propagator
+
++++
+
+[input]
+version = 1
+
+[[systems]]
+file = "../CO2.xyz"
+
+[[simulations]]
+nsteps = 1
+
+[simulations.propagator]
+type = "Minimization"
+minimizer = "1 fs"
+#^ 'minimizer' must be a table in minimization propagator
+
++++
+
+[input]
+version = 1
+
+[[systems]]
+file = "../CO2.xyz"
+
+[[simulations]]
+nsteps = 1
+
+[simulations.propagator]
+type = "Minimization"
+minimizer = {ty = "foo"}
+#^ Missing 'type' key in minimizer
+
++++
+
+[input]
+version = 1
+
+[[systems]]
+file = "../CO2.xyz"
+
+[[simulations]]
+nsteps = 1
+
+[simulations.propagator]
+type = "Minimization"
+minimizer = {type = false}
+#^ 'type' key must be a string in minimizer
+
++++
+
+[input]
+version = 1
+
+[[systems]]
+file = "../CO2.xyz"
+
+[[simulations]]
+nsteps = 1
+
+[simulations.propagator]
+type = "Minimization"
+minimizer = {type = "foo"}
+#^ Unknown minimizer 'foo'
+
++++
+
+[input]
+version = 1
+
+[[systems]]
+file = "../CO2.xyz"
+
+[[simulations]]
+nsteps = 1
+
+[simulations.propagator]
+type = "Minimization"
+minimizer = {type = "SteepestDescent"}
+tolerance = {ener = "1e-5 kJ/mol", force2 = "1e-5 kJ^2/mol^2/A^2"}
+#^ Missing 'energy' key in minimization tolerance
+
++++
+
+[input]
+version = 1
+
+[[systems]]
+file = "../CO2.xyz"
+
+[[simulations]]
+nsteps = 1
+
+[simulations.propagator]
+type = "Minimization"
+minimizer = {type = "SteepestDescent"}
+tolerance = {energy = 1e-5, force2 = "1e-5 kJ^2/mol^2/A^2"}
+#^ 'energy' must be a string in minimization tolerance
+
++++
+
+[input]
+version = 1
+
+[[systems]]
+file = "../CO2.xyz"
+
+[[simulations]]
+nsteps = 1
+
+[simulations.propagator]
+type = "Minimization"
+minimizer = {type = "SteepestDescent"}
+tolerance = {energy = "1e-5 kJ^2/mol^2/A^2", forces = "1e-5 kJ^2/mol^2/A^2"}
+#^ Missing 'force2' key in minimization tolerance
+
++++
+
+[input]
+version = 1
+
+[[systems]]
+file = "../CO2.xyz"
+
+[[simulations]]
+nsteps = 1
+
+[simulations.propagator]
+type = "Minimization"
+minimizer = {type = "SteepestDescent"}
+tolerance = {energy = "1e-5 kJ^2/mol^2/A^2", force2 = 1e-5}
+#^ 'force2' must be a string in minimization tolerance

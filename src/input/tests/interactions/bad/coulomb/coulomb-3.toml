@@ -1,6 +1,0 @@
-[input]
-version = 1
-
-[coulomb]
-ewald = {cutoff = 6, kmax = 67}
-#^ 'cutoff' must be a string in Ewald coulombic potential

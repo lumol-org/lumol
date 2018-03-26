@@ -1,0 +1,34 @@
+[input]
+version = 1
+
+[[systems]]
+file = "../CO2.xyz"
+
+[[simulations]]
+nsteps = 1
+
+[simulations.propagator]
+type = "MonteCarlo"
+temperature = "300 K"
+update_frequency = -1
+#^ 'update_frequency' must be a positive integer in Monte Carlo propagator
+moves = [
+    {type = "Rotate", delta = "6 A", frequency = 0.3, target_acceptance = 0.5}
+]
+
++++
+
+[input]
+version = 1
+
+[[systems]]
+file = "../CO2.xyz"
+
+[[simulations]]
+nsteps = 1
+
+[simulations.propagator]
+type = "MonteCarlo"
+temperature = "300 K"
+update_frequency = "3"
+#^ 'update_frequency' must be a positive integer in Monte Carlo propagator

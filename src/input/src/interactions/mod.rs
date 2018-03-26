@@ -31,11 +31,11 @@ impl InteractionsInput {
         let mut file = try_io!(File::open(&path), path);
         let mut buffer = String::new();
         let _ = try_io!(file.read_to_string(&mut buffer), path);
-        return InteractionsInput::from_string(&buffer);
+        return InteractionsInput::from_str(&buffer);
     }
 
     /// Read the interactions from a TOML formatted string.
-    pub(crate) fn from_string(string: &str) -> Result<InteractionsInput> {
+    pub fn from_str(string: &str) -> Result<InteractionsInput> {
         let config = try!(parse(string).map_err(|err| { Error::TOML(Box::new(err)) }));
         try!(validate(&config));
         return InteractionsInput::from_toml(config.clone());

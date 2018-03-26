@@ -1,7 +1,0 @@
-[input]
-version = 1
-
-[[dihedrals]]
-atoms = ["A", "B", "C", "D"]
-torsion = {n = 4, k = 6, delta = "80 deg"}
-#^ 'k' must be a string in torsion potential

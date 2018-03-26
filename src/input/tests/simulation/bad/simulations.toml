@@ -1,0 +1,98 @@
+[input]
+version = 1
+
+[[systems]]
+file = "../CO2.xyz"
+
+[[simulations]]
+#^ Missing 'nsteps' key in simulation
+
+[simulations.propagator]
+type = "MolecularDynamics"
+timestep = "1 fs"
+
++++
+
+[input]
+version = 1
+
+[[systems]]
+file = "../CO2.xyz"
+
+[[simulations]]
+nsteps = "56"
+#^ 'nsteps' key must be an integer
+
+[simulations.propagator]
+type = "MolecularDynamics"
+timestep = "1 fs"
+
++++
+
+[input]
+version = 1
+
+[[systems]]
+file = "../CO2.xyz"
+
+[[simulations]]
+nsteps = 1
+#^ Missing 'propagator' key in simulation
+
++++
+
+[input]
+version = 1
+
+[[systems]]
+file = "../CO2.xyz"
+
+[[simulations]]
+nsteps = 1
+propagator = 3
+#^ 'propagator' must be a table in simulation
+
++++
+
+[input]
+version = 1
+
+[[systems]]
+file = "../CO2.xyz"
+
+[[simulations]]
+nsteps = 1
+
+[simulations.propagator]
+bla = 4
+#^ Missing 'type' key in propagator
+
++++
+
+[input]
+version = 1
+
+[[systems]]
+file = "../CO2.xyz"
+
+[[simulations]]
+nsteps = 1
+
+[simulations.propagator]
+type = 4
+#^ 'type' key must be a string in propagator
+
++++
+
+[input]
+version = 1
+
+[[systems]]
+file = "../CO2.xyz"
+
+[[simulations]]
+nsteps = 1
+
+[simulations.propagator]
+type = "null"
+#^ Unknown propagator type 'null'

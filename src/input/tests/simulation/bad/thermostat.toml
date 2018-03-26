@@ -1,0 +1,184 @@
+[input]
+version = 1
+
+[[systems]]
+file = "../CO2.xyz"
+
+[[simulations]]
+nsteps = 1
+
+[simulations.propagator]
+type = "MolecularDynamics"
+timestep = "1.0 fs"
+thermostat = "foo"
+#^ 'thermostat' must be a table in molecular dynamics
+
++++
+
+[input]
+version = 1
+
+[[systems]]
+file = "../CO2.xyz"
+
+[[simulations]]
+nsteps = 1
+
+[simulations.propagator]
+type = "MolecularDynamics"
+timestep = "1.0 fs"
+thermostat = {bla = "foo"}
+#^ Missing 'type' key in thermostat
+
++++
+
+[input]
+version = 1
+
+[[systems]]
+file = "../CO2.xyz"
+
+[[simulations]]
+nsteps = 1
+
+[simulations.propagator]
+type = "MolecularDynamics"
+timestep = "1.0 fs"
+thermostat = {type = 7}
+#^ 'type' key must be a string in thermostat
+
++++
+
+[input]
+version = 1
+
+[[systems]]
+file = "../CO2.xyz"
+
+[[simulations]]
+nsteps = 1
+
+[simulations.propagator]
+type = "MolecularDynamics"
+timestep = "1.0 fs"
+thermostat = {type = "Berendsen", temp = "300 K", timestep = 100}
+#^ Missing 'temperature' key in Berendsen thermostat
+
++++
+
+[input]
+version = 1
+
+[[systems]]
+file = "../CO2.xyz"
+
+[[simulations]]
+nsteps = 1
+
+[simulations.propagator]
+type = "MolecularDynamics"
+timestep = "1.0 fs"
+thermostat = {type = "Berendsen", temperature = 300, timestep = 100}
+#^ 'temperature' must be a string in Berendsen thermostat
+
++++
+
+[input]
+version = 1
+
+[[systems]]
+file = "../CO2.xyz"
+
+[[simulations]]
+nsteps = 1
+
+[simulations.propagator]
+type = "MolecularDynamics"
+timestep = "1.0 fs"
+thermostat = {type = "Berendsen", temperature = "300 K", time = 100}
+#^ Missing 'timestep' key in Berendsen thermostat
+
++++
+
+[input]
+version = 1
+
+[[systems]]
+file = "../CO2.xyz"
+
+[[simulations]]
+nsteps = 1
+
+[simulations.propagator]
+type = "MolecularDynamics"
+timestep = "1.0 fs"
+thermostat = {type = "Berendsen", temperature = "300 K", timestep = "100"}
+#^ 'timestep' must be a number in Berendsen thermostat
+
++++
+
+[input]
+version = 1
+
+[[systems]]
+file = "../CO2.xyz"
+
+[[simulations]]
+nsteps = 1
+
+[simulations.propagator]
+type = "MolecularDynamics"
+timestep = "1.0 fs"
+thermostat = {type = "Rescale"}
+#^ Missing 'temperature' key in Berendsen thermostat
+
++++
+
+[input]
+version = 1
+
+[[systems]]
+file = "../CO2.xyz"
+
+[[simulations]]
+nsteps = 1
+
+[simulations.propagator]
+type = "MolecularDynamics"
+timestep = "1.0 fs"
+thermostat = {type = "Rescale", temperature = 300}
+#^ 'temperature' must be a string in Berendsen thermostat
+
++++
+
+[input]
+version = 1
+
+[[systems]]
+file = "../CO2.xyz"
+
+[[simulations]]
+nsteps = 1
+
+[simulations.propagator]
+type = "MolecularDynamics"
+timestep = "1.0 fs"
+thermostat = {type = "Rescale", temperature = "300 K", tolerance = 33}
+#^ 'tolerance' must be a string rescale thermostat
+
++++
+
+[input]
+version = 1
+
+[[systems]]
+file = "../CO2.xyz"
+
+[[simulations]]
+nsteps = 1
+
+[simulations.propagator]
+type = "MolecularDynamics"
+timestep = "1.0 fs"
+thermostat = {type = "bad", temperature = "300 K", tolerance = 33}
+#^ Unknown thermostat type 'bad'

@@ -1,0 +1,62 @@
+[input]
+version = 1
+
+[[systems]]
+file = "../CO2.xyz"
+
+[[simulations]]
+nsteps = 1
+
+[simulations.propagator]
+type = "MonteCarlo"
+#^ Missing 'temperature' key in Monte Carlo propagator
+
++++
+
+[input]
+version = 1
+
+[[systems]]
+file = "../CO2.xyz"
+
+[[simulations]]
+nsteps = 1
+
+[simulations.propagator]
+type = "MonteCarlo"
+temperature = true
+#^ 'temperature' must be a string in Monte Carlo propagator
+
++++
+
+[input]
+version = 1
+
+[[systems]]
+file = "../CO2.xyz"
+
+[[simulations]]
+nsteps = 1
+
+[simulations.propagator]
+type = "MonteCarlo"
+temperature = "300 K"
+mo = false
+#^ Missing 'moves' key in Monte Carlo propagator
+
++++
+
+[input]
+version = 1
+
+[[systems]]
+file = "../CO2.xyz"
+
+[[simulations]]
+nsteps = 1
+
+[simulations.propagator]
+type = "MonteCarlo"
+temperature = "300 K"
+moves = false
+#^ 'moves' must be an array in Monte Carlo propagator

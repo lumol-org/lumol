@@ -1,0 +1,57 @@
+[input]
+version = 1
+
+[[pairs]]
+atoms = ["A", "A"]
+gaussian = false
+#^ 'gaussian' potential must be a table
+
++++
+
+[input]
+version = 1
+
+[[pairs]]
+atoms = ["A", "A"]
+gaussian = {A = "3.0 A"}
+#^ Missing 'B' key in Gaussian potential
+
++++
+
+[input]
+version = 1
+
+[[pairs]]
+atoms = ["A", "A"]
+gaussian = {B = "-5.9 kJ/mol"}
+#^ Missing 'A' key in Gaussian potential
+
++++
+
+[input]
+version = 1
+
+[[pairs]]
+atoms = ["A", "A"]
+gaussian = {A = 3.0, B = "-5.9 kJ/mol"}
+#^ 'A' must be a string in Gaussian potential
+
++++
+
+[input]
+version = 1
+
+[[pairs]]
+atoms = ["A", "A"]
+gaussian = {A = "3.0 A", B = -5.9}
+#^ 'B' must be a string in Gaussian potential
+
++++
+
+[input]
+version = 1
+
+[[pairs]]
+atoms = ["A", "A"]
+gaussian = {A = "3.0 A", B = "-5.9 kJ/mol"}
+#^ 'B' parameter has to be positive in Gaussian potential

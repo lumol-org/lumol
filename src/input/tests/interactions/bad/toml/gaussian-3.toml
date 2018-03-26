@@ -1,7 +1,0 @@
-[input]
-version = 1
-
-[[pairs]]
-atoms = ["A", "A"]
-gaussian = {B = "-5.9 kJ/mol"}
-#^ Missing 'A' key in Gaussian potential
