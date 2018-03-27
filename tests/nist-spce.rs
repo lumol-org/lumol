@@ -68,9 +68,8 @@ pub fn get_system(path: &str, cutoff: f64) -> System {
     system.add_pair_potential(("O", "H"), PairInteraction::new(Box::new(NullPotential), cutoff));
     system.add_pair_potential(("H", "H"), PairInteraction::new(Box::new(NullPotential), cutoff));
 
-    let mut ewald = Ewald::new(cutoff, 5);
-    ewald.set_alpha(5.6 / f64::min(f64::min(a, b), c));
-    let mut ewald = SharedEwald::new(ewald);
+    let alpha = 5.6 / f64::min(f64::min(a, b), c);
+    let mut ewald = SharedEwald::new(Ewald::new(cutoff, 5, alpha));
     ewald.set_restriction(PairRestriction::InterMolecular);
     system.set_coulomb_potential(Box::new(ewald));
 

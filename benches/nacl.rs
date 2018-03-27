@@ -22,7 +22,7 @@ mod ewald {
 
     pub fn energy(bencher: &mut Bencher) {
         let system = utils::get_system("nacl");
-        let ewald = SharedEwald::new(Ewald::new(9.5, 7));
+        let ewald = SharedEwald::new(Ewald::new(9.5, 7, None));
         ewald.energy(&system);
 
         bencher.iter(|| {
@@ -32,7 +32,7 @@ mod ewald {
 
     pub fn forces(bencher: &mut Bencher) {
         let system = utils::get_system("nacl");
-        let ewald = SharedEwald::new(Ewald::new(9.5, 7));
+        let ewald = SharedEwald::new(Ewald::new(9.5, 7, None));
         let mut forces = vec![Vector3D::zero(); system.size()];
         ewald.forces(&system, &mut forces);
 
@@ -43,7 +43,7 @@ mod ewald {
 
     pub fn virial(bencher: &mut Bencher) {
         let system = utils::get_system("nacl");
-        let ewald = SharedEwald::new(Ewald::new(9.5, 7));
+        let ewald = SharedEwald::new(Ewald::new(9.5, 7, None));
         ewald.virial(&system);
 
         bencher.iter(|| {
@@ -53,7 +53,7 @@ mod ewald {
 
     pub fn cache_move_particle(bencher: &mut Bencher) {
         let mut system = utils::get_system("nacl");
-        system.set_coulomb_potential(Box::new(SharedEwald::new(Ewald::new(9.5, 7))));
+        system.set_coulomb_potential(Box::new(SharedEwald::new(Ewald::new(9.5, 7, None))));
 
         let mut cache = EnergyCache::new();
         cache.init(&system);

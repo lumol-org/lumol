@@ -21,7 +21,7 @@ mod ewald {
     use utils;
 
     fn get_ewald() -> SharedEwald {
-        let mut ewald = SharedEwald::new(Ewald::new(8.0, 7));
+        let mut ewald = SharedEwald::new(Ewald::new(8.0, 7, None));
         ewald.set_restriction(PairRestriction::InterMolecular);
         ewald
     }

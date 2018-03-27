@@ -146,6 +146,6 @@ impl FromToml for Ewald {
     fn from_toml(table: &Table) -> Result<Ewald> {
         let cutoff = extract::str("cutoff", table, "Ewald coulombic potential")?;
         let kmax = extract::uint("kmax", table, "Ewald coulombic potential")?;
-        Ok(Ewald::new(units::from_str(cutoff)?, kmax as usize))
+        Ok(Ewald::new(units::from_str(cutoff)?, kmax as usize, None))
     }
 }
