@@ -1,7 +1,0 @@
-[input]
-version = 1
-
-[[pairs]]
-atoms = ["A", "A"]
-mie = {sigma = "3 A", epsilon = "5.9 kJ/mol", n = "12.0", m = 6.0}
-#^ 'epsilon' and 'sigma' must be strings and 'm' and 'n' must be floats in Mie potential

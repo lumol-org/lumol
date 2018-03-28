@@ -50,7 +50,16 @@ impl FromToml for Mie {
         let epsilon = extract::str("epsilon", table, "Mie potential")?;
         let m = extract::number("m", table, "Mie potential")?;
         let n = extract::number("n", table, "Mie potential")?;
-        Ok(Mie::new(units::from_str(sigma)?, units::from_str(epsilon)?, n as f64, m as f64))
+        
+        if n < 3.0 {
+            warn!("'n' is smaller than 3. Tail corrections for Mie potential are set to zero.");
+        };
+        Ok(Mie::new(
+                units::from_str(sigma)?,
+                units::from_str(epsilon)?,
+                n as f64,
+                m as f64)
+        )
     }
 }
 
