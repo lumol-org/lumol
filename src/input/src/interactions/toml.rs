@@ -51,8 +51,8 @@ impl FromToml for Mie {
         let m = extract::number("m", table, "Mie potential")?;
         let n = extract::number("n", table, "Mie potential")?;
         
-        if n < 3.0 {
-            warn!("'n' is smaller than 3. Tail corrections for Mie potential are set to zero.");
+        if m < 3.0 {
+            warn!("'m' is smaller than 3. Tail corrections for Mie potential are set to zero.");
         };
         Ok(Mie::new(
                 units::from_str(sigma)?,
