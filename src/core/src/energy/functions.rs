@@ -506,7 +506,8 @@ impl PairPotential for Gaussian {
 /// # Note
 ///
 /// `n` has to be larger than `m`
-/// For `m` smaller than 3.0, there is no analytic tail correction.
+/// For `m` smaller than 3.0, there is no analytic tail correction and the
+/// energy and force contributions will be set to zero.
 ///
 /// # Examples
 ///
@@ -567,7 +568,7 @@ impl Potential for Mie {
 impl PairPotential for Mie {
     fn tail_energy(&self, cutoff: f64) -> f64 {
         if self.m <= 3.0 {
-            panic!("No tail correction possible for Mie potential with an exponent lower than 3.0")
+            return 0.0
         };
         let sigma_rc = self.sigma / cutoff;
         let n_3 = self.n - 3.0;
@@ -579,7 +580,7 @@ impl PairPotential for Mie {
 
     fn tail_virial(&self, cutoff: f64) -> f64 {
         if self.m <= 3.0 {
-            panic!("No tail correction possible for Mie potential with an exponent lower than 3.0")
+            return 0.0
         };
         let sigma_rc = self.sigma / cutoff;
         let n_3 = self.n - 3.0;
@@ -800,5 +801,12 @@ mod tests {
     fn test_mie_n_lower_m() {
         let mie = Mie::new(2.0, 0.8, 6.0, 12.0);
         assert_eq!(mie.energy(2.0), 0.0);
+    }
+    
+    #[test]
+    fn test_mie_tail_divergence() {
+        let mie = Mie::new(2.0, 0.8, 12.0, 2.0);
+        assert_eq!(mie.tail_energy(2.0), 0.0);
+        assert_eq!(mie.tail_virial(2.0), 0.0);
     }
 }
