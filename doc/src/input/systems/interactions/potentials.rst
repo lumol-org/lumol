@@ -207,3 +207,30 @@ and ``B`` (well width) should be provided as strings.
 
 .. caution::
     ``B`` has to be positive
+
+
+Mie potential
+-------------
+
+The Mie potential is a classical potential for pair interactions
+expressed as:
+
+.. math::
+
+    V(r) = \frac{n}{n-m} \left(\frac{n}{m}\right)^{m/(n-m)}\epsilon
+    \left[ \left( \frac{\sigma}{r}\right)^n - \left( \frac{\sigma}{r}\right)^m \right]
+
+The potential type keyword is ``mie`` and the parameters are
+``sigma`` (:math:`\sigma`), the particle diameter, and ``epsilon`` (:math:`\epsilon`), the energetic
+parameter, which should be provided as strings (with units).
+The repulsive exponent ``n`` and the attractive exponent ``m`` should be provided as
+numbers.
+
+.. code::
+
+    [[pairs]]
+    atoms = ["A", "B"]
+    mie = {sigma = "3 A", epsilon = "5.9 kJ/mol", n = 12.0, m = 6.0}
+
+.. caution::
+    The repulsive exponent ``n`` has to be larger than the attractive exponent ``m``.
