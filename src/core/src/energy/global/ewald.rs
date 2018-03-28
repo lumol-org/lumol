@@ -1477,4 +1477,290 @@ mod tests {
             assert_ulps_eq!(cost, new_e - old_e);
         }
     }
+
+    // Comparing the value for each component of Ewald energy with the NIST
+    // reference. See `tests/nist-spce.rs` for more information. These tests
+    // check values that are not accessible from the outside of lumol-core.
+    mod nist {
+        use super::*;
+
+        use std::path::Path;
+        use std::fs::File;
+        use std::io::Read;
+
+        pub fn get_system(path: &str) -> System {
+            let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("..")
+                .join("..")
+                .join("tests")
+                .join("data")
+                .join("nist-spce")
+                .join(path);
+
+            let mut file = File::open(path).unwrap();
+            let mut buffer = String::new();
+            let _ = file.read_to_string(&mut buffer).unwrap();
+
+            let mut system = system_from_xyz(&buffer);
+
+            for i in 0..system.size() {
+                if i % 3 == 0 {
+                    let _ = system.add_bond(i, i + 1);
+                    let _ = system.add_bond(i, i + 2);
+                }
+            }
+
+            for particle in system.particles_mut() {
+                match particle.name.as_ref() {
+                    "H" => *particle.charge = 0.42380,
+                    "O" => *particle.charge = -2.0 * 0.42380,
+                    other => panic!("Unknown particle name: {}", other),
+                }
+            }
+
+            return system;
+        }
+
+        #[test]
+        fn cells() {
+            let system = get_system("spce-1.xyz");
+            assert_eq!(system.cell.a(), 20.0);
+            assert_eq!(system.cell.b(), 20.0);
+            assert_eq!(system.cell.c(), 20.0);
+
+            let system = get_system("spce-2.xyz");
+            assert_eq!(system.cell.a(), 20.0);
+            assert_eq!(system.cell.b(), 20.0);
+            assert_eq!(system.cell.c(), 20.0);
+
+            let system = get_system("spce-3.xyz");
+            assert_eq!(system.cell.a(), 20.0);
+            assert_eq!(system.cell.b(), 20.0);
+            assert_eq!(system.cell.c(), 20.0);
+
+            let system = get_system("spce-4.xyz");
+            assert_eq!(system.cell.a(), 30.0);
+            assert_eq!(system.cell.b(), 30.0);
+            assert_eq!(system.cell.c(), 30.0);
+        }
+
+        mod cutoff_9 {
+            use super::*;
+            use consts::K_BOLTZMANN;
+            const CUTOFF: f64 = 9.0;
+
+            #[test]
+            fn nist1() {
+                let system = get_system("spce-1.xyz");
+
+                let alpha = 5.6 / system.cell.a();
+                let mut ewald = Ewald::new(CUTOFF, 5, alpha);
+                ewald.restriction = PairRestriction::InterMolecular;
+                ewald.precompute(&system.cell);
+
+                let energy = ewald.real_space_energy(&system) / K_BOLTZMANN;
+                let expected = -5.58904e5;
+                assert_relative_eq!(energy, expected, max_relative = 1e-4);
+
+                let energy = ewald.kspace_energy(&system) / K_BOLTZMANN;
+                let expected = 6.27009e3;
+                assert_relative_eq!(energy, expected, max_relative = 2e-3);
+
+                let energy = ewald.self_energy(&system) / K_BOLTZMANN;
+                let expected = -2.84469e6;
+                assert_relative_eq!(energy, expected, max_relative = 1e-4);
+
+                let energy = ewald.molcorrect_energy(&system) / K_BOLTZMANN;
+                let expected = 2.80999e6;
+                assert_relative_eq!(energy, expected, max_relative = 1e-4);
+            }
+
+            #[test]
+            fn nist2() {
+                let system = get_system("spce-2.xyz");
+
+                let alpha = 5.6 / system.cell.a();
+                let mut ewald = Ewald::new(CUTOFF, 5, alpha);
+                ewald.restriction = PairRestriction::InterMolecular;
+                ewald.precompute(&system.cell);
+
+                let energy = ewald.real_space_energy(&system) / K_BOLTZMANN;
+                let expected = -1.19308e6;
+                assert_relative_eq!(energy, expected, max_relative = 1e-4);
+
+                let energy = ewald.kspace_energy(&system) / K_BOLTZMANN;
+                let expected = 6.03495e3;
+                assert_relative_eq!(energy, expected, max_relative = 5e-3);
+
+                let energy = ewald.self_energy(&system) / K_BOLTZMANN;
+                let expected = -5.68938e6;
+                assert_relative_eq!(energy, expected, max_relative = 1e-4);
+
+                let energy = ewald.molcorrect_energy(&system) / K_BOLTZMANN;
+                let expected = 5.61998e6;
+                assert_relative_eq!(energy, expected, max_relative = 1e-4);
+            }
+
+            #[test]
+            fn nist3() {
+                let system = get_system("spce-3.xyz");
+
+                let alpha = 5.6 / system.cell.a();
+                let mut ewald = Ewald::new(CUTOFF, 5, alpha);
+                ewald.restriction = PairRestriction::InterMolecular;
+                ewald.precompute(&system.cell);
+
+                let energy = ewald.real_space_energy(&system) / K_BOLTZMANN;
+                let expected = -1.96320e6;
+                assert_relative_eq!(energy, expected, max_relative = 1e-4);
+
+                let energy = ewald.kspace_energy(&system) / K_BOLTZMANN;
+                let expected = 5.24461e3;
+                assert_relative_eq!(energy, expected, max_relative = 2e-3);
+
+                let energy = ewald.self_energy(&system) / K_BOLTZMANN;
+                let expected = -8.53407e6;
+                assert_relative_eq!(energy, expected, max_relative = 1e-4);
+
+                let energy = ewald.molcorrect_energy(&system) / K_BOLTZMANN;
+                let expected = 8.42998e6;
+                assert_relative_eq!(energy, expected, max_relative = 1e-4);
+            }
+
+            #[test]
+            fn nist4() {
+                let system = get_system("spce-4.xyz");
+
+                let alpha = 5.6 / system.cell.a();
+                let mut ewald = Ewald::new(CUTOFF, 5, alpha);
+                ewald.restriction = PairRestriction::InterMolecular;
+                ewald.precompute(&system.cell);
+
+                let energy = ewald.real_space_energy(&system) / K_BOLTZMANN;
+                let expected = -3.44720e6;
+                assert_relative_eq!(energy, expected, max_relative = 1e-4);
+
+                let energy = ewald.kspace_energy(&system) / K_BOLTZMANN;
+                let expected = 7.58785e3;
+                assert_relative_eq!(energy, expected, max_relative = 2e-3);
+
+                let energy = ewald.self_energy(&system) / K_BOLTZMANN;
+                let expected = -1.42235e7;
+                assert_relative_eq!(energy, expected, max_relative = 1e-4);
+
+                let energy = ewald.molcorrect_energy(&system) / K_BOLTZMANN;
+                let expected = 1.41483e7;
+                assert_relative_eq!(energy, expected, max_relative = 1e-4);
+            }
+        }
+
+        mod cutoff_10 {
+            use super::*;
+            use consts::K_BOLTZMANN;
+            const CUTOFF: f64 = 10.0;
+
+            #[test]
+            fn nist1() {
+                let system = get_system("spce-1.xyz");
+
+                let alpha = 5.6 / system.cell.a();
+                let mut ewald = Ewald::new(CUTOFF, 5, alpha);
+                ewald.restriction = PairRestriction::InterMolecular;
+                ewald.precompute(&system.cell);
+
+                let energy = ewald.real_space_energy(&system) / K_BOLTZMANN;
+                let expected = -5.58889e5;
+                assert_relative_eq!(energy, expected, max_relative = 1e-4);
+
+                let energy = ewald.kspace_energy(&system) / K_BOLTZMANN;
+                let expected = 6.27009e3;
+                assert_relative_eq!(energy, expected, max_relative = 2e-3);
+
+                let energy = ewald.self_energy(&system) / K_BOLTZMANN;
+                let expected = -2.84469e6;
+                assert_relative_eq!(energy, expected, max_relative = 1e-4);
+
+                let energy = ewald.molcorrect_energy(&system) / K_BOLTZMANN;
+                let expected = 2.80999e6;
+                assert_relative_eq!(energy, expected, max_relative = 1e-4);
+            }
+
+            #[test]
+            fn nist2() {
+                let system = get_system("spce-2.xyz");
+
+                let alpha = 5.6 / system.cell.a();
+                let mut ewald = Ewald::new(CUTOFF, 5, alpha);
+                ewald.restriction = PairRestriction::InterMolecular;
+                ewald.precompute(&system.cell);
+
+                let energy = ewald.real_space_energy(&system) / K_BOLTZMANN;
+                let expected = -1.19295e6;
+                assert_relative_eq!(energy, expected, max_relative = 1e-4);
+
+                let energy = ewald.kspace_energy(&system) / K_BOLTZMANN;
+                let expected = 6.03495e3;
+                assert_relative_eq!(energy, expected, max_relative = 5e-3);
+
+                let energy = ewald.self_energy(&system) / K_BOLTZMANN;
+                let expected = -5.68938e6;
+                assert_relative_eq!(energy, expected, max_relative = 1e-4);
+
+                let energy = ewald.molcorrect_energy(&system) / K_BOLTZMANN;
+                let expected = 5.61998e6;
+                assert_relative_eq!(energy, expected, max_relative = 1e-4);
+            }
+
+            #[test]
+            fn nist3() {
+                let system = get_system("spce-3.xyz");
+
+                let alpha = 5.6 / system.cell.a();
+                let mut ewald = Ewald::new(CUTOFF, 5, alpha);
+                ewald.restriction = PairRestriction::InterMolecular;
+                ewald.precompute(&system.cell);
+
+                let energy = ewald.real_space_energy(&system) / K_BOLTZMANN;
+                let expected = -1.96297e6;
+                assert_relative_eq!(energy, expected, max_relative = 1e-4);
+
+                let energy = ewald.kspace_energy(&system) / K_BOLTZMANN;
+                let expected = 5.24461e3;
+                assert_relative_eq!(energy, expected, max_relative = 2e-3);
+
+                let energy = ewald.self_energy(&system) / K_BOLTZMANN;
+                let expected = -8.53407e6;
+                assert_relative_eq!(energy, expected, max_relative = 1e-4);
+
+                let energy = ewald.molcorrect_energy(&system) / K_BOLTZMANN;
+                let expected = 8.42998e6;
+                assert_relative_eq!(energy, expected, max_relative = 1e-4);
+            }
+
+            #[test]
+            fn nist4() {
+                let system = get_system("spce-4.xyz");
+
+                let alpha = 5.6 / system.cell.a();
+                let mut ewald = Ewald::new(CUTOFF, 5, alpha);
+                ewald.restriction = PairRestriction::InterMolecular;
+                ewald.precompute(&system.cell);
+
+                let energy = ewald.real_space_energy(&system) / K_BOLTZMANN;
+                let expected = -3.57226e6;
+                assert_relative_eq!(energy, expected, max_relative = 1e-4);
+
+                let energy = ewald.kspace_energy(&system) / K_BOLTZMANN;
+                let expected = 7.58785e3;
+                assert_relative_eq!(energy, expected, max_relative = 2e-3);
+
+                let energy = ewald.self_energy(&system) / K_BOLTZMANN;
+                let expected = -1.42235e7;
+                assert_relative_eq!(energy, expected, max_relative = 1e-4);
+
+                let energy = ewald.molcorrect_energy(&system) / K_BOLTZMANN;
+                let expected = 1.41483e7;
+                assert_relative_eq!(energy, expected, max_relative = 1e-4);
+            }
+        }
+    }
 }
