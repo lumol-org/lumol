@@ -2,7 +2,7 @@
 // Copyright (C) Lumol's contributors — BSD license
 
 //! Testing energy computation for SPC/E water using data from
-//! https://www.nist.gov/mml/csd/chemical-informatics-research-group/spce-water-reference-calculations-9%C3%A5-cutoff
+//! https://www.nist.gov/mml/csd/chemical-informatics-research-group/spce-water-reference-calculations-9å-cutoff
 //! https://www.nist.gov/mml/csd/chemical-informatics-research-group/spce-water-reference-calculations-10å-cutoff
 extern crate lumol;
 
@@ -87,6 +87,19 @@ mod cutoff_9 {
         let energy = system.potential_energy() / K_BOLTZMANN;
         let expected = -4.88608e5;
         assert!(f64::abs((energy - expected) / expected) < 1e-3);
+
+        let evaluator = system.energy_evaluator();
+        let energy = evaluator.pairs() / K_BOLTZMANN;
+        let expected = 9.98560e4;
+        assert!(f64::abs((energy - expected) / expected) < 1e-3);
+
+        let energy = evaluator.pairs_tail() / K_BOLTZMANN;
+        let expected = -1.12959e3;
+        assert!(f64::abs((energy - expected) / expected) < 1e-3);
+
+        let energy = evaluator.coulomb() / K_BOLTZMANN;
+        let expected = -5.87334e5;
+        assert!(f64::abs((energy - expected) / expected) < 1e-3);
     }
 
     #[test]
@@ -95,6 +108,19 @@ mod cutoff_9 {
 
         let energy = system.potential_energy() / K_BOLTZMANN;
         let expected = -1.06602e6;
+        assert!(f64::abs((energy - expected) / expected) < 1e-3);
+
+        let evaluator = system.energy_evaluator();
+        let energy = evaluator.pairs() / K_BOLTZMANN;
+        let expected = 1.94941e5;
+        assert!(f64::abs((energy - expected) / expected) < 1e-3);
+
+        let energy = evaluator.pairs_tail() / K_BOLTZMANN;
+        let expected = -4.51836e3;
+        assert!(f64::abs((energy - expected) / expected) < 1e-3);
+
+        let energy = evaluator.coulomb() / K_BOLTZMANN;
+        let expected = -1.25645e6;
         assert!(f64::abs((energy - expected) / expected) < 1e-3);
     }
 
@@ -105,6 +131,19 @@ mod cutoff_9 {
         let energy = system.potential_energy() / K_BOLTZMANN;
         let expected = -1.71488e6;
         assert!(f64::abs((energy - expected) / expected) < 1e-3);
+
+        let evaluator = system.energy_evaluator();
+        let energy = evaluator.pairs() / K_BOLTZMANN;
+        let expected = 3.57106e5;
+        assert!(f64::abs((energy - expected) / expected) < 1e-3);
+
+        let energy = evaluator.pairs_tail() / K_BOLTZMANN;
+        let expected = -1.01663e4;
+        assert!(f64::abs((energy - expected) / expected) < 1e-3);
+
+        let energy = evaluator.coulomb() / K_BOLTZMANN;
+        let expected = -2.06205e6;
+        assert!(f64::abs((energy - expected) / expected) < 1e-3);
     }
 
     #[test]
@@ -113,6 +152,19 @@ mod cutoff_9 {
 
         let energy = system.potential_energy() / K_BOLTZMANN;
         let expected = -3.08010e6;
+        assert!(f64::abs((energy - expected) / expected) < 1e-3);
+
+        let evaluator = system.energy_evaluator();
+        let energy = evaluator.pairs() / K_BOLTZMANN;
+        let expected = 4.53536e5;
+        assert!(f64::abs((energy - expected) / expected) < 1e-3);
+
+        let energy = evaluator.pairs_tail() / K_BOLTZMANN;
+        let expected = -1.88265e4;
+        assert!(f64::abs((energy - expected) / expected) < 1e-3);
+
+        let energy = evaluator.coulomb() / K_BOLTZMANN;
+        let expected = -3.51481e6;
         assert!(f64::abs((energy - expected) / expected) < 1e-3);
     }
 }
@@ -128,6 +180,19 @@ mod cutoff_10 {
         let energy = system.potential_energy() / K_BOLTZMANN;
         let expected = -4.88604e5;
         assert!(f64::abs((energy - expected) / expected) < 1e-3);
+
+        let evaluator = system.energy_evaluator();
+        let energy = evaluator.pairs() / K_BOLTZMANN;
+        let expected = 9.95387e4;
+        assert!(f64::abs((energy - expected) / expected) < 1e-3);
+
+        let energy = evaluator.pairs_tail() / K_BOLTZMANN;
+        let expected = -8.23715e2;
+        assert!(f64::abs((energy - expected) / expected) < 1e-3);
+
+        let energy = evaluator.coulomb() / K_BOLTZMANN;
+        let expected = -5.87319e5;
+        assert!(f64::abs((energy - expected) / expected) < 1e-3);
     }
 
     #[test]
@@ -136,6 +201,19 @@ mod cutoff_10 {
 
         let energy = system.potential_energy() / K_BOLTZMANN;
         let expected = -1.06590e6;
+        assert!(f64::abs((energy - expected) / expected) < 1e-3);
+
+        let evaluator = system.energy_evaluator();
+        let energy = evaluator.pairs() / K_BOLTZMANN;
+        let expected = 1.93712e5;
+        assert!(f64::abs((energy - expected) / expected) < 1e-3);
+
+        let energy = evaluator.pairs_tail() / K_BOLTZMANN;
+        let expected = -3.29486e3;
+        assert!(f64::abs((energy - expected) / expected) < 1e-3);
+
+        let energy = evaluator.coulomb() / K_BOLTZMANN;
+        let expected = -1.25632e6;
         assert!(f64::abs((energy - expected) / expected) < 1e-3);
     }
 
@@ -146,6 +224,19 @@ mod cutoff_10 {
         let energy = system.potential_energy() / K_BOLTZMANN;
         let expected = -1.71488e6;
         assert!(f64::abs((energy - expected) / expected) < 1e-3);
+
+        let evaluator = system.energy_evaluator();
+        let energy = evaluator.pairs() / K_BOLTZMANN;
+        let expected = 3.54344e5;
+        assert!(f64::abs((energy - expected) / expected) < 1e-3);
+
+        let energy = evaluator.pairs_tail() / K_BOLTZMANN;
+        let expected = -7.41343e3;
+        assert!(f64::abs((energy - expected) / expected) < 1e-3);
+
+        let energy = evaluator.coulomb() / K_BOLTZMANN;
+        let expected = -2.06182e6;
+        assert!(f64::abs((energy - expected) / expected) < 1e-3);
     }
 
     #[test]
@@ -154,6 +245,19 @@ mod cutoff_10 {
 
         let energy = system.potential_energy() / K_BOLTZMANN;
         let expected = -3.20501e6;
+        assert!(f64::abs((energy - expected) / expected) < 1e-3);
+
+        let evaluator = system.energy_evaluator();
+        let energy = evaluator.pairs() / K_BOLTZMANN;
+        let expected = 4.48593e5;
+        assert!(f64::abs((energy - expected) / expected) < 1e-3);
+
+        let energy = evaluator.pairs_tail() / K_BOLTZMANN;
+        let expected = -1.37286e4;
+        assert!(f64::abs((energy - expected) / expected) < 1e-3);
+
+        let energy = evaluator.coulomb() / K_BOLTZMANN;
+        let expected = -3.63987e6;
         assert!(f64::abs((energy - expected) / expected) < 1e-3);
     }
 }
