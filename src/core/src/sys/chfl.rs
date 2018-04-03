@@ -59,7 +59,7 @@ impl ToLumol for chemfiles::UnitCell {
     fn to_lumol(self) -> TrajectoryResult<UnitCell> {
         let cell_type = try!(self.shape());
         let cell = match cell_type {
-            chemfiles::CellShape::Infinite => UnitCell::new(),
+            chemfiles::CellShape::Infinite => UnitCell::infinite(),
             chemfiles::CellShape::Orthorhombic => {
                 let lengths = try!(self.lengths());
                 UnitCell::ortho(lengths[0], lengths[1], lengths[2])

@@ -238,7 +238,7 @@ mod tests {
     #[test]
     fn pairs_tail_infinite_cell() {
         let mut system = testing_system();
-        system.cell = UnitCell::new();
+        system.cell = UnitCell::infinite();
 
         let evaluator = EnergyEvaluator::new(&system);
         assert_eq!(evaluator.pairs_tail(), 0.0);

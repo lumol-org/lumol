@@ -84,7 +84,7 @@ impl Input {
             match *cell {
                 Value::Array(ref cell) => {
                     if cell.is_empty() {
-                        Ok(Some(UnitCell::new()))
+                        Ok(Some(UnitCell::infinite()))
                     } else if cell.len() == 3 {
                         let a = try!(get_cell_number(&cell[0]));
                         let b = try!(get_cell_number(&cell[1]));

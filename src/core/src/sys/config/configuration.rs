@@ -39,7 +39,7 @@ impl Configuration {
             particles: ParticleVec::new(),
             molecules: Vec::new(),
             molids: Vec::new(),
-            cell: UnitCell::new(),
+            cell: UnitCell::infinite(),
         }
     }
 }
@@ -605,7 +605,7 @@ mod tests {
         configuration.particles_mut().position[1] = Vector3D::zero();
         assert_eq!(configuration.distance(0, 1), 1.0);
 
-        configuration.cell = UnitCell::new();
+        configuration.cell = UnitCell::infinite();
         assert_eq!(configuration.distance(0, 1), 9.0);
     }
 
