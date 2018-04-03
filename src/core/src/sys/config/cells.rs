@@ -206,6 +206,7 @@ impl UnitCell {
     /// Scale this unit cell in-place by multiplying the cell matrix by `factor`.
     #[inline]
     pub fn scale_mut(&mut self, factor: Matrix3) {
+        assert!(self.shape() != CellShape::Infinite, "can not scale infinite cells");
         self.cell *= factor;
         self.inv = self.cell.inverse();
     }
@@ -214,6 +215,7 @@ impl UnitCell {
     /// new scaled unit cell
     #[inline]
     pub fn scale(&self, s: Matrix3) -> UnitCell {
+        assert!(self.shape() != CellShape::Infinite, "can not scale infinite cells");
         let cell = s * self.cell;
         UnitCell {
             cell: cell,
@@ -309,17 +311,17 @@ impl UnitCell {
         }
     }
 
-    /// Get the fractional representation of the `v` vector in this cell
+    /// Get the fractional representation of the `vector` in this cell
     #[inline]
-    pub fn fractional(&self, vect: &Vector3D) -> Vector3D {
-        return self.inv * vect;
+    pub fn fractional(&self, vector: &Vector3D) -> Vector3D {
+        return self.inv * vector;
     }
 
-    /// Get the Cartesian representation of the fractional `v` vector in this
+    /// Get the Cartesian representation of the `fractional` vector in this
     /// cell
     #[inline]
-    pub fn cartesian(&self, frac: &Vector3D) -> Vector3D {
-        return self.cell * frac;
+    pub fn cartesian(&self, fractional: &Vector3D) -> Vector3D {
+        return self.cell * fractional;
     }
 
     /// Periodic boundary conditions distance between the point `u` and the point `v`
@@ -561,6 +563,13 @@ mod tests {
     }
 
     #[test]
+    #[should_panic]
+    fn scale_infinite() {
+        let cell = UnitCell::infinite();
+        let _ = cell.scale(2.0 * Matrix3::one());
+    }
+
+    #[test]
     fn scale_mut() {
         let mut cell = UnitCell::ortho(3.0, 4.0, 5.0);
         cell.scale_mut(2.0 * Matrix3::one());
@@ -568,6 +577,12 @@ mod tests {
         assert_eq!(cell.a(), 6.0);
         assert_eq!(cell.b(), 8.0);
         assert_eq!(cell.c(), 10.0);
+    }
+
+    #[should_panic]
+    fn scale_mut_infinite() {
+        let mut cell = UnitCell::infinite();
+        cell.scale_mut(2.0 * Matrix3::one());
     }
 
     #[test]
