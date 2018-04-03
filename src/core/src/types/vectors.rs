@@ -132,6 +132,36 @@ impl Vector3D {
             [self[2] * other[0], self[2] * other[1], self[2] * other[2]],
         ])
     }
+
+    /// Get the minimal value in this vector, using `std::f64::min` for
+    /// comparison.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use lumol_core::types::Vector3D;
+    /// let vector = Vector3D::new(1.0, 0.0, -4.0);
+    ///
+    /// assert_eq!(vector.min(), -4.0);
+    /// ```
+    pub fn min(&self) -> f64 {
+        f64::min(f64::min(self[0], self[1]), self[2])
+    }
+
+    /// Get the maximal value in this vector, using `std::f64::max` for
+    /// comparison.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use lumol_core::types::Vector3D;
+    /// let vector = Vector3D::new(1.0, 0.0, -4.0);
+    ///
+    /// assert_eq!(vector.max(), 1.0);
+    /// ```
+    pub fn max(&self) -> f64 {
+        f64::max(f64::max(self[0], self[1]), self[2])
+    }
 }
 
 #[cfg_attr(rustfmt, rustfmt_skip)]
@@ -287,6 +317,7 @@ impl From<[f64; 3]> for Vector3D {
 #[cfg(test)]
 mod tests {
     use types::{Matrix3, Vector3D};
+    use std::f64;
 
     use approx::ApproxEq;
     impl ApproxEq for Vector3D {
@@ -492,5 +523,25 @@ mod tests {
         let matrix = Matrix3::new([[1.0, 2.0, 3.0], [0.0, 0.0, 0.0], [-4.0, -8.0, -12.0]]);
         assert_eq!(a.tensorial(&b), matrix);
         assert_eq!(b.tensorial(&a), matrix.transposed());
+    }
+
+    #[test]
+    fn min() {
+        assert_eq!(Vector3D::new(1.0, 0.0, -4.0).min(), -4.0);
+        assert_eq!(Vector3D::new(1.0, f64::MIN, 4.0).min(), f64::MIN);
+
+        assert_eq!(Vector3D::new(f64::NAN, 8.0, f64::NAN).min(), 8.0);
+        assert_eq!(Vector3D::new(-4.0e89, 0.0, -f64::INFINITY).min(), -f64::INFINITY);
+        assert_eq!(Vector3D::new(f64::MIN, 0.0, -f64::INFINITY).min(), -f64::INFINITY);
+    }
+
+    #[test]
+    fn max() {
+        assert_eq!(Vector3D::new(1.0, 0.0, -4.0).max(), 1.0);
+        assert_eq!(Vector3D::new(1.0, f64::MAX, -4.0).max(), f64::MAX);
+
+        assert_eq!(Vector3D::new(f64::NAN, 8.0, f64::NAN).max(), 8.0);
+        assert_eq!(Vector3D::new(4.0e89, 0.0, f64::INFINITY).max(), f64::INFINITY);
+        assert_eq!(Vector3D::new(f64::MAX, 0.0, f64::INFINITY).max(), f64::INFINITY);
     }
 }
