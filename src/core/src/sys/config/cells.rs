@@ -41,7 +41,7 @@ pub struct UnitCell {
 
 impl UnitCell {
     /// Create an infinite unit cell
-    pub fn new() -> UnitCell {
+    pub fn infinite() -> UnitCell {
         UnitCell {
             cell: Matrix3::zero(),
             inv: Matrix3::zero(),
@@ -457,7 +457,7 @@ mod tests {
 
     #[test]
     fn infinite() {
-        let cell = UnitCell::new();
+        let cell = UnitCell::infinite();
         assert_eq!(cell.shape(), CellShape::Infinite);
         assert!(cell.is_infinite());
 
@@ -603,7 +603,7 @@ mod tests {
         assert_eq!(cell.distance(u, v), sqrt(6.0));
 
         // Infinite unit cell
-        let cell = UnitCell::new();
+        let cell = UnitCell::infinite();
         assert_eq!(cell.distance(u, v), v.norm());
 
         // Triclinic unit cell
@@ -626,7 +626,7 @@ mod tests {
         assert_eq!(v, Vector3D::new(1.0, 1.5, 1.0));
 
         // Infinite unit cell
-        let cell = UnitCell::new();
+        let cell = UnitCell::infinite();
         let mut v = Vector3D::new(1.0, 1.5, 6.0);
         cell.wrap_vector(&mut v);
         assert_eq!(v, Vector3D::new(1.0, 1.5, 6.0));
@@ -656,7 +656,7 @@ mod tests {
         assert_eq!(v, Vector3D::new(1.0, 1.5, 1.0));
 
         // Infinite unit cell
-        let cell = UnitCell::new();
+        let cell = UnitCell::infinite();
         let mut v = Vector3D::new(1.0, 1.5, 6.0);
         cell.vector_image(&mut v);
         assert_eq!(v, Vector3D::new(1.0, 1.5, 6.0));
@@ -692,7 +692,7 @@ mod tests {
 
     #[test]
     fn angles() {
-        let cell = UnitCell::new();
+        let cell = UnitCell::infinite();
 
         let a = Vector3D::new(1.0, 0.0, 0.0);
         let b = Vector3D::zero();
@@ -708,7 +708,7 @@ mod tests {
     #[test]
     fn angle_derivatives() {
         const EPS: f64 = 1e-6;
-        let cell = UnitCell::new();
+        let cell = UnitCell::infinite();
         let a = Vector3D::new(0.0, 0.02, 0.0);
         let b = Vector3D::new(-0.784729, -0.5548997, 0.0);
         let c = Vector3D::new(0.784729, -0.5548997, 0.0);
@@ -738,7 +738,7 @@ mod tests {
 
     #[test]
     fn dihedrals() {
-        let cell = UnitCell::new();
+        let cell = UnitCell::infinite();
 
         let a = Vector3D::zero();
         let b = Vector3D::new(1.0, 0.0, 0.0);
@@ -756,7 +756,7 @@ mod tests {
     #[test]
     fn dihedral_derivatives() {
         const EPS: f64 = 1e-6;
-        let cell = UnitCell::new();
+        let cell = UnitCell::infinite();
         let a = Vector3D::new(1.241, 0.444, 0.349);
         let b = Vector3D::new(-0.011, -0.441, 0.333);
         let c = Vector3D::new(-1.176, 0.296, -0.332);

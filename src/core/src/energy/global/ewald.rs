@@ -1049,7 +1049,7 @@ mod tests {
         #[should_panic]
         fn infinite_cell() {
             let mut system = nacl_pair();
-            system.cell = UnitCell::new();
+            system.cell = UnitCell::infinite();
             let ewald = SharedEwald::new(Ewald::new(8.0, 10, None));
             let _ = ewald.energy(&system);
         }
