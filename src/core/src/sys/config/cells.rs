@@ -132,9 +132,9 @@ impl UnitCell {
     }
 
     /// Get the distances between faces of the unit cell
-    pub fn lengths(&self) -> [f64; 3] {
+    pub fn lengths(&self) -> Vector3D {
         if self.shape == CellShape::Infinite {
-            return [f64::INFINITY; 3];
+            return Vector3D::new(f64::INFINITY, f64::INFINITY, f64::INFINITY);
         }
 
         let (a, b, c) = (self.vect_a(), self.vect_b(), self.vect_c());
@@ -147,7 +147,7 @@ impl UnitCell {
         let y = abs(nb[0] * b[0] + nb[1] * b[1] + nb[2] * b[2]);
         let z = abs(nc[0] * c[0] + nc[1] * c[1] + nc[2] * c[2]);
 
-        [x, y, z]
+        Vector3D::new(x, y, z)
     }
 
     /// Get the first angle of the cell
@@ -224,17 +224,10 @@ impl UnitCell {
         }
     }
 
-    /// Get the reciprocal vectors of this unit cell
-    pub fn reciprocal_vectors(&self) -> (Vector3D, Vector3D, Vector3D) {
-        assert!(!self.is_infinite(), "Can not get reciprocal vectors of infinite cells");
-        let volume = self.volume();
-        let (a, b, c) = (self.vect_a(), self.vect_b(), self.vect_c());
-
-        let rec_a = (2.0 * PI / volume) * (b ^ c);
-        let rec_b = (2.0 * PI / volume) * (c ^ a);
-        let rec_c = (2.0 * PI / volume) * (a ^ b);
-
-        return (rec_a, rec_b, rec_c);
+    /// Get the reciprocal vector with the given `index`. This vector is null
+    /// for infinite cells.
+    pub fn k_vector(&self, index: [f64; 3]) -> Vector3D {
+        return 2.0 * PI * self.inv * Vector3D::from(index);
     }
 
     /// Get the matricial representation of the unit cell
@@ -543,13 +536,13 @@ mod tests {
     #[test]
     fn lengths() {
         let ortho = UnitCell::ortho(3.0, 4.0, 5.0);
-        assert_eq!(ortho.lengths(), [3.0, 4.0, 5.0]);
+        assert_eq!(ortho.lengths(), Vector3D::new(3.0, 4.0, 5.0));
 
         let triclinic = UnitCell::triclinic(3.0, 4.0, 5.0, 90.0, 90.0, 90.0);
-        assert_eq!(triclinic.lengths(), [3.0, 4.0, 5.0]);
+        assert_eq!(triclinic.lengths(), Vector3D::new(3.0, 4.0, 5.0));
 
         let triclinic = UnitCell::triclinic(3.0, 4.0, 5.0, 90.0, 80.0, 100.0);
-        assert_eq!(triclinic.lengths(), [2.908132319388713, 3.9373265973230853, 4.921658246653857]);
+        assert_eq!(triclinic.lengths(), Vector3D::new(2.908132319388713, 3.9373265973230853, 4.921658246653857));
     }
 
     #[test]
@@ -579,6 +572,7 @@ mod tests {
         assert_eq!(cell.c(), 10.0);
     }
 
+    #[test]
     #[should_panic]
     fn scale_mut_infinite() {
         let mut cell = UnitCell::infinite();
@@ -586,27 +580,29 @@ mod tests {
     }
 
     #[test]
-    fn reciprocal_vectors() {
+    fn k_vectors() {
         let cell = UnitCell::ortho(3.0, 4.0, 5.0);
-        let v = 3.0 * 4.0 * 5.0;
-        let two_pi_vol = 2.0 * PI / v;
-        let (rec_a, rec_b, rec_c) = cell.reciprocal_vectors();
+        let two_pi_vol = 2.0 * PI / cell.volume();
+        let kvec = cell.k_vector([1.0, 1.0, 1.0]);
 
-        assert_eq!(rec_a, Vector3D::new(4.0 * 5.0 * two_pi_vol, 0.0, 0.0));
-        assert_eq!(rec_b, Vector3D::new(0.0, 3.0 * 5.0 * two_pi_vol, 0.0));
-        assert_eq!(rec_c, Vector3D::new(0.0, 0.0, 3.0 * 4.0 * two_pi_vol));
+        assert_eq!(kvec, Vector3D::new(
+            4.0 * 5.0 * two_pi_vol,
+            3.0 * 5.0 * two_pi_vol,
+            3.0 * 4.0 * two_pi_vol,
+        ));
 
         let cell = UnitCell::triclinic(3.0, 4.0, 5.0, 90.0, 90.0, 90.0);
-        let (rec_a, rec_b, rec_c) = cell.reciprocal_vectors();
+        let kvec = cell.k_vector([1.0, 1.0, 1.0]);
 
-        let delta_a = rec_a - Vector3D::new(4.0 * 5.0 * two_pi_vol, 0.0, 0.0);
-        assert_ulps_eq!(delta_a.norm(), 0.0);
+        assert_ulps_eq!(kvec, Vector3D::new(
+            4.0 * 5.0 * two_pi_vol,
+            3.0 * 5.0 * two_pi_vol,
+            3.0 * 4.0 * two_pi_vol,
+        ));
 
-        let delta_b = rec_b - Vector3D::new(0.0, 3.0 * 5.0 * two_pi_vol, 0.0);
-        assert_ulps_eq!(delta_b.norm(), 0.0);
-
-        let delta_c = rec_c - Vector3D::new(0.0, 0.0, 3.0 * 4.0 * two_pi_vol);
-        assert_ulps_eq!(delta_c.norm(), 0.0);
+        let cell = UnitCell::infinite();
+        let kvec = cell.k_vector([1.0, 1.0, 1.0]);
+        assert_ulps_eq!(kvec, Vector3D::new(0.0, 0.0, 0.0));
     }
 
     #[test]
