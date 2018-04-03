@@ -166,9 +166,8 @@ impl EwaldFactors {
         for ikx in 1..kmax {
             for iky in -kmax..kmax {
                 for ikz in -kmax..kmax {
-                    let unitk = 2.0 * PI * Vector3D::new(ikx as f64, iky as f64, ikz as f64);
-                    let unitk = cell.fractional(&unitk);
-                    let k2 = unitk.norm2();
+                    let kvec = cell.k_vector([ikx as f64, iky as f64, ikz as f64]);
+                    let k2 = kvec.norm2();
                     if k2 > parameters.kmax2 {
                         continue;
                     }
@@ -176,9 +175,9 @@ impl EwaldFactors {
                     self.kvecs.push((ikx, iky, ikz));
                     let efact = four_pi_v * f64::exp(- k2 * alpha_sq_inv_fourth) / k2;
                     self.energy.push(efact);
-                    self.efield.push(2.0 * efact * unitk);
+                    self.efield.push(2.0 * efact * kvec);
                     let vfact = -2.0 * (1.0 / k2 + alpha_sq_inv_fourth);
-                    let virial = Matrix3::one() + vfact * unitk.tensorial(&unitk);
+                    let virial = Matrix3::one() + vfact * kvec.tensorial(&kvec);
                     self.virial.push(efact * virial);
                 }
             }
@@ -187,9 +186,8 @@ impl EwaldFactors {
         // k-vectors with `ikx = 0`
         for iky in 1..kmax {
             for ikz in -kmax..kmax {
-                let unitk = 2.0 * PI * Vector3D::new(0.0, iky as f64, ikz as f64);
-                let unitk = cell.fractional(&unitk);
-                let k2 = unitk.norm2();
+                let kvec = cell.k_vector([0.0, iky as f64, ikz as f64]);
+                let k2 = kvec.norm2();
                 if k2 > parameters.kmax2 {
                     continue;
                 }
@@ -197,18 +195,17 @@ impl EwaldFactors {
                 self.kvecs.push((0, iky, ikz));
                 let efact = four_pi_v * f64::exp(- k2 * alpha_sq_inv_fourth) / k2;
                 self.energy.push(efact);
-                self.efield.push(2.0 * efact * unitk);
+                self.efield.push(2.0 * efact * kvec);
                 let vfact = -2.0 * (1.0 / k2 + alpha_sq_inv_fourth);
-                let virial = Matrix3::one() + vfact * unitk.tensorial(&unitk);
+                let virial = Matrix3::one() + vfact * kvec.tensorial(&kvec);
                 self.virial.push(efact * virial);
             }
         }
 
         // k-vectors with `ikx = 0` and `ikz = 0`
         for ikz in 1..kmax {
-            let unitk = 2.0 * PI * Vector3D::new(0.0, 0.0, ikz as f64);
-            let unitk = cell.fractional(&unitk);
-            let k2 = unitk.norm2();
+            let kvec = cell.k_vector([0.0, 0.0, ikz as f64]);
+            let k2 = kvec.norm2();
             if k2 > parameters.kmax2 {
                 continue;
             }
@@ -216,9 +213,9 @@ impl EwaldFactors {
             self.kvecs.push((0, 0, ikz));
             let efact = four_pi_v * f64::exp(- k2 * alpha_sq_inv_fourth) / k2;
             self.energy.push(efact);
-            self.efield.push(2.0 * efact * unitk);
+            self.efield.push(2.0 * efact * kvec);
             let vfact = -2.0 * (1.0 / k2 + alpha_sq_inv_fourth);
-            let virial = Matrix3::one() + vfact * unitk.tensorial(&unitk);
+            let virial = Matrix3::one() + vfact * kvec.tensorial(&kvec);
             self.virial.push(efact * virial);
         }
     }
@@ -356,14 +353,10 @@ impl Ewald {
         }
         self.previous_cell = Some(*cell);
 
-        let unitk = cell.fractional(&Vector3D::new(2.0 * PI, 2.0 * PI, 2.0 * PI));
-        let unitk_max = f64::max(f64::max(unitk[0], unitk[1]), unitk[2]);
-        let max = unitk_max * self.parameters.kmax as f64;
+        let max = cell.k_vector([1.0, 1.0, 1.0]).max() * self.parameters.kmax as f64;
         self.parameters.kmax2 = 1.0001 * max * max;
 
-        let lenghts = cell.lengths();
-        let min_lenght = f64::min(f64::min(lenghts[0], lenghts[1]), lenghts[2]);
-        if self.parameters.rc > min_lenght / 2.0 {
+        if self.parameters.rc > cell.lengths().min() / 2.0 {
             warn!("The Ewald cutoff is too high for this unit cell, energy might be wrong.");
         }
 
@@ -575,12 +568,12 @@ impl Ewald {
 
         // do the k = -1, 0, 1 cases first
         for spatial in 0..3 {
-            let mut unitk = Vector3D::new(0.0, 0.0, 0.0);
-            unitk[spatial] = 2.0 * PI;
-            let unitk = configuration.cell.fractional(&unitk);
+            let mut k_idx = [0.0, 0.0, 0.0];
+            k_idx[spatial] = 1.0;
+            let kvec = configuration.cell.k_vector(k_idx);
             for i in 0..natoms {
                 self.eikr[(0, spatial, i)] = Complex::cartesian(1.0, 0.0);
-                self.eikr[(1, spatial, i)] = Complex::polar(1.0, unitk * positions[i]);
+                self.eikr[(1, spatial, i)] = Complex::polar(1.0, kvec * positions[i]);
                 self.eikr[(-1, spatial, i)] = self.eikr[(1, spatial, i)].conj();
             }
         }
@@ -670,12 +663,12 @@ impl Ewald {
 
         // Do the k=0, 1 cases first
         for spatial in 0..3 {
-            let mut unitk = Vector3D::new(0.0, 0.0, 0.0);
-            unitk[spatial] = 2.0 * PI;
-            let unitk = configuration.cell.fractional(&unitk);
+            let mut k_idx = [0.0, 0.0, 0.0];
+            k_idx[spatial] = 1.0;
+            let kvec = configuration.cell.k_vector(k_idx);
             for i in 0..natoms {
                 new_eikr[(0, spatial, i)] = Complex::cartesian(1.0, 0.0);
-                new_eikr[(1, spatial, i)] = Complex::polar(1.0, unitk * newpos[i]);
+                new_eikr[(1, spatial, i)] = Complex::polar(1.0, kvec * newpos[i]);
                 new_eikr[(-1, spatial, i)] = new_eikr[(1, spatial, i)].conj();
             }
         }
