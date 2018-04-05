@@ -2,6 +2,10 @@
 // Copyright (C) Lumol's contributors — BSD license
 
 use std::ops::{Index, IndexMut};
+use std::iter::{Map, Enumerate};
+use std::vec;
+use std::slice;
+
 use sys::ParticleKind;
 
 /// The system composition contains the number of particles of each kind
@@ -20,6 +24,10 @@ use sys::ParticleKind;
 /// assert_eq!(composition[ParticleKind(2)], 56);
 /// assert_eq!(composition[ParticleKind(8)], 2);
 /// assert_eq!(composition[ParticleKind(5)], 42);
+///
+/// for (kind, number) in &composition {
+///     println!("We have {} particles of kind {}", number, kind);
+/// }
 /// ```
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Composition(Vec<usize>);
@@ -84,6 +92,132 @@ impl Composition {
     pub fn resize(&mut self, size: usize) {
         self.0.resize(size, 0)
     }
+
+    /// Get an iterator over `(kind, number of particles)`
+    ///
+    /// # Examples
+    /// ```
+    /// # use lumol_core::sys::{Composition, ParticleKind};
+    /// let mut composition = Composition::new();
+    /// composition.resize(2);
+    /// composition[ParticleKind(0)] = 10;
+    /// composition[ParticleKind(1)] = 55;
+    ///
+    /// for (kind, number) in composition.iter() {
+    ///     println!("{}: {}", kind, number);
+    /// }
+    ///
+    /// let mut iter = composition.iter();
+    /// assert_eq!(iter.next(), Some((ParticleKind(0), &10)));
+    /// assert_eq!(iter.next(), Some((ParticleKind(1), &55)));
+    /// assert_eq!(iter.next(), None);
+    /// ```
+    pub fn iter(&self) -> Iter {
+        self.into_iter()
+    }
+
+    /// Get an iterator over `(kind, mutable number of particles)`
+    ///
+    /// # Examples
+    /// ```
+    /// # use lumol_core::sys::{Composition, ParticleKind};
+    /// let mut composition = Composition::new();
+    /// composition.resize(2);
+    /// composition[ParticleKind(0)] = 10;
+    /// composition[ParticleKind(1)] = 55;
+    ///
+    /// for (kind, number) in composition.iter_mut() {
+    ///     if kind == ParticleKind(0) {
+    ///         *number += 10;
+    ///     }
+    /// }
+    ///
+    /// let mut iter = composition.iter_mut();
+    /// assert_eq!(iter.next(), Some((ParticleKind(0), &mut 20)));
+    /// assert_eq!(iter.next(), Some((ParticleKind(1), &mut 55)));
+    /// assert_eq!(iter.next(), None);
+    /// ```
+    pub fn iter_mut(&mut self) -> IterMut {
+        self.into_iter()
+    }
+}
+
+pub struct IntoIter {
+    iter: Map<Enumerate<vec::IntoIter<usize>>, fn((usize, usize)) -> (ParticleKind, usize)>
+}
+
+impl Iterator for IntoIter {
+    type Item = (ParticleKind, usize);
+    #[inline]
+    fn next(&mut self) -> Option<Self::Item> {
+        self.iter.next()
+    }
+}
+
+impl IntoIterator for Composition {
+    type Item = (ParticleKind, usize);
+    type IntoIter = IntoIter;
+    fn into_iter(self) -> Self::IntoIter {
+        fn convert((i, ni): (usize, usize)) -> (ParticleKind, usize) {
+            (ParticleKind(i as u32), ni)
+        }
+
+        IntoIter {
+            iter: self.0.into_iter().enumerate().map(convert)
+        }
+    }
+}
+
+pub struct Iter<'a> {
+    iter: Map<Enumerate<slice::Iter<'a, usize>>, fn((usize, &'a usize)) -> (ParticleKind, &'a usize)>
+}
+
+impl<'a> Iterator for Iter<'a> {
+    type Item = (ParticleKind, &'a usize);
+    #[inline]
+    fn next(&mut self) -> Option<Self::Item> {
+        self.iter.next()
+    }
+}
+
+impl<'a> IntoIterator for &'a Composition {
+    type Item = (ParticleKind, &'a usize);
+    type IntoIter = Iter<'a>;
+    fn into_iter(self) -> Self::IntoIter {
+        fn convert((i, ni): (usize, &usize)) -> (ParticleKind, &usize) {
+            (ParticleKind(i as u32), ni)
+        }
+
+        Iter {
+            iter: self.0.iter().enumerate().map(convert)
+        }
+    }
+}
+
+pub struct IterMut<'a> {
+    iter: Map<Enumerate<slice::IterMut<'a, usize>>, fn((usize, &'a mut usize)) -> (ParticleKind, &'a mut usize)>
+}
+
+impl<'a> Iterator for IterMut<'a> {
+    type Item = (ParticleKind, &'a mut usize);
+    #[inline]
+    fn next(&mut self) -> Option<Self::Item> {
+        self.iter.next()
+    }
+}
+
+impl<'a> IntoIterator for &'a mut Composition {
+    type Item = (ParticleKind, &'a mut usize);
+    type IntoIter = IterMut<'a>;
+    fn into_iter(self) -> Self::IntoIter {
+        fn convert((i, ni): (usize, &mut usize)) -> (ParticleKind, &mut usize) {
+            (ParticleKind(i as u32), ni)
+        }
+
+        IterMut {
+            iter: self.0.iter_mut().enumerate().map(convert)
+        }
+    }
 }
 
 
@@ -129,5 +263,35 @@ mod tests {
         assert_eq!(composition[ParticleKind(2)], 56);
         assert_eq!(composition[ParticleKind(8)], 2);
         assert_eq!(composition[ParticleKind(5)], 42);
+    }
+
+    #[test]
+    fn iter() {
+        let mut composition = Composition::new();
+        composition.resize(4);
+        composition[ParticleKind(0)] = 2;
+        composition[ParticleKind(1)] = 4;
+        composition[ParticleKind(2)] = 6;
+        composition[ParticleKind(3)] = 8;
+
+        let mut expected = 2;
+        for (_, &count) in &composition {
+            assert_eq!(count, expected);
+            expected += 2;
+        }
+
+        for (_, count) in &mut composition {
+            *count *= 3;
+        }
+
+        for (kind, count) in composition {
+            match kind {
+                ParticleKind(0) => assert_eq!(count, 6),
+                ParticleKind(1) => assert_eq!(count, 12),
+                ParticleKind(2) => assert_eq!(count, 18),
+                ParticleKind(3) => assert_eq!(count, 24),
+                _ => panic!(),
+            }
+        }
     }
 }

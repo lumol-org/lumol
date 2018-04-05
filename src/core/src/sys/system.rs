@@ -90,11 +90,6 @@ impl System {
         return composition;
     }
 
-    /// Get a list of all the particles kinds in the system.
-    pub fn particle_kinds(&self) -> Vec<ParticleKind> {
-        self.kinds.values().cloned().collect()
-    }
-
     /// Get the current step of the system
     pub fn step(&self) -> u64 {
         self.step
@@ -442,24 +437,6 @@ mod tests {
         assert_eq!(system.particles().kind[0], ParticleKind(0));
         assert_eq!(system.particles().kind[1], ParticleKind(1));
         assert_eq!(system.particles().kind[2], ParticleKind(0));
-    }
-
-    #[test]
-    fn particle_kinds() {
-        let mut system = System::new();
-        system.add_particle(Particle::new("H"));
-        system.add_particle(Particle::new("O"));
-        system.add_particle(Particle::new("O"));
-        system.add_particle(Particle::new("H"));
-        system.add_particle(Particle::new("C"));
-        system.add_particle(Particle::new("U"));
-
-        let kinds = system.particle_kinds();
-        assert_eq!(kinds.len(), 4);
-        assert!(kinds.contains(&ParticleKind(0)));
-        assert!(kinds.contains(&ParticleKind(1)));
-        assert!(kinds.contains(&ParticleKind(2)));
-        assert!(kinds.contains(&ParticleKind(3)));
     }
 
     #[test]

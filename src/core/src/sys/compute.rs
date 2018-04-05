@@ -199,12 +199,11 @@ impl Compute for Virial {
         // Tail correction for pair potentials contribution
         let volume = system.cell.volume();
         let composition = system.composition();
-        for i in system.particle_kinds() {
-            let ni = composition[i] as f64;
-            for j in system.particle_kinds() {
-                let nj = composition[j] as f64;
+        for (i, &ni) in &composition {
+            for (j, &nj) in &composition {
+                let two_pi_density = 2.0 * PI * (ni as f64) * (nj as f64) / volume;
                 for potential in system.interactions().pairs((i, j)) {
-                    virial += 2.0 * PI * ni * nj * potential.tail_virial() / volume;
+                    virial += two_pi_density * potential.tail_virial();
                 }
             }
         }
