@@ -126,12 +126,11 @@ mod test {
     }
 
     fn global_translation(system: &System) -> f64 {
-        use sys::zip_particle::{Mass, Velocity};
         use types::{Vector3D, Zero};
 
         let total_mass = system.particles().mass.iter().sum();
         let mut com_velocity = Vector3D::zero();
-        for (&mass, velocity) in system.particles().zip((&Mass, &Velocity)) {
+        for (&mass, velocity) in soa_zip!(system.particles(), [mass, velocity]) {
             com_velocity += velocity * mass / total_mass;
         }
         return com_velocity.norm();

@@ -22,7 +22,7 @@ rayon = "0.9"
 thread_local = "0.3"
 caldyn = "0.4"
 itertools = "0.7"
-soa_derive = "0.4"
+soa_derive = "0.6"
 
 [dev-dependencies]
 lumol = {path = "../.."}
