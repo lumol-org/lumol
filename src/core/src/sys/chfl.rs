@@ -13,8 +13,6 @@ use std::fmt;
 use std::path::Path;
 use std::sync::{Once, ONCE_INIT};
 
-static REDIRECT_CHEMFILES_WARNING: Once = ONCE_INIT;
-
 /// Possible error when reading and writing to trajectories
 #[derive(Debug)]
 pub struct TrajectoryError(chemfiles::Error);
@@ -63,13 +61,16 @@ impl ToLumol for chemfiles::UnitCell {
         let cell = match cell_type {
             chemfiles::CellShape::Infinite => UnitCell::new(),
             chemfiles::CellShape::Orthorhombic => {
-                let (a, b, c) = try!(self.lengths());
-                UnitCell::ortho(a, b, c)
+                let lengths = try!(self.lengths());
+                UnitCell::ortho(lengths[0], lengths[1], lengths[2])
             }
             chemfiles::CellShape::Triclinic => {
-                let (a, b, c) = try!(self.lengths());
-                let (alpha, beta, gamma) = try!(self.angles());
-                UnitCell::triclinic(a, b, c, alpha, beta, gamma)
+                let lengths = try!(self.lengths());
+                let angles = try!(self.angles());
+                UnitCell::triclinic(
+                    lengths[0], lengths[1], lengths[2],
+                    angles[0], angles[1], angles[2]
+                )
             }
         };
         Ok(cell)
@@ -83,7 +84,7 @@ impl ToLumol for chemfiles::Frame {
         let cell = try!(cell.to_lumol());
         let mut system = System::with_cell(cell);
         let topology = try!(self.topology());
-        let natoms = try!(self.natoms()) as usize;
+        let natoms = try!(self.size()) as usize;
 
         let positions = try!(self.positions());
         for i in 0..natoms {
@@ -151,13 +152,13 @@ impl ToChemfiles for UnitCell {
         let res = match self.shape() {
             CellShape::Infinite => try!(chemfiles::UnitCell::infinite()),
             CellShape::Orthorhombic => {
-                let (a, b, c) = (self.a(), self.b(), self.c());
-                try!(chemfiles::UnitCell::new(a, b, c))
+                let lengths = [self.a(), self.b(), self.c()];
+                try!(chemfiles::UnitCell::new(lengths))
             }
             CellShape::Triclinic => {
-                let (a, b, c) = (self.a(), self.b(), self.c());
-                let (alpha, beta, gamma) = (self.alpha(), self.beta(), self.gamma());
-                try!(chemfiles::UnitCell::triclinic(a, b, c, alpha, beta, gamma))
+                let lengths = [self.a(), self.b(), self.c()];
+                let angles = [self.alpha(), self.beta(), self.gamma()];
+                try!(chemfiles::UnitCell::triclinic(lengths, angles))
             }
         };
         return Ok(res);
@@ -326,11 +327,7 @@ impl<'a> TrajectoryBuilder<'a> {
     ///                                    .unwrap();
     /// ```
     pub fn open<P: AsRef<Path>>(self, path: P) -> TrajectoryResult<Trajectory> {
-        REDIRECT_CHEMFILES_WARNING.call_once(|| {
-            chemfiles::set_warning_callback(|message| {
-                warn!("[chemfiles] {}", message);
-            }).expect("could not redirect chemfiles warning");
-        });
+        redirect_chemfiles_warnings();
         let mode = match self.mode {
             OpenMode::Read => 'r',
             OpenMode::Write => 'w',
@@ -471,6 +468,18 @@ pub fn read_molecule<P: AsRef<Path>>(path: P) -> TrajectoryResult<(Molecule, Par
     assert!(!system.is_empty(), "No molecule in the file at {}", path.as_ref().display());
     let molecule = system.molecule(0).clone();
     return Ok((molecule, system.particles().to_vec()));
+}
+
+static REDIRECT_CHEMFILES_WARNING: Once = ONCE_INIT;
+
+fn redirect_chemfiles_warnings() {
+    fn warning_callback(message: &str) {
+        warn!("[chemfiles] {}", message);
+    }
+
+    REDIRECT_CHEMFILES_WARNING.call_once(|| {
+        chemfiles::set_warning_callback(warning_callback).expect("could not redirect chemfiles warning");
+    });
 }
 
 
