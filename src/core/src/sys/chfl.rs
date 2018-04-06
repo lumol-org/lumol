@@ -486,7 +486,6 @@ fn redirect_chemfiles_warnings() {
 #[cfg(test)]
 mod tests {
     extern crate tempfile;
-    use self::tempfile::NamedTempFileOptions;
 
     use super::*;
     use std::io::prelude::*;
@@ -517,7 +516,7 @@ H      2.172669     -0.348524    0.000051
 
     #[test]
     fn read_water() {
-        let mut file = NamedTempFileOptions::new().suffix(".xyz").create().unwrap();
+        let mut file = tempfile::Builder::new().suffix(".xyz").tempfile().unwrap();
         write!(file, "{}", WATER).unwrap();
 
         let (molecule, atoms) = read_molecule(file.path()).unwrap();
@@ -545,7 +544,7 @@ H      2.172669     -0.348524    0.000051
 
     #[test]
     fn read_propane() {
-        let mut file = NamedTempFileOptions::new().suffix(".xyz").create().unwrap();
+        let mut file = tempfile::Builder::new().suffix(".xyz").tempfile().unwrap();
         write!(file, "{}", PROPANE).unwrap();
 
         let (molecule, atoms) = read_molecule(file.path()).unwrap();
