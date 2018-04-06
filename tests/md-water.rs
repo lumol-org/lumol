@@ -14,9 +14,7 @@ static START: Once = ONCE_INIT;
 
 #[test]
 fn constant_energy_ewald() {
-    START.call_once(|| {
-        env_logger::init().unwrap();
-    });
+    START.call_once(::env_logger::init);
     let path = Path::new(file!()).parent()
                                  .unwrap()
                                  .join("data")
@@ -36,9 +34,7 @@ fn constant_energy_ewald() {
 
 #[test]
 fn constant_energy_wolf() {
-    START.call_once(|| {
-        env_logger::init().unwrap();
-    });
+    START.call_once(::env_logger::init);
     let path = Path::new(file!()).parent()
                                  .unwrap()
                                  .join("data")

@@ -20,9 +20,7 @@ mod utils;
 
 #[test]
 fn constant_energy_velocity_verlet() {
-    START.call_once(|| {
-        env_logger::init().unwrap();
-    });
+    START.call_once(::env_logger::init);
     let path = Path::new(file!()).parent()
                                  .unwrap()
                                  .join("data")
@@ -39,9 +37,7 @@ fn constant_energy_velocity_verlet() {
 
 #[test]
 fn constant_energy_verlet() {
-    START.call_once(|| {
-        env_logger::init().unwrap();
-    });
+    START.call_once(::env_logger::init);
     let path = Path::new(file!()).parent()
                                  .unwrap()
                                  .join("data")
@@ -58,9 +54,7 @@ fn constant_energy_verlet() {
 
 #[test]
 fn constant_energy_leap_frog() {
-    START.call_once(|| {
-        env_logger::init().unwrap();
-    });
+    START.call_once(::env_logger::init);
     let path = Path::new(file!()).parent()
                                  .unwrap()
                                  .join("data")
@@ -76,9 +70,7 @@ fn constant_energy_leap_frog() {
 
 #[test]
 fn perfect_gas() {
-    START.call_once(|| {
-        env_logger::init().unwrap();
-    });
+    START.call_once(::env_logger::init);
     let path = Path::new(file!()).parent()
                                  .unwrap()
                                  .join("data")
@@ -98,9 +90,7 @@ fn perfect_gas() {
 
 #[test]
 fn berendsen_barostat() {
-    START.call_once(|| {
-        env_logger::init().unwrap();
-    });
+    START.call_once(::env_logger::init);
     let path = Path::new(file!()).parent()
                                  .unwrap()
                                  .join("data")
@@ -126,9 +116,7 @@ fn berendsen_barostat() {
 
 #[test]
 fn shifted() {
-    START.call_once(|| {
-        env_logger::init().unwrap();
-    });
+    START.call_once(::env_logger::init);
     let path = Path::new(file!()).parent()
                                  .unwrap()
                                  .join("data")
@@ -145,9 +133,7 @@ fn shifted() {
 
 #[test]
 fn table_computation() {
-    START.call_once(|| {
-        env_logger::init().unwrap();
-    });
+    START.call_once(::env_logger::init);
     let path = Path::new(file!()).parent()
                                  .unwrap()
                                  .join("data")

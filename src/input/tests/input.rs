@@ -21,7 +21,7 @@ use lumol_core::sys::System;
 use lumol_input::{Error, Input, InteractionsInput};
 
 fn main() {
-    env_logger::init().expect("could not set logger");
+    env_logger::init();
     let _cleanup = TestsCleanup;
 
     let args: Vec<_> = env::args()

@@ -6,8 +6,7 @@ use extract;
 
 use toml::value::Table;
 
-use log::{LogLevel, LogLevelFilter};
-use log::LogRecord;
+use log::{self, Record};
 
 use log4rs;
 use log4rs::append::Append;
@@ -25,17 +24,17 @@ type LogError = Box<::std::error::Error + Sync + Send>;
 struct LogEncoder;
 
 impl Encode for LogEncoder {
-    fn encode(&self, out: &mut Write, record: &LogRecord) -> Result<(), LogError> {
+    fn encode(&self, out: &mut Write, record: &Record) -> Result<(), LogError> {
         match record.level() {
-            LogLevel::Trace => try!(write!(out, "[trace] ")),
-            LogLevel::Debug => try!(write!(out, "[debug] ")),
-            LogLevel::Info => {}
-            LogLevel::Warn => {
+            log::Level::Trace => try!(write!(out, "[trace] ")),
+            log::Level::Debug => try!(write!(out, "[debug] ")),
+            log::Level::Info => {}
+            log::Level::Warn => {
                 try!(out.set_style(Style::new().text(Color::Red)));
                 try!(write!(out, "[warning] "));
                 try!(out.set_style(&Style::new()));
             }
-            LogLevel::Error => {
+            log::Level::Error => {
                 try!(out.set_style(Style::new().text(Color::Red).intense(true)));
                 try!(write!(out, "[error] "));
             }
@@ -44,11 +43,22 @@ impl Encode for LogEncoder {
         try!(write!(out, "{}", record.args()));
 
         match record.level() {
-            LogLevel::Trace | LogLevel::Debug => {
-                let location = record.location();
-                try!(write!(out, " [from {}:{}]", location.file(), location.line()))
+            log::Level::Trace | log::Level::Debug => {
+                match record.file() {
+                    Some(file) => {
+                        match record.line() {
+                            Some(line) => {
+                                try!(write!(out, " [from {}:{}]", file, line))
+                            },
+                            None => {
+                                try!(write!(out, " [from {}]", file))
+                            }
+                        }
+                    }
+                    None => {}
+                }
             }
-            LogLevel::Error => {
+            log::Level::Error => {
                 try!(out.set_style(&Style::new()));
             }
             _ => {}
@@ -89,7 +99,7 @@ impl Input {
                 let appender = try!(read_appender(loggers, "main"));
                 let config = Config::builder().appender(appender)
                                               .build(
-                    Root::builder().appender("main").build(LogLevelFilter::Trace),
+                    Root::builder().appender("main").build(log::LevelFilter::Trace),
                 )
                                               .expect("Error in logging initialization");
                 let _ = log4rs::init_config(config);
@@ -114,7 +124,7 @@ impl Input {
                     root = root.appender(appender.name());
                     config = config.appender(appender);
                 }
-                let config = config.build(root.build(LogLevelFilter::Trace))
+                let config = config.build(root.build(log::LevelFilter::Trace))
                                    .expect("Error in logging initialization");
                 let _ = log4rs::init_config(config);
             } else {
@@ -135,12 +145,12 @@ pub fn setup_default_logger() {
                                            .encoder(Box::new(LogEncoder))
                                            .build();
 
-    let appender = Appender::builder().filter(Box::new(ThresholdFilter::new(LogLevelFilter::Info)))
+    let appender = Appender::builder().filter(Box::new(ThresholdFilter::new(log::LevelFilter::Info)))
                                       .build("main", Box::new(stdout));
 
     let config =
         Config::builder().appender(appender)
-                         .build(Root::builder().appender("main").build(LogLevelFilter::Info))
+                         .build(Root::builder().appender("main").build(log::LevelFilter::Info))
                          .expect("Error in logging initialization");
 
     // We ignore the result of this call, because it can only fail if a
@@ -162,11 +172,11 @@ fn read_appender(config: &Table, name: &str) -> Result<Appender, Error> {
               .ok_or(Error::from("'level' must be a string in log target"))
     );
     let level = match level {
-        "trace" => LogLevelFilter::Trace,
-        "debug" => LogLevelFilter::Debug,
-        "info" => LogLevelFilter::Info,
-        "warning" => LogLevelFilter::Warn,
-        "error" => LogLevelFilter::Error,
+        "trace" => log::LevelFilter::Trace,
+        "debug" => log::LevelFilter::Debug,
+        "info" => log::LevelFilter::Info,
+        "warning" => log::LevelFilter::Warn,
+        "error" => log::LevelFilter::Error,
         other => return Err(Error::from(format!("Unknown logging level '{}'", other))),
     };
 

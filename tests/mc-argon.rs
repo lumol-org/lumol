@@ -15,9 +15,7 @@ mod utils;
 
 #[test]
 fn npt() {
-    START.call_once(|| {
-        env_logger::init().unwrap();
-    });
+    START.call_once(::env_logger::init);
     let path = Path::new(file!()).parent()
                                  .unwrap()
                                  .join("data")

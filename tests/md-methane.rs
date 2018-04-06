@@ -14,9 +14,7 @@ static START: Once = ONCE_INIT;
 
 #[test]
 fn bonds_detection() {
-    START.call_once(|| {
-        env_logger::init().unwrap();
-    });
+    START.call_once(::env_logger::init);
     let path = Path::new(file!()).parent()
                                  .unwrap()
                                  .join("data")
@@ -34,9 +32,7 @@ fn bonds_detection() {
 
 #[test]
 fn constant_energy() {
-    START.call_once(|| {
-        env_logger::init().unwrap();
-    });
+    START.call_once(::env_logger::init);
     let path = Path::new(file!()).parent()
                                  .unwrap()
                                  .join("data")

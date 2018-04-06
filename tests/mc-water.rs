@@ -14,9 +14,7 @@ static START: Once = ONCE_INIT;
 // anything for now. It should test the g(r) function someday.
 #[test]
 fn wolf() {
-    START.call_once(|| {
-        env_logger::init().unwrap();
-    });
+    START.call_once(::env_logger::init);
     let path = Path::new(file!()).parent()
                                  .unwrap()
                                  .join("data")
@@ -29,9 +27,7 @@ fn wolf() {
 
 #[test]
 fn ewald() {
-    START.call_once(|| {
-        env_logger::init().unwrap();
-    });
+    START.call_once(::env_logger::init);
     let path = Path::new(file!()).parent()
                                  .unwrap()
                                  .join("data")
