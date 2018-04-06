@@ -2,7 +2,6 @@
 // Copyright (C) Lumol's contributors — BSD license
 
 use sys::System;
-use sys::zip_particle::*;
 use utils;
 
 use super::{Minimizer, Tolerance};
@@ -39,9 +38,9 @@ impl Minimizer for SteepestDescent {
         // Update coordinates, reducing gamma until we find a configuration of
         // lower energy
         loop {
-            for (position, prevpos, force) in
-                system.particles_mut().zip_mut((&mut Position, &prevpos, &forces))
-            {
+            for (position, prevpos, force) in izip!(
+                system.particles_mut().position, &prevpos, &forces
+            ) {
                 *position = prevpos + self.gamma * force;
             }
 

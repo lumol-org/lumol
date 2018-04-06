@@ -8,7 +8,6 @@ use consts::K_BOLTZMANN;
 use types::{Matrix3, One, Vector3D, Zero};
 
 use sys::System;
-use sys::zip_particle::*;
 
 use parallel::ThreadLocalStore;
 use parallel::prelude::*;
@@ -131,7 +130,7 @@ impl Compute for KineticEnergy {
     type Output = f64;
     fn compute(&self, system: &System) -> f64 {
         let mut energy = 0.0;
-        for (&mass, velocity) in system.particles().zip((&Mass, &Velocity)) {
+        for (&mass, velocity) in soa_zip!(system.particles(), [mass, velocity]) {
             energy += 0.5 * mass * velocity.norm2();
         }
         assert!(energy.is_finite(), "Kinetic energy is infinite!");
@@ -288,7 +287,7 @@ impl Compute for Stress {
         assert!(!system.cell.is_infinite(), "Can not compute stress for infinite cell");
 
         let mut kinetic = Matrix3::zero();
-        for (&mass, velocity) in system.particles().zip((&Mass, &Velocity)) {
+        for (&mass, velocity) in soa_zip!(system.particles(), [mass, velocity]) {
             kinetic += mass * velocity.tensorial(velocity);
         }
 

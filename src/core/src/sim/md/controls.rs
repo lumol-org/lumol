@@ -9,8 +9,6 @@ use sys::System;
 use sys::veloc;
 use types::{Matrix3, Vector3D, Zero};
 
-use sys::zip_particle::*;
-
 /// Trait for controlling some parameters in a system during a simulation.
 pub trait Control {
     /// Function called once at the beginning of the simulation, which allow
@@ -137,7 +135,7 @@ impl Control for RemoveTranslation {
         let total_mass = system.particles().mass.iter().sum();
 
         let mut com_velocity = Vector3D::zero();
-        for (&mass, velocity) in system.particles().zip((&Mass, &Velocity)) {
+        for (&mass, velocity) in soa_zip!(system.particles(), [mass, velocity]) {
             com_velocity += velocity * mass / total_mass;
         }
 
@@ -165,7 +163,7 @@ impl Control for RemoveRotation {
         // Angular momentum
         let mut moment = Vector3D::zero();
         let mut inertia = Matrix3::zero();
-        for (&mass, position, velocity) in system.particles().zip((&Mass, &Position, &Velocity)) {
+        for (&mass, position, velocity) in soa_zip!(system.particles(), [mass, position, velocity]) {
             let delta = position - com;
             moment += mass * (delta ^ velocity);
             inertia += -mass * delta.tensorial(&delta);
@@ -179,7 +177,7 @@ impl Control for RemoveRotation {
         // The angular velocity omega is defined by `L = I w` with L the angular
         // momentum, and I the inertia matrix.
         let angular = inertia.inverse() * moment;
-        for (position, velocity) in system.particles_mut().zip_mut((&Position, &mut Velocity)) {
+        for (position, velocity) in soa_zip!(system.particles_mut(), [position, mut velocity]) {
             *velocity -= (position - com) ^ angular;
         }
     }
