@@ -1,7 +1,7 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) Lumol's contributors — BSD license
 extern crate env_logger;
-extern crate test;
+extern crate rustc_test;
 extern crate walkdir;
 
 extern crate lumol_core;
@@ -14,8 +14,8 @@ use std::path::PathBuf;
 
 use walkdir::WalkDir;
 
-use test::{DynTestFn, DynTestName, TestDesc, TestDescAndFn};
-use test::ShouldPanic::No;
+use rustc_test::{DynTestFn, DynTestName, TestDesc, TestDescAndFn};
+use rustc_test::ShouldPanic::No;
 
 use lumol_core::sys::System;
 use lumol_input::{Error, Input, InteractionsInput};
@@ -28,14 +28,14 @@ fn main() {
                            .filter(|arg| !arg.contains("test-threads"))
                            .collect();
 
-    let mut opts = match test::parse_opts(&args).expect("no options") {
+    let mut opts = match rustc_test::parse_opts(&args).expect("no options") {
         Ok(opts) => opts,
         Err(msg) => panic!("{:?}", msg),
     };
     opts.verbose = true;
 
     let tests = all_tests();
-    let result = test::run_tests_console(&opts, tests);
+    let result = rustc_test::run_tests_console(&opts, tests);
     match result {
         Ok(true) => {}
         Ok(false) => std::process::exit(-1),
@@ -136,6 +136,7 @@ where
                                 name: DynTestName(name),
                                 ignore: false,
                                 should_panic: No,
+                                allow_fail: false
                             },
                             testfn: DynTestFn(callback(path.to_path_buf(), test_case.into())),
                         };
