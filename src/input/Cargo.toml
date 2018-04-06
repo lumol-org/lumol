@@ -10,11 +10,11 @@ license = "BSD-3-Clause"
 [dependencies]
 lumol-core = {path = "../core"}
 toml = "0.4"
-log = "0.3"
+log = "0.4"
 chemfiles = "0.7"
 
 [dependencies.log4rs]
-version = "0.7"
+version = "0.8"
 # log4rs has a enormous ammount of features pulling a lot of crates. As we don't
 # need most of them, we selectively enable the ones we want.
 default-features = false
@@ -23,7 +23,7 @@ features = ["console_appender", "file_appender", "threshold_filter"]
 [dev-dependencies]
 walkdir = "2"
 rustc-test = "0.1"
-env_logger = "0.4"
+env_logger = "0.5"
 
 [lib]
 test = false

@@ -61,9 +61,7 @@ mod cutoff_3_lrc {
 
     #[test]
     fn nist1() {
-        START.call_once(|| {
-            env_logger::init().unwrap();
-        });
+        START.call_once(::env_logger::init);
         let path = "lj-1.toml";
         let mut system = get_system(path);
         set_interaction(&mut system, PairKind::None);
@@ -83,9 +81,7 @@ mod cutoff_3_lrc {
 
     #[test]
     fn nist2() {
-        START.call_once(|| {
-            env_logger::init().unwrap();
-        });
+        START.call_once(::env_logger::init);
         let path = "lj-2.toml";
         let mut system = get_system(path);
         set_interaction(&mut system, PairKind::None);
@@ -105,9 +101,7 @@ mod cutoff_3_lrc {
 
     #[test]
     fn nist3() {
-        START.call_once(|| {
-            env_logger::init().unwrap();
-        });
+        START.call_once(::env_logger::init);
         let path = "lj-3.toml";
         let mut system = get_system(path);
         set_interaction(&mut system, PairKind::None);
@@ -127,9 +121,7 @@ mod cutoff_3_lrc {
 
     #[test]
     fn nist4() {
-        START.call_once(|| {
-            env_logger::init().unwrap();
-        });
+        START.call_once(::env_logger::init);
         let path = "lj-4.toml";
         let mut system = get_system(path);
         set_interaction(&mut system, PairKind::None);
@@ -174,9 +166,7 @@ mod cutoff_4_lrc {
 
     #[test]
     fn nist1() {
-        START.call_once(|| {
-            env_logger::init().unwrap();
-        });
+        START.call_once(::env_logger::init);
         let path = "lj-1.toml";
         let mut system = get_system(path);
         set_interaction(&mut system, PairKind::None);
@@ -196,9 +186,7 @@ mod cutoff_4_lrc {
 
     #[test]
     fn nist2() {
-        START.call_once(|| {
-            env_logger::init().unwrap();
-        });
+        START.call_once(::env_logger::init);
         let path = "lj-2.toml";
         let mut system = get_system(path);
         set_interaction(&mut system, PairKind::None);
@@ -218,9 +206,7 @@ mod cutoff_4_lrc {
 
     #[test]
     fn nist3() {
-        START.call_once(|| {
-            env_logger::init().unwrap();
-        });
+        START.call_once(::env_logger::init);
         let path = "lj-3.toml";
         let mut system = get_system(path);
         set_interaction(&mut system, PairKind::None);
@@ -240,9 +226,7 @@ mod cutoff_4_lrc {
 
     #[test]
     fn nist4() {
-        START.call_once(|| {
-            env_logger::init().unwrap();
-        });
+        START.call_once(::env_logger::init);
         let path = "lj-4.toml";
         let mut system = get_system(path);
         set_interaction(&mut system, PairKind::None);

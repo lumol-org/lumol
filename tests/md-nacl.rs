@@ -19,9 +19,7 @@ mod wolf {
 
     #[test]
     fn constant_energy() {
-        START.call_once(|| {
-            ::env_logger::init().unwrap();
-        });
+        START.call_once(::env_logger::init);
         let path = Path::new(file!()).parent()
                                      .unwrap()
                                      .join("data")
@@ -38,9 +36,7 @@ mod wolf {
 
     #[test]
     fn anisotropic_berendsen() {
-        START.call_once(|| {
-            ::env_logger::init().unwrap();
-        });
+        START.call_once(::env_logger::init);
         let path = Path::new(file!()).parent()
                                      .unwrap()
                                      .join("data")
@@ -73,9 +69,7 @@ mod ewald {
 
     #[test]
     fn constant_energy() {
-        START.call_once(|| {
-            ::env_logger::init().unwrap();
-        });
+        START.call_once(::env_logger::init);
         let path = Path::new(file!()).parent()
                                      .unwrap()
                                      .join("data")
@@ -91,9 +85,7 @@ mod ewald {
 
     #[test]
     fn constant_energy_kspace() {
-        START.call_once(|| {
-            ::env_logger::init().unwrap();
-        });
+        START.call_once(::env_logger::init);
         let path = Path::new(file!()).parent()
                                      .unwrap()
                                      .join("data")
@@ -109,9 +101,7 @@ mod ewald {
 
     #[test]
     fn energy() {
-        START.call_once(|| {
-            ::env_logger::init().unwrap();
-        });
+        START.call_once(::env_logger::init);
         let path = Path::new(file!()).parent()
                                      .unwrap()
                                      .join("data")
