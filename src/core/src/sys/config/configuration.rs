@@ -309,13 +309,13 @@ impl Configuration {
     /// index.
     ///
     /// For example, if we have
-    /// ```
+    /// ```text
     ///  0    1    2    3   # Molecules indexes
     /// H-H  H-H  H-H  H-H
     /// 0 1  2 3  4 5  6 7  # Particles indexes
     /// ```
     /// and call `merge_molecules(0, 3)` the result will be
-    /// ```
+    /// ```text
     /// 0 1 6 7  2 3  4 5  # Old indexes
     /// H-H-H-H  H-H  H-H
     /// 0 1 2 3  4 5  6 7  # New indexes
