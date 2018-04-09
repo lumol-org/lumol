@@ -386,6 +386,7 @@ impl Ewald {
         if r > self.rc || info.excluded {
             return Vector3D::new(0.0, 0.0, 0.0)
         }
+        assert_eq!(info.scaling, 1.0, "Scaling restriction scheme using Ewald are not implemented");
         let mut factor = erfc(self.alpha * r) / r;
         factor += self.alpha * FRAC_2_SQRT_PI * exp(-self.alpha * self.alpha * r * r);
         factor *= qi * qj / (r * r) / ELCC;
@@ -1269,6 +1270,24 @@ mod tests {
                 *position = new_cell.cartesian(&old_cell.fractional(&position));
             }
             system.cell = new_cell;
+        }
+
+        #[test]
+        fn virial_is_energy() {
+            // A nice property of Ewald summation for point charge systems
+            let system = water();
+            let ewald = SharedEwald::new(Ewald::new(8.0, 10, None));
+
+            let energy = ewald.energy(&system);
+            let virial = ewald.virial(&system).trace();
+            assert_relative_eq!(energy, virial, max_relative = 1e-3);
+
+            let system = nacl_pair();
+            let ewald = SharedEwald::new(Ewald::new(8.0, 10, None));
+
+            let energy = ewald.energy(&system);
+            let virial = ewald.virial(&system).trace();
+            assert_relative_eq!(energy, virial, max_relative = 1e-3);
         }
 
         #[test]
