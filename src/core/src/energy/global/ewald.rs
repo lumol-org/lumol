@@ -1558,6 +1558,7 @@ mod tests {
         mod cutoff_9 {
             use super::*;
             use consts::K_BOLTZMANN;
+            use units;
             const CUTOFF: f64 = 9.0;
 
             #[test]
@@ -1587,6 +1588,37 @@ mod tests {
             }
 
             #[test]
+            fn nist1_virial() {
+                let system = get_system("spce-1.xyz");
+                let mut ewald = Ewald::new(CUTOFF, 8, 0.364209);
+                ewald.restriction = PairRestriction::InterMolecular;
+                ewald.precompute(&system.cell);
+
+                let convert = units::from(1.0, "atm").unwrap() * system.volume();
+
+                let virial = ewald.real_space_virial(&system) + ewald.molcorrect_virial(&system);
+                let expected = convert * Matrix3::new([
+                    [-3852.8846,   264.92131,  15.263331],
+                    [ 264.92131,  -3778.4993, -108.79484],
+                    [ 15.263331,  -108.79484,  -1885.924],
+                ]);
+                assert_relative_eq!(virial, expected, max_relative = 1e-3);
+
+                let virial = ewald.kspace_virial(&system);
+                let expected = convert * Matrix3::new([
+                    [-124.54878,  5.3873858,   15.093282],
+                    [ 5.3873858, -111.92329,  -36.333371],
+                    [ 15.093282, -36.333371, -248.12515 ],
+                ]);
+                assert_relative_eq!(virial, expected, max_relative = 1e-3);
+
+                let ewald = SharedEwald::new(ewald);
+                let energy = ewald.energy(&system);
+                let virial = ewald.virial(&system).trace();
+                assert_relative_eq!(energy, virial, max_relative = 1e-3)
+            }
+
+            #[test]
             fn nist2() {
                 let system = get_system("spce-2.xyz");
 
@@ -1610,6 +1642,37 @@ mod tests {
                 let energy = ewald.molcorrect_energy(&system) / K_BOLTZMANN;
                 let expected = 5.61998e6;
                 assert_relative_eq!(energy, expected, max_relative = 1e-4);
+            }
+
+            #[test]
+            fn nist2_virial() {
+                let system = get_system("spce-2.xyz");
+                let mut ewald = Ewald::new(CUTOFF, 8, 0.370036);
+                ewald.restriction = PairRestriction::InterMolecular;
+                ewald.precompute(&system.cell);
+
+                let convert = units::from(1.0, "atm").unwrap() * system.volume();
+
+                let virial = ewald.real_space_virial(&system) + ewald.molcorrect_virial(&system);
+                let expected = convert * Matrix3::new([
+                    [-6388.8957, -158.39688, -344.71965],
+                    [-158.39688, -6988.116,   443.24826],
+                    [-344.71965,  443.24826, -7169.9086],
+                ]);
+                assert_relative_eq!(virial, expected, max_relative = 1e-3);
+
+                let virial = ewald.kspace_virial(&system);
+                let expected = convert * Matrix3::new([
+                    [-296.86013, -10.296217, -3.0451399],
+                    [-10.296217, -250.90827, -7.9310376],
+                    [-3.0451399, -7.9310376, -299.97078],
+                ]);
+                assert_relative_eq!(virial, expected, max_relative = 1e-3);
+
+                let ewald = SharedEwald::new(ewald);
+                let energy = ewald.energy(&system);
+                let virial = ewald.virial(&system).trace();
+                assert_relative_eq!(energy, virial, max_relative = 1e-3)
             }
 
             #[test]
@@ -1639,6 +1702,37 @@ mod tests {
             }
 
             #[test]
+            fn nist3_virial() {
+                let system = get_system("spce-3.xyz");
+                let mut ewald = Ewald::new(CUTOFF, 8, 0.373403);
+                ewald.restriction = PairRestriction::InterMolecular;
+                ewald.precompute(&system.cell);
+
+                let convert = units::from(1.0, "atm").unwrap() * system.volume();
+
+                let virial = ewald.real_space_virial(&system) + ewald.molcorrect_virial(&system);
+                let expected = convert * Matrix3::new([
+                    [-10038.765, -1366.2912,  95.727168],
+                    [-1366.2912, -12683.884, -213.42417],
+                    [ 95.727168, -213.42417, -11624.416],
+                ]);
+                assert_relative_eq!(virial, expected, max_relative = 1e-3);
+
+                let virial = ewald.kspace_virial(&system);
+                let expected = convert * Matrix3::new([
+                    [-255.20669,  18.680095, -37.1178  ],
+                    [ 18.680095, -275.89451, -5.1062841],
+                    [  -37.1178, -5.1062841, -232.9918 ],
+                ]);
+                assert_relative_eq!(virial, expected, max_relative = 1e-3);
+
+                let ewald = SharedEwald::new(ewald);
+                let energy = ewald.energy(&system);
+                let virial = ewald.virial(&system).trace();
+                assert_relative_eq!(energy, virial, max_relative = 1e-3)
+            }
+
+            #[test]
             fn nist4() {
                 let system = get_system("spce-4.xyz");
 
@@ -1663,11 +1757,43 @@ mod tests {
                 let expected = 1.41483e7;
                 assert_relative_eq!(energy, expected, max_relative = 1e-4);
             }
+
+            #[test]
+            fn nist4_virial() {
+                let system = get_system("spce-4.xyz");
+                let mut ewald = Ewald::new(CUTOFF, 12, 0.370914);
+                ewald.restriction = PairRestriction::InterMolecular;
+                ewald.precompute(&system.cell);
+
+                let convert = units::from(1.0, "atm").unwrap() * system.volume();
+
+                let virial = ewald.real_space_virial(&system) + ewald.molcorrect_virial(&system);
+                let expected = convert * Matrix3::new([
+                    [-5586.0358, -136.58999, -30.075826],
+                    [-136.58999, -5846.9018, -121.54568],
+                    [-30.075826, -121.54568, -4988.8238],
+                ]);
+                assert_relative_eq!(virial, expected, max_relative = 5e-3);
+
+                let virial = ewald.kspace_virial(&system);
+                let expected = convert * Matrix3::new([
+                    [ -482.8217, -17.877365,  11.908942],
+                    [-17.877365, -465.33957,  3.5274012],
+                    [ 11.908942,  3.5274012, -536.23714],
+                ]);
+                assert_relative_eq!(virial, expected, max_relative = 1e-3);
+
+                let ewald = SharedEwald::new(ewald);
+                let energy = ewald.energy(&system);
+                let virial = ewald.virial(&system).trace();
+                assert_relative_eq!(energy, virial, max_relative = 1e-3)
+            }
         }
 
         mod cutoff_10 {
             use super::*;
             use consts::K_BOLTZMANN;
+            use units;
             const CUTOFF: f64 = 10.0;
 
             #[test]
@@ -1697,6 +1823,37 @@ mod tests {
             }
 
             #[test]
+            fn nist1_virial() {
+                let system = get_system("spce-1.xyz");
+                let mut ewald = Ewald::new(CUTOFF, 7, 0.326983);
+                ewald.restriction = PairRestriction::InterMolecular;
+                ewald.precompute(&system.cell);
+
+                let convert = units::from(1.0, "atm").unwrap() * system.volume();
+
+                let virial = ewald.real_space_virial(&system) + ewald.molcorrect_virial(&system);
+                let expected = convert * Matrix3::new([
+                    [-3916.4836,  268.02381,  23.686442],
+                    [ 268.02381, -3839.2663, -118.84454],
+                    [ 23.686442, -118.84454, -1945.1106],
+                ]);
+                assert_relative_eq!(virial, expected, max_relative = 1e-3);
+
+                let virial = ewald.kspace_virial(&system);
+                let expected = convert * Matrix3::new([
+                    [-61.298853,  2.0228732,    6.70617],
+                    [ 2.0228732, -51.134442,   -26.2246],
+                    [   6.70617,   -26.2246, -188.90856],
+                ]);
+                assert_relative_eq!(virial, expected, max_relative = 1e-3);
+
+                let ewald = SharedEwald::new(ewald);
+                let energy = ewald.energy(&system);
+                let virial = ewald.virial(&system).trace();
+                assert_relative_eq!(energy, virial, max_relative = 1e-3)
+            }
+
+            #[test]
             fn nist2() {
                 let system = get_system("spce-2.xyz");
 
@@ -1720,6 +1877,37 @@ mod tests {
                 let energy = ewald.molcorrect_energy(&system) / K_BOLTZMANN;
                 let expected = 5.61998e6;
                 assert_relative_eq!(energy, expected, max_relative = 1e-4);
+            }
+
+            #[test]
+            fn nist2_virial() {
+                let system = get_system("spce-2.xyz");
+                let mut ewald = Ewald::new(CUTOFF, 8, 0.332241);
+                ewald.restriction = PairRestriction::InterMolecular;
+                ewald.precompute(&system.cell);
+
+                let convert = units::from(1.0, "atm").unwrap() * system.volume();
+
+                let virial = ewald.real_space_virial(&system) + ewald.molcorrect_virial(&system);
+                let expected = convert * Matrix3::new([
+                    [-6515.4904, -161.25038, -340.79656],
+                    [-161.25038,  -7099.813,  440.80231],
+                    [-340.79656,  440.80231, -7285.3392],
+                ]);
+                assert_relative_eq!(virial, expected, max_relative = 1e-3);
+
+                let virial = ewald.kspace_virial(&system);
+                let expected = convert * Matrix3::new([
+                    [-171.16013, -7.5200295, -6.7910143],
+                    [-7.5200295, -140.58412, -5.5476543],
+                    [-6.7910143, -5.5476543, -185.27155],
+                ]);
+                assert_relative_eq!(virial, expected, max_relative = 1e-3);
+
+                let ewald = SharedEwald::new(ewald);
+                let energy = ewald.energy(&system);
+                let virial = ewald.virial(&system).trace();
+                assert_relative_eq!(energy, virial, max_relative = 1e-3)
             }
 
             #[test]
@@ -1749,6 +1937,37 @@ mod tests {
             }
 
             #[test]
+            fn nist3_virial() {
+                let system = get_system("spce-3.xyz");
+                let mut ewald = Ewald::new(CUTOFF, 8, 0.335278);
+                ewald.restriction = PairRestriction::InterMolecular;
+                ewald.precompute(&system.cell);
+
+                let convert = units::from(1.0, "atm").unwrap() * system.volume();
+
+                let virial = ewald.real_space_virial(&system) + ewald.molcorrect_virial(&system);
+                let expected = convert * Matrix3::new([
+                    [-10159.552, -1365.6921,  85.837259],
+                    [-1365.6921, -12806.406, -202.68293],
+                    [ 85.837259, -202.68293, -11744.811],
+                ]);
+                assert_relative_eq!(virial, expected, max_relative = 1e-3);
+
+                let virial = ewald.kspace_virial(&system);
+                let expected = convert * Matrix3::new([
+                    [-136.28835,   18.49649, -27.386553],
+                    [  18.49649, -155.56804, -15.667645],
+                    [-27.386553, -15.667645, -114.48139],
+                ]);
+                assert_relative_eq!(virial, expected, max_relative = 1e-3);
+
+                let ewald = SharedEwald::new(ewald);
+                let energy = ewald.energy(&system);
+                let virial = ewald.virial(&system).trace();
+                assert_relative_eq!(energy, virial, max_relative = 1e-3)
+            }
+
+            #[test]
             fn nist4() {
                 let system = get_system("spce-4.xyz");
 
@@ -1772,6 +1991,37 @@ mod tests {
                 let energy = ewald.molcorrect_energy(&system) / K_BOLTZMANN;
                 let expected = 1.41483e7;
                 assert_relative_eq!(energy, expected, max_relative = 1e-4);
+            }
+
+            #[test]
+            fn nist4_virial() {
+                let system = get_system("spce-4.xyz");
+                let mut ewald = Ewald::new(CUTOFF, 11, 0.333033);
+                ewald.restriction = PairRestriction::InterMolecular;
+                ewald.precompute(&system.cell);
+
+                let convert = units::from(1.0, "atm").unwrap() * system.volume();
+
+                let virial = ewald.real_space_virial(&system) + ewald.molcorrect_virial(&system);
+                let expected = convert * Matrix3::new([
+                    [-5782.9498, -144.67187, -31.932323],
+                    [-144.67187, -6052.8821, -121.95614],
+                    [-31.932323, -121.95614, -5205.1646],
+                ]);
+                assert_relative_eq!(virial, expected, max_relative = 1e-3);
+
+                let virial = ewald.kspace_virial(&system);
+                let expected = convert * Matrix3::new([
+                    [-288.2612,  -9.676199,  13.775332],
+                    [-9.676199, -261.38081,  3.8066323],
+                    [13.775332,  3.8066323, -322.02403],
+                ]);
+                assert_relative_eq!(virial, expected, max_relative = 1e-3);
+
+                let ewald = SharedEwald::new(ewald);
+                let energy = ewald.energy(&system);
+                let virial = ewald.virial(&system).trace();
+                assert_relative_eq!(energy, virial, max_relative = 1e-3)
             }
         }
     }
