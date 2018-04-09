@@ -374,8 +374,8 @@ impl PairPotential for Buckingham {
         let rc2 = rc * rc;
         let rc3 = rc2 * rc;
         let exp = exp(-rc / self.rho);
-        let factor = rc3 + 3.0 * rc2 * self.rho + 6.0 * rc * self.rho * self.rho
-            + 6.0 * self.rho * self.rho * self.rho;
+        let factor = rc3 + 3.0 * rc2 * self.rho + 6.0 * rc * self.rho * self.rho +
+                     6.0 * self.rho * self.rho * self.rho;
         self.a * exp * factor - 20.0 * self.c / rc3 + 8.0
     }
 }
@@ -440,8 +440,8 @@ impl PairPotential for BornMayerHuggins {
         let rc2 = rc * rc;
         let rc3 = rc2 * rc;
         let exp = exp((self.sigma - rc) / self.rho);
-        let factor = rc3 + 3.0 * rc2 * self.rho + 6.0 * rc * self.rho * self.rho
-            + 6.0 * self.rho * self.rho * self.rho;
+        let factor = rc3 + 3.0 * rc2 * self.rho + 6.0 * rc * self.rho * self.rho +
+                     6.0 * self.rho * self.rho * self.rho;
         self.a * exp * factor - 20.0 * self.c / rc3 + 8.0 * self.d / (5.0 * rc2 * rc3)
     }
 }
@@ -547,20 +547,118 @@ impl Potential for Gaussian {
 
 impl PairPotential for Gaussian {
     fn tail_energy(&self, rc: f64) -> f64 {
-        self.energy(rc) * rc / (2.0 * self.b)
-            - self.a * sqrt(PI) * erfc(sqrt(self.b) * rc) / (4.0 * self.b.powf(3.0 / 2.0))
+        self.energy(rc) * rc / (2.0 * self.b) -
+        self.a * sqrt(PI) * erfc(sqrt(self.b) * rc) / (4.0 * self.b.powf(3.0 / 2.0))
     }
 
     fn tail_virial(&self, rc: f64) -> f64 {
-        3.0 * sqrt(PI) * self.a * erfc(sqrt(self.b) * rc) / (4.0 * self.b.powf(3.0 / 2.0))
-            - self.energy(rc) * rc * (2.0 * self.b * rc * rc + 3.0) / (2.0 * self.b)
+        3.0 * sqrt(PI) * self.a * erfc(sqrt(self.b) * rc) / (4.0 * self.b.powf(3.0 / 2.0)) -
+        self.energy(rc) * rc * (2.0 * self.b * rc * rc + 3.0) / (2.0 * self.b)
     }
 }
 
+/// Mie potential.
+///
+/// The following expression of the Mie potential is used:
+/// `V(r) = p * ((sigma/r)^n - (sigma/r)^m)`
+/// where `p` is a prefactor computed as
+/// `k = n / (n - m) * (n / m)^(m / (n - m)) * epsilon`,
+/// `epsilon` is an energetic constant, `sigma` is a distance constant,
+/// and `n`, `m` are the repulsive and attractive exponents, respectively.
+///
+/// # Note
+///
+/// `n` has to be larger than `m`
+/// For `m` smaller than 3.0, there is no analytic tail correction and the
+/// energy and force contributions will be set to zero.
+///
+/// # Examples
+///
+/// ```
+/// use lumol_core::energy::Potential;
+/// use lumol_core::energy::Mie;
+///
+/// let potential = Mie::new(2.0, 10.0, 12.0, 6.0);
+/// assert_eq!(potential.energy(2.0), 0.0);
+/// assert!(f64::abs(potential.energy(3.0) + 3.203365942785746) < 1e-8);
+///
+/// assert_eq!(potential.force(2.0), 120.0);
+/// ```
+#[derive(Clone, Copy)]
+pub struct Mie {
+    /// Distance constant
+    sigma: f64,
+    /// Exponent of repulsive contribution
+    n: f64,
+    /// Exponent of attractive contribution
+    m: f64,
+    /// Energetic prefactor computed from the exponents and epsilon
+    prefac: f64,
+}
+
+impl Mie {
+    /// Return Mie potential.
+    pub fn new(sigma: f64, epsilon: f64, n: f64, m: f64) -> Mie {
+        if m >= n {
+            panic!("The repulsive exponent n has to be larger than the attractive exponent m")
+        };
+        let prefac = n / (n - m) * (n / m).powf(m / (n - m)) * epsilon;
+        Mie {
+            sigma: sigma,
+            n: n,
+            m: m,
+            prefac: prefac,
+        }
+    }
+}
+
+impl Potential for Mie {
+    fn energy(&self, r: f64) -> f64 {
+        let sigma_r = self.sigma / r;
+        let repulsive = f64::powf(sigma_r, self.n);
+        let attractive = f64::powf(sigma_r, self.m);
+        self.prefac * (repulsive - attractive)
+    }
+
+    fn force(&self, r: f64) -> f64 {
+        let sigma_r = self.sigma / r;
+        let repulsive = f64::powf(sigma_r, self.n);
+        let attractive = f64::powf(sigma_r, self.m);
+        self.prefac * (self.n * repulsive - self.m * attractive) / r
+    }
+}
+
+impl PairPotential for Mie {
+    fn tail_energy(&self, cutoff: f64) -> f64 {
+        if self.m <= 3.0 {
+            return 0.0
+        };
+        let sigma_rc = self.sigma / cutoff;
+        let n_3 = self.n - 3.0;
+        let m_3 = self.m - 3.0;
+        let repulsive = f64::powf(sigma_rc, n_3);
+        let attractive = f64::powf(sigma_rc, m_3);
+        self.prefac * self.sigma.powi(3) * (repulsive / n_3 - attractive / m_3)
+    }
+
+    fn tail_virial(&self, cutoff: f64) -> f64 {
+        if self.m <= 3.0 {
+            return 0.0
+        };
+        let sigma_rc = self.sigma / cutoff;
+        let n_3 = self.n - 3.0;
+        let m_3 = self.m - 3.0;
+        let repulsive = f64::powf(sigma_rc, n_3);
+        let attractive = f64::powf(sigma_rc, m_3);
+        self.prefac * self.sigma.powi(3) * (repulsive * self.n / n_3 - attractive * self.m / m_3)
+    }
+}
+
+
 #[cfg(test)]
 mod tests {
-    use super::*;
     use energy::{PairPotential, Potential};
+    use super::*;
     const EPS: f64 = 1e-9;
 
     #[test]
@@ -737,5 +835,41 @@ mod tests {
     fn test_gaussian_wrong_input() {
         let gaussian = Gaussian::new(8.0, -2.0);
         assert_eq!(gaussian.energy(0.0), -8.0);
+    }
+
+    #[test]
+    fn test_mie() {
+        let mie = Mie::new(2.0, 0.8, 12.0, 6.0);
+        assert_eq!(mie.energy(2.0), 0.0);
+        assert_eq!(mie.energy(2.5), -0.6189584744448002);
+
+        assert_relative_eq!(mie.tail_energy(1.0), 1388.0888889, epsilon = 1e-6);
+        assert_relative_eq!(mie.tail_energy(2.0), -5.688888888888889, epsilon = 1e-6);
+        assert_relative_eq!(mie.tail_energy(14.42), -0.022767318648783084, epsilon = 1e-6);
+
+        assert_relative_eq!(mie.tail_virial(1.0), 17066.666666666668, epsilon = 1e-6);
+        assert_relative_eq!(mie.tail_virial(2.0), -17.06666666666667, epsilon = 1e-6);
+        assert_relative_eq!(mie.tail_virial(14.42), -0.1366035877536718, epsilon = 1e-6);
+
+        assert!(mie.force(f64::powf(2.0, 1.0 / 6.0) * 2.0).abs() < 1e-15);
+        assert_ulps_eq!(mie.force(2.5), -0.95773475733504);
+
+        let e0 = mie.energy(4.0);
+        let e1 = mie.energy(4.0 + EPS);
+        assert_relative_eq!((e0 - e1) / EPS, mie.force(4.0), epsilon = 1e-6);
+    }
+
+    #[test]
+    #[should_panic(expected = "The repulsive exponent n has to be larger than the attractive exponent m")]
+    fn test_mie_n_lower_m() {
+        let mie = Mie::new(2.0, 0.8, 6.0, 12.0);
+        assert_eq!(mie.energy(2.0), 0.0);
+    }
+    
+    #[test]
+    fn test_mie_tail_divergence() {
+        let mie = Mie::new(2.0, 0.8, 12.0, 2.0);
+        assert_eq!(mie.tail_energy(2.0), 0.0);
+        assert_eq!(mie.tail_virial(2.0), 0.0);
     }
 }

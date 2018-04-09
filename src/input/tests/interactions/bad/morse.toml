@@ -1,0 +1,57 @@
+[input]
+version = 1
+
+[[pairs]]
+atoms = ["A", "B"]
+morse = {A = "5 A^-1", depth = "25 kJ/mol"}
+#^ Missing 'x0' key in Morse potential
+
++++
+
+[input]
+version = 1
+
+[[pairs]]
+atoms = ["A", "B"]
+morse = {A = "5 A^-1", x0 = "2.1 A"}
+#^ Missing 'depth' key in Morse potential
+
++++
+
+[input]
+version = 1
+
+[[pairs]]
+atoms = ["A", "B"]
+morse = {depth = "25 kJ/mol", x0 = "2.1 A"}
+#^ Missing 'A' key in Morse potential
+
++++
+
+[input]
+version = 1
+
+[[pairs]]
+atoms = ["A", "B"]
+morse = {A = 5, depth = "25 kJ/mol", x0 = "2.1 A"}
+#^ 'A' must be a string in Morse potential
+
++++
+
+[input]
+version = 1
+
+[[pairs]]
+atoms = ["A", "B"]
+morse = {A = "5 A", depth = true, x0 = "2.1 A"}
+#^ 'depth' must be a string in Morse potential
+
++++
+
+[input]
+version = 1
+
+[[pairs]]
+atoms = ["A", "B"]
+morse = {A = "5 A", depth = "25 kJ/mol", x0 = 2.1}
+#^ 'x0' must be a string in Morse potential

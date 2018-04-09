@@ -1,0 +1,44 @@
+[input]
+version = 1
+
+[[angles]]
+atoms = ["A", "A"]
+#^ Wrong size for 'atoms' array in angle potential. Should be 3, is 2
+
++++
+
+[input]
+version = 1
+
+[[angles]]
+atoms = ["A", "B", "A", "B"]
+#^ Wrong size for 'atoms' array in angle potential. Should be 3, is 4
+
++++
+
+[input]
+version = 1
+
+[[angles]]
+atoms = {A=true, B=true, C="C"}
+#^ 'atoms' must be an array in angle potential
+
++++
+
+[input]
+version = 1
+
+[[angles]]
+atoms = ["A", "A", "A"]
+#^ Missing potential type in angle potential
+
++++
+
+[input]
+version = 1
+
+[[angles]]
+atoms = ["A", "A", "A"]
+null = true
+harmonic = {k = "3 A", x0 = "5.9 kJ/mol"}
+#^ Got more than one potential type in angle potential: harmonic and null

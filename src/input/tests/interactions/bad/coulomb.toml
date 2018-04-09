@@ -1,0 +1,70 @@
+[input]
+version = 1
+
+[coulomb]
+wolf = {cutoff = "6 A"}
+ewald = {cutoff = "6 A", kmax = 8}
+#^ Got more than one coulombic solver: ewald and wolf
+
++++
+
+[input]
+version = 1
+
+[coulomb]
+wolf = {cutoff = 6}
+#^ 'cutoff' must be a string in Wolf coulombic potential
+
++++
+
+[input]
+version = 1
+
+[coulomb]
+ewald = {cutoff = 6, kmax = 67}
+#^ 'cutoff' must be a string in Ewald coulombic potential
+
++++
+
+[input]
+version = 1
+
+[coulomb]
+ewald = {cutoff = "6 A", kmax = "67"}
+#^ 'kmax' must be a positive integer in Ewald coulombic potential
+
++++
+
+[input]
+version = 1
+
+[coulomb]
+ewald = {cutoff = "6 A", kmax = -7}
+#^ 'kmax' must be a positive integer in Ewald coulombic potential
+
++++
+
+[input]
+version = 1
+
+[coulomb]
+ewald = true
+#^ Coulombic solver 'ewald' must be a table
+
++++
+
+[input]
+version = 1
+
+[coulomb]
+wolf = true
+#^ Coulombic solver 'wolf' must be a table
+
++++
+
+[input]
+version = 1
+
+[coulomb]
+unknown = {}
+#^ Unknown coulomb solver 'unknown'

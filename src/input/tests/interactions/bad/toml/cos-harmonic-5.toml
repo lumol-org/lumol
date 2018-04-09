@@ -1,7 +1,0 @@
-[input]
-version = 1
-
-[[angles]]
-atoms = ["A", "A", "A"]
-cosine-harmonic = {k = 2.2, x0 = "7 A"}
-#^ 'k' and 'x0' must be strings in cosine harmonic potential

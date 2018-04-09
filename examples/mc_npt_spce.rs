@@ -51,7 +51,7 @@ fn get_system() -> System {
     }
 
     // Add ewald summation method.
-    let ewald = Ewald::new(6.0, 7);
+    let ewald = Ewald::new(6.0, 7, None);
     system.set_coulomb_potential(Box::new(SharedEwald::new(ewald)));
 
     // Check if bonds are guessed correctly.

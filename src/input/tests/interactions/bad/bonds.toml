@@ -1,0 +1,44 @@
+[input]
+version = 1
+
+[[bonds]]
+atoms = ["A"]
+#^ Wrong size for 'atoms' array in bond potential. Should be 2, is 1
+
++++
+
+[input]
+version = 1
+
+[[bonds]]
+atoms = ["A", "B", "A"]
+#^ Wrong size for 'atoms' array in bond potential. Should be 2, is 3
+
++++
+
+[input]
+version = 1
+
+[[bonds]]
+atoms = {A=true, B=true}
+#^ 'atoms' must be an array in bond potential
+
++++
+
+[input]
+version = 1
+
+[[bonds]]
+atoms = ["A", "A"]
+#^ Missing potential type in bond potential
+
++++
+
+[input]
+version = 1
+
+[[bonds]]
+atoms = ["A", "A"]
+lj = {sigma = "3 A", epsilon = "5.9 kJ/mol"}
+harmonic = {k = "3 A", x0 = "5.9 kJ/mol"}
+#^ Got more than one potential type in bond potential: harmonic and lj

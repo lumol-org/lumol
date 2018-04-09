@@ -34,7 +34,7 @@ use super::{GlobalPotential, CoulombicPotential, GlobalCache};
 /// use lumol_core::units;
 ///
 /// let ewald = SharedEwald::new(
-///     Ewald::new(/* cutoff */ 12.0, /* kmax */ 7)
+///     Ewald::new(/* cutoff */ 12.0, /* kmax */ 7, /* alpha */ None)
 /// );
 ///
 /// use lumol_core::sys::System;
@@ -90,12 +90,20 @@ pub struct Ewald {
 
 impl Ewald {
     /// Create an Ewald summation using the given `cutoff` radius in real
-    /// space, and `kmax` points in k-space (Fourier space).
-    pub fn new(cutoff: f64, kmax: usize) -> Ewald {
+    /// space, and `kmax` points in k-space (Fourier space). If `alpha` is None,
+    /// then the default value of `3 * π / (4 * cutoff)` is used.
+    pub fn new<I: Into<Option<f64>>>(cutoff: f64, kmax: usize, alpha: I) -> Ewald {
+        let alpha = alpha.into().unwrap_or(3.0 * PI / (cutoff * 4.0));
+        if cutoff < 0.0 {
+            fatal_error!("the cutoff can not be negative in Ewald");
+        } else if alpha < 0.0 {
+            fatal_error!("alpha can not be negative in Ewald");
+        }
+
         let expfactors = Array3::zeros((kmax, kmax, kmax));
         let rho = Array3::zeros((kmax, kmax, kmax));
         Ewald {
-            alpha: 3.0 * PI / (cutoff * 4.0),
+            alpha: alpha,
             rc: cutoff,
             kmax: kmax,
             kmax2: 0.0,
@@ -106,13 +114,6 @@ impl Ewald {
             delta_rho: rho,
             previous_cell: None,
         }
-    }
-
-    /// Set the value of the alpha parameter for ewald computation. The default is to use
-    /// `alpha = 3 * π / (4 * rc)`.
-    pub fn set_alpha(&mut self, alpha: f64) {
-        assert!(alpha > 0.0, "Ewald parameter alpha must be positive");
-        self.alpha = alpha;
     }
 
     fn precompute(&mut self, cell: &UnitCell) {
@@ -759,7 +760,7 @@ impl SharedEwald {
     /// # Example
     /// ```
     /// # use lumol_core::energy::{Ewald, SharedEwald, CoulombicPotential};
-    /// let ewald = SharedEwald::new(Ewald::new(12.5, 10));
+    /// let ewald = SharedEwald::new(Ewald::new(12.5, 10, None));
     /// let boxed: Box<CoulombicPotential> = Box::new(ewald);
     /// ```
     pub fn new(ewald: Ewald) -> SharedEwald {
@@ -900,7 +901,7 @@ mod tests {
         fn infinite_cell() {
             let mut system = nacl_pair();
             system.cell = UnitCell::new();
-            let ewald = SharedEwald::new(Ewald::new(8.0, 10));
+            let ewald = SharedEwald::new(Ewald::new(8.0, 10, None));
             let _ = ewald.energy(&system);
         }
 
@@ -909,15 +910,20 @@ mod tests {
         fn triclinic_cell() {
             let mut system = nacl_pair();
             system.cell = UnitCell::triclinic(10.0, 10.0, 10.0, 90.0, 90.0, 90.0);
-            let ewald = SharedEwald::new(Ewald::new(8.0, 10));
+            let ewald = SharedEwald::new(Ewald::new(8.0, 10, None));
             let _ = ewald.energy(&system);
         }
 
         #[test]
         #[should_panic]
+        fn negative_cutoff() {
+            let _ = Ewald::new(-8.0, 10, None);
+        }
+
+        #[test]
+        #[should_panic]
         fn negative_alpha() {
-            let mut ewald = Ewald::new(8.0, 10);
-            ewald.set_alpha(-45.2);
+            let _ = Ewald::new(8.0, 10, -45.2);
         }
     }
 
@@ -928,7 +934,7 @@ mod tests {
         #[test]
         fn energy() {
             let system = nacl_pair();
-            let ewald = SharedEwald::new(Ewald::new(8.0, 10));
+            let ewald = SharedEwald::new(Ewald::new(8.0, 10, None));
 
             let energy = ewald.energy(&system);
             // This was computed by hand
@@ -939,7 +945,7 @@ mod tests {
         #[test]
         fn forces() {
             let mut system = nacl_pair();
-            let ewald = SharedEwald::new(Ewald::new(8.0, 10));
+            let ewald = SharedEwald::new(Ewald::new(8.0, 10, None));
 
             let mut forces = vec![Vector3D::zero(); 2];
             ewald.forces(&system, &mut forces);
@@ -973,7 +979,7 @@ mod tests {
         #[test]
         fn energy() {
             let system = water();
-            let mut ewald = SharedEwald::new(Ewald::new(8.0, 10));
+            let mut ewald = SharedEwald::new(Ewald::new(8.0, 10, None));
             ewald.set_restriction(PairRestriction::InterMolecular);
 
             let energy = ewald.energy(&system);
@@ -988,7 +994,7 @@ mod tests {
         #[test]
         fn forces() {
             let mut system = water();
-            let mut ewald = SharedEwald::new(Ewald::new(8.0, 10));
+            let mut ewald = SharedEwald::new(Ewald::new(8.0, 10, None));
             ewald.set_restriction(PairRestriction::InterMolecular);
 
             let mut forces = vec![Vector3D::zero(); 3];
@@ -1052,7 +1058,7 @@ mod tests {
         #[test]
         fn real_space() {
             let system = nacl_pair();
-            let ewald = Ewald::new(8.0, 10);
+            let ewald = Ewald::new(8.0, 10, None);
 
             // real space
             let virial = ewald.real_space_virial(&system);
@@ -1065,7 +1071,7 @@ mod tests {
         #[test]
         fn kspace() {
             let system = nacl_pair();
-            let mut ewald = Ewald::new(8.0, 10);
+            let mut ewald = Ewald::new(8.0, 10, None);
 
             let virial = ewald.kspace_virial(&system);
             let mut forces = vec![Vector3D::zero(); 2];
@@ -1079,7 +1085,7 @@ mod tests {
             let mut system = nacl_pair();
             let _ = system.add_bond(0, 1);
 
-            let mut ewald = SharedEwald::new(Ewald::new(8.0, 10));
+            let mut ewald = SharedEwald::new(Ewald::new(8.0, 10, None));
             ewald.set_restriction(PairRestriction::InterMolecular);
 
             let virial = ewald.read().molcorrect_virial(&system);
@@ -1092,7 +1098,7 @@ mod tests {
         #[test]
         fn total() {
             let system = nacl_pair();
-            let ewald = SharedEwald::new(Ewald::new(8.0, 10));
+            let ewald = SharedEwald::new(Ewald::new(8.0, 10, None));
             let mut forces = vec![Vector3D::zero(); 2];
 
             let virial = ewald.virial(&system);
@@ -1118,7 +1124,7 @@ mod tests {
 
             let eps = 1e-9;
             let mut system = nacl_pair();
-            let ewald = SharedEwald::new(Ewald::new(8.0, 10));
+            let ewald = SharedEwald::new(Ewald::new(8.0, 10, None));
 
             let virial = ewald.virial(&system);
 
@@ -1176,7 +1182,7 @@ mod tests {
         #[test]
         fn move_atoms() {
             let mut system = testing_system();
-            let mut ewald = SharedEwald::new(Ewald::new(8.0, 10));
+            let mut ewald = SharedEwald::new(Ewald::new(8.0, 10, None));
             ewald.set_restriction(PairRestriction::InterMolecular);
 
             let ewald_check = ewald.clone();
@@ -1196,7 +1202,7 @@ mod tests {
         #[test]
         fn move_atoms_real_space() {
             let mut system = testing_system();
-            let mut ewald = SharedEwald::new(Ewald::new(8.0, 10));
+            let mut ewald = SharedEwald::new(Ewald::new(8.0, 10, None));
             ewald.set_restriction(PairRestriction::InterMolecular);
 
             let ewald_check = ewald.clone();
@@ -1216,7 +1222,7 @@ mod tests {
         #[test]
         fn move_atoms_kspace() {
             let mut system = testing_system();
-            let mut ewald = SharedEwald::new(Ewald::new(8.0, 10));
+            let mut ewald = SharedEwald::new(Ewald::new(8.0, 10, None));
             ewald.set_restriction(PairRestriction::InterMolecular);
 
             let ewald_check = ewald.clone();
@@ -1236,7 +1242,7 @@ mod tests {
         #[test]
         fn move_atoms_molcorrect() {
             let mut system = testing_system();
-            let mut ewald = SharedEwald::new(Ewald::new(8.0, 10));
+            let mut ewald = SharedEwald::new(Ewald::new(8.0, 10, None));
             ewald.set_restriction(PairRestriction::InterMolecular);
 
             let ewald_check = ewald.clone();

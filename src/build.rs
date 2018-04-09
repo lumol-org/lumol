@@ -13,5 +13,5 @@ fn main() {
     }
 
     println!("cargo:rustc-env=LUMOL_FULL_GIT_VERSION={}", version);
-    println!("cargo:rerun-if-changed=(nonexistentfile)");
+    println!("cargo:rerun-if-changed=.git/HEAD");
 }

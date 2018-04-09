@@ -166,26 +166,25 @@ of the molecule than the Harmonic potential. It is expressed as:
 
 .. math::
 
-    V(r) = depth
-   (1 - \exp(- a (r - x_0))^2
+    V(x) = \text{depth} \times (1 - \exp(- A (x - x_0))^2
 
-The potential type keyword is ``morse``, and the parameters ``a``, ``x0`` and
+The potential type keyword is ``morse``, and the parameters ``A``, ``x0`` and
 ``depth`` should be provided as strings.
 
 .. code::
 
     [[pairs]]
     atoms = ["A", "B"]
-    morse = {depth = "40 kJ/mol", a = "2.0 A^-1", x0 = "1.3 A"}
+    morse = {depth = "40 kJ/mol", A = "2.0 A^-1", x0 = "1.3 A"}
 
-For angles and dihedral angles, ``x0`` and ``a`` should be provided in angle
+For angles and dihedral angles, ``x0`` and ``A`` should be provided in angle
 units:
 
 .. code::
 
     [[pairs]]
     atoms = ["A", "B"]
-    morse = {depth = "40 kJ/mol", a = "2.0 rad^-1", x0 = "109.7 deg"}
+    morse = {depth = "40 kJ/mol", A = "2.0 rad^-1", x0 = "109.7 deg"}
 
 
 Gaussian potential
@@ -195,16 +194,43 @@ This potential is usually used to describe energy wells and is expressed as:
 
 .. math::
 
-    V(r) = -a \exp(-b r^2)
+    V(r) = -A \exp(-B r^2)
 
-The potential type keyword is ``gaussian``, and the parameters ``a`` (well depth)
-and ``b`` (well width) should be provided as strings.
+The potential type keyword is ``gaussian``, and the parameters ``A`` (well depth)
+and ``B`` (well width) should be provided as strings.
 
 .. code::
 
     [[pairs]]
     atoms = ["A", "B"]
-    gaussian = {a = "8.0 kJ/mol", b = "0.2 A^-2"}
+    gaussian = {A = "8.0 kJ/mol", B = "0.2 A^-2"}
 
 .. caution::
-    ``b`` has to be positive
+    ``B`` has to be positive
+
+
+Mie potential
+-------------
+
+The Mie potential is a classical potential for pair interactions
+expressed as:
+
+.. math::
+
+    V(r) = \frac{n}{n-m} \left(\frac{n}{m}\right)^{m/(n-m)}\epsilon
+    \left[ \left( \frac{\sigma}{r}\right)^n - \left( \frac{\sigma}{r}\right)^m \right]
+
+The potential type keyword is ``mie`` and the parameters are
+``sigma`` (:math:`\sigma`), the particle diameter, and ``epsilon`` (:math:`\epsilon`), the energetic
+parameter, which should be provided as strings (with units).
+The repulsive exponent ``n`` and the attractive exponent ``m`` should be provided as
+numbers.
+
+.. code::
+
+    [[pairs]]
+    atoms = ["A", "B"]
+    mie = {sigma = "3 A", epsilon = "5.9 kJ/mol", n = 12.0, m = 6.0}
+
+.. caution::
+    The repulsive exponent ``n`` has to be larger than the attractive exponent ``m``.

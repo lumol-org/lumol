@@ -1,8 +1,0 @@
-[input]
-version = 1
-
-[log]
-targets = [
-   "foo", "<stdout>"
-]
-#^ 'targets' must be an array of tables in 'log' section

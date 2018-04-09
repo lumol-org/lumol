@@ -1,8 +1,0 @@
-[input]
-version = 1
-
-[[pairs]]
-atoms = ["A", "A"]
-cutoff = "3 A"
-buckingham = {A = "4.2 kJ/mol", C = "5e-6 kJ/mol/A^6", rho = 23}
-#^ 'A', 'C' and 'rho' must be strings in Buckingham potential

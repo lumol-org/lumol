@@ -1,6 +1,0 @@
-[input]
-version = 1
-
-[coulomb]
-wolf = {cutoff = 6}
-#^ 'cutoff' parameter must be a string in Wolf potential
