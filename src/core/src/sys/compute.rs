@@ -247,8 +247,7 @@ impl Compute for PressureAtTemperature {
     fn compute(&self, system: &System) -> f64 {
         assert!(!system.cell.is_infinite(), "Can not compute pressure for infinite cell");
         assert!(self.temperature >= 0.0);
-        let virial_tensor = system.virial();
-        let virial = virial_tensor.trace();
+        let virial = system.virial().trace();
         let volume = system.volume();
         let natoms = system.size() as f64;
         return natoms * K_BOLTZMANN * self.temperature / volume + virial / (3.0 * volume);
