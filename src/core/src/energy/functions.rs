@@ -156,13 +156,13 @@ impl Potential for WeeksChandlerAndersen {
 impl PairPotential for WeeksChandlerAndersen {
     fn tail_energy(&self, cutoff: f64) -> f64 {
         if cutoff < f64::powf(2., 1./6.) * self.sigma {
-            panic!("Error: WCA Cutoff too small: {} < {}", cutoff, f64::powf(2., 1./6.) * self.sigma);
+            panic!("WCA cutoff ({}) is smaller than the tail corrections cutoff ({})", cutoff, f64::powf(2., 1./6.) * self.sigma);
         }
         0.0
     }
     fn tail_virial(&self, cutoff: f64) -> f64 {
         if cutoff < f64::powf(2., 1./6.) * self.sigma {
-            panic!("Error: WCA Cutoff too small: {} < {}", cutoff, f64::powf(2., 1./6.) * self.sigma);
+            panic!("WCA cutoff ({}) is smaller than the tail corrections cutoff ({})", cutoff, f64::powf(2., 1./6.) * self.sigma);
         }
         0.0
     }
