@@ -64,7 +64,6 @@ mod wolf {
 mod ewald {
     use START;
     use input::Input;
-    use lumol::units;
     use std::path::Path;
 
     #[test]
@@ -97,21 +96,5 @@ mod ewald {
         config.simulation.run(&mut config.system, config.nsteps);
         let e_final = config.system.total_energy();
         assert!(f64::abs((e_initial - e_final) / e_final) < 5e-3);
-    }
-
-    #[test]
-    fn energy() {
-        START.call_once(::env_logger::init);
-        let path = Path::new(file!()).parent()
-                                     .unwrap()
-                                     .join("data")
-                                     .join("md-nacl")
-                                     .join("energy-ewald-big.toml");
-        let system = Input::new(path).unwrap().read_system().unwrap();
-        let energy = units::to(system.total_energy(), "kcal/mol").unwrap();
-
-        // Energy of this system given by LAMMPS in kcal/mol
-        const LAMMPS_ENERGY: f64 = -48610.136;
-        assert!(f64::abs((energy - LAMMPS_ENERGY) / LAMMPS_ENERGY) < 2e-3);
     }
 }
