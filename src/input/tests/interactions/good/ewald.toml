@@ -8,3 +8,15 @@ restriction = "exclude13"
 [charges]
 A = -8
 B = 3
+
++++
+
+[input]
+version = 1
+
+[coulomb]
+ewald = {cutoff = "189 A", kmax = 112, alpha = 0.28}
+
+[charges]
+A = -8
+B = 3

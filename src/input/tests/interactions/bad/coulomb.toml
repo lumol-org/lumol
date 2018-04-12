@@ -48,6 +48,14 @@ ewald = {cutoff = "6 A", kmax = -7}
 version = 1
 
 [coulomb]
+ewald = {cutoff = "6 A", kmax = 7, alpha = false}
+#^ 'alpha' must be a number in Ewald coulombic potential
+
++++
+[input]
+version = 1
+
+[coulomb]
 ewald = true
 #^ Coulombic solver 'ewald' must be a table
 

@@ -50,10 +50,11 @@ impl FromToml for Mie {
         let epsilon = extract::str("epsilon", table, "Mie potential")?;
         let m = extract::number("m", table, "Mie potential")?;
         let n = extract::number("n", table, "Mie potential")?;
-        
+
         if m < 3.0 {
             warn!("'m' is smaller than 3. Tail corrections for Mie potential are set to zero.");
         };
+
         Ok(Mie::new(
                 units::from_str(sigma)?,
                 units::from_str(epsilon)?,
@@ -166,6 +167,11 @@ impl FromToml for Ewald {
     fn from_toml(table: &Table) -> Result<Ewald> {
         let cutoff = extract::str("cutoff", table, "Ewald coulombic potential")?;
         let kmax = extract::uint("kmax", table, "Ewald coulombic potential")?;
-        Ok(Ewald::new(units::from_str(cutoff)?, kmax as usize, None))
+        let alpha = if table.contains_key("alpha") {
+            Some(extract::number("alpha", table, "Ewald coulombic potential")?)
+        } else {
+            None
+        };
+        Ok(Ewald::new(units::from_str(cutoff)?, kmax as usize, alpha))
     }
 }
