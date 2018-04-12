@@ -262,7 +262,7 @@ impl EwaldFactors {
 /// // Use Ewald summation for electrostatic interactions
 /// system.set_coulomb_potential(Box::new(ewald));
 ///
-/// assert_eq!(system.potential_energy(), -0.0695110962119286);
+/// println!("energy is {}", system.potential_energy());
 /// ```
 ///
 /// [FS2002] Frenkel, D. & Smith, B. Understanding molecular simulation. (Academic press, 2002).
@@ -314,11 +314,11 @@ impl Deref for Ewald {
 }
 
 impl Ewald {
-    /// Create an Ewald summation using the given `cutoff` radius in real
-    /// space, and `kmax` points in k-space (Fourier space). If `alpha` is None,
-    /// then the default value of `3 * π / (4 * cutoff)` is used.
+    /// Create an Ewald summation using the given `cutoff` radius in real space,
+    /// and `kmax` points in k-space (Fourier space). If `alpha` is None, then
+    /// the default value of `π / cutoff` is used.
     pub fn new<I: Into<Option<f64>>>(cutoff: f64, kmax: usize, alpha: I) -> Ewald {
-        let alpha = alpha.into().unwrap_or(3.0 * PI / (cutoff * 4.0));
+        let alpha = alpha.into().unwrap_or(PI / cutoff);
         if cutoff < 0.0 {
             fatal_error!("the cutoff can not be negative in Ewald");
         } else if alpha < 0.0 {
@@ -356,8 +356,16 @@ impl Ewald {
         let max = cell.k_vector([1.0, 1.0, 1.0]).max() * self.parameters.kmax as f64;
         self.parameters.kmax2 = 1.0001 * max * max;
 
-        if self.parameters.rc > cell.lengths().min() / 2.0 {
-            warn!("The Ewald cutoff is too high for this unit cell, energy might be wrong.");
+        let half_min_length = cell.lengths().min() / 2.0;
+        if self.parameters.rc > half_min_length {
+            warn_once!("The Ewald cutoff is too high for this unit cell, energy and forces might be wrong.");
+        }
+        if f64::exp(- self.parameters.alpha * half_min_length) > 0.05 {
+            warn_once!(
+"Ewald alpha parameter is too low for this unit cell, energy and forces might be wrong.
+You can manually set alpha to a slighty higher value (current alpha is {})",
+                self.parameters.alpha
+            );
         }
 
         self.factors.compute(cell, &self.parameters);
@@ -1164,11 +1172,11 @@ mod tests {
             ewald.set_restriction(PairRestriction::InterMolecular);
 
             let energy = ewald.energy(&system);
-            let expected = -0.000009243358925787454;
+            let expected = -0.000009243868813825495;
             assert_ulps_eq!(energy, expected);
 
             let molcorrect = ewald.read().molcorrect_energy(&system);
-            let expected = 0.02452968743897957;
+            let expected = 0.03232705159531281;
             assert_ulps_eq!(molcorrect, expected);
         }
 
