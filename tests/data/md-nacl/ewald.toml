@@ -17,7 +17,7 @@ atoms = ["Cl", "Cl"]
 lj = {sigma = "4.612 A", epsilon = "0.02502 kcal/mol"}
 
 [coulomb]
-ewald = {cutoff = "5.5 A", kmax = 10, alpha = ""}
+ewald = {cutoff = "5.5 A", kmax = 10}
 
 [charges]
 Na = 1.0

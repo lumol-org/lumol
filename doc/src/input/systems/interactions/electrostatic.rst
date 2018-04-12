@@ -59,6 +59,17 @@ Usually 7-8 is a good value for pure water, for a very periodic charges
 distribution (like a crystal) a lower value, such as 5 is sufficient, and for
 more heterogeneous system, higher values of ``kmax`` are needed.
 
+It is also possible (but not required) to set the ``alpha`` parameter of Ewald
+solver directly with the corresponding keyword. A good value of ``alpha`` one
+that satisfies :math:`\exp \left(-\alpha \frac L 2 \right) << 1`. If no value is
+provided in the input file, the default value of :math:`\pi / \text{cutoff}` is
+used.
+
+.. code::
+
+    [coulomb]
+    ewald = {cutoff = "9 A", kmax = 7, alpha = "0.33451"}
+
 Wolf solver
 -----------
 
