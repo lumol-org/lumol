@@ -52,6 +52,7 @@ ewald = {cutoff = "6 A", kmax = 7, alpha = false}
 #^ 'alpha' must be a number in Ewald coulombic potential
 
 +++
+
 [input]
 version = 1
 
@@ -76,3 +77,21 @@ version = 1
 [coulomb]
 unknown = {}
 #^ Unknown coulomb solver 'unknown'
+
++++
+
+[input]
+version = 1
+
+[coulomb]
+ewald = {cutoff = "6 A", kmax = 7, accuracy = 12}
+#^ can not have both accuracy and kmax/alpha in Ewald coulombic potential
+
++++
+
+[input]
+version = 1
+
+[coulomb]
+ewald = {cutoff = "6 A", accuracy = false}
+#^ 'accuracy' must be a number in Ewald coulombic potential

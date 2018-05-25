@@ -344,6 +344,52 @@ impl Ewald {
         }
     }
 
+    /// Create an Ewald solver with the given real space `cutoff`, setting
+    /// `alpha` and `kmax` to ensure that the energy is computed with the
+    /// specified relative `accuracy`. The optimal parameter depends on the
+    /// exact `configuration` used: both the total number of charges, and the
+    /// unit cell.
+    pub fn with_accuracy(cutoff: f64, accuracy: f64, configuration: &Configuration) -> Ewald {
+        if cutoff < 0.0 {
+            fatal_error!("the cutoff can not be negative in Ewald");
+        } else if accuracy < 0.0 {
+            fatal_error!("accuracy can not be negative in Ewald");
+        } else if accuracy > 1.0 {
+            warn!("accuracy is bigger than 1 in Ewald::with_precision")
+        }
+
+        // Compute squared total charge
+        let mut q2 = 0.0;
+        for charge in configuration.particles().charge {
+            q2 += charge * charge;
+        }
+        q2 /= ELCC;
+
+        let natoms = configuration.size() as f64;
+        let lengths = configuration.cell.lengths();
+        let alpha = accuracy * f64::sqrt(natoms * cutoff * lengths[0] * lengths[1] * lengths[2]) / (2.0 * q2);
+        let alpha = if alpha >= 1.0 {
+            (1.35 - 0.15 * f64::ln(accuracy)) / cutoff
+        } else {
+            f64::sqrt(-f64::ln(alpha)) / cutoff
+        };
+
+        let min_length = lengths.min();
+        let error = |kmax| {
+            let arg: f64 = PI * kmax / (alpha * min_length);
+            FRAC_2_SQRT_PI * q2 * alpha / min_length / f64::sqrt(kmax * natoms) * f64::exp(-arg * arg)
+        };
+
+        let mut kmax = 1;
+        while error(kmax as f64) > accuracy {
+            kmax += 1;
+        }
+
+        info!("Setting Ewald summation parameters: cutoff = {}, alpha = {}, kmax = {}", cutoff, alpha, kmax);
+
+        Ewald::new(cutoff, kmax, alpha)
+    }
+
     fn precompute(&mut self, cell: &UnitCell) {
         if let Some(ref prev_cell) = self.previous_cell {
             if cell == prev_cell {
@@ -1042,6 +1088,13 @@ mod tests {
         return system;
     }
 
+    #[test]
+    fn with_accuracy() {
+        let ewald = Ewald::with_accuracy(8.5, 1e-6, &water());
+        assert!(f64::abs(ewald.alpha - 0.2998) < 1e-4);
+        assert_eq!(ewald.kmax, 5);
+    }
+
     mod errors {
         use super::*;
         use energy::GlobalPotential;
@@ -1561,6 +1614,25 @@ mod tests {
             assert_eq!(system.cell.a(), 30.0);
             assert_eq!(system.cell.b(), 30.0);
             assert_eq!(system.cell.c(), 30.0);
+        }
+
+        #[test]
+        fn with_accuracy() {
+            let ewald = Ewald::with_accuracy(9.0, 1e-5, &get_system("spce-1.xyz"));
+            assert!(f64::abs(ewald.alpha - 0.2826) < 1e-4);
+            assert_eq!(ewald.kmax, 5);
+
+            let ewald = Ewald::with_accuracy(9.0, 1e-5, &get_system("spce-2.xyz"));
+            assert!(f64::abs(ewald.alpha - 0.2900) < 1e-4);
+            assert_eq!(ewald.kmax, 5);
+
+            let ewald = Ewald::with_accuracy(9.0, 1e-5, &get_system("spce-3.xyz"));
+            assert!(f64::abs(ewald.alpha - 0.2943) < 1e-4);
+            assert_eq!(ewald.kmax, 5);
+
+            let ewald = Ewald::with_accuracy(9.0, 1e-5, &get_system("spce-4.xyz"));
+            assert!(f64::abs(ewald.alpha - 0.2912) < 1e-4);
+            assert_eq!(ewald.kmax, 8);
         }
 
         mod cutoff_9 {

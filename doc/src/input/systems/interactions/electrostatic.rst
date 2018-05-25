@@ -50,25 +50,29 @@ file:
 .. code::
 
     [coulomb]
-    ewald = {cutoff = "9 A", kmax = 7}
+    ewald = {cutoff = "9 A", accuracy = 1e-5}
 
 The ``cutoff`` parameter specifies the cutoff distance for the short-range and
-long-range interactions splitting. The ``kmax`` parameter gives the number of
-vector to use in the reciprocal space (the long-range part of interactions).
-Usually 7-8 is a good value for pure water, for a very periodic charges
-distribution (like a crystal) a lower value, such as 5 is sufficient, and for
-more heterogeneous system, higher values of ``kmax`` are needed.
+long-range interactions splitting. The ``accuracy`` parameter is used to request
+a relative relative error in forces, and should be smaller than 1. The
+``accuracy`` is used to set the other Ewald parameters (alpha and kmax).
 
-It is also possible (but not required) to set the ``alpha`` parameter of Ewald
-solver directly with the corresponding keyword. A good value of ``alpha`` is one
-that satisfies :math:`\exp \left(-\alpha \frac L 2 \right) << 1`. If no value is
-provided in the input file, the default value of :math:`\pi / \text{cutoff}` is
-used.
+It is also possible to manually set the Ewald parameters:
 
 .. code::
 
     [coulomb]
-    ewald = {cutoff = "9 A", kmax = 7, alpha = "0.33451"}
+    ewald = {cutoff = "9 A", kmax = 7, alpha = 0.33451}
+
+The ``kmax`` parameter gives the number of points to use in the reciprocal space
+(the long-range part of interactions). Usually 7-8 is a good value for pure
+water, for a very periodic charges distribution (like a crystal) a lower value,
+such as 5 is sufficient, and for more heterogeneous system, higher values of
+``kmax`` are needed. The ``alpha`` parameter specifies the width of the charges
+spreading used to smooth the distribution in reciprocal space. A good value of
+``alpha`` is one that satisfies :math:`\exp \left(-\alpha \frac L 2 \right) <<
+1`. If only ``kmax`` is provided in the input file, the default value of
+:math:`\pi / \text{cutoff}` is used for ``alpha``.
 
 Wolf solver
 -----------
