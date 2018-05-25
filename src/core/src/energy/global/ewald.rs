@@ -323,6 +323,8 @@ impl Ewald {
             fatal_error!("the cutoff can not be negative in Ewald");
         } else if alpha < 0.0 {
             fatal_error!("alpha can not be negative in Ewald");
+        } else if kmax == 0 {
+            fatal_error!("kmax can not be 0 in Ewald");
         }
 
         let parameters = EwaldParameters {
@@ -614,7 +616,7 @@ impl Ewald {
     /// Compute the Fourier transform of the electrostatic density
     fn eik_dot_r(&mut self, configuration: &Configuration) {
         let natoms = configuration.size();
-        let range = -self.kmax..self.kmax;
+        let range = -self.kmax..(self.kmax + 1);
         self.eikr.resize_if_different((range, 3, natoms));
         self.rho.clear();
 
@@ -635,7 +637,7 @@ impl Ewald {
 
         // compute the other values of k by recursion
         for spatial in 0..3 {
-            for k in 2..self.kmax {
+            for k in 2..(self.kmax + 1) {
                 for i in 0..natoms {
                     self.eikr[(k, spatial, i)] = self.eikr[(k - 1, spatial, i)] * self.eikr[(1, spatial, i)];
                     self.eikr[(-k, spatial, i)] = self.eikr[(k, spatial, i)].conj();
@@ -714,7 +716,7 @@ impl Ewald {
     /// the configuration to `newpos`;
     fn delta_rho_move_particles(&mut self, configuration: &Configuration, idxes: &[usize], newpos: &[Vector3D]) -> Vec<Complex> {
         let natoms = idxes.len();
-        let mut new_eikr = Ewald3DArray::zeros((-self.kmax..self.kmax, 3, natoms));
+        let mut new_eikr = Ewald3DArray::zeros((-self.kmax..(self.kmax + 1), 3, natoms));
 
         // Do the k=0, 1 cases first
         for spatial in 0..3 {
@@ -730,7 +732,7 @@ impl Ewald {
 
         // Use recursive definition for computing the factor for all the other values of k.
         for spatial in 0..3 {
-            for k in 2..self.kmax {
+            for k in 2..(self.kmax + 1) {
                 for i in 0..natoms {
                     new_eikr[(k, spatial, i)] = new_eikr[(k - 1, spatial, i)] * new_eikr[(1, spatial, i)];
                     new_eikr[(-k, spatial, i)] = new_eikr[(k, spatial, i)].conj();
@@ -1120,6 +1122,12 @@ mod tests {
         fn negative_alpha() {
             let _ = Ewald::new(8.0, 10, -45.2);
         }
+
+        #[test]
+        #[should_panic]
+        fn kmax_null() {
+            let _ = Ewald::new(8.0, 0, None);
+        }
     }
 
     mod pairs {
@@ -1135,6 +1143,10 @@ mod tests {
             // This was computed by hand
             let energy_brute_force = -0.09262397663346732;
             assert_ulps_eq!(energy, energy_brute_force, epsilon=1e-4);
+
+            // Just checking that this does not crash
+            let ewald = SharedEwald::new(Ewald::new(8.0, 1, None));
+            let _ = ewald.energy(&system);
         }
 
         #[test]
