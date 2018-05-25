@@ -52,8 +52,9 @@ impl InteractionsInput {
         try!(self.read_bonds(system));
         try!(self.read_angles(system));
         try!(self.read_dihedrals(system));
-        try!(self.read_coulomb(system));
+        // charges must be read before coulomb
         try!(self.read_charges(system));
+        try!(self.read_coulomb(system));
         Ok(())
     }
 }

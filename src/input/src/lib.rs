@@ -93,12 +93,20 @@ pub trait FromToml: Sized {
     fn from_toml(table: &Table) -> Result<Self>;
 }
 
-/// Convert a TOML table and some additional data to a Rust type.
+/// Convert a TOML table and some additional owned data to a Rust type.
 pub trait FromTomlWithData: Sized {
     /// The type of the additional data needed.
     type Data;
     /// Do the conversion from `table` and `data` to Self.
     fn from_toml(table: &Table, data: Self::Data) -> Result<Self>;
+}
+
+/// Convert a TOML table to a Rust type using information from an additional reference.
+pub trait FromTomlWithRefData: Sized {
+    /// The type of the additional data needed.
+    type Data;
+    /// Do the conversion from `table` and `data` to Self.
+    fn from_toml(table: &Table, data: &Self::Data) -> Result<Self>;
 }
 
 fn validate(config: &Table) -> Result<()> {

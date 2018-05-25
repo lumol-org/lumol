@@ -6,6 +6,7 @@
 
 use FromToml;
 use FromTomlWithData;
+use FromTomlWithRefData;
 use error::{Error, Result};
 use extract;
 
@@ -14,6 +15,8 @@ use lumol::energy::{CosineHarmonic, Harmonic, LennardJones, NullPotential, Mie};
 use lumol::energy::{Ewald, Wolf};
 use lumol::energy::{PairPotential, TableComputation};
 use lumol::units;
+use lumol::sys::Configuration;
+
 use toml::value::Table;
 
 impl FromToml for NullPotential {
@@ -163,15 +166,31 @@ impl FromToml for Wolf {
     }
 }
 
-impl FromToml for Ewald {
-    fn from_toml(table: &Table) -> Result<Ewald> {
+impl FromTomlWithRefData for Ewald {
+    type Data = Configuration;
+
+    fn from_toml(table: &Table, configuration: &Configuration) -> Result<Ewald> {
         let cutoff = extract::str("cutoff", table, "Ewald coulombic potential")?;
+        let cutoff = units::from_str(cutoff)?;
+
+        // Check first for the accuracy key
+        if table.contains_key("accuracy") {
+            if table.contains_key("kmax") || table.contains_key("alpha") {
+                return Err(Error::from(
+                    "can not have both accuracy and kmax/alpha in Ewald coulombic potential"
+                ));
+            }
+            let accuracy = extract::number("accuracy", table, "Ewald coulombic potential")?;
+            return Ok(Ewald::with_accuracy(cutoff, accuracy, configuration));
+        }
+
+        // Else use directly specified parameters
         let kmax = extract::uint("kmax", table, "Ewald coulombic potential")?;
         let alpha = if table.contains_key("alpha") {
             Some(extract::number("alpha", table, "Ewald coulombic potential")?)
         } else {
             None
         };
-        Ok(Ewald::new(units::from_str(cutoff)?, kmax as usize, alpha))
+        Ok(Ewald::new(cutoff, kmax as usize, alpha))
     }
 }

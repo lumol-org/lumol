@@ -8,6 +8,7 @@ use lumol::sys::System;
 use super::InteractionsInput;
 use super::read_restriction;
 use FromToml;
+use FromTomlWithRefData;
 use error::{Error, Result};
 
 impl InteractionsInput {
@@ -18,11 +19,9 @@ impl InteractionsInput {
             None => return Ok(()),
         };
 
-        let coulomb =
-            try!(coulomb.as_table().ok_or(Error::from("The 'coulomb' section must be a table")));
+        let coulomb = coulomb.as_table().ok_or(Error::from("The 'coulomb' section must be a table"))?;
 
-        let solvers =
-            coulomb.keys().cloned().filter(|key| key != "restriction").collect::<Vec<_>>();
+        let solvers = coulomb.keys().cloned().filter(|key| key != "restriction").collect::<Vec<_>>();
 
         if solvers.len() != 1 {
             return Err(Error::from(
@@ -35,7 +34,7 @@ impl InteractionsInput {
             let mut potential: Box<CoulombicPotential> = match key {
                 "wolf" => Box::new(try!(Wolf::from_toml(table))),
                 "ewald" => {
-                    let ewald = try!(Ewald::from_toml(table));
+                    let ewald = try!(Ewald::from_toml(table, &system));
                     Box::new(SharedEwald::new(ewald))
                 }
                 other => return Err(Error::from(format!("Unknown coulomb solver '{}'", other))),
