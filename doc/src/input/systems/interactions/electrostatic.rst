@@ -62,7 +62,7 @@ It is also possible to manually set the Ewald parameters:
 .. code::
 
     [coulomb]
-    ewald = {cutoff = "9 A", kmax = 7, alpha = 0.33451}
+    ewald = {cutoff = "9 A", kmax = 7, alpha = "0.33451 A^-1"}
 
 The ``kmax`` parameter gives the number of points to use in the reciprocal space
 (the long-range part of interactions). Usually 7-8 is a good value for pure

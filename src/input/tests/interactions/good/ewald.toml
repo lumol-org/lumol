@@ -15,7 +15,7 @@ B = 3
 version = 1
 
 [coulomb]
-ewald = {cutoff = "189 A", kmax = 112, alpha = 0.28}
+ewald = {cutoff = "189 A", kmax = 112, alpha = "0.28 A^-1"}
 
 [charges]
 A = -8

@@ -187,7 +187,8 @@ impl FromTomlWithRefData for Ewald {
         // Else use directly specified parameters
         let kmax = extract::uint("kmax", table, "Ewald coulombic potential")?;
         let alpha = if table.contains_key("alpha") {
-            Some(extract::number("alpha", table, "Ewald coulombic potential")?)
+            let alpha = extract::str("alpha", table, "Ewald coulombic potential")?;
+            Some(units::from_str(alpha)?)
         } else {
             None
         };

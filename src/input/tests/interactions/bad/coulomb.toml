@@ -49,7 +49,7 @@ version = 1
 
 [coulomb]
 ewald = {cutoff = "6 A", kmax = 7, alpha = false}
-#^ 'alpha' must be a number in Ewald coulombic potential
+#^ 'alpha' must be a string in Ewald coulombic potential
 
 +++
 
