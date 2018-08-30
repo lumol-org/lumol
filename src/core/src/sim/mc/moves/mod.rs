@@ -8,7 +8,7 @@
 //! `VolumeResize` move.
 //!
 //! In all this module, beta refers to the Boltzmann factor 1/(kB T)
-use rand::Rng;
+use rand::{RngCore, Rng};
 
 use sys::{EnergyCache, System};
 
@@ -27,7 +27,7 @@ pub trait MCMove {
     ///
     /// This function should return true is we can perform the move, and false
     /// otherwise.
-    fn prepare(&mut self, system: &mut System, rng: &mut Box<Rng>) -> bool;
+    fn prepare(&mut self, system: &mut System, rng: &mut RngCore) -> bool;
 
     /// Get the cost of performing this move on `system`. For example in
     /// simple NVT simulations, this cost is the energetic difference between
@@ -60,7 +60,7 @@ pub trait MCMove {
 /// This function returns `None` if no matching molecule was found, and
 /// `Some(molid)` with `molid` the index of the molecule if a molecule was
 /// selected.
-fn select_molecule(system: &System, moltype: Option<u64>, rng: &mut Box<Rng>) -> Option<usize> {
+fn select_molecule(system: &System, moltype: Option<u64>, rng: &mut RngCore) -> Option<usize> {
     if let Some(moltype) = moltype {
         // Pick a random molecule with matching moltype
         let mols = system.molecules_with_moltype(moltype);

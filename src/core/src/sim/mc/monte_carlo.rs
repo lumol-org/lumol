@@ -2,7 +2,7 @@
 // Copyright (C) Lumol's contributors — BSD license
 
 //! Metropolis Monte Carlo propagator implementation
-use rand::{self, SeedableRng};
+use rand::{self, Rng, SeedableRng};
 
 use consts::K_BOLTZMANN;
 use sim::{Propagator, TemperatureStrategy};
@@ -23,7 +23,7 @@ pub struct MonteCarlo {
     update_frequency: u64,
     /// Random number generator for the simulation. All random state will be
     /// taken from this.
-    rng: Box<rand::Rng>,
+    rng: Box<rand::RngCore>,
     /// Cache for faster energy computation
     cache: EnergyCache,
     /// Flag checking if the moves frequencies has been converted to
@@ -34,14 +34,16 @@ pub struct MonteCarlo {
 impl MonteCarlo {
     /// Create a new Monte Carlo propagator at temperature `T`.
     pub fn new(temperature: f64) -> MonteCarlo {
-        let mut rng = Box::new(rand::XorShiftRng::new_unseeded());
-        rng.reseed([2015u32, 42u32, 3u32, 12u32]);
+        let rng = Box::new(rand::XorShiftRng::from_seed([
+            0xeb, 0xa8, 0xe4, 0x29, 0xca, 0x60, 0x44, 0xb0,
+            0xd3, 0x77, 0xc6, 0xa0, 0x21, 0x71, 0x37, 0xf7,
+        ]));
         return MonteCarlo::from_rng(temperature, rng);
     }
 
     /// Create a Monte Carlo propagator at temperature `T`, using the `rng`
     /// random number generator.
-    pub fn from_rng(temperature: f64, rng: Box<rand::Rng>) -> MonteCarlo {
+    pub fn from_rng(temperature: f64, rng: Box<rand::RngCore>) -> MonteCarlo {
         assert!(temperature >= 0.0, "Monte Carlo temperature must be positive");
         MonteCarlo {
             beta: 1.0 / (K_BOLTZMANN * temperature),
@@ -154,7 +156,7 @@ impl Propagator for MonteCarlo {
 
     fn propagate(&mut self, system: &mut System) {
         let mcmove = {
-            let probability = self.rng.next_f64();
+            let probability: f64 = self.rng.gen();
             // Get the index of the first move with frequency >= probability.
             let (i, _) = self.frequencies.iter()
                              .enumerate()
@@ -174,7 +176,7 @@ impl Propagator for MonteCarlo {
         trace!("    --> Move cost is {}", cost);
 
         // apply metropolis criterion
-        let accepted = cost <= 0.0 || self.rng.next_f64() < f64::exp(-cost);
+        let accepted = cost <= 0.0 || self.rng.gen::<f64>() < f64::exp(-cost);
 
         if accepted {
             trace!("    --> Move was accepted");
@@ -337,7 +339,7 @@ impl MoveCounter {
 
 #[cfg(test)]
 mod tests {
-    use rand::Rng;
+    use rand::RngCore;
     use sim::Propagator;
     use sim::mc::{MCMove, MonteCarlo, MoveCounter};
     use sys::{EnergyCache, System};
@@ -348,7 +350,7 @@ mod tests {
             "dummy"
         }
         fn setup(&mut self, _: &System) {}
-        fn prepare(&mut self, _: &mut System, _: &mut Box<Rng>) -> bool {
+        fn prepare(&mut self, _: &mut System, _: &mut RngCore) -> bool {
             true
         }
         fn cost(&self, _: &System, _: f64, _: &mut EnergyCache) -> f64 {

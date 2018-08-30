@@ -1,8 +1,8 @@
 // Cymbalum, an extensible molecular simulation engine
 // Copyright (C) 2015-2016 G. Fraux — BSD license
 
-use rand::Rng;
-use rand::distributions::{Range, Sample};
+use rand::RngCore;
+use rand::distributions::{Range, Distribution};
 
 use std::f64;
 use std::mem;
@@ -57,7 +57,7 @@ impl MCMove for Resize {
         self.maximum_cutoff = system.maximum_cutoff()
     }
 
-    fn prepare(&mut self, system: &mut System, rng: &mut Box<Rng>) -> bool {
+    fn prepare(&mut self, system: &mut System, rng: &mut RngCore) -> bool {
         let delta = self.range.sample(rng);
 
         // Store the previous configuration

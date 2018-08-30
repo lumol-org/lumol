@@ -32,5 +32,5 @@ fn npt() {
 
     let expected = units::from(200.0, "bar").unwrap();
     let pressure = ::utils::mean(pressures.clone());
-    assert!(f64::abs(pressure - expected) / expected < 5e-3);
+    assert!(f64::abs(pressure - expected) / expected < 1e-2);
 }

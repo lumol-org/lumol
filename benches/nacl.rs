@@ -58,7 +58,9 @@ mod ewald {
         let mut cache = EnergyCache::new();
         cache.init(&system);
 
-        let mut rng = utils::get_rng(41201154);
+        let mut rng = utils::get_rng([
+            228, 140, 229, 238, 195, 151, 56, 106, 68, 11, 24, 143, 231, 175, 55, 52
+        ]);
 
         let i: usize = rng.gen_range(0, system.size());
         let mut delta = system.particles().position[i];
@@ -118,7 +120,9 @@ mod wolf {
         let mut cache = EnergyCache::new();
         cache.init(&system);
 
-        let mut rng = utils::get_rng(474114);
+        let mut rng = utils::get_rng([
+            12, 197, 68, 124, 239, 99, 89, 228, 140, 170, 228, 215, 97, 218, 201, 24
+        ]);
 
         let i: usize = rng.gen_range(0, system.size());
         let mut delta = system.particles().position[i];

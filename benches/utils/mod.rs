@@ -22,8 +22,8 @@ pub fn get_system(name: &str) -> System {
     return system;
 }
 
-pub fn get_rng(seed: u32) -> XorShiftRng {
-    XorShiftRng::from_seed([seed, 784, 71255487, 5824])
+pub fn get_rng(seed: [u8; 16]) -> XorShiftRng {
+    XorShiftRng::from_seed(seed)
 }
 
 macro_rules! benchmark_group {
