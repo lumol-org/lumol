@@ -319,30 +319,39 @@ mod tests {
     use types::{Matrix3, Vector3D};
     use std::f64;
 
-    use approx::ApproxEq;
-    impl ApproxEq for Vector3D {
-        type Epsilon = <f64 as ApproxEq>::Epsilon;
+    use approx::{AbsDiffEq, RelativeEq, UlpsEq};
+
+    impl AbsDiffEq for Vector3D {
+        type Epsilon = <f64 as AbsDiffEq>::Epsilon;
 
         fn default_epsilon() -> Self::Epsilon {
             f64::default_epsilon()
         }
 
+        fn abs_diff_eq(&self, other: &Self, epsilon: Self::Epsilon) -> bool {
+            f64::abs_diff_eq(&self[0], &other[0], epsilon) &&
+            f64::abs_diff_eq(&self[1], &other[1], epsilon) &&
+            f64::abs_diff_eq(&self[2], &other[2], epsilon)
+        }
+    }
+
+    impl RelativeEq for Vector3D {
         fn default_max_relative() -> Self::Epsilon {
             f64::default_max_relative()
         }
 
-        fn default_max_ulps() -> u32 {
-            f64::default_max_ulps()
-        }
-
-        #[cfg_attr(rustfmt, rustfmt_skip)]
         fn relative_eq(&self, other: &Self, epsilon: Self::Epsilon, max_relative: Self::Epsilon) -> bool {
             f64::relative_eq(&self[0], &other[0], epsilon, max_relative) &&
             f64::relative_eq(&self[1], &other[1], epsilon, max_relative) &&
             f64::relative_eq(&self[2], &other[2], epsilon, max_relative)
         }
+    }
 
-        #[cfg_attr(rustfmt, rustfmt_skip)]
+    impl UlpsEq for Vector3D {
+        fn default_max_ulps() -> u32 {
+            f64::default_max_ulps()
+        }
+
         fn ulps_eq(&self, other: &Self, epsilon: Self::Epsilon, max_ulps: u32) -> bool {
             f64::ulps_eq(&self[0], &other[0], epsilon, max_ulps) &&
             f64::ulps_eq(&self[1], &other[1], epsilon, max_ulps) &&

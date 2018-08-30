@@ -27,4 +27,4 @@ soa_derive = "0.6"
 [dev-dependencies]
 lumol = {path = "../.."}
 tempfile = "3"
-approx = "0.1"
+approx = "0.3"
