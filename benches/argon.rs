@@ -42,7 +42,9 @@ fn cache_move_particle(bencher: &mut Bencher) {
     let mut cache = EnergyCache::new();
     cache.init(&system);
 
-    let mut rng = utils::get_rng(654646);
+    let mut rng = utils::get_rng([
+        1, 129, 243, 102, 31, 147, 250, 56, 212, 237, 170, 250, 161, 185, 59, 151
+    ]);
 
     let i: usize = rng.gen_range(0, system.size());
     let mut delta = system.particles().position[i];

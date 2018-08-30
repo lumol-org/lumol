@@ -9,7 +9,7 @@ license = "BSD-3-Clause"
 
 [dependencies]
 chemfiles = "0.8"
-rand = "0.4"
+rand = "0.5"
 log = "0.4"
 log-once = "0.2"
 special = "0.7"

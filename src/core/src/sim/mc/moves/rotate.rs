@@ -1,7 +1,7 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) 2015-2016 G. Fraux — BSD license
-use rand::Rng;
-use rand::distributions::{Normal, Range, Sample};
+use rand::RngCore;
+use rand::distributions::{Normal, Range, Distribution};
 
 use std::f64;
 use std::usize;
@@ -68,7 +68,7 @@ impl MCMove for Rotate {
 
     fn setup(&mut self, _: &System) {}
 
-    fn prepare(&mut self, system: &mut System, rng: &mut Box<Rng>) -> bool {
+    fn prepare(&mut self, system: &mut System, rng: &mut RngCore) -> bool {
         if let Some(id) = select_molecule(system, self.moltype, rng) {
             self.molid = id;
         } else {

@@ -2,9 +2,9 @@
 // Copyright (C) Lumol's contributors — BSD license
 
 //! This module provides some ways to initialize the velocities in a `System`
-use rand::Isaac64Rng;
+use rand::XorShiftRng;
 use rand::SeedableRng;
-use rand::distributions::{Normal, Range, Sample};
+use rand::distributions::{Normal, Range, Distribution};
 
 use consts::K_BOLTZMANN;
 use sim::md::{Control, RemoveRotation, RemoveTranslation};
@@ -33,7 +33,7 @@ pub trait InitVelocities {
 pub struct BoltzmannVelocities {
     temperature: f64,
     dist: Normal,
-    rng: Isaac64Rng,
+    rng: XorShiftRng,
 }
 
 impl BoltzmannVelocities {
@@ -42,7 +42,10 @@ impl BoltzmannVelocities {
         BoltzmannVelocities {
             temperature: temperature,
             dist: Normal::new(0.0, f64::sqrt(K_BOLTZMANN * temperature)),
-            rng: Isaac64Rng::from_seed(&[42]),
+            rng: XorShiftRng::from_seed([
+                0xeb, 0xa8, 0xe4, 0x29, 0xca, 0x60, 0x44, 0xb0,
+                0xd3, 0x77, 0xc6, 0xa0, 0x21, 0x71, 0x37, 0xf7,
+            ]),
         }
     }
 }
@@ -62,7 +65,18 @@ impl InitVelocities for BoltzmannVelocities {
     }
 
     fn seed(&mut self, seed: u64) {
-        self.rng.reseed(&[seed]);
+        let b1 = ((seed >> 56) & 0xff) as u8;
+        let b2 = ((seed >> 48) & 0xff) as u8;
+        let b3 = ((seed >> 40) & 0xff) as u8;
+        let b4 = ((seed >> 32) & 0xff) as u8;
+        let b5 = ((seed >> 24) & 0xff) as u8;
+        let b6 = ((seed >> 16) & 0xff) as u8;
+        let b7 = ((seed >> 8) & 0xff) as u8;
+        let b8 = ((seed >> 0) & 0xff) as u8;
+        let seed = [
+            b1, 0xa8, b2, 0x29, b3, 0x60, b4, 0xb0, b5, 0x77, b6, 0xa0, b7, 0x71, b8, 0xf7,
+        ];
+        self.rng = XorShiftRng::from_seed(seed);
     }
 }
 
@@ -70,7 +84,7 @@ impl InitVelocities for BoltzmannVelocities {
 pub struct UniformVelocities {
     temperature: f64,
     dist: Range<f64>,
-    rng: Isaac64Rng,
+    rng: XorShiftRng,
 }
 
 impl UniformVelocities {
@@ -80,7 +94,10 @@ impl UniformVelocities {
         UniformVelocities {
             temperature: temperature,
             dist: Range::new(-factor, factor),
-            rng: Isaac64Rng::from_seed(&[42]),
+            rng: XorShiftRng::from_seed([
+                0xeb, 0xa8, 0xe4, 0x29, 0xca, 0x60, 0x44, 0xb0,
+                0xd3, 0x77, 0xc6, 0xa0, 0x21, 0x71, 0x37, 0xf7,
+            ]),
         }
     }
 }
@@ -100,7 +117,18 @@ impl InitVelocities for UniformVelocities {
     }
 
     fn seed(&mut self, seed: u64) {
-        self.rng.reseed(&[seed]);
+        let b1 = ((seed >> 56) & 0xff) as u8;
+        let b2 = ((seed >> 48) & 0xff) as u8;
+        let b3 = ((seed >> 40) & 0xff) as u8;
+        let b4 = ((seed >> 32) & 0xff) as u8;
+        let b5 = ((seed >> 24) & 0xff) as u8;
+        let b6 = ((seed >> 16) & 0xff) as u8;
+        let b7 = ((seed >> 8) & 0xff) as u8;
+        let b8 = ((seed >> 0) & 0xff) as u8;
+        let seed = [
+            b1, 0xa8, b2, 0x29, b3, 0x60, b4, 0xb0, b5, 0x77, b6, 0xa0, b7, 0x71, b8, 0xf7,
+        ];
+        self.rng = XorShiftRng::from_seed(seed);
     }
 }
 

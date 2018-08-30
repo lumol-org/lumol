@@ -65,7 +65,9 @@ mod ewald {
         let mut cache = EnergyCache::new();
         cache.init(&system);
 
-        let mut rng = utils::get_rng(9886565);
+        let mut rng = utils::get_rng([
+            206, 1, 245, 36, 62, 147, 30, 213, 177, 131, 94, 148, 239, 154, 161, 1
+        ]);
 
         let molecule = rng.choose(system.molecules()).unwrap();
         let indexes = molecule.into_iter();
@@ -86,7 +88,10 @@ mod ewald {
         let mut cache = EnergyCache::new();
         cache.init(&system);
 
-        let mut rng = utils::get_rng(2121);
+        let mut rng = utils::get_rng([
+            79, 129, 118, 38, 44, 204, 227, 6, 233, 6, 7, 216, 192, 77, 33, 85
+        ]);
+
         for molecule in system.molecules().to_owned() {
             let delta = Vector3D::new(rng.gen(), rng.gen(), rng.gen());
             let indexes = molecule.into_iter();
@@ -155,7 +160,9 @@ mod wolf {
         let mut cache = EnergyCache::new();
         cache.init(&system);
 
-        let mut rng = utils::get_rng(454548784);
+        let mut rng = utils::get_rng([
+            215, 235, 194, 22, 205, 151, 210, 241, 188, 67, 241, 2, 204, 62, 11, 201
+        ]);
 
         let molecule = rng.choose(system.molecules()).unwrap();
         let indexes = molecule.into_iter();
@@ -176,7 +183,10 @@ mod wolf {
         let mut cache = EnergyCache::new();
         cache.init(&system);
 
-        let mut rng = utils::get_rng(3);
+        let mut rng = utils::get_rng([
+            89, 208, 141, 72, 208, 131, 249, 179, 77, 243, 111, 32, 176, 194, 79, 44
+        ]);
+
         for molecule in system.molecules().to_owned() {
             let delta = Vector3D::new(rng.gen(), rng.gen(), rng.gen());
             let indexes = molecule.into_iter();
