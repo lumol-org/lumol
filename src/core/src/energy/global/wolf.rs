@@ -143,8 +143,8 @@ impl GlobalCache for Wolf {
                 let r_old = config.cell.distance(&positions[i], &positions[j]);
                 let r_new = config.cell.distance(&newpos[idx], &positions[j]);
 
-                let distance = config.bond_distance(i, j);
-                let info = self.restriction.information(distance);
+                let path = config.bond_path(i, j);
+                let info = self.restriction.information(path);
 
                 e_old += self.energy_pair(info, qi * qj, r_old);
                 e_new += self.energy_pair(info, qi * qj, r_new);
@@ -166,8 +166,8 @@ impl GlobalCache for Wolf {
                 let r_old = config.distance(i, j);
                 let r_new = config.cell.distance(&newpos[idx], &newpos[jdx]);
 
-                let distance = config.bond_distance(i, j);
-                let info = self.restriction.information(distance);
+                let path = config.bond_path(i, j);
+                let info = self.restriction.information(path);
 
                 e_old += self.energy_pair(info, qi * qj, r_old);
                 e_new += self.energy_pair(info, qi * qj, r_new);
@@ -204,8 +204,8 @@ impl GlobalPotential for Wolf {
                     continue;
                 }
 
-                let distance = configuration.bond_distance(i, j);
-                let info = self.restriction.information(distance);
+                let path = configuration.bond_path(i, j);
+                let info = self.restriction.information(path);
 
                 let rij = configuration.distance(i, j);
                 local_energy += self.energy_pair(info, qi * qj, rij);
@@ -239,8 +239,8 @@ impl GlobalPotential for Wolf {
                     continue;
                 }
 
-                let distance = configuration.bond_distance(i, j);
-                let info = self.restriction.information(distance);
+                let path = configuration.bond_path(i, j);
+                let info = self.restriction.information(path);
 
                 let rij = configuration.nearest_image(i, j);
                 let force = self.force_pair(info, qi * qj, rij);
@@ -272,8 +272,8 @@ impl GlobalPotential for Wolf {
                     continue;
                 }
 
-                let distance = configuration.bond_distance(i, j);
-                let info = self.restriction.information(distance);
+                let path = configuration.bond_path(i, j);
+                let info = self.restriction.information(path);
 
                 let rij = configuration.nearest_image(i, j);
                 let force = self.force_pair(info, qi * qj, rij);

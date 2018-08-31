@@ -248,7 +248,7 @@ mod computations;
 pub use self::computations::{Computation, TableComputation};
 
 mod restrictions;
-pub use self::restrictions::{PairRestriction, RestrictionInfo};
+pub use self::restrictions::{PairRestriction, RestrictionInfo, BondPath};
 
 mod global;
 pub use self::global::{CoulombicPotential, GlobalCache, GlobalPotential};

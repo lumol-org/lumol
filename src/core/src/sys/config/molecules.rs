@@ -8,7 +8,7 @@ use std::hash::{Hash, Hasher};
 use std::iter::IntoIterator;
 use std::ops::Range;
 
-use sys::{Angle, Bond, BondDistance, Dihedral, ParticleSlice};
+use sys::{Angle, Bond, BondDistances, Dihedral, ParticleSlice};
 use types::Array2;
 
 #[derive(Debug, Clone)]
@@ -26,7 +26,7 @@ pub struct Molecule {
     /// Matrix of bond distances in the molecule. The item at index `i, j`
     /// encode the bond distance between the particles `i + self.first` and
     /// `j + self.first`
-    distances: Array2<BondDistance>,
+    distances: Array2<BondDistances>,
     /// Range of atomic indexes in this molecule.
     range: Range<usize>,
     /// Hashed value of the set of bonds in the system
@@ -159,18 +159,18 @@ impl Molecule {
         };
 
         for bond in &self.bonds {
-            add_distance_term(bond.i(), bond.j(), BondDistance::ONE);
-            add_distance_term(bond.j(), bond.i(), BondDistance::ONE);
+            add_distance_term(bond.i(), bond.j(), BondDistances::ONE);
+            add_distance_term(bond.j(), bond.i(), BondDistances::ONE);
         }
 
         for angle in &self.angles {
-            add_distance_term(angle.i(), angle.k(), BondDistance::TWO);
-            add_distance_term(angle.k(), angle.i(), BondDistance::TWO);
+            add_distance_term(angle.i(), angle.k(), BondDistances::TWO);
+            add_distance_term(angle.k(), angle.i(), BondDistances::TWO);
         }
 
         for dihedral in &self.dihedrals {
-            add_distance_term(dihedral.i(), dihedral.m(), BondDistance::THREE);
-            add_distance_term(dihedral.m(), dihedral.i(), BondDistance::THREE);
+            add_distance_term(dihedral.i(), dihedral.m(), BondDistances::THREE);
+            add_distance_term(dihedral.m(), dihedral.i(), BondDistances::THREE);
         }
     }
 
@@ -296,9 +296,9 @@ impl Molecule {
         &self.dihedrals
     }
 
-    /// Get the bond distance between the particles `i` and `j`
+    /// Get the all the possible bond paths the particles `i` and `j` in this molecule
     #[inline]
-    pub fn bond_distance(&self, i: usize, j: usize) -> BondDistance {
+    pub fn bond_distances(&self, i: usize, j: usize) -> BondDistances {
         assert!(self.contains(i) && self.contains(j));
         return self.distances[(i - self.start(), j - self.start())];
     }
@@ -344,7 +344,7 @@ impl<'a> IntoIterator for &'a Molecule {
 #[cfg(test)]
 mod test {
     use super::*;
-    use sys::{Angle, Bond, BondDistance, Dihedral};
+    use sys::{Angle, Bond, BondDistances, Dihedral};
 
     #[test]
     fn translate() {
@@ -456,14 +456,14 @@ mod test {
             assert!(molecule.dihedrals().contains(dihedral));
         }
 
-        assert!(molecule.bond_distance(0, 1).contains(BondDistance::ONE));
-        assert!(molecule.bond_distance(1, 0).contains(BondDistance::ONE));
+        assert!(molecule.bond_distances(0, 1).contains(BondDistances::ONE));
+        assert!(molecule.bond_distances(1, 0).contains(BondDistances::ONE));
 
-        assert!(molecule.bond_distance(0, 7).contains(BondDistance::TWO));
-        assert!(molecule.bond_distance(7, 0).contains(BondDistance::TWO));
+        assert!(molecule.bond_distances(0, 7).contains(BondDistances::TWO));
+        assert!(molecule.bond_distances(7, 0).contains(BondDistances::TWO));
 
-        assert!(molecule.bond_distance(3, 5).contains(BondDistance::THREE));
-        assert!(molecule.bond_distance(5, 3).contains(BondDistance::THREE));
+        assert!(molecule.bond_distances(3, 5).contains(BondDistances::THREE));
+        assert!(molecule.bond_distances(5, 3).contains(BondDistances::THREE));
 
         molecule.remove_particle(6);
         assert_eq!(molecule.bonds().len(), 6);
@@ -486,8 +486,8 @@ mod test {
         molecule.add_bond(2, 3);
         molecule.add_bond(3, 0);
 
-        assert!(molecule.bond_distance(0, 3).contains(BondDistance::ONE));
-        assert!(molecule.bond_distance(0, 3).contains(BondDistance::THREE));
+        assert!(molecule.bond_distances(0, 3).contains(BondDistances::ONE));
+        assert!(molecule.bond_distances(0, 3).contains(BondDistances::THREE));
 
         assert!(molecule.angles.contains(&Angle::new(0, 3, 2)));
         assert!(molecule.angles.contains(&Angle::new(0, 1, 2)));

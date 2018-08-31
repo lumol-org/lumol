@@ -9,6 +9,7 @@
 use std::f64::consts::PI;
 
 use parallel::prelude::*;
+use energy::BondPath;
 use sys::System;
 
 /// An helper struct to evaluate energy components of a system.
@@ -27,11 +28,10 @@ impl<'a> EnergyEvaluator<'a> {
     /// Compute the energy associated with the pair of particles `i, j` at
     /// distance `r`
     #[inline]
-    pub fn pair(&self, r: f64, i: usize, j: usize) -> f64 {
-        let distance = self.system.bond_distance(i, j);
+    pub fn pair(&self, path: BondPath, r: f64, i: usize, j: usize) -> f64 {
         let mut energy = 0.0;
         for potential in self.system.pair_potentials(i, j) {
-            let info = potential.restriction().information(distance);
+            let info = potential.restriction().information(path);
             if !info.excluded {
                 energy += info.scaling * potential.energy(r);
             }
@@ -46,7 +46,8 @@ impl<'a> EnergyEvaluator<'a> {
 
             for j in (i + 1)..self.system.size() {
                 let r = self.system.nearest_image(i, j).norm();
-                local_energy += self.pair(r, i, j);
+                let path = self.system.bond_path(i, j);
+                local_energy += self.pair(path, r, i, j);
             }
             local_energy
         });

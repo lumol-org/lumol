@@ -82,7 +82,8 @@ impl EnergyCache {
         for i in 0..system.size() {
             for j in (i + 1)..system.size() {
                 let r = system.nearest_image(i, j).norm();
-                let energy = evaluator.pair(r, i, j);
+                let path = system.bond_path(i, j);
+                let energy = evaluator.pair(path, r, i, j);
                 self.pairs_cache[(i, j)] = energy;
                 self.pairs_cache[(j, i)] = energy;
                 self.pairs += energy;
@@ -165,7 +166,8 @@ impl EnergyCache {
                 }
 
                 let r = system.cell.distance(&positions[part_j], &newpos[i]);
-                let energy = evaluator.pair(r, part_i, part_j);
+                let path = system.bond_path(part_i, part_j);
+                let energy = evaluator.pair(path, r, part_i, part_j);
 
                 pairs_delta += energy;
                 new_pairs[(part_i, part_j)] += energy;
@@ -179,7 +181,8 @@ impl EnergyCache {
         for (i, &part_i) in idxes.iter().enumerate() {
             for (j, &part_j) in idxes.iter().enumerate().skip(i + 1) {
                 let r = system.cell.distance(&newpos[i], &newpos[j]);
-                let energy = evaluator.pair(r, part_i, part_j);
+                let path = system.bond_path(part_i, part_j);
+                let energy = evaluator.pair(path, r, part_i, part_j);
 
                 pairs_delta += energy;
                 new_pairs[(part_i, part_j)] += energy;
@@ -303,17 +306,18 @@ impl EnergyCache {
         let mut new_pairs = Array2::<f64>::zeros((system.size(), system.size()));
         let mut pairs_delta = 0.0;
         // Loop over all molecule pairs
-        for (i, mi) in system.molecules().iter().enumerate() {
-            for mj in system.molecules().iter().skip(i + 1) {
+        for (i, mol_i) in system.molecules().iter().enumerate() {
+            for mol_j in system.molecules().iter().skip(i + 1) {
                 // Loop over all particles in the molecules
-                for pi in mi.iter() {
-                    for pj in mj.iter() {
-                        let r = system.cell.distance(&positions[pi], &positions[pj]);
-                        let energy = evaluator.pair(r, pi, pj);
+                for part_i in mol_i.iter() {
+                    for part_j in mol_j.iter() {
+                        let r = system.cell.distance(&positions[part_i], &positions[part_j]);
+                        let path = system.bond_path(part_i, part_j);
+                        let energy = evaluator.pair(path, r, part_i, part_j);
                         pairs_delta += energy;
-                        new_pairs[(pi, pj)] += energy;
-                        new_pairs[(pj, pi)] += energy;
-                        pairs_delta -= self.pairs_cache[(pi, pj)];
+                        new_pairs[(part_i, part_j)] += energy;
+                        new_pairs[(part_j, part_i)] += energy;
+                        pairs_delta -= self.pairs_cache[(part_i, part_j)];
                     }
                 }
             }
@@ -338,12 +342,12 @@ impl EnergyCache {
             let (n, m) = new_pairs.dim();
             debug_assert_eq!(n, m);
             debug_assert_eq!((n, m), cache.pairs_cache.dim());
-            for (i, mi) in system.molecules().iter().enumerate() {
-                for mj in system.molecules().iter().skip(i + 1) {
-                    for pi in mi.iter() {
-                        for pj in mj.iter() {
-                            cache.pairs_cache[(pi, pj)] = new_pairs[(pi, pj)];
-                            cache.pairs_cache[(pj, pi)] = new_pairs[(pi, pj)];
+            for (i, mol_i) in system.molecules().iter().enumerate() {
+                for mol_j in system.molecules().iter().skip(i + 1) {
+                    for part_i in mol_i.iter() {
+                        for part_j in mol_j.iter() {
+                            cache.pairs_cache[(part_i, part_j)] = new_pairs[(part_i, part_j)];
+                            cache.pairs_cache[(part_j, part_i)] = new_pairs[(part_i, part_j)];
                         }
                     }
                 }

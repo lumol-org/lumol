@@ -138,10 +138,12 @@ impl Dihedral {
 
 
 bitflags! {
-    /// The `BondDistance` bitflag encode the topological distance between
+    /// The `BondDistances` bitflag encode the topological distance between
     /// two particles in the molecule, i.e. the number of bonds between the
-    /// particles.
-    pub struct BondDistance: u8 {
+    /// particles. Two particles can have multiple bond path lionking them
+    /// (in the case of cyclic molecules), which is why a bit flag is used
+    /// instead of a single distance value.
+    pub struct BondDistances: u8 {
         /// The particles are separated by one bond
         const ONE   = 0b0001;
         /// The particles are separated by two bonds
@@ -153,9 +155,9 @@ bitflags! {
     }
 }
 
-impl Default for BondDistance {
-    fn default() -> BondDistance {
-        BondDistance::FAR
+impl Default for BondDistances {
+    fn default() -> BondDistances {
+        BondDistances::FAR
     }
 }
 
