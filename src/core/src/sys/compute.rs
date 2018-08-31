@@ -35,12 +35,12 @@ impl Compute for Forces {
             let mut thread_forces = thread_forces_store.borrow_mut();
 
             for j in (i + 1)..system.size() {
-                let distance = system.bond_distance(i, j);
+                let path = system.bond_path(i, j);
                 let d = system.nearest_image(i, j);
                 let dn = d.normalized();
                 let r = d.norm();
                 for potential in system.pair_potentials(i, j) {
-                    let info = potential.restriction().information(distance);
+                    let info = potential.restriction().information(path);
                     if !info.excluded {
                         let force = info.scaling * potential.force(r) * dn;
                         thread_forces[i] += force;
@@ -182,9 +182,9 @@ impl Compute for Virial {
         let pair_virials = (0..system.size()).par_map(|i| {
             let mut local_virial = Matrix3::zero();
             for j in (i + 1)..system.size() {
-                let distance = system.bond_distance(i, j);
+                let path = system.bond_path(i, j);
                 for potential in system.pair_potentials(i, j) {
-                    let info = potential.restriction().information(distance);
+                    let info = potential.restriction().information(path);
                     if !info.excluded {
                         let d = system.nearest_image(i, j);
                         local_virial += info.scaling * potential.virial(&d);

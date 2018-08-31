@@ -467,8 +467,8 @@ impl Ewald {
                     continue;
                 }
 
-                let distance = configuration.bond_distance(i, j);
-                let info = self.restriction.information(distance);
+                let path = configuration.bond_path(i, j);
+                let info = self.restriction.information(path);
 
                 let r = configuration.distance(i, j);
                 local_energy += self.real_space_energy_pair(info, qi, qj, r);
@@ -503,8 +503,8 @@ impl Ewald {
                     continue;
                 }
 
-                let distance = configuration.bond_distance(i, j);
-                let info = self.restriction.information(distance);
+                let path = configuration.bond_path(i, j);
+                let info = self.restriction.information(path);
 
                 let rij = configuration.nearest_image(i, j);
                 let force = self.real_space_force_pair(info, qi, qj, &rij);
@@ -535,8 +535,8 @@ impl Ewald {
                     continue;
                 }
 
-                let distance = configuration.bond_distance(i, j);
-                let info = self.restriction.information(distance);
+                let path = configuration.bond_path(i, j);
+                let info = self.restriction.information(path);
 
                 let rij = configuration.nearest_image(i, j);
                 let force = self.real_space_force_pair(info, qi, qj, &rij);
@@ -566,8 +566,8 @@ impl Ewald {
                 let r_old = configuration.distance(i, j);
                 let r_new = configuration.cell.distance(&newpos[idx], &positions[j]);
 
-                let distance = configuration.bond_distance(i, j);
-                let info = self.restriction.information(distance);
+                let path = configuration.bond_path(i, j);
+                let info = self.restriction.information(path);
 
                 e_old += self.real_space_energy_pair(info, qi, qj, r_old);
                 e_new += self.real_space_energy_pair(info, qi, qj, r_new);
@@ -585,8 +585,8 @@ impl Ewald {
                 let r_old = configuration.distance(i, j);
                 let r_new = configuration.cell.distance(&newpos[idx], &newpos[jdx]);
 
-                let distance = configuration.bond_distance(i, j);
-                let info = self.restriction.information(distance);
+                let path = configuration.bond_path(i, j);
+                let info = self.restriction.information(path);
 
                 e_old += self.real_space_energy_pair(info, qi, qj, r_old);
                 e_new += self.real_space_energy_pair(info, qi, qj, r_new);
@@ -827,8 +827,8 @@ impl Ewald {
             // of the energy) always fail. So let's use it that way for now.
             for j in i+1..natoms {
                 // Only account for excluded pairs
-                let distance = configuration.bond_distance(i, j);
-                let info = self.restriction.information(distance);
+                let path = configuration.bond_path(i, j);
+                let info = self.restriction.information(path);
                 if !info.excluded {continue}
 
                 let qj = charges[j];
@@ -851,8 +851,8 @@ impl Ewald {
             let qi = charges[i];
             if qi == 0.0 {continue}
             for j in i+1..natoms {
-                let distance = configuration.bond_distance(i, j);
-                let info = self.restriction.information(distance);
+                let path = configuration.bond_path(i, j);
+                let info = self.restriction.information(path);
                 // Only account for excluded pairs
                 if !info.excluded {continue}
 
@@ -877,8 +877,8 @@ impl Ewald {
             let qi = charges[i];
             if qi == 0.0 {continue}
             for j in i+1..natoms {
-                let distance = configuration.bond_distance(i, j);
-                let info = self.restriction.information(distance);
+                let path = configuration.bond_path(i, j);
+                let info = self.restriction.information(path);
                 // Only account for excluded pairs
                 if !info.excluded {continue}
 
@@ -909,8 +909,8 @@ impl Ewald {
                 let qj = charges[j];
                 if qi == 0.0 {continue}
 
-                let distance = configuration.bond_distance(i, j);
-                let info = self.restriction.information(distance);
+                let path = configuration.bond_path(i, j);
+                let info = self.restriction.information(path);
                 if !info.excluded {continue}
 
                 let r_old = configuration.distance(i, j);
@@ -929,8 +929,8 @@ impl Ewald {
                 let qj = charges[j];
                 if qj == 0.0 {continue}
 
-                let distance = configuration.bond_distance(i, j);
-                let info = self.restriction.information(distance);
+                let path = configuration.bond_path(i, j);
+                let info = self.restriction.information(path);
                 if !info.excluded {continue}
 
                 let r_old = configuration.distance(i, j);

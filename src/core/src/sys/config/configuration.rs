@@ -4,11 +4,12 @@
 //! The Configuration type definition
 
 use std::cmp::{max, min};
-use std::i8;
 
 use types::{Vector3D, Zero};
 
-use sys::{BondDistance, Molecule, ParticleKind, UnitCell};
+use energy::BondPath;
+
+use sys::{BondDistances, Molecule, ParticleKind, UnitCell};
 use sys::{Particle, ParticleSlice, ParticleSliceMut, ParticleVec};
 use sys::molecule_type;
 
@@ -95,22 +96,22 @@ impl Configuration {
     /// the particle `j`. If the particles are not in the same molecule, the
     /// length is -1. Else, this length is 0 if `i == j`, 1 if there is a bond
     /// between `i` and `j`, etc.
-    pub fn bond_distance(&self, i: usize, j: usize) -> i8 {
+    pub fn bond_path(&self, i: usize, j: usize) -> BondPath {
         assert!(i < self.size() && j < self.size());
         if !(self.are_in_same_molecule(i, j)) {
-            -1
+            BondPath::None
         } else if i == j {
-            0
+            BondPath::SameParticle
         } else {
-            let connect = self.molecule(self.molid(i)).bond_distance(i, j);
-            if connect.contains(BondDistance::ONE) {
-                1
-            } else if connect.contains(BondDistance::TWO) {
-                2
-            } else if connect.contains(BondDistance::THREE) {
-                3
-            } else if connect.contains(BondDistance::FAR) {
-                i8::MAX
+            let connect = self.molecule(self.molid(i)).bond_distances(i, j);
+            if connect.contains(BondDistances::ONE) {
+                BondPath::OneBond
+            } else if connect.contains(BondDistances::TWO) {
+                BondPath::TwoBonds
+            } else if connect.contains(BondDistances::THREE) {
+                BondPath::ThreeBonds
+            } else if connect.contains(BondDistances::FAR) {
+                BondPath::Far
             } else {
                 unreachable!();
             }
@@ -470,6 +471,7 @@ impl Configuration {
 mod tests {
     use super::*;
     use sys::{Angle, Bond, Dihedral};
+    use energy::BondPath;
     use types::Vector3D;
 
     /// Create particles with intialized kind for the tests
@@ -537,7 +539,7 @@ mod tests {
     }
 
     #[test]
-    fn bond_distance() {
+    fn bond_path() {
         let mut configuration = Configuration::new();
         configuration.add_particle(particle("C"));
         configuration.add_particle(particle("C"));
@@ -551,12 +553,12 @@ mod tests {
         let _ = configuration.add_bond(2, 3);
         let _ = configuration.add_bond(3, 4);
 
-        assert_eq!(configuration.bond_distance(0, 0), 0);
-        assert_eq!(configuration.bond_distance(0, 1), 1);
-        assert_eq!(configuration.bond_distance(0, 2), 2);
-        assert_eq!(configuration.bond_distance(0, 3), 3);
-        assert!(configuration.bond_distance(0, 4) > 3);
-        assert_eq!(configuration.bond_distance(0, 5), -1);
+        assert_eq!(configuration.bond_path(0, 0), BondPath::SameParticle);
+        assert_eq!(configuration.bond_path(0, 1), BondPath::OneBond);
+        assert_eq!(configuration.bond_path(0, 2), BondPath::TwoBonds);
+        assert_eq!(configuration.bond_path(0, 3), BondPath::ThreeBonds);
+        assert_eq!(configuration.bond_path(0, 4), BondPath::Far);
+        assert_eq!(configuration.bond_path(0, 5), BondPath::None);
     }
 
     #[test]
