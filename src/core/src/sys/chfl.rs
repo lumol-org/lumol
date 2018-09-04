@@ -15,21 +15,21 @@ use std::sync::{Once, ONCE_INIT};
 
 /// Possible error when reading and writing to trajectories
 #[derive(Debug)]
-pub struct TrajectoryError(chemfiles::Error);
+pub struct Error(chemfiles::Error);
 
-impl From<chemfiles::Error> for TrajectoryError {
-    fn from(err: chemfiles::Error) -> TrajectoryError {
-        TrajectoryError(err)
+impl From<chemfiles::Error> for Error {
+    fn from(err: chemfiles::Error) -> Error {
+        Error(err)
     }
 }
 
-impl fmt::Display for TrajectoryError {
+impl fmt::Display for Error {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> Result<(), fmt::Error> {
         self.0.fmt(fmt)
     }
 }
 
-impl error::Error for TrajectoryError {
+impl error::Error for Error {
     fn description(&self) -> &str {
         self.0.description()
     }
@@ -40,12 +40,12 @@ pub trait ToLumol {
     /// Output type
     type Output;
     /// Conversion function
-    fn to_lumol(self) -> TrajectoryResult<Self::Output>;
+    fn to_lumol(self) -> Result<Self::Output, Error>;
 }
 
 impl ToLumol for chemfiles::Atom {
     type Output = Particle;
-    fn to_lumol(self) -> TrajectoryResult<Particle> {
+    fn to_lumol(self) -> Result<Self::Output, Error> {
         let name = try!(self.atomic_type());
         let mut particle = Particle::new(name);
         particle.mass = try!(self.mass());
@@ -55,7 +55,7 @@ impl ToLumol for chemfiles::Atom {
 
 impl ToLumol for chemfiles::UnitCell {
     type Output = UnitCell;
-    fn to_lumol(self) -> TrajectoryResult<UnitCell> {
+    fn to_lumol(self) -> Result<Self::Output, Error> {
         let cell_type = try!(self.shape());
         let cell = match cell_type {
             chemfiles::CellShape::Infinite => UnitCell::infinite(),
@@ -78,7 +78,7 @@ impl ToLumol for chemfiles::UnitCell {
 
 impl ToLumol for chemfiles::Frame {
     type Output = System;
-    fn to_lumol(self) -> TrajectoryResult<System> {
+    fn to_lumol(self) -> Result<Self::Output, Error> {
         let cell = try!(self.cell());
         let cell = try!(cell.to_lumol());
         let mut system = System::with_cell(cell);
@@ -133,12 +133,12 @@ pub trait ToChemfiles {
     /// Output type
     type Output;
     /// Conversion function
-    fn to_chemfiles(&self) -> TrajectoryResult<Self::Output>;
+    fn to_chemfiles(&self) -> Result<Self::Output, Error>;
 }
 
 impl<'a> ToChemfiles for ParticleRef<'a> {
     type Output = chemfiles::Atom;
-    fn to_chemfiles(&self) -> TrajectoryResult<chemfiles::Atom> {
+    fn to_chemfiles(&self) -> Result<Self::Output, Error> {
         let mut atom = try!(chemfiles::Atom::new(&**self.name));
         try!(atom.set_mass(*self.mass));
         return Ok(atom);
@@ -147,7 +147,7 @@ impl<'a> ToChemfiles for ParticleRef<'a> {
 
 impl ToChemfiles for UnitCell {
     type Output = chemfiles::UnitCell;
-    fn to_chemfiles(&self) -> TrajectoryResult<chemfiles::UnitCell> {
+    fn to_chemfiles(&self) -> Result<Self::Output, Error> {
         let res = match self.shape() {
             CellShape::Infinite => try!(chemfiles::UnitCell::infinite()),
             CellShape::Orthorhombic => {
@@ -166,7 +166,7 @@ impl ToChemfiles for UnitCell {
 
 impl ToChemfiles for System {
     type Output = chemfiles::Frame;
-    fn to_chemfiles(&self) -> TrajectoryResult<chemfiles::Frame> {
+    fn to_chemfiles(&self) -> Result<Self::Output, Error> {
         let mut frame = try!(chemfiles::Frame::new());
         try!(frame.resize(self.size() as u64));
         try!(frame.set_step(self.step() as u64));
@@ -227,9 +227,6 @@ impl ToChemfiles for System {
 /// let system = trajectory.read().unwrap();
 /// ```
 pub struct Trajectory(chemfiles::Trajectory);
-
-/// Result type for all Trajectory operations
-type TrajectoryResult<T> = Result<T, TrajectoryError>;
 
 /// Possible modes when opening a [`Trajectory`](struct.Trajectory.html).
 pub enum OpenMode {
@@ -325,7 +322,7 @@ impl<'a> TrajectoryBuilder<'a> {
     ///                                    .open("file.nc")
     ///                                    .unwrap();
     /// ```
-    pub fn open<P: AsRef<Path>>(self, path: P) -> TrajectoryResult<Trajectory> {
+    pub fn open<P: AsRef<Path>>(self, path: P) -> Result<Trajectory, Error> {
         redirect_chemfiles_warnings();
         let mode = match self.mode {
             OpenMode::Read => 'r',
@@ -350,7 +347,7 @@ impl Trajectory {
     ///
     /// let system = trajectory.read().unwrap();
     /// ```
-    pub fn read(&mut self) -> TrajectoryResult<System> {
+    pub fn read(&mut self) -> Result<System, Error> {
         let mut frame = try!(chemfiles::Frame::new());
         try!(self.0.read(&mut frame));
         return frame.to_lumol();
@@ -369,7 +366,7 @@ impl Trajectory {
     ///
     /// let system = trajectory.read_guess_bonds().unwrap();
     /// ```
-    pub fn read_guess_bonds(&mut self) -> TrajectoryResult<System> {
+    pub fn read_guess_bonds(&mut self) -> Result<System, Error> {
         let mut frame = try!(chemfiles::Frame::new());
         try!(self.0.read(&mut frame));
         try!(frame.guess_topology());
@@ -390,7 +387,7 @@ impl Trajectory {
     ///
     /// trajectory.write(&system).unwrap();
     /// ```
-    pub fn write(&mut self, system: &System) -> TrajectoryResult<()> {
+    pub fn write(&mut self, system: &System) -> Result<(), Error> {
         let frame = try!(system.to_chemfiles());
         try!(self.0.write(&frame));
         Ok(())
@@ -413,7 +410,7 @@ impl Trajectory {
     ///
     /// assert_eq!(system.cell, UnitCell::cubic(10.0));
     /// ```
-    pub fn set_cell(&mut self, cell: &UnitCell) -> TrajectoryResult<()> {
+    pub fn set_cell(&mut self, cell: &UnitCell) -> Result<(), Error> {
         let cell = try!(cell.to_chemfiles());
         try!(self.0.set_cell(&cell));
         Ok(())
@@ -436,7 +433,7 @@ impl Trajectory {
     /// // The system will contain the topology from topology.pdb
     /// let system = trajectory.read().unwrap();
     /// ```
-    pub fn set_topology_file(&mut self, path: &str) -> TrajectoryResult<()> {
+    pub fn set_topology_file(&mut self, path: &str) -> Result<(), Error> {
         try!(self.0.set_topology_file(path));
         Ok(())
     }
@@ -452,7 +449,7 @@ impl Trajectory {
 /// let (molecule, particles) = read_molecule("file.xyz").unwrap();
 /// assert_eq!(molecule.size(), particles.len());
 /// ```
-pub fn read_molecule<P: AsRef<Path>>(path: P) -> TrajectoryResult<(Molecule, ParticleVec)> {
+pub fn read_molecule<P: AsRef<Path>>(path: P) -> Result<(Molecule, ParticleVec), Error> {
     let mut trajectory = try!(chemfiles::Trajectory::open(&path, 'r'));
     let mut frame = try!(chemfiles::Frame::new());
     try!(trajectory.read(&mut frame));

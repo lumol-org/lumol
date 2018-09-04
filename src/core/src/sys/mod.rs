@@ -19,7 +19,7 @@ mod cache;
 pub use self::cache::EnergyCache;
 
 mod chfl;
-pub use self::chfl::{OpenMode, Trajectory, TrajectoryBuilder, TrajectoryError};
+pub use self::chfl::{OpenMode, Trajectory, TrajectoryBuilder, Error as TrajectoryError};
 pub use self::chfl::read_molecule;
 
 pub mod veloc;
