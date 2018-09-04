@@ -11,9 +11,13 @@ file using the ``file`` key:
 
 Lumol will read the file to build the system accordingly. If the file is a
 trajectory containing multiple steps, only the first frame is used. Under the
-hood, we utilize `chemfiles`_ to parse the data and thus
-we can read in plenty different file formats.  All possible formats are listed
-in the `chemfiles`_ documentation.
+hood, we utilize `chemfiles`_ to parse the data and thus we can read in plenty
+different file formats. All possible formats are listed in the `chemfiles`_
+documentation.
+
+From the file, we will read in the unit cell, the atomic positions, the atomic
+masses, and use the atomic types as particles names. We will also read the list
+of bonds from the topology.
 
 .. _chemfiles: http://chemfiles.org/
 

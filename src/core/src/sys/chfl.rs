@@ -46,11 +46,10 @@ pub trait ToLumol {
 impl ToLumol for chemfiles::Atom {
     type Output = Particle;
     fn to_lumol(self) -> TrajectoryResult<Particle> {
-        let name = try!(self.name());
-        let mut part = Particle::new(name);
-        let mass = try!(self.mass());
-        part.mass = mass as f64;
-        Ok(part)
+        let name = try!(self.atomic_type());
+        let mut particle = Particle::new(name);
+        particle.mass = try!(self.mass());
+        Ok(particle)
     }
 }
 
@@ -514,6 +513,20 @@ H      1.306724     0.917489    -0.885744
 H      2.172669     -0.348524    0.000051
 ";
 
+    static PDB_WATER: &'static str = "
+CRYST1   28.000   28.000   28.000  90.00  90.00  90.00 P 1           1
+HETATM    1  O   RES X   1       0.000   0.000   0.000  1.00  0.00           O
+HETATM    2  Hw  RES X   2       0.635   0.898   0.000  1.00  0.00           H
+HETATM    3  Hw  RES X   3      -0.635   0.898   0.000  1.00  0.00           H
+HETATM    4  Ow  RES X   4       0.000   0.000   9.333  1.00  0.00           O
+HETATM    5  H   RES X   5       0.635   0.898   9.333  1.00  0.00           H
+HETATM    6  H   RES X   6      -0.635   0.898   9.333  1.00  0.00           H
+CONECT    1    2    3
+CONECT    2    1
+CONECT    3    1
+END
+";
+
     #[test]
     fn read_water() {
         let mut file = tempfile::Builder::new().suffix(".xyz").tempfile().unwrap();
@@ -540,6 +553,32 @@ H      2.172669     -0.348524    0.000051
         // This is only a simple regression test on the moltype function. Feel
         // free to change the value if the molecule type algorithm change.
         assert_eq!(molecule_type(&molecule, atoms.as_slice()), 2727145596042757306);
+    }
+
+    #[test]
+    fn read_pdb_water() {
+        let mut file = tempfile::Builder::new().suffix(".pdb").tempfile().unwrap();
+        write!(file, "{}", PDB_WATER).unwrap();
+
+        let system = TrajectoryBuilder::new()
+            .open(&file).unwrap()
+            .read().unwrap();
+
+        assert_eq!(system.size(), 6);
+        assert_eq!(system.molecules().len(), 4);
+        assert_eq!(system.cell, UnitCell::cubic(28.0));
+
+        let molecule = system.molecule(0);
+        assert_eq!(molecule.bonds().len(), 2);
+        assert!(molecule.bonds().contains(&Bond::new(0, 1)));
+        assert!(molecule.bonds().contains(&Bond::new(0, 2)));
+
+        assert_eq!(system.particles().name[0], "O");
+        assert_eq!(system.particles().name[1], "H");
+        assert_eq!(system.particles().name[2], "H");
+        assert_eq!(system.particles().name[3], "O");
+        assert_eq!(system.particles().name[4], "H");
+        assert_eq!(system.particles().name[5], "H");
     }
 
     #[test]

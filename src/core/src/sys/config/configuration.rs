@@ -229,6 +229,13 @@ impl Configuration {
     /// must have a valid particle kind.
     pub fn add_particle(&mut self, particle: Particle) {
         assert_ne!(particle.kind, ParticleKind::invalid());
+        if particle.mass < 0.0 || f64::is_nan(particle.mass) {
+            warn_once!(
+                "Adding a particle ({}) with an invalid mass: {}",
+                particle.name, particle.mass
+            );
+        }
+
         self.particles.push(particle);
         self.molecules.push(Molecule::new(self.particles.len() - 1));
         self.molids.push(self.molecules.len() - 1);
