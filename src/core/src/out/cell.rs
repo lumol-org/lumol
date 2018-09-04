@@ -21,7 +21,7 @@ impl CellOutput {
     /// it already exists.
     pub fn new<P: AsRef<Path>>(filename: P) -> Result<CellOutput, io::Error> {
         Ok(CellOutput {
-            file: try!(File::create(filename.as_ref())),
+            file: File::create(filename.as_ref())?,
             path: filename.as_ref().to_owned(),
         })
     }
@@ -29,31 +29,20 @@ impl CellOutput {
 
 impl Output for CellOutput {
     fn setup(&mut self, _: &System) {
-        if let Err(err) = writeln!(&mut self.file, "# Unit cell of the simulation") {
-            // Do panic in early time
-            fatal_error!("Could not write to file '{}': {}", self.path.display(), err);
-        }
-        if let Err(err) = writeln!(&mut self.file, "# Step A/Å B/Å C/Å α/deg β/deg γ/deg") {
-            fatal_error!("Could not write to file '{}': {}", self.path.display(), err);
-        }
+        writeln_or_log!(self, "# Unit cell of the simulation");
+        writeln_or_log!(self, "# Step A/Å B/Å C/Å α/deg β/deg γ/deg");
     }
 
     fn write(&mut self, system: &System) {
-        let cell = &system.cell;
-        if let Err(err) = writeln!(
-            &mut self.file,
-            "{} {} {} {} {} {} {}",
+        writeln_or_log!(self, "{} {} {} {} {} {} {}",
             system.step(),
-            cell.a(),
-            cell.b(),
-            cell.c(),
-            cell.alpha(),
-            cell.beta(),
-            cell.gamma()
-        ) {
-            // Do not panic during the simulation
-            error!("Could not write to file '{}': {}", self.path.display(), err);
-        }
+            system.cell.a(),
+            system.cell.b(),
+            system.cell.c(),
+            system.cell.alpha(),
+            system.cell.beta(),
+            system.cell.gamma()
+        )
     }
 }
 

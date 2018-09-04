@@ -28,8 +28,9 @@ impl TrajectoryOutput {
         P: AsRef<Path>,
     {
         let builder = TrajectoryBuilder::new().mode(OpenMode::Write);
-        let file = try!(builder.open(path));
-        Ok(TrajectoryOutput { file: file })
+        Ok(TrajectoryOutput {
+            file: builder.open(path)?
+        })
     }
 
     /// Create a new `TrajectoryOutput` writing to `filename` using the given
@@ -44,8 +45,9 @@ impl TrajectoryOutput {
         P: AsRef<Path>,
     {
         let builder = TrajectoryBuilder::new().mode(OpenMode::Write).format(format);
-        let file = try!(builder.open(path));
-        Ok(TrajectoryOutput { file: file })
+        Ok(TrajectoryOutput {
+            file: builder.open(path)?
+        })
     }
 }
 

@@ -56,8 +56,8 @@ impl Input {
 
     /// Read the `Input` from a TOML formatted string.
     pub fn from_str(path: PathBuf, string: &str) -> Result<Input> {
-        let config = try!(parse(string).map_err(|err| { Error::TOML(Box::new(err)) }));
-        try!(validate(&config));
+        let config = parse(string).map_err(|err| { Error::TOML(Box::new(err)) })?;
+        validate(&config)?;
         Ok(Input {
             path: path,
             config: config.clone(),
@@ -66,10 +66,10 @@ impl Input {
 
     /// Read input file and get the corresponding `Config`
     pub fn read(&self) -> Result<Config> {
-        try!(self.setup_logging());
-        let system = try!(self.read_system());
-        let simulation = try!(self.read_simulation());
-        let nsteps = try!(self.read_nsteps());
+        self.setup_logging()?;
+        let system = self.read_system()?;
+        let simulation = self.read_simulation()?;
+        let nsteps = self.read_nsteps()?;
 
         Ok(Config {
             system: system,

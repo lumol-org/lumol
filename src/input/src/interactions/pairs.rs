@@ -26,18 +26,19 @@ impl<'a> GlobalInformation<'a> {
     fn read(config: &Table) -> Result<GlobalInformation> {
         match config.get("global") {
             Some(global) => {
-                let global =
-                    try!(global.as_table().ok_or(Error::from("'global' section must be a table")));
+                let global = global.as_table().ok_or(
+                    Error::from("'global' section must be a table")
+                )?;
+
                 let cutoff = global.get("cutoff");
-                let tail = if let Some(tail) = global.get("tail_correction") {
-                    let tail = try!(tail.as_bool().ok_or(Error::from(
-                        "The 'tail_correction' section must be a boolean \
-                         value"
-                    )));
-                    Some(tail)
-                } else {
-                    None
-                };
+                let tail = global.get("tail_correction")
+                    .map(|tail| {
+                        tail.as_bool().ok_or(
+                            Error::from("The 'tail_correction' section must be a boolean value")
+                        )
+                    })
+                    .map_or(Ok(None), |tail| tail.map(Some))?;
+
                 Ok(GlobalInformation {
                     cutoff: cutoff,
                     tail: tail,
@@ -61,14 +62,16 @@ impl InteractionsInput {
             None => return Ok(()),
         };
 
-        let pairs =
-            try!(pairs.as_array().ok_or(Error::from("The 'pairs' section must be an array")));
+        let pairs = pairs.as_array().ok_or(
+            Error::from("The 'pairs' section must be an array")
+        )?;
 
         for pair in pairs {
-            let pair =
-                try!(pair.as_table().ok_or(Error::from("Pair potential entry must be a table")));
+            let pair = pair.as_table().ok_or(
+                Error::from("Pair potential entry must be a table")
+            )?;
 
-            let atoms = try!(extract::slice("atoms", pair, "pair potential"));
+            let atoms = extract::slice("atoms", pair, "pair potential")?;
             if atoms.len() != 2 {
                 return Err(Error::from(format!(
                     "Wrong size for 'atoms' array in pair \
@@ -77,65 +80,58 @@ impl InteractionsInput {
                 )));
             }
 
-            let a = try!(atoms[0].as_str().ok_or(
+            let a = atoms[0].as_str().ok_or(
                 Error::from("The first atom name is not a string in pair potential")
-            ));
-            let b = try!(atoms[1].as_str().ok_or(
+            )?;
+            let b = atoms[1].as_str().ok_or(
                 Error::from("The second atom name is not a string in pair potential")
-            ));
+            )?;
 
-            let potential = try!(read_pair_potential(pair));
+            let potential = read_pair_potential(pair)?;
             let potential = if let Some(computation) = pair.get("computation") {
-                let computation = try!(
-                    computation.as_table()
-                               .ok_or(Error::from("'computation' section must be a table"))
-                );
-                try!(read_pair_computation(computation, potential))
+                let computation = computation.as_table().ok_or(
+                    Error::from("'computation' section must be a table")
+                )?;
+                read_pair_computation(computation, potential)?
             } else {
                 potential
             };
 
-            let global = try!(GlobalInformation::read(&self.config));
+            let global = GlobalInformation::read(&self.config)?;
             let cutoff = match pair.get("cutoff") {
                 Some(cutoff) => cutoff,
                 None => {
-                    try!(
-                        global.cutoff
-                              .as_ref()
-                              .ok_or(Error::from("Missing 'cutoff' value for pair potential"))
-                    )
+                    global.cutoff.as_ref().ok_or(
+                        Error::from("Missing 'cutoff' value for pair potential")
+                    )?
                 }
             };
 
             let mut interaction = match *cutoff {
                 Value::String(ref cutoff) => {
-                    let cutoff = try!(units::from_str(cutoff));
+                    let cutoff = units::from_str(cutoff)?;
                     PairInteraction::new(potential, cutoff)
                 }
                 Value::Table(ref table) => {
-                    let shifted = try!(
-                        table.get("shifted")
-                             .ok_or(Error::from("'cutoff' table can only contain 'shifted' key"))
-                    );
-                    let cutoff = try!(
-                        shifted.as_str()
-                               .ok_or(Error::from("'cutoff.shifted' value must be a string"))
-                    );
-                    let cutoff = try!(units::from_str(cutoff));
+                    let shifted = table.get("shifted").ok_or(
+                        Error::from("'cutoff' table can only contain 'shifted' key")
+                    )?;
+                    let cutoff = shifted.as_str().ok_or(
+                        Error::from("'cutoff.shifted' value must be a string")
+                    )?;
+                    let cutoff = units::from_str(cutoff)?;
                     PairInteraction::shifted(potential, cutoff)
                 }
                 _ => return Err(Error::from("'cutoff' must be a string or a table")),
             };
 
-            let tail = match pair.get("tail_correction") {
-                Some(tail) => {
-                    Some(try!(tail.as_bool().ok_or(Error::from(
-                        "The 'tail_correction' section must be a boolean \
-                         value"
-                    ))))
-                }
-                None => global.tail,
-            };
+            let tail = pair.get("tail_correction")
+                .map(|tail| {
+                    tail.as_bool().ok_or(Error::from(
+                        "The 'tail_correction' section must be a boolean value"
+                    ))
+                })
+                .map_or(Ok(global.tail), |tail| tail.map(Some))?;
 
             if let Some(use_tail) = tail {
                 if use_tail {
@@ -143,7 +139,7 @@ impl InteractionsInput {
                 }
             }
 
-            if let Some(restriction) = try!(read_restriction(pair)) {
+            if let Some(restriction) = read_restriction(pair)? {
                 interaction.set_restriction(restriction);
             }
 
@@ -159,14 +155,16 @@ impl InteractionsInput {
             None => return Ok(()),
         };
 
-        let bonds =
-            try!(bonds.as_array().ok_or(Error::from("The 'bonds' section must be an array")));
+        let bonds = bonds.as_array().ok_or(
+            Error::from("The 'bonds' section must be an array")
+        )?;
 
         for bond in bonds {
-            let bond =
-                try!(bond.as_table().ok_or(Error::from("Bond potential entry must be a table")));
+            let bond = bond.as_table().ok_or(
+                Error::from("Bond potential entry must be a table")
+            )?;
 
-            let atoms = try!(extract::slice("atoms", bond, "bond potential"));
+            let atoms = extract::slice("atoms", bond, "bond potential")?;
             if atoms.len() != 2 {
                 return Err(Error::from(format!(
                     "Wrong size for 'atoms' array in bond \
@@ -175,14 +173,14 @@ impl InteractionsInput {
                 )));
             }
 
-            let a = try!(atoms[0].as_str().ok_or(
+            let a = atoms[0].as_str().ok_or(
                 Error::from("The first atom name is not a string in pair potential")
-            ));
-            let b = try!(atoms[1].as_str().ok_or(
+            )?;
+            let b = atoms[1].as_str().ok_or(
                 Error::from("The second atom name is not a string in pair potential")
-            ));
+            )?;
 
-            let potential = try!(read_bond_potential(bond));
+            let potential = read_bond_potential(bond)?;
             system.add_bond_potential((a, b), potential);
         }
         Ok(())
@@ -216,14 +214,14 @@ fn read_pair_potential(pair: &Table) -> Result<Box<PairPotential>> {
     let key = &*potentials[0];
     if let Value::Table(ref table) = pair[key] {
         match key {
-            "null" => Ok(Box::new(try!(NullPotential::from_toml(table)))),
-            "harmonic" => Ok(Box::new(try!(Harmonic::from_toml(table)))),
-            "lj" => Ok(Box::new(try!(LennardJones::from_toml(table)))),
-            "buckingham" => Ok(Box::new(try!(Buckingham::from_toml(table)))),
-            "born" => Ok(Box::new(try!(BornMayerHuggins::from_toml(table)))),
-            "morse" => Ok(Box::new(try!(MorsePotential::from_toml(table)))),
-            "gaussian" => Ok(Box::new(try!(Gaussian::from_toml(table)))),
-            "mie" => Ok(Box::new(try!(Mie::from_toml(table)))),
+            "null" => Ok(Box::new(NullPotential::from_toml(table)?)),
+            "harmonic" => Ok(Box::new(Harmonic::from_toml(table)?)),
+            "lj" => Ok(Box::new(LennardJones::from_toml(table)?)),
+            "buckingham" => Ok(Box::new(Buckingham::from_toml(table)?)),
+            "born" => Ok(Box::new(BornMayerHuggins::from_toml(table)?)),
+            "morse" => Ok(Box::new(MorsePotential::from_toml(table)?)),
+            "gaussian" => Ok(Box::new(Gaussian::from_toml(table)?)),
+            "mie" => Ok(Box::new(Mie::from_toml(table)?)),
             other => Err(Error::from(format!("Unknown potential type '{}'", other))),
         }
     } else {
@@ -248,9 +246,9 @@ fn read_bond_potential(pair: &Table) -> Result<Box<BondPotential>> {
     let key = &*potentials[0];
     if let Value::Table(ref table) = pair[key] {
         match key {
-            "null" => Ok(Box::new(try!(NullPotential::from_toml(table)))),
-            "harmonic" => Ok(Box::new(try!(Harmonic::from_toml(table)))),
-            "morse" => Ok(Box::new(try!(MorsePotential::from_toml(table)))),
+            "null" => Ok(Box::new(NullPotential::from_toml(table)?)),
+            "harmonic" => Ok(Box::new(Harmonic::from_toml(table)?)),
+            "morse" => Ok(Box::new(MorsePotential::from_toml(table)?)),
             other => Err(Error::from(format!("Unknown potential type '{}'", other))),
         }
     } else {
@@ -269,7 +267,7 @@ fn read_pair_computation(
     }
 
     match computation.keys().map(|s| s.as_ref()).next() {
-        Some("table") => Ok(Box::new(try!(TableComputation::from_toml(computation, potential)))),
+        Some("table") => Ok(Box::new(TableComputation::from_toml(computation, potential)?)),
         Some(other) => Err(Error::from(format!("Unknown computation type '{}'", other))),
         None => unreachable!(),
     }

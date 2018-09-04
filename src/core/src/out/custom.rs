@@ -48,9 +48,9 @@ impl From<String> for CustomOutputError {
 impl fmt::Display for CustomOutputError {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> Result<(), fmt::Error> {
         match *self {
-            CustomOutputError::Io(ref err) => try!(write!(fmt, "{}", err)),
-            CustomOutputError::Expr(ref err) => try!(write!(fmt, "{}", err)),
-            CustomOutputError::Custom(ref err) => try!(write!(fmt, "{}", err)),
+            CustomOutputError::Io(ref err) => write!(fmt, "{}", err)?,
+            CustomOutputError::Expr(ref err) => write!(fmt, "{}", err)?,
+            CustomOutputError::Custom(ref err) => write!(fmt, "{}", err)?,
         }
         Ok(())
     }
@@ -96,8 +96,8 @@ impl FormatArgs {
                 }
                 '}' if in_expr => {
                     in_expr = false;
-                    let ex = try!(Expr::parse(&expr));
-                    args.push((tail.clone(), ex));
+                    let sub_expr = Expr::parse(&expr)?;
+                    args.push((tail.clone(), sub_expr));
                     tail.clear();
                     expr.clear();
                 }
@@ -200,7 +200,7 @@ impl FormatArgs {
         let mut output = String::new();
         for &(ref string, ref expr) in &self.args {
             output.push_str(string);
-            let value = try!(expr.eval(&context));
+            let value = expr.eval(&context)?;
             output.push_str(&value.to_string());
         }
         output.push_str(&self.tail);
@@ -277,29 +277,23 @@ impl CustomOutput {
         template: &str,
     ) -> Result<CustomOutput, CustomOutputError> {
         Ok(CustomOutput {
-            file: try!(File::create(filename.as_ref())),
+            file: File::create(filename.as_ref())?,
             path: filename.as_ref().to_owned(),
             template: template.into(),
-            args: try!(FormatArgs::new(template)),
+            args: FormatArgs::new(template)?,
         })
     }
 }
 
 impl Output for CustomOutput {
     fn setup(&mut self, _: &System) {
-        if let Err(err) = writeln!(&mut self.file, "# Custom output") {
-            fatal_error!("Could not write to file '{}': {}", self.path.display(), err);
-        }
-        if let Err(err) = writeln!(&mut self.file, "# {}", self.template) {
-            fatal_error!("Could not write to file '{}': {}", self.path.display(), err);
-        }
+        writeln_or_log!(self, "# Custom output");
+        writeln_or_log!(self, "# {}", self.template);
     }
 
     fn write(&mut self, system: &System) {
         if let Ok(formatted) = self.args.format(system) {
-            if let Err(err) = writeln!(&mut self.file, "{}", formatted) {
-                error!("Could not write to file '{}': {}", self.path.display(), err);
-            }
+            writeln_or_log!(self, "{}", formatted);
         } else {
             error_once!("Could not evaluate custom output {}", self.template);
         }

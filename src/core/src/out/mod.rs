@@ -22,6 +22,15 @@ pub trait Output {
 
 mod tests;
 
+macro_rules! writeln_or_log {
+    ($this: expr, $($args: expr),* $(,)*) => (
+        if let Err(err) = writeln!(&mut $this.file, $($args,)*) {
+            error!("could not write to file '{}': {}", $this.path.display(), err);
+            return;
+        }
+    );
+}
+
 mod cell;
 pub use self::cell::CellOutput;
 

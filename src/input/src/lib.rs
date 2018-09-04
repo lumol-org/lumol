@@ -110,15 +110,17 @@ pub trait FromTomlWithRefData: Sized {
 }
 
 fn validate(config: &Table) -> Result<()> {
-    let input = try!(config.get("input").ok_or(Error::from("Missing 'input' table")));
+    let input = config.get("input").ok_or(
+        Error::from("Missing 'input' table")
+    )?;
 
-    let version = try!(
-        input.get("version")
-             .ok_or(Error::from("Missing 'version' key in 'input' table"))
-    );
+    let version = input.get("version").ok_or(
+        Error::from("Missing 'version' key in 'input' table")
+    )?;
 
-    let version =
-        try!(version.as_integer().ok_or(Error::from("'input.version' must be an integer")));
+    let version = version.as_integer().ok_or(
+        Error::from("'input.version' must be an integer")
+    )?;
 
     if version != 1 {
         return Err(Error::from(

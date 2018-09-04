@@ -19,14 +19,12 @@ impl InteractionsInput {
             None => return Ok(()),
         };
 
-        let angles =
-            try!(angles.as_array().ok_or(Error::from("The 'angles' section must be an array")));
+        let angles = angles.as_array().ok_or(Error::from("The 'angles' section must be an array"))?;
 
         for angle in angles {
-            let angle =
-                try!(angle.as_table().ok_or(Error::from("Angle potential entry must be a table")));
+            let angle = angle.as_table().ok_or(Error::from("Angle potential entry must be a table"))?;
 
-            let atoms = try!(extract::slice("atoms", angle, "angle potential"));
+            let atoms = extract::slice("atoms", angle, "angle potential")?;
             if atoms.len() != 3 {
                 return Err(Error::from(format!(
                     "Wrong size for 'atoms' array in angle potential. Should be 3, is {}",
@@ -34,17 +32,17 @@ impl InteractionsInput {
                 )));
             }
 
-            let a = try!(atoms[0].as_str().ok_or(
+            let a = atoms[0].as_str().ok_or(
                 Error::from("The first atom name is not a string in angle potential")
-            ));
-            let b = try!(atoms[1].as_str().ok_or(
+            )?;
+            let b = atoms[1].as_str().ok_or(
                 Error::from("The second atom name is not a string in angle potential")
-            ));
-            let c = try!(atoms[2].as_str().ok_or(
+            )?;
+            let c = atoms[2].as_str().ok_or(
                 Error::from("The third atom name is not a string in angle potential")
-            ));
+            )?;
 
-            let potential = try!(read_angle_potential(angle));
+            let potential = read_angle_potential(angle)?;
             system.add_angle_potential((a, b, c), potential);
         }
         Ok(())
@@ -57,18 +55,16 @@ impl InteractionsInput {
             None => return Ok(()),
         };
 
-        let dihedrals = try!(
-            dihedrals.as_array()
-                     .ok_or(Error::from("The 'dihedrals' section must be an array"))
-        );
+        let dihedrals = dihedrals.as_array().ok_or(
+            Error::from("The 'dihedrals' section must be an array")
+        )?;
 
         for dihedral in dihedrals {
-            let dihedral = try!(
-                dihedral.as_table()
-                        .ok_or(Error::from("dihedral potential entry must be a table"))
-            );
+            let dihedral = dihedral.as_table().ok_or(
+                Error::from("dihedral potential entry must be a table")
+            )?;
 
-            let atoms = try!(extract::slice("atoms", dihedral, "dihedral potential"));
+            let atoms = extract::slice("atoms", dihedral, "dihedral potential")?;
             if atoms.len() != 4 {
                 return Err(Error::from(format!(
                     "Wrong size for 'atoms' array in dihedral potential. Should be 4, is {}",
@@ -76,20 +72,20 @@ impl InteractionsInput {
                 )));
             }
 
-            let a = try!(atoms[0].as_str().ok_or(
+            let a = atoms[0].as_str().ok_or(
                 Error::from("The first atom name is not a string in dihedral potential")
-            ));
-            let b = try!(atoms[1].as_str().ok_or(
+            )?;
+            let b = atoms[1].as_str().ok_or(
                 Error::from("The second atom name is not a string in dihedral potential")
-            ));
-            let c = try!(atoms[2].as_str().ok_or(
+            )?;
+            let c = atoms[2].as_str().ok_or(
                 Error::from("The third atom name is not a string in dihedral potential")
-            ));
-            let d = try!(atoms[3].as_str().ok_or(
+            )?;
+            let d = atoms[3].as_str().ok_or(
                 Error::from("The fourth atom name is not a string in dihedral potential")
-            ));
+            )?;
 
-            let potential = try!(read_dihedral_potential(dihedral));
+            let potential = read_dihedral_potential(dihedral)?;
             system.add_dihedral_potential((a, b, c, d), potential);
         }
         Ok(())
@@ -113,10 +109,10 @@ fn read_angle_potential(angle: &Table) -> Result<Box<AnglePotential>> {
     let key = &*potentials[0];
     if let Value::Table(ref table) = angle[key] {
         match key {
-            "null" => Ok(Box::new(try!(NullPotential::from_toml(table)))),
-            "harmonic" => Ok(Box::new(try!(Harmonic::from_toml(table)))),
-            "cosine-harmonic" => Ok(Box::new(try!(CosineHarmonic::from_toml(table)))),
-            "morse" => Ok(Box::new(try!(MorsePotential::from_toml(table)))),
+            "null" => Ok(Box::new(NullPotential::from_toml(table)?)),
+            "harmonic" => Ok(Box::new(Harmonic::from_toml(table)?)),
+            "cosine-harmonic" => Ok(Box::new(CosineHarmonic::from_toml(table)?)),
+            "morse" => Ok(Box::new(MorsePotential::from_toml(table)?)),
             other => Err(Error::from(format!("Unknown potential type '{}'", other))),
         }
     } else {
@@ -141,11 +137,11 @@ fn read_dihedral_potential(dihedral: &Table) -> Result<Box<DihedralPotential>> {
     let key = &*potentials[0];
     if let Value::Table(ref table) = dihedral[key] {
         match key {
-            "null" => Ok(Box::new(try!(NullPotential::from_toml(table)))),
-            "harmonic" => Ok(Box::new(try!(Harmonic::from_toml(table)))),
-            "cosine-harmonic" => Ok(Box::new(try!(CosineHarmonic::from_toml(table)))),
-            "torsion" => Ok(Box::new(try!(Torsion::from_toml(table)))),
-            "morse" => Ok(Box::new(try!(MorsePotential::from_toml(table)))),
+            "null" => Ok(Box::new(NullPotential::from_toml(table)?)),
+            "harmonic" => Ok(Box::new(Harmonic::from_toml(table)?)),
+            "cosine-harmonic" => Ok(Box::new(CosineHarmonic::from_toml(table)?)),
+            "torsion" => Ok(Box::new(Torsion::from_toml(table)?)),
+            "morse" => Ok(Box::new(MorsePotential::from_toml(table)?)),
             other => Err(Error::from(format!("Unknown potential type '{}'", other))),
         }
     } else {

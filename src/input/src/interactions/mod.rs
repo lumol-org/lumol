@@ -36,8 +36,8 @@ impl InteractionsInput {
 
     /// Read the interactions from a TOML formatted string.
     pub fn from_str(string: &str) -> Result<InteractionsInput> {
-        let config = try!(parse(string).map_err(|err| { Error::TOML(Box::new(err)) }));
-        try!(validate(&config));
+        let config = parse(string).map_err(|err| Error::TOML(Box::new(err)))?;
+        validate(&config)?;
         return InteractionsInput::from_toml(config.clone());
     }
 
@@ -48,13 +48,13 @@ impl InteractionsInput {
 
     /// Read the interactions from this input into the `system`.
     pub fn read(&self, system: &mut System) -> Result<()> {
-        try!(self.read_pairs(system));
-        try!(self.read_bonds(system));
-        try!(self.read_angles(system));
-        try!(self.read_dihedrals(system));
+        self.read_pairs(system)?;
+        self.read_bonds(system)?;
+        self.read_angles(system)?;
+        self.read_dihedrals(system)?;
         // charges must be read before coulomb
-        try!(self.read_charges(system));
-        try!(self.read_coulomb(system));
+        self.read_charges(system)?;
+        self.read_coulomb(system)?;
         Ok(())
     }
 }
@@ -87,10 +87,11 @@ fn read_restriction(config: &Table) -> Result<Option<PairRestriction>> {
             if restriction.keys().len() != 1 || restriction.get("scale14").is_none() {
                 return Err(Error::from("Restriction table must be 'scale14'"));
             }
-            let scale = try!(
-                restriction["scale14"].as_float()
-                                      .ok_or(Error::from("'scale14' parameter must be a float"))
-            );
+
+            let scale = restriction["scale14"].as_float().ok_or(
+                Error::from("'scale14' parameter must be a float")
+            )?;
+
             Ok(Some(PairRestriction::Scale14(scale)))
         }
         _ => Err(Error::from("Restriction must be a table or a string")),

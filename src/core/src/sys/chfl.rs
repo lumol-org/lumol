@@ -46,9 +46,9 @@ pub trait ToLumol {
 impl ToLumol for chemfiles::Atom {
     type Output = Particle;
     fn to_lumol(self) -> Result<Self::Output, Error> {
-        let name = try!(self.atomic_type());
+        let name = self.atomic_type()?;
         let mut particle = Particle::new(name);
-        particle.mass = try!(self.mass());
+        particle.mass = self.mass()?;
         Ok(particle)
     }
 }
@@ -56,16 +56,16 @@ impl ToLumol for chemfiles::Atom {
 impl ToLumol for chemfiles::UnitCell {
     type Output = UnitCell;
     fn to_lumol(self) -> Result<Self::Output, Error> {
-        let cell_type = try!(self.shape());
+        let cell_type = self.shape()?;
         let cell = match cell_type {
             chemfiles::CellShape::Infinite => UnitCell::infinite(),
             chemfiles::CellShape::Orthorhombic => {
-                let lengths = try!(self.lengths());
+                let lengths = self.lengths()?;
                 UnitCell::ortho(lengths[0], lengths[1], lengths[2])
             }
             chemfiles::CellShape::Triclinic => {
-                let lengths = try!(self.lengths());
-                let angles = try!(self.angles());
+                let lengths = self.lengths()?;
+                let angles = self.angles()?;
                 UnitCell::triclinic(
                     lengths[0], lengths[1], lengths[2],
                     angles[0], angles[1], angles[2]
@@ -79,23 +79,23 @@ impl ToLumol for chemfiles::UnitCell {
 impl ToLumol for chemfiles::Frame {
     type Output = System;
     fn to_lumol(self) -> Result<Self::Output, Error> {
-        let cell = try!(self.cell());
-        let cell = try!(cell.to_lumol());
+        let cell = self.cell()?;
+        let cell = cell.to_lumol()?;
         let mut system = System::with_cell(cell);
-        let topology = try!(self.topology());
-        let natoms = try!(self.size()) as usize;
+        let topology = self.topology()?;
+        let natoms = self.size()? as usize;
 
-        let positions = try!(self.positions());
+        let positions = self.positions()?;
         for i in 0..natoms {
-            let atom = try!(topology.atom(i as u64));
-            let particle = try!(atom.to_lumol());
+            let atom = topology.atom(i as u64)?;
+            let particle = atom.to_lumol()?;
 
             system.add_particle(particle);
             let position = Vector3D::new(positions[i][0], positions[i][1], positions[i][2]);
             system.particles_mut().position[i] = position;
         }
 
-        let mut bonds = try!(topology.bonds());
+        let mut bonds = topology.bonds()?;
         while let Some(bond) = bonds.pop() {
             let permutations = system.add_bond(bond[0] as usize, bond[1] as usize);
             apply_particle_permutation(&mut bonds, &permutations);
@@ -139,8 +139,8 @@ pub trait ToChemfiles {
 impl<'a> ToChemfiles for ParticleRef<'a> {
     type Output = chemfiles::Atom;
     fn to_chemfiles(&self) -> Result<Self::Output, Error> {
-        let mut atom = try!(chemfiles::Atom::new(&**self.name));
-        try!(atom.set_mass(*self.mass));
+        let mut atom = chemfiles::Atom::new(&**self.name)?;
+        atom.set_mass(*self.mass)?;
         return Ok(atom);
     }
 }
@@ -149,15 +149,15 @@ impl ToChemfiles for UnitCell {
     type Output = chemfiles::UnitCell;
     fn to_chemfiles(&self) -> Result<Self::Output, Error> {
         let res = match self.shape() {
-            CellShape::Infinite => try!(chemfiles::UnitCell::infinite()),
+            CellShape::Infinite => chemfiles::UnitCell::infinite()?,
             CellShape::Orthorhombic => {
                 let lengths = [self.a(), self.b(), self.c()];
-                try!(chemfiles::UnitCell::new(lengths))
+                chemfiles::UnitCell::new(lengths)?
             }
             CellShape::Triclinic => {
                 let lengths = [self.a(), self.b(), self.c()];
                 let angles = [self.alpha(), self.beta(), self.gamma()];
-                try!(chemfiles::UnitCell::triclinic(lengths, angles))
+                chemfiles::UnitCell::triclinic(lengths, angles)?
             }
         };
         return Ok(res);
@@ -167,12 +167,12 @@ impl ToChemfiles for UnitCell {
 impl ToChemfiles for System {
     type Output = chemfiles::Frame;
     fn to_chemfiles(&self) -> Result<Self::Output, Error> {
-        let mut frame = try!(chemfiles::Frame::new());
-        try!(frame.resize(self.size() as u64));
-        try!(frame.set_step(self.step() as u64));
+        let mut frame = chemfiles::Frame::new()?;
+        frame.resize(self.size() as u64)?;
+        frame.set_step(self.step() as u64)?;
 
         {
-            let chfl_positions = try!(frame.positions_mut());
+            let chfl_positions = frame.positions_mut()?;
             let positions = self.particles().position;
             for (chfl_position, position) in izip!(chfl_positions, positions) {
                 chfl_position[0] = position[0];
@@ -182,8 +182,8 @@ impl ToChemfiles for System {
         }
 
         {
-            try!(frame.add_velocities());
-            let chfl_velocities = try!(frame.velocities_mut());
+            frame.add_velocities()?;
+            let chfl_velocities = frame.velocities_mut()?;
             let velocities = self.particles().velocity;
             for (chfl_velocity, velocity) in izip!(chfl_velocities, velocities) {
                 chfl_velocity[0] = velocity[0];
@@ -192,21 +192,21 @@ impl ToChemfiles for System {
             }
         }
 
-        let mut topology = try!(chemfiles::Topology::new());
+        let mut topology = chemfiles::Topology::new()?;
         for particle in self.particles().iter() {
-            let atom = try!(particle.to_chemfiles());
-            try!(topology.add_atom(&atom));
+            let atom = particle.to_chemfiles()?;
+            topology.add_atom(&atom)?;
         }
 
         for molecule in self.molecules() {
             for bond in molecule.bonds() {
-                try!(topology.add_bond(bond.i() as u64, bond.j() as u64));
+                topology.add_bond(bond.i() as u64, bond.j() as u64)?;
             }
         }
 
-        try!(frame.set_topology(&topology));
-        let cell = try!(self.cell.to_chemfiles());
-        try!(frame.set_cell(&cell));
+        frame.set_topology(&topology)?;
+        let cell = self.cell.to_chemfiles()?;
+        frame.set_cell(&cell)?;
         Ok(frame)
     }
 }
@@ -329,7 +329,7 @@ impl<'a> TrajectoryBuilder<'a> {
             OpenMode::Write => 'w',
             OpenMode::Append => 'a',
         };
-        let trajectory = try!(chemfiles::Trajectory::open_with_format(path, mode, self.format));
+        let trajectory = chemfiles::Trajectory::open_with_format(path, mode, self.format)?;
         return Ok(Trajectory(trajectory));
     }
 }
@@ -348,8 +348,8 @@ impl Trajectory {
     /// let system = trajectory.read().unwrap();
     /// ```
     pub fn read(&mut self) -> Result<System, Error> {
-        let mut frame = try!(chemfiles::Frame::new());
-        try!(self.0.read(&mut frame));
+        let mut frame = chemfiles::Frame::new()?;
+        self.0.read(&mut frame)?;
         return frame.to_lumol();
     }
 
@@ -367,9 +367,9 @@ impl Trajectory {
     /// let system = trajectory.read_guess_bonds().unwrap();
     /// ```
     pub fn read_guess_bonds(&mut self) -> Result<System, Error> {
-        let mut frame = try!(chemfiles::Frame::new());
-        try!(self.0.read(&mut frame));
-        try!(frame.guess_topology());
+        let mut frame = chemfiles::Frame::new()?;
+        self.0.read(&mut frame)?;
+        frame.guess_topology()?;
         return frame.to_lumol();
     }
 
@@ -388,8 +388,8 @@ impl Trajectory {
     /// trajectory.write(&system).unwrap();
     /// ```
     pub fn write(&mut self, system: &System) -> Result<(), Error> {
-        let frame = try!(system.to_chemfiles());
-        try!(self.0.write(&frame));
+        let frame = system.to_chemfiles()?;
+        self.0.write(&frame)?;
         Ok(())
     }
 
@@ -411,8 +411,8 @@ impl Trajectory {
     /// assert_eq!(system.cell, UnitCell::cubic(10.0));
     /// ```
     pub fn set_cell(&mut self, cell: &UnitCell) -> Result<(), Error> {
-        let cell = try!(cell.to_chemfiles());
-        try!(self.0.set_cell(&cell));
+        let cell = cell.to_chemfiles()?;
+        self.0.set_cell(&cell)?;
         Ok(())
     }
 
@@ -434,7 +434,7 @@ impl Trajectory {
     /// let system = trajectory.read().unwrap();
     /// ```
     pub fn set_topology_file(&mut self, path: &str) -> Result<(), Error> {
-        try!(self.0.set_topology_file(path));
+        self.0.set_topology_file(path)?;
         Ok(())
     }
 }
@@ -450,16 +450,16 @@ impl Trajectory {
 /// assert_eq!(molecule.size(), particles.len());
 /// ```
 pub fn read_molecule<P: AsRef<Path>>(path: P) -> Result<(Molecule, ParticleVec), Error> {
-    let mut trajectory = try!(chemfiles::Trajectory::open(&path, 'r'));
-    let mut frame = try!(chemfiles::Frame::new());
-    try!(trajectory.read(&mut frame));
+    let mut trajectory = chemfiles::Trajectory::open(&path, 'r')?;
+    let mut frame = chemfiles::Frame::new()?;
+    trajectory.read(&mut frame)?;
 
     // Only guess the topology when we have no bond information
-    let topology = try!(frame.topology());
-    if try!(topology.bonds_count()) == 0 {
-        try!(frame.guess_topology());
+    let topology = frame.topology()?;
+    if topology.bonds_count()? == 0 {
+        frame.guess_topology()?;
     }
-    let system = try!(frame.to_lumol());
+    let system = frame.to_lumol()?;
 
     assert!(!system.is_empty(), "No molecule in the file at {}", path.as_ref().display());
     let molecule = system.molecule(0).clone();

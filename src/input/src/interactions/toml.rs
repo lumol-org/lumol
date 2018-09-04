@@ -150,9 +150,10 @@ impl FromTomlWithData for TableComputation {
     type Data = Box<PairPotential>;
 
     fn from_toml(table: &Table, potential: Box<PairPotential>) -> Result<TableComputation> {
-        let table = try!(table["table"]
-            .as_table()
-            .ok_or(Error::from("'table' key in computation must be a TOML table")));
+        let table = table["table"].as_table().ok_or(
+            Error::from("'table' key in computation must be a TOML table")
+        )?;
+
         let n = extract::uint("n", table, "table computation")?;
         let max = extract::str("max", table, "table computation")?;
         Ok(TableComputation::new(potential, n as usize, units::from_str(max)?))
