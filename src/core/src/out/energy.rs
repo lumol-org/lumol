@@ -22,7 +22,7 @@ impl EnergyOutput {
     /// if it already exists.
     pub fn new<P: AsRef<Path>>(filename: P) -> Result<EnergyOutput, io::Error> {
         Ok(EnergyOutput {
-            file: try!(File::create(filename.as_ref())),
+            file: File::create(filename.as_ref())?,
             path: filename.as_ref().to_owned(),
         })
     }
@@ -30,23 +30,15 @@ impl EnergyOutput {
 
 impl Output for EnergyOutput {
     fn setup(&mut self, _: &System) {
-        if let Err(err) = writeln!(&mut self.file, "# Energy of the simulation (kJ/mol)") {
-            fatal_error!("Could not write to file '{}': {}", self.path.display(), err);
-        }
-        if let Err(err) = writeln!(&mut self.file, "# Step Potential Kinetic Total") {
-            fatal_error!("Could not write to file '{}': {}", self.path.display(), err);
-        }
+        writeln_or_log!(self, "# Energy of the simulation (kJ/mol)");
+        writeln_or_log!(self, "# Step Potential Kinetic Total");
     }
 
     fn write(&mut self, system: &System) {
         let potential = utils::unit_to(system.potential_energy(), "kJ/mol");
         let kinetic = utils::unit_to(system.kinetic_energy(), "kJ/mol");
         let total = utils::unit_to(system.total_energy(), "kJ/mol");
-        if let Err(err) =
-            writeln!(&mut self.file, "{} {} {} {}", system.step(), potential, kinetic, total)
-        {
-            error!("Could not write to file '{}': {}", self.path.display(), err);
-        }
+        writeln_or_log!(self, "{} {} {} {}", system.step(), potential, kinetic, total);
     }
 }
 

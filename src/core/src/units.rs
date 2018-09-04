@@ -295,8 +295,8 @@ impl UnitExpr {
     /// Parse a string, and generate the corresponding unit expression
     fn parse(unit: &str) -> Result<UnitExpr, ParseError> {
         let tokens = tokenize(unit);
-        let mut stream = try!(shunting_yard(tokens));
-        let ast = try!(read_expr(&mut stream));
+        let mut stream = shunting_yard(tokens)?;
+        let ast = read_expr(&mut stream)?;
         if stream.is_empty() {
             Ok(ast)
         } else {
@@ -320,28 +320,28 @@ fn read_expr(stream: &mut Vec<Token>) -> Result<UnitExpr, ParseError> {
                 }
             }
             Token::Mul => {
-                let rhs = try!(read_expr(stream).map_err(|err| {
+                let rhs = read_expr(stream).map_err(|err| {
                     ParseError::MalformedExpr(format!("Error in unit at the right of '*': {}", err))
-                }));
-                let lhs = try!(read_expr(stream).map_err(|err| {
+                })?;
+                let lhs = read_expr(stream).map_err(|err| {
                     ParseError::MalformedExpr(format!("Error in unit at the left of '*': {}", err))
-                }));
+                })?;
                 Ok(UnitExpr::Mul(Box::new(lhs), Box::new(rhs)))
             }
             Token::Div => {
-                let rhs = try!(read_expr(stream).map_err(|err| {
+                let rhs = read_expr(stream).map_err(|err| {
                     ParseError::MalformedExpr(format!("Error in unit at the right of '/': {}", err))
-                }));
-                let lhs = try!(read_expr(stream).map_err(|err| {
+                })?;
+                let lhs = read_expr(stream).map_err(|err| {
                     ParseError::MalformedExpr(format!("Error in unit at the left of '/': {}", err))
-                }));
+                })?;
                 Ok(UnitExpr::Div(Box::new(lhs), Box::new(rhs)))
             }
             Token::Pow => {
                 let pow = match stream.pop() {
                     Some(pow) => {
                         match pow {
-                            Token::Value(value) => try!(value.parse()),
+                            Token::Value(value) => value.parse()?,
                             _ => {
                                 return Err(ParseError::MalformedExpr(
                                     format!("Invalid value after ^: {}", pow.as_str()),
@@ -355,9 +355,9 @@ fn read_expr(stream: &mut Vec<Token>) -> Result<UnitExpr, ParseError> {
                         )
                     }
                 };
-                let expr = try!(read_expr(stream).map_err(|err| {
+                let expr = read_expr(stream).map_err(|err| {
                     ParseError::MalformedExpr(format!("Error in unit at the left of '*': {}", err))
-                }));
+                })?;
                 Ok(UnitExpr::Pow(Box::new(expr), pow))
             }
             Token::LParen | Token::RParen => {
@@ -377,7 +377,7 @@ fn read_expr(stream: &mut Vec<Token>) -> Result<UnitExpr, ParseError> {
 /// assert!(internal == 10.0);
 /// ```
 pub fn from(value: f64, unit: &str) -> Result<f64, ParseError> {
-    let unit = try!(UnitExpr::parse(unit));
+    let unit = UnitExpr::parse(unit)?;
     return Ok(unit.eval() * value);
 }
 
@@ -389,14 +389,14 @@ pub fn from(value: f64, unit: &str) -> Result<f64, ParseError> {
 /// assert!(internal == 10.0);
 /// ```
 pub fn from_str(value: &str) -> Result<f64, ParseError> {
-    let unit = value.split_whitespace().skip(1).collect::<Vec<&str>>().join(" ");
+    let splitted = value.split_whitespace().collect::<Vec<&str>>();
+    let unit = splitted[1..].join(" ");
     let unit = if unit.is_empty() {
         UnitExpr::Val(1.0)
     } else {
-        try!(UnitExpr::parse(&unit))
+        UnitExpr::parse(&unit)?
     };
-    let value = value.split_whitespace().take(1).collect::<Vec<&str>>()[0];
-    let value = try!(value.parse::<f64>());
+    let value = splitted[0].parse::<f64>()?;
     return Ok(unit.eval() * value);
 }
 
@@ -408,7 +408,7 @@ pub fn from_str(value: &str) -> Result<f64, ParseError> {
 /// assert!(real == 10.0);
 /// ```
 pub fn to(value: f64, unit: &str) -> Result<f64, ParseError> {
-    let unit = try!(UnitExpr::parse(unit));
+    let unit = UnitExpr::parse(unit)?;
     return Ok(value / unit.eval());
 }
 
@@ -434,7 +434,7 @@ mod test {
 
     fn ast_str(unit: &str) -> Result<String, ParseError> {
         let tokens = tokenize(unit);
-        let ast = try!(shunting_yard(tokens));
+        let ast = shunting_yard(tokens)?;
         return Ok(ast.iter().map(|t| t.as_str()).collect::<Vec<_>>().join(" "));
     }
 

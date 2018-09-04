@@ -21,19 +21,10 @@ impl ForcesOutput {
     /// if it already exists.
     pub fn new<P: AsRef<Path>>(filename: P) -> Result<ForcesOutput, io::Error> {
         Ok(ForcesOutput {
-            file: try!(File::create(filename.as_ref())),
+            file: File::create(filename.as_ref())?,
             path: filename.as_ref().to_owned(),
         })
     }
-}
-
-macro_rules! try {
-    ($e: expr, $path: expr) => (
-        if let Err(err) = $e {
-            error!("Could not write to file '{}': {}", $path.display(), err);
-            return;
-        }
-    );
 }
 
 impl Output for ForcesOutput {
@@ -44,16 +35,13 @@ impl Output for ForcesOutput {
         let names = system.particles().name;
         let conversion = utils::unit_to(1.0, "kJ/mol/A");
 
-        try!(writeln!(&mut self.file, "{}", forces.len()), self.path);
-        try!(
-            writeln!(&mut self.file, "forces in kJ/mol/A at step {}", system.step()),
-            self.path
-        );
+        writeln_or_log!(self, "{}", forces.len());
+        writeln_or_log!(self, "forces in kJ/mol/A at step {}", system.step());
         for (i, force) in forces.iter().enumerate() {
             let x = conversion * force[0];
             let y = conversion * force[1];
             let z = conversion * force[2];
-            try!(writeln!(&mut self.file, "{} {} {} {}", names[i], x, y, z), self.path);
+            writeln_or_log!(self, "{} {} {} {}", names[i], x, y, z);
         }
     }
 }

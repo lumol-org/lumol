@@ -84,23 +84,22 @@ impl fmt::Display for Error {
             Error::Io(ref err, ref path) => {
                 match err.kind() {
                     io::ErrorKind::NotFound => {
-                        try!(write!(fmt, "can not find '{}'", path.display()))
+                        write!(fmt, "can not find '{}'", path.display())
                     }
                     io::ErrorKind::PermissionDenied => {
-                        try!(write!(fmt, "permission to access '{}' denied", path.display()))
+                        write!(fmt, "permission to access '{}' denied", path.display())
                     }
                     _ => {
-                        try!(write!(fmt, "error with '{}': {}", path.display(), self.description()))
+                        write!(fmt, "error with '{}': {}", path.display(), self.description())
                     }
                 }
             }
-            Error::Trajectory(ref err) => try!(write!(fmt, "{}", err)),
-            Error::TOML(ref err) => try!(write!(fmt, "{}", err)),
-            Error::Config(ref err) => try!(write!(fmt, "{}", err)),
-            Error::Unit(ref err) => try!(write!(fmt, "{}", err)),
-            Error::CustomOutput(ref err) => try!(write!(fmt, "{}", err)),
-        };
-        Ok(())
+            Error::Trajectory(ref err) => write!(fmt, "{}", err),
+            Error::TOML(ref err) => write!(fmt, "{}", err),
+            Error::Config(ref err) => write!(fmt, "{}", err),
+            Error::Unit(ref err) => write!(fmt, "{}", err),
+            Error::CustomOutput(ref err) => write!(fmt, "{}", err),
+        }
     }
 }
 

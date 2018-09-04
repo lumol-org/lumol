@@ -27,7 +27,7 @@ impl PropertiesOutput {
     /// if it already exists.
     pub fn new<P: AsRef<Path>>(filename: P) -> Result<PropertiesOutput, io::Error> {
         Ok(PropertiesOutput {
-            file: try!(File::create(filename.as_ref())),
+            file: File::create(filename.as_ref())?,
             path: filename.as_ref().to_owned(),
         })
     }
@@ -35,23 +35,15 @@ impl PropertiesOutput {
 
 impl Output for PropertiesOutput {
     fn setup(&mut self, _: &System) {
-        if let Err(err) = writeln!(&mut self.file, "# Physical properties of the simulation") {
-            fatal_error!("Could not write to file '{}': {}", self.path.display(), err);
-        }
-        if let Err(err) = writeln!(&mut self.file, "# Step Volume/A^3 Temperature/K Pressure/bar") {
-            fatal_error!("Could not write to file '{}': {}", self.path.display(), err);
-        }
+        writeln_or_log!(self, "# Physical properties of the simulation");
+        writeln_or_log!(self, "# Step Volume/A^3 Temperature/K Pressure/bar");
     }
 
     fn write(&mut self, system: &System) {
         let volume = utils::unit_to(system.volume(), "A^3");
         let temperature = utils::unit_to(system.temperature(), "K");
         let pressure = utils::unit_to(system.pressure(), "bar");
-        if let Err(err) =
-            writeln!(&mut self.file, "{} {} {} {}", system.step(), volume, temperature, pressure)
-        {
-            error!("Could not write to file '{}': {}", self.path.display(), err);
-        }
+        writeln_or_log!(self, "{} {} {} {}", system.step(), volume, temperature, pressure);
     }
 }
 

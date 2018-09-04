@@ -108,7 +108,7 @@ where
 
     let dir = PathBuf::new().join(env!("CARGO_MANIFEST_DIR")).join("tests").join(root);
     for entry in WalkDir::new(dir) {
-        let entry = try!(entry);
+        let entry = entry?;
         let file_type = entry.file_type();
         if file_type.is_file() {
             if let Some(extension) = entry.path().extension() {

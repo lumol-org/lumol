@@ -32,15 +32,15 @@ impl InteractionsInput {
         let key = &*solvers[0];
         if let Value::Table(ref table) = coulomb[key] {
             let mut potential: Box<CoulombicPotential> = match key {
-                "wolf" => Box::new(try!(Wolf::from_toml(table))),
+                "wolf" => Box::new(Wolf::from_toml(table)?),
                 "ewald" => {
-                    let ewald = try!(Ewald::from_toml(table, &system));
+                    let ewald = Ewald::from_toml(table, &system)?;
                     Box::new(SharedEwald::new(ewald))
                 }
                 other => return Err(Error::from(format!("Unknown coulomb solver '{}'", other))),
             };
 
-            if let Some(restriction) = try!(read_restriction(coulomb)) {
+            if let Some(restriction) = read_restriction(coulomb)? {
                 potential.set_restriction(restriction);
             }
 
@@ -58,8 +58,9 @@ impl InteractionsInput {
             None => return Ok(()),
         };
 
-        let charges =
-            try!(charges.as_table().ok_or(Error::from("The 'charges' section must be a table")));
+        let charges = charges.as_table().ok_or(
+            Error::from("The 'charges' section must be a table")
+        )?;
 
         let mut total_charge = 0.0;
         for (name, charge) in charges.iter() {

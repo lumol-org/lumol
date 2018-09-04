@@ -22,7 +22,7 @@ impl StressOutput {
     /// if it already exists.
     pub fn new<P: AsRef<Path>>(filename: P) -> Result<StressOutput, io::Error> {
         Ok(StressOutput {
-            file: try!(File::create(filename.as_ref())),
+            file: File::create(filename.as_ref())?,
             path: filename.as_ref().to_owned(),
         })
     }
@@ -49,11 +49,7 @@ impl Output for StressOutput {
         let xy = utils::unit_to(stress[0][1], "bar");
         let xz = utils::unit_to(stress[0][2], "bar");
         let yz = utils::unit_to(stress[1][2], "bar");
-        if let Err(err) =
-            writeln!(&mut self.file, "{} {} {} {} {} {} {}", system.step(), xx, yy, zz, xy, xz, yz)
-        {
-            error!("Could not write to file '{}': {}", self.path.display(), err);
-        }
+        writeln_or_log!(self, "{} {} {} {} {} {} {}", system.step(), xx, yy, zz, xy, xz, yz);
     }
 }
 
