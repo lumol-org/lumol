@@ -35,29 +35,27 @@ pub struct Particle {
     /// Particle charge
     pub charge: f64,
     /// Particle mass
-    #[soa_derive(zip)]
     pub mass: f64,
     /// Particle positions
-    #[soa_derive(zip)]
     pub position: Vector3D,
     /// Particle velocity, if needed
-    #[soa_derive(zip)]
     pub velocity: Vector3D,
 }
 
 impl Particle {
-    /// Create a new `Particle` from a `name`
+    /// Create a new `Particle` from a `name`, setting the mass to the atomic
+    /// mass if the `name` can be found in the periodic table. The charge,
+    /// position, and velocity are set to 0.
     pub fn new<S: Into<String>>(name: S) -> Particle {
         Particle::with_position(name, Vector3D::zero())
     }
 
-    /// Create a new `Particle` from a `name` and a `position`
+    /// Create a new `Particle` from a `name` and a `position`, setting the
+    /// mass to the atomic mass if the `name` can be found in the periodic
+    /// table. The charge and velocity are set to 0.
     pub fn with_position<S: Into<String>>(name: S, position: Vector3D) -> Particle {
         let name = name.into();
-        let mass = PeriodicTable::mass(&name).unwrap_or_else(|| {
-            warn_once!("Could not find the mass for the {} particle", name);
-            return 0.0;
-        });
+        let mass = PeriodicTable::mass(&name).unwrap_or(0.0);
         Particle {
             name: name,
             mass: mass,
