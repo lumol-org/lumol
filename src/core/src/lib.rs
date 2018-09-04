@@ -21,13 +21,16 @@
 // Clippy configuration
 #![allow(unknown_lints)]
 #![warn(clippy, clippy_pedantic)]
-#![allow(float_arithmetic, integer_arithmetic, indexing_slicing, needless_return)]
-#![allow(needless_range_loop, shadow_reuse, shadow_same, shadow_unrelated)]
+// Not embed software, integer and float arithmeric are allowed
+#![allow(float_arithmetic, integer_arithmetic, indexing_slicing)]
+// Cast issues
 #![allow(cast_possible_truncation, cast_precision_loss, cast_sign_loss, cast_possible_wrap)]
-#![allow(float_cmp, or_fun_call, string_add, non_ascii_literal, doc_markdown)]
-#![allow(missing_docs_in_private_items, module_inception, stutter, unseparated_literal_suffix)]
-#![allow(new_without_default, new_without_default_derive, zero_ptr, use_self, borrowed_box)]
-#![allow(range_plus_one, needless_pass_by_value)]
+// Style issues
+#![allow(shadow_reuse, shadow_same, shadow_unrelated)]
+#![allow(use_self, redundant_field_names, or_fun_call, needless_return, needless_range_loop)]
+#![allow(doc_markdown, stutter, missing_docs_in_private_items, non_ascii_literal)]
+#![allow(new_without_default, new_without_default_derive, should_implement_trait)]
+#![allow(needless_pass_by_value, unreadable_literal, redundant_field_names, range_plus_one)]
 
 #[macro_use]
 extern crate bitflags;

@@ -17,6 +17,7 @@ mod logging;
 mod system;
 mod outputs;
 mod propagator;
+#[allow(module_inception)]
 mod simulations;
 mod min;
 mod md;

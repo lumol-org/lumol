@@ -6,12 +6,12 @@ use lumol::energy::{AnglePotential, DihedralPotential};
 use lumol::energy::{CosineHarmonic, Harmonic, MorsePotential, NullPotential, Torsion};
 use lumol::sys::System;
 
-use super::InteractionsInput;
+use super::Input;
 use FromToml;
 use error::{Error, Result};
 use extract;
 
-impl InteractionsInput {
+impl Input {
     /// Read the "angles" section from the potential configuration.
     pub(crate) fn read_angles(&self, system: &mut System) -> Result<()> {
         let angles = match self.config.get("angles") {

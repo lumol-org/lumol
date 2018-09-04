@@ -432,10 +432,11 @@ impl Configuration {
 
     /// Get the angle between the particles `i`, `j` and `k`
     pub fn angle(&self, i: usize, j: usize, k: usize) -> f64 {
-        let a = self.particles.position[i];
-        let b = self.particles.position[j];
-        let c = self.particles.position[k];
-        self.cell.angle(&a, &b, &c)
+        self.cell.angle(
+            &self.particles.position[i],
+            &self.particles.position[j],
+            &self.particles.position[k]
+        )
     }
 
     /// Get the angle and the derivatives of the angle between the particles
@@ -446,19 +447,21 @@ impl Configuration {
         j: usize,
         k: usize,
     ) -> (f64, Vector3D, Vector3D, Vector3D) {
-        let a = self.particles.position[i];
-        let b = self.particles.position[j];
-        let c = self.particles.position[k];
-        self.cell.angle_and_derivatives(&a, &b, &c)
+      self.cell.angle_and_derivatives(
+          &self.particles.position[i],
+          &self.particles.position[j],
+          &self.particles.position[k]
+      )
     }
 
     /// Get the dihedral angle between the particles `i`, `j`, `k` and `m`
     pub fn dihedral(&self, i: usize, j: usize, k: usize, m: usize) -> f64 {
-        let a = self.particles.position[i];
-        let b = self.particles.position[j];
-        let c = self.particles.position[k];
-        let d = self.particles.position[m];
-        self.cell.dihedral(&a, &b, &c, &d)
+        self.cell.dihedral(
+            &self.particles.position[i],
+            &self.particles.position[j],
+            &self.particles.position[k],
+            &self.particles.position[m]
+        )
     }
 
     /// Get the dihedral angle and the derivatives of the dihedral angle
@@ -470,11 +473,12 @@ impl Configuration {
         k: usize,
         m: usize,
     ) -> (f64, Vector3D, Vector3D, Vector3D, Vector3D) {
-        let a = self.particles.position[i];
-        let b = self.particles.position[j];
-        let c = self.particles.position[k];
-        let d = self.particles.position[m];
-        self.cell.dihedral_and_derivatives(&a, &b, &c, &d)
+        self.cell.dihedral_and_derivatives(
+            &self.particles.position[i],
+            &self.particles.position[j],
+            &self.particles.position[k],
+            &self.particles.position[m]
+        )
     }
 }
 

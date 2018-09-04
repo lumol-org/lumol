@@ -49,12 +49,14 @@
 // Clippy configuration
 #![allow(unknown_lints)]
 #![warn(clippy, clippy_pedantic)]
-#![allow(float_arithmetic, integer_arithmetic, indexing_slicing, needless_return)]
-#![allow(needless_range_loop, shadow_reuse, shadow_same, shadow_unrelated)]
+// Not embed software, integer and float arithmeric are allowed
+#![allow(float_arithmetic, integer_arithmetic, indexing_slicing)]
+// Cast issues
 #![allow(cast_possible_truncation, cast_precision_loss, cast_sign_loss, cast_possible_wrap)]
-#![allow(float_cmp, or_fun_call, string_add, non_ascii_literal, doc_markdown)]
-#![allow(missing_docs_in_private_items, module_inception, stutter, unseparated_literal_suffix)]
-#![allow(new_without_default_derive, use_self)]
+// Style issues
+#![allow(shadow_reuse, shadow_same, shadow_unrelated)]
+#![allow(use_self, redundant_field_names, or_fun_call, needless_return)]
+#![allow(missing_docs_in_private_items, should_implement_trait)]
 
 extern crate chemfiles;
 extern crate lumol_core as lumol;
@@ -83,7 +85,7 @@ mod interactions;
 mod simulations;
 
 pub use self::error::{Error, Result};
-pub use self::interactions::InteractionsInput;
+pub use self::interactions::Input as InteractionsInput;
 pub use self::simulations::{Config, Input};
 pub use self::simulations::setup_default_logger;
 

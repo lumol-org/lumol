@@ -72,7 +72,7 @@ impl InitVelocities for BoltzmannVelocities {
         let b5 = ((seed >> 24) & 0xff) as u8;
         let b6 = ((seed >> 16) & 0xff) as u8;
         let b7 = ((seed >> 8) & 0xff) as u8;
-        let b8 = ((seed >> 0) & 0xff) as u8;
+        let b8 = (seed & 0xff) as u8;
         let seed = [
             b1, 0xa8, b2, 0x29, b3, 0x60, b4, 0xb0, b5, 0x77, b6, 0xa0, b7, 0x71, b8, 0xf7,
         ];
@@ -124,7 +124,7 @@ impl InitVelocities for UniformVelocities {
         let b5 = ((seed >> 24) & 0xff) as u8;
         let b6 = ((seed >> 16) & 0xff) as u8;
         let b7 = ((seed >> 8) & 0xff) as u8;
-        let b8 = ((seed >> 0) & 0xff) as u8;
+        let b8 = (seed & 0xff) as u8;
         let seed = [
             b1, 0xa8, b2, 0x29, b3, 0x60, b4, 0xb0, b5, 0x77, b6, 0xa0, b7, 0x71, b8, 0xf7,
         ];

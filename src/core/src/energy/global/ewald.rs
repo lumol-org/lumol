@@ -173,12 +173,12 @@ impl EwaldFactors {
                     }
 
                     self.kvecs.push((ikx, iky, ikz));
-                    let efact = four_pi_v * f64::exp(- k2 * alpha_sq_inv_fourth) / k2;
-                    self.energy.push(efact);
-                    self.efield.push(2.0 * efact * kvec);
-                    let vfact = -2.0 * (1.0 / k2 + alpha_sq_inv_fourth);
-                    let virial = Matrix3::one() + vfact * kvec.tensorial(&kvec);
-                    self.virial.push(efact * virial);
+                    let energy_factor = four_pi_v * f64::exp(- k2 * alpha_sq_inv_fourth) / k2;
+                    self.energy.push(energy_factor);
+                    self.efield.push(2.0 * energy_factor * kvec);
+                    let virial_factor = -2.0 * (1.0 / k2 + alpha_sq_inv_fourth);
+                    let virial = Matrix3::one() + virial_factor * kvec.tensorial(&kvec);
+                    self.virial.push(energy_factor * virial);
                 }
             }
         }
@@ -193,12 +193,12 @@ impl EwaldFactors {
                 }
 
                 self.kvecs.push((0, iky, ikz));
-                let efact = four_pi_v * f64::exp(- k2 * alpha_sq_inv_fourth) / k2;
-                self.energy.push(efact);
-                self.efield.push(2.0 * efact * kvec);
-                let vfact = -2.0 * (1.0 / k2 + alpha_sq_inv_fourth);
-                let virial = Matrix3::one() + vfact * kvec.tensorial(&kvec);
-                self.virial.push(efact * virial);
+                let energy_factor = four_pi_v * f64::exp(- k2 * alpha_sq_inv_fourth) / k2;
+                self.energy.push(energy_factor);
+                self.efield.push(2.0 * energy_factor * kvec);
+                let virial_factor = -2.0 * (1.0 / k2 + alpha_sq_inv_fourth);
+                let virial = Matrix3::one() + virial_factor * kvec.tensorial(&kvec);
+                self.virial.push(energy_factor * virial);
             }
         }
 
@@ -211,12 +211,12 @@ impl EwaldFactors {
             }
 
             self.kvecs.push((0, 0, ikz));
-            let efact = four_pi_v * f64::exp(- k2 * alpha_sq_inv_fourth) / k2;
-            self.energy.push(efact);
-            self.efield.push(2.0 * efact * kvec);
-            let vfact = -2.0 * (1.0 / k2 + alpha_sq_inv_fourth);
-            let virial = Matrix3::one() + vfact * kvec.tensorial(&kvec);
-            self.virial.push(efact * virial);
+            let energy_factor = four_pi_v * f64::exp(- k2 * alpha_sq_inv_fourth) / k2;
+            self.energy.push(energy_factor);
+            self.efield.push(2.0 * energy_factor * kvec);
+            let virial_factor = -2.0 * (1.0 / k2 + alpha_sq_inv_fourth);
+            let virial = Matrix3::one() + virial_factor * kvec.tensorial(&kvec);
+            self.virial.push(energy_factor * virial);
         }
     }
 }
@@ -295,11 +295,11 @@ impl Clone for Ewald {
         Ewald {
             parameters: self.parameters.clone(),
             factors: self.factors.clone(),
-            restriction: self.restriction.clone(),
+            restriction: self.restriction,
             eikr: self.eikr.clone(),
             rho: self.rho.clone(),
             efield: self.efield.clone(),
-            previous_cell: self.previous_cell.clone(),
+            previous_cell: self.previous_cell,
             updater: None,
         }
     }
@@ -424,6 +424,7 @@ You can manually set alpha to a slighty higher value (current alpha is {})",
 impl Ewald {
     /// Get the real-space energy for one pair at distance `r` with charges `qi`
     /// and `qj` ; and with restriction information for this pair in `info`.
+    #[allow(float_cmp)]  // checking info.scaling
     #[inline]
     fn real_space_energy_pair(&self, info: RestrictionInfo, qi: f64, qj: f64, r: f64) -> f64 {
         if r > self.rc || info.excluded {
@@ -436,6 +437,7 @@ impl Ewald {
     /// Get the real-space force for one pair at distance `rij` with charges
     /// `qi` and `qj` ; and with restriction information for this pair in
     /// `info`.
+    #[allow(float_cmp)]  // checking info.scaling
     #[inline]
     fn real_space_force_pair(&self, info: RestrictionInfo, qi: f64, qj: f64, rij: &Vector3D) -> Vector3D {
         let r = rij.norm();
@@ -790,6 +792,7 @@ impl Ewald {
 impl Ewald {
     /// Get the molecular correction energy for the pair with charges `qi` and
     /// `qj`, at distance `rij` and with restriction information in `info`.
+    #[allow(float_cmp)]  // checking info.scaling
     #[inline]
     fn molcorrect_energy_pair(&self, info: RestrictionInfo, qi: f64, qj: f64, r: f64) -> f64 {
         assert!(info.excluded, "Can not compute molecular correction for non-excluded pair");
@@ -801,6 +804,7 @@ impl Ewald {
 
     /// Get the molecular correction force for the pair with charges `qi` and
     /// `qj`, at distance `rij` and with restriction information in `info`.
+    #[allow(float_cmp)]  // checking info.scaling
     #[inline]
     fn molcorrect_force_pair(&self, info: RestrictionInfo, qi: f64, qj: f64, rij: &Vector3D) -> Vector3D {
         assert!(info.excluded, "Can not compute molecular correction for non-excluded pair");

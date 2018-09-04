@@ -169,7 +169,7 @@ impl Matrix3 {
     /// equals zero.
     pub fn inverse(&self) -> Matrix3 {
         let determinant = self.determinant();
-        assert_ne!(determinant, 0.0, "The matrix is not inversible!");
+        assert!(determinant.abs() > 1e-30, "The matrix is not inversible!");
         let invdet = 1.0 / determinant;
         let mut res = Matrix3::zero();
         res[0][0] = (self[1][1] * self[2][2] - self[2][1] * self[1][2]) * invdet;
