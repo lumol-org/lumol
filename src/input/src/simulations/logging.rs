@@ -55,7 +55,7 @@ impl Encode for LogEncoder {
             _ => {}
         }
 
-        write!(out, "\n")?;
+        writeln!(out)?;
         Ok(())
     }
 }

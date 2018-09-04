@@ -10,7 +10,7 @@ use lumol::energy::{BornMayerHuggins, Buckingham, Gaussian, MorsePotential};
 use lumol::energy::{Harmonic, LennardJones, NullPotential, Mie};
 use lumol::energy::TableComputation;
 
-use super::InteractionsInput;
+use super::Input;
 use super::read_restriction;
 use {FromToml, FromTomlWithData};
 use error::{Error, Result};
@@ -54,7 +54,7 @@ impl<'a> GlobalInformation<'a> {
     }
 }
 
-impl InteractionsInput {
+impl Input {
     /// Read the "pairs" section from the potential configuration.
     pub(crate) fn read_pairs(&self, system: &mut System) -> Result<()> {
         let pairs = match self.config.get("pairs") {

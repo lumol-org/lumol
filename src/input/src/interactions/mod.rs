@@ -19,31 +19,31 @@ mod angles;
 mod coulomb;
 
 /// An interaction input file for Lumol.
-pub struct InteractionsInput {
+pub struct Input {
     /// The TOML configuration
     config: Table,
 }
 
-impl InteractionsInput {
+impl Input {
     /// Read interactions from the TOML formatted file at `path`.
-    pub fn new<P: Into<PathBuf>>(path: P) -> Result<InteractionsInput> {
+    pub fn new<P: Into<PathBuf>>(path: P) -> Result<Input> {
         let path = path.into();
         let mut file = try_io!(File::open(&path), path);
         let mut buffer = String::new();
         let _ = try_io!(file.read_to_string(&mut buffer), path);
-        return InteractionsInput::from_str(&buffer);
+        return Input::from_str(&buffer);
     }
 
     /// Read the interactions from a TOML formatted string.
-    pub fn from_str(string: &str) -> Result<InteractionsInput> {
+    pub fn from_str(string: &str) -> Result<Input> {
         let config = parse(string).map_err(|err| Error::TOML(Box::new(err)))?;
         validate(&config)?;
-        return InteractionsInput::from_toml(config.clone());
+        return Input::from_toml(config.clone());
     }
 
     /// Read the interactions from a TOML table.
-    pub(crate) fn from_toml(config: Table) -> Result<InteractionsInput> {
-        Ok(InteractionsInput { config: config })
+    pub(crate) fn from_toml(config: Table) -> Result<Input> {
+        Ok(Input { config: config })
     }
 
     /// Read the interactions from this input into the `system`.

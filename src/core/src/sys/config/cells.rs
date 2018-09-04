@@ -143,11 +143,7 @@ impl UnitCell {
         let nb = (c ^ a).normalized();
         let nc = (a ^ b).normalized();
 
-        let x = abs(na[0] * a[0] + na[1] * a[1] + na[2] * a[2]);
-        let y = abs(nb[0] * b[0] + nb[1] * b[1] + nb[2] * b[2]);
-        let z = abs(nc[0] * c[0] + nc[1] * c[1] + nc[2] * c[2]);
-
-        Vector3D::new(x, y, z)
+        Vector3D::new(abs(na * a), abs(nb * b), abs(nc * c))
     }
 
     /// Get the first angle of the cell
@@ -324,56 +320,54 @@ impl UnitCell {
         return d.norm();
     }
 
-    /// Get the angle formed by the points at `a`, `b` and `c` using periodic
+    /// Get the angle formed by the points at `r1`, `r2` and `r3` using periodic
     /// boundary conditions.
-    pub fn angle(&self, a: &Vector3D, b: &Vector3D, c: &Vector3D) -> f64 {
-        let mut x = a - b;
-        self.vector_image(&mut x);
-        let mut y = c - b;
-        self.vector_image(&mut y);
+    pub fn angle(&self, r1: &Vector3D, r2: &Vector3D, r3: &Vector3D) -> f64 {
+        let mut r12 = r1 - r2;
+        self.vector_image(&mut r12);
+        let mut r23 = r3 - r2;
+        self.vector_image(&mut r23);
 
-        let xn = x.normalized();
-        let yn = y.normalized();
-        return acos(xn * yn);
+        return acos(r12 * r23 / (r12.norm() * r23.norm()));
     }
 
-    /// Get the angle formed by the points at `a`, `b` and `c` using periodic
+    /// Get the angle formed by the points at `r1`, `r2` and `r3` using periodic
     /// boundary conditions and its derivatives.
     pub fn angle_and_derivatives(
         &self,
-        a: &Vector3D,
-        b: &Vector3D,
-        c: &Vector3D,
+        r1: &Vector3D,
+        r2: &Vector3D,
+        r3: &Vector3D,
     ) -> (f64, Vector3D, Vector3D, Vector3D) {
-        let mut x = a - b;
-        self.vector_image(&mut x);
-        let mut y = c - b;
-        self.vector_image(&mut y);
+        let mut r12 = r1 - r2;
+        self.vector_image(&mut r12);
+        let mut r23 = r3 - r2;
+        self.vector_image(&mut r23);
 
-        let x_norm = x.norm();
-        let y_norm = y.norm();
-        let xn = x.normalized();
-        let yn = y.normalized();
+        let r12_norm = r12.norm();
+        let r23_norm = r23.norm();
+        let r12n = r12 / r12_norm;
+        let r23n = r23 / r23_norm;
 
-        let cos = xn * yn;
+        let cos = r12n * r23n;
         let sin_inv = 1.0 / sqrt(1.0 - cos * cos);
 
-        let d1 = sin_inv * (cos * xn - yn) / x_norm;
-        let d3 = sin_inv * (cos * yn - xn) / y_norm;
+        let d1 = sin_inv * (cos * r12n - r23n) / r12_norm;
+        let d3 = sin_inv * (cos * r23n - r12n) / r23_norm;
         let d2 = -(d1 + d3);
 
         return (acos(cos), d1, d2, d3);
     }
 
 
-    /// Get the dihedral angle formed by the points at `a`, `b`, `c`, `d` using
+    /// Get the dihedral angle formed by the points at `r1`, `r2`, `r3`, and `r4` using
     /// periodic boundary conditions.
-    pub fn dihedral(&self, a: &Vector3D, b: &Vector3D, c: &Vector3D, d: &Vector3D) -> f64 {
-        let mut r12 = b - a;
+    pub fn dihedral(&self, r1: &Vector3D, r2: &Vector3D, r3: &Vector3D, r4: &Vector3D) -> f64 {
+        let mut r12 = r2 - r1;
         self.vector_image(&mut r12);
-        let mut r23 = c - b;
+        let mut r23 = r3 - r2;
         self.vector_image(&mut r23);
-        let mut r34 = d - c;
+        let mut r34 = r4 - r3;
         self.vector_image(&mut r34);
 
         let u = r12 ^ r23;
@@ -382,38 +376,38 @@ impl UnitCell {
     }
 
     /// Get the dihedral angle and and its derivatives defined by the points at
-    /// `a`, `b`, `c` and `d` using periodic boundary conditions.
+    /// `r1`, `r2`, `r3`, and `r4` using periodic boundary conditions.
     pub fn dihedral_and_derivatives(
         &self,
-        a: &Vector3D,
-        b: &Vector3D,
-        c: &Vector3D,
-        d: &Vector3D,
+        r1: &Vector3D,
+        r2: &Vector3D,
+        r3: &Vector3D,
+        r4: &Vector3D,
     ) -> (f64, Vector3D, Vector3D, Vector3D, Vector3D) {
-        let mut r12 = b - a;
+        let mut r12 = r2 - r1;
         self.vector_image(&mut r12);
-        let mut r23 = c - b;
+        let mut r23 = r3 - r2;
         self.vector_image(&mut r23);
-        let mut r34 = d - c;
+        let mut r34 = r4 - r3;
         self.vector_image(&mut r34);
 
-        let x = r12 ^ r23;
-        let y = r23 ^ r34;
-        let norm2_x = x.norm2();
-        let norm2_y = y.norm2();
-        let norm2_r23 = r23.norm2();
-        let norm_r23 = sqrt(norm2_r23);
+        let u = r12 ^ r23;
+        let v = r23 ^ r34;
+        let u_norm2 = u.norm2();
+        let v_norm2 = v.norm2();
+        let r23_norm2 = r23.norm2();
+        let r23_norm = sqrt(r23_norm2);
 
-        let d1 = (-norm_r23 / norm2_x) * x;
-        let d4 = (norm_r23 / norm2_y) * y;
+        let d1 = (-r23_norm / u_norm2) * u;
+        let d4 = ( r23_norm / v_norm2) * v;
 
-        let r23r34 = r23 * r34;
-        let r12r23 = r12 * r23;
+        let r23_r34 = r23 * r34;
+        let r12_r23 = r12 * r23;
 
-        let d2 = (-r12r23 / norm2_r23 - 1.0) * d1 + (r23r34 / norm2_r23) * d4;
-        let d3 = (-r23r34 / norm2_r23 - 1.0) * d4 + (r12r23 / norm2_r23) * d1;
+        let d2 = (-r12_r23 / r23_norm2 - 1.0) * d1 + (r23_r34 / r23_norm2) * d4;
+        let d3 = (-r23_r34 / r23_norm2 - 1.0) * d4 + (r12_r23 / r23_norm2) * d1;
 
-        let phi = f64::atan2(r23.norm() * y * r12, x * y);
+        let phi = f64::atan2(r23_norm * v * r12, u * v);
         return (phi, d1, d2, d3, d4);
     }
 }
