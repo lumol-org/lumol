@@ -208,6 +208,7 @@ impl Matrix3 {
     }
 
     /// Transpose this matrix into a new matrix
+    ///
     /// # Examples
     ///
     /// ```
@@ -232,6 +233,28 @@ impl Matrix3 {
             [self[0][1], self[1][1], self[2][1]],
             [self[0][2], self[1][2], self[2][2]],
         ])
+    }
+
+    /// Compute the (Frobenius) norm of the matrix
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use lumol_core::types::Matrix3;
+    /// let matrix = Matrix3::new([
+    ///     [1.0, 2.0, 4.0],
+    ///     [0.0, 1.0, 3.0],
+    ///     [0.0, 0.0, 1.0]
+    /// ]);
+    ///
+    /// assert_eq!(matrix.norm(), 5.656854249492381);
+    /// ```
+    pub fn norm(&self) -> f64 {
+        f64::sqrt(
+            self[0][0] * self[0][0] + self[1][0] * self[1][0] + self[2][0] * self[2][0] +
+            self[0][1] * self[0][1] + self[1][1] * self[1][1] + self[2][1] * self[2][1] +
+            self[0][2] * self[0][2] + self[1][2] * self[1][2] + self[2][2] * self[2][2]
+        )
     }
 }
 
@@ -716,5 +739,19 @@ mod tests {
         let vec = vec![a, b, a];
         let sum : Matrix3 = vec.into_iter().sum();
         assert_eq!(sum, a + a + b);
+    }
+
+    #[test]
+    fn norm() {
+        let matrix = Matrix3::new([
+            [1.0, 2.0, 4.0],
+            [0.0, 1.0, 3.0],
+            [-2.0, 2.2, 1.0]
+        ]);
+
+        assert_ulps_eq!(matrix.norm(), 6.390618123468183);
+
+        assert_eq!(Matrix3::zero().norm(), 0.0);
+        assert_eq!(Matrix3::one().norm(), f64::sqrt(3.0));
     }
 }
