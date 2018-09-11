@@ -1082,7 +1082,7 @@ mod tests {
         H -0.7 -0.7  0.3
         H  0.3 -0.3 -0.8
         ");
-        assert!(system.molecules().len() == 1);
+        assert!(system.molecules_count() == 1);
 
         for particle in system.particles_mut() {
             if particle.name == "O" {
@@ -1462,7 +1462,7 @@ mod tests {
             H  1.3  1.3  0.3
             H  2.3  1.7 -0.8
             ");
-            assert!(system.molecules().len() == 2);
+            assert!(system.molecules_count() == 2);
 
             for particle in system.particles_mut() {
                 if particle.name == "O" {

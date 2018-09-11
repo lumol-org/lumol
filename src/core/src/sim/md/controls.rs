@@ -196,8 +196,9 @@ impl Rewrap {
 
 impl Control for Rewrap {
     fn control(&mut self, system: &mut System) {
-        for i in 0..system.molecules().len() {
-            system.wrap_molecule(i);
+        let cell = system.cell;
+        for mut molecule in system.molecules_mut() {
+            molecule.wrap(&cell);
         }
     }
 }

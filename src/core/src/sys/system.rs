@@ -417,14 +417,14 @@ mod tests {
         system.add_particle(Particle::new("H"));
         system.add_particle(Particle::new("O"));
         system.add_particle(Particle::new("H"));
-        assert_eq!(system.molecules().len(), 3);
+        assert_eq!(system.molecules_count(), 3);
 
         // This uses deref_mut
         let _ = system.add_bond(0, 1);
         let _ = system.add_bond(2, 1);
 
         // This uses deref
-        assert_eq!(system.molecules().len(), 1);
+        assert_eq!(system.molecules_count(), 1);
     }
 
     #[test]

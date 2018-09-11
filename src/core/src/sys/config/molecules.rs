@@ -1,546 +1,327 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) Lumol's contributors — BSD license
 
-//! Data about molecules in the system.
-use std::collections::HashSet;
+use std::ops::Deref;
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
-use std::iter::IntoIterator;
-use std::ops::Range;
 
-use sys::{Angle, Bond, BondDistances, Dihedral, ParticleSlice};
-use types::Array2;
+use sys::{Particle, ParticleVec, ParticleSlice, ParticleSliceMut};
+use sys::{Bonding, UnitCell};
+use types::{Vector3D, Zero};
 
+/// A Molecule associate some particles bonded together.
+///
+/// [`Molecule`] implement `Deref` to a [`Bonding`] struct, to give read access
+/// to all the bonds. It does not implement `DerefMut`, adding new bonds should
+/// be done through [`Molecule::add_bond()`].
+///
+/// [`Molecule`]: struct.Molecule.html
+/// [`Bonding`]: struct.Bonding.html
+/// [`Molecule::add_bond()`]: struct.Molecule.html#method.add_bond
 #[derive(Debug, Clone)]
-/// A molecule is the basic building block for a topology. It contains data
-/// about the connectivity (bonds, angles, dihedrals) in the system.
 pub struct Molecule {
-    /// All the bonds in the molecule.
-    bonds: HashSet<Bond>,
-    /// All the angles in the molecule. This is rebuilt as needed from the bond
-    /// list.
-    angles: HashSet<Angle>,
-    /// All the dihedral angles in the molecule. This is rebuilt as needed from
-    /// the bond list.
-    dihedrals: HashSet<Dihedral>,
-    /// Matrix of bond distances in the molecule. The item at index `i, j`
-    /// encode the bond distance between the particles `i + self.first` and
-    /// `j + self.first`
-    distances: Array2<BondDistances>,
-    /// Range of atomic indexes in this molecule.
-    range: Range<usize>,
-    /// Hashed value of the set of bonds in the system
-    cached_hash: u64,
+    bonding: Bonding,
+    particles: ParticleVec
 }
 
-impl Hash for Molecule {
-    fn hash<H: Hasher>(&self, state: &mut H) {
-        self.cached_hash.hash(state);
-    }
+/// An analog to [`&Molecule`] using particles stored elsewhere (in a system or
+/// an [`Molecule`]).
+///
+/// [`MoleculeRef`] implement `Deref` to a [`Bonding`] struct, to give read
+/// access to all the bonds.
+///
+/// [`Molecule`]: struct.Molecule.html
+/// [`MoleculeRef`]: struct.MoleculeRef.html
+#[derive(Debug)]
+pub struct MoleculeRef<'a> {
+    bonding: &'a Bonding,
+    particles: ParticleSlice<'a>
+}
+
+/// An analog to [`&mut Molecule`] using particles stored elsewhere (in a
+/// system or an [`Molecule`]).
+///
+/// [`MoleculeRefMut`] implement `Deref` to a [`Bonding`] struct, to give read
+/// access to all the bonds. It does not implement `DerefMut`, adding new bonds
+/// should be done through [`Molecule::add_bond()`] or
+/// [`Configuration::add_bond()`].
+///
+/// [`Molecule`]: struct.Molecule.html
+/// [`MoleculeRefMut`]: struct.MoleculeRefMut.html
+/// [`Molecule::add_bond()`]: struct.Molecule.html#method.add_bond
+/// [`Configuration::add_bond()`]: struct.Configuration.html#method.add_bond
+#[derive(Debug)]
+pub struct MoleculeRefMut<'a> {
+    bonding: &'a Bonding,
+    particles: ParticleSliceMut<'a>
 }
 
 impl Molecule {
-    /// Create a new `Molecule` containing only the atom i
-    pub fn new(i: usize) -> Molecule {
+    /// Create a new `Molecule` containing a single `particle`
+    pub fn new(particle: Particle) -> Molecule {
+        let mut particles = ParticleVec::new();
+        particles.push(particle);
         Molecule {
-            bonds: HashSet::new(),
-            angles: HashSet::new(),
-            dihedrals: HashSet::new(),
-            distances: Array2::default((1, 1)),
-            range: i..i + 1,
-            cached_hash: 0,
+            bonding: Bonding::new(0),
+            particles: particles,
         }
     }
 
-    /// Get the number of atoms in the molecule
-    pub fn size(&self) -> usize {
-        self.range.len()
-    }
-
-    /// Get the first atom of this molecule
-    pub fn start(&self) -> usize {
-        self.range.start
-    }
-
-    /// Get the index of the first atom after this molecule
-    pub fn end(&self) -> usize {
-        self.range.end
-    }
-
-    /// Does this molecule contains the particle `i`
-    pub fn contains(&self, i: usize) -> bool {
-        self.range.start <= i && i < self.range.end
-    }
-
-    /// Cache the hash of the bonds
-    fn rehash(&mut self) {
-        let mut hasher = DefaultHasher::new();
-        self.range.len().hash(&mut hasher);
-
-        let mut bonds = self.bonds.iter()
-                            .map(|bond| Bond::new(bond.i() - self.start(), bond.j() - self.start()))
-                            .collect::<Vec<_>>();
-        bonds.sort();
-        for bond in &bonds {
-            bond.i().hash(&mut hasher);
-            bond.j().hash(&mut hasher);
-        }
-        self.cached_hash = hasher.finish();
-    }
-
-    /// Cleanup cached data
-    fn cleanup(&mut self) {
-        self.angles.clear();
-        self.dihedrals.clear();
-    }
-
-    /// Rebuild the full list of angles and dihedral angles from the list of bonds
-    fn rebuild(&mut self) {
-        self.cleanup();
-        for bond1 in &self.bonds {
-            // Find angles
-            for bond2 in &self.bonds {
-                if bond1 == bond2 {
-                    continue;
-                }
-
-                let angle = if bond1.i() == bond2.j() {
-                    Angle::new(bond2.i(), bond2.j(), bond1.j())
-                } else if bond1.j() == bond2.i() {
-                    Angle::new(bond1.i(), bond1.j(), bond2.j())
-                } else if bond1.j() == bond2.j() {
-                    Angle::new(bond1.i(), bond1.j(), bond2.i())
-                } else if bond1.i() == bond2.i() {
-                    Angle::new(bond1.j(), bond1.i(), bond2.j())
-                } else {
-                    // We will not find any dihedral angle from these bonds
-                    continue;
-                };
-                let _ = self.angles.insert(angle);
-
-                // Find dihedral angles
-                for bond3 in &self.bonds {
-                    if bond2 == bond3 {
-                        continue;
-                    }
-
-                    let dihedral = if angle.k() == bond3.i() && angle.j() != bond3.j() {
-                        Dihedral::new(angle.i(), angle.j(), angle.k(), bond3.j())
-                    } else if angle.k() == bond3.j() && angle.j() != bond3.i() {
-                        Dihedral::new(angle.i(), angle.j(), angle.k(), bond3.i())
-                    } else if angle.i() == bond3.j() && angle.j() != bond3.i() {
-                        Dihedral::new(bond3.i(), angle.i(), angle.j(), angle.k())
-                    } else if angle.i() == bond3.i() && angle.j() != bond3.j() {
-                        Dihedral::new(bond3.j(), angle.i(), angle.j(), angle.k())
-                    } else {
-                        // (angle.k == bond3.i || angle.k == bond3.j) is an
-                        // improper dihedral.
-                        continue;
-                    };
-                    let _ = self.dihedrals.insert(dihedral);
-                }
-            }
-        }
-        self.rebuild_connections();
-        self.rehash();
-    }
-
-    /// Recompute the connectivity matrix from the bonds, angles and dihedrals
-    /// in the system.
-    fn rebuild_connections(&mut self) {
-        let n = self.size();
-        self.distances = Array2::default((n, n));
-
-        let first = self.start();
-        let distances = &mut self.distances;
-        let mut add_distance_term = |i, j, term| {
-            let old_distance = distances[(i - first, j - first)];
-            distances[(i - first, j - first)] = old_distance | term;
-        };
-
-        for bond in &self.bonds {
-            add_distance_term(bond.i(), bond.j(), BondDistances::ONE);
-            add_distance_term(bond.j(), bond.i(), BondDistances::ONE);
-        }
-
-        for angle in &self.angles {
-            add_distance_term(angle.i(), angle.k(), BondDistances::TWO);
-            add_distance_term(angle.k(), angle.i(), BondDistances::TWO);
-        }
-
-        for dihedral in &self.dihedrals {
-            add_distance_term(dihedral.i(), dihedral.m(), BondDistances::THREE);
-            add_distance_term(dihedral.m(), dihedral.i(), BondDistances::THREE);
+    /// Borrow `self` as a `MoleculeRef`.
+    pub fn as_ref(&self) -> MoleculeRef {
+        MoleculeRef {
+            bonding: &self.bonding,
+            particles: self.particles.as_slice(),
         }
     }
 
-    /// Merge this molecule with `other`. The first particle in `other` should
-    /// be the particle just after the last one in `self`.
-    pub fn merge_with(&mut self, other: Molecule) {
-        assert_eq!(self.range.end, other.range.start);
-        self.range.end = other.range.end;
-        for bond in other.bonds() {
-            let _ = self.bonds.insert(*bond);
+    /// Mutablely borrow `self` as a `MoleculeRefMut`.
+    pub fn as_mut(&mut self) -> MoleculeRefMut {
+        MoleculeRefMut {
+            bonding: &self.bonding,
+            particles: self.particles.as_mut_slice(),
         }
-
-        // Get angles and dihedrals from the other molecule, there is no need to
-        // rebuild these.
-        for angle in other.angles() {
-            let _ = self.angles.insert(*angle);
-        }
-
-        for dihedral in other.dihedrals() {
-            let _ = self.dihedrals.insert(*dihedral);
-        }
-
-        self.rebuild_connections();
-        self.rehash();
     }
 
-    /// Translate all indexes in this molecule by `delta`.
-    pub fn translate_by(&mut self, delta: isize) {
-        if delta < 0 {
-            // We should not create negative indexes
-            assert!((delta.abs() as usize) < self.start());
-        }
-
-        // The wrapping_add are necessary here, and produce the right result,
-        // thanks to integer overflow and the conversion below.
-        let delta = delta as usize;
-        self.range.start = self.range.start.wrapping_add(delta);
-        self.range.end = self.range.end.wrapping_add(delta);
-
-        let mut new_bonds = HashSet::new();
-        for bond in &self.bonds {
-            let _ = new_bonds.insert(
-                Bond::new(bond.i().wrapping_add(delta), bond.j().wrapping_add(delta)),
-            );
-        }
-        self.bonds = new_bonds;
-
-        let mut new_angles = HashSet::new();
-        for angle in &self.angles {
-            let _ = new_angles.insert(Angle::new(
-                angle.i().wrapping_add(delta),
-                angle.j().wrapping_add(delta),
-                angle.k().wrapping_add(delta),
-            ));
-        }
-        self.angles = new_angles;
-
-        let mut new_dihedrals = HashSet::new();
-        for dihedral in &self.dihedrals {
-            let _ = new_dihedrals.insert(Dihedral::new(
-                dihedral.i().wrapping_add(delta),
-                dihedral.j().wrapping_add(delta),
-                dihedral.k().wrapping_add(delta),
-                dihedral.m().wrapping_add(delta),
-            ));
-        }
-        self.dihedrals = new_dihedrals;
+    /// Get access to the particles in this molecule
+    pub fn particles(&self) -> ParticleSlice {
+        self.particles.as_slice()
     }
 
-    /// Add a bond between the particles at indexes `i` and `j`. These particles
-    /// are assumed to be in the molecule
+    /// Get mutable access to the particles in this molecule
+    pub fn particles_mut(&mut self) -> ParticleSliceMut {
+        self.particles.as_mut_slice()
+    }
+
+    /// Add a new `particle` to this molecule
+    pub fn add_particle(&mut self, particle: Particle) {
+        self.particles.push(particle);
+        self.bonding.merge_with(Bonding::new(self.particles.len() - 1));
+    }
+
+    /// Add bond between particles at indexes `i` and `j` in this molecule.
+    ///
+    /// # Panics
+    ///
+    /// If `i` or `j` are not in this molecule.
     pub fn add_bond(&mut self, i: usize, j: usize) {
-        assert!(self.contains(i));
-        assert!(self.contains(j));
-        assert_ne!(i, j);
-        let _ = self.bonds.insert(Bond::new(i, j));
-        self.rebuild();
+        self.bonding.add_bond(i, j);
     }
+}
 
-    /// Removes particle at index `i` and any associated bonds, angle or
-    /// dihedral. This function also update the indexes for the
-    /// bonds/angles/dihedral by remove 1 to all the values `> i`
-    pub fn remove_particle(&mut self, i: usize) {
-        assert!(self.contains(i));
-        // Remove bonds containing the particle `i`
-        let mut new_bonds = HashSet::new();
-        for bond in self.bonds() {
-            if bond.i() == i || bond.j() == i {
-                continue;
-            }
+impl Deref for Molecule {
+    type Target = Bonding;
 
-            let (mut bond_i, mut bond_j) = (bond.i(), bond.j());
-            if bond_i > i {
-                bond_i -= 1;
-            }
-            if bond_j > i {
-                bond_j -= 1;
-            }
+    fn deref(&self) -> &Self::Target {
+        &self.bonding
+    }
+}
 
-            let _ = new_bonds.insert(Bond::new(bond_i, bond_j));
+impl<'a> MoleculeRef<'a> {
+    /// Create a new `MoleculeRef` associating the given `bonding` and
+    /// `particles`.
+    ///
+    /// # Panics
+    ///
+    /// If the `bonding` and the `particles` do not containe the same number
+    /// of particles.
+    pub fn new(bonding: &'a Bonding, particles: ParticleSlice<'a>) -> MoleculeRef<'a> {
+        assert_eq!(bonding.size(), particles.len());
+        MoleculeRef {
+            bonding: bonding,
+            particles: particles,
         }
-
-        self.bonds = new_bonds;
-        self.range.end -= 1;
-        self.rebuild();
     }
 
-    /// Get the internal list of bonds
-    #[inline]
-    pub fn bonds(&self) -> &HashSet<Bond> {
-        &self.bonds
+    /// Get access to the particles in this molecule
+    pub fn particles(&self) -> ParticleSlice {
+        self.particles
     }
 
-    /// Get the internal list of angles
-    #[inline]
-    pub fn angles(&self) -> &HashSet<Angle> {
-        &self.angles
-    }
-
-    /// Get the internal list of dihedrals
-    #[inline]
-    pub fn dihedrals(&self) -> &HashSet<Dihedral> {
-        &self.dihedrals
-    }
-
-    /// Get the all the possible bond paths the particles `i` and `j` in this molecule
-    #[inline]
-    pub fn bond_distances(&self, i: usize, j: usize) -> BondDistances {
-        assert!(self.contains(i) && self.contains(j));
-        return self.distances[(i - self.start(), j - self.start())];
-    }
-
-    /// Get an iterator over the particles in the molecule
-    #[inline]
-    pub fn iter(&self) -> Range<usize> {
-        self.into_iter()
+    /// Copies `self` into a new `Molecule`
+    pub fn to_owned(&self) -> Molecule {
+        Molecule {
+            bonding: self.bonding.clone(),
+            particles: self.particles.to_vec(),
+        }
     }
 }
 
-/// Get the molecule type of the given `molecule` containing the `particles`.
-/// This type can be used to identify all the molecules containing the same
-/// bonds and particles (see `System::molecule_type` for more information).
-pub fn molecule_type(molecule: &Molecule, particles: ParticleSlice) -> u64 {
-    assert_eq!(particles.len(), molecule.size());
-    let mut hasher = DefaultHasher::new();
-    molecule.cached_hash.hash(&mut hasher);
-    for name in particles.name {
-        name.hash(&mut hasher);
-    }
-    hasher.finish()
-}
+impl<'a> Deref for MoleculeRef<'a> {
+    type Target = Bonding;
 
-impl IntoIterator for Molecule {
-    type Item = usize;
-    type IntoIter = Range<usize>;
-
-    fn into_iter(self) -> Range<usize> {
-        self.range
+    fn deref(&self) -> &Self::Target {
+        &self.bonding
     }
 }
 
-impl<'a> IntoIterator for &'a Molecule {
-    type Item = usize;
-    type IntoIter = Range<usize>;
+impl<'a> MoleculeRefMut<'a> {
+    /// Create a new `MoleculeRefMut` associating the given `bonding` and
+    /// `particles`.
+    ///
+    /// # Panics
+    ///
+    /// If the `bonding` and the `particles` do not containe the same number
+    /// of particles.
+    pub fn new(bonding: &'a Bonding, particles: ParticleSliceMut<'a>) -> MoleculeRefMut<'a> {
+        assert_eq!(bonding.size(), particles.len());
+        MoleculeRefMut {
+            bonding: bonding,
+            particles: particles,
+        }
+    }
 
-    fn into_iter(self) -> Range<usize> {
-        self.range.clone()
+    /// Borrow `self` as a `MoleculeRef`.
+    pub fn as_ref(&self) -> MoleculeRef {
+        MoleculeRef {
+            bonding: &self.bonding,
+            particles: self.particles.as_ref(),
+        }
+    }
+
+    /// Get access to the particles in this molecule
+    pub fn particles(&self) -> ParticleSlice {
+        self.particles.as_ref()
+    }
+
+    /// Get mutable access to the particles in this molecule
+    pub fn particles_mut(&mut self) -> ParticleSliceMut {
+        // Explicity re-borrow all the fiels, as ParticleSliceMut can not be
+        // copied
+        ParticleSliceMut {
+            name: &mut self.particles.name,
+            mass: &mut self.particles.mass,
+            kind: &mut self.particles.kind,
+            charge: &mut self.particles.charge,
+            position: &mut self.particles.position,
+            velocity: &mut self.particles.velocity,
+        }
+    }
+
+    /// Copies `self` into a new `Molecule`
+    pub fn to_owned(&self) -> Molecule {
+        // This can not be a `ToOwned` implementation, as ToOwned requires
+        // `Borrow`, and `Borrow` requires a reference, not a reference
+        // wrapper.
+        Molecule {
+            bonding: self.bonding.clone(),
+            particles: self.particles.to_vec(),
+        }
     }
 }
+
+impl<'a> Deref for MoleculeRefMut<'a> {
+    type Target = Bonding;
+
+    fn deref(&self) -> &Self::Target {
+        &self.bonding
+    }
+}
+
+
+// Add inherent functions in $body to all types in $Type
+macro_rules! impl_on {
+    ($($Type:ty,)+ => $body: tt) => (
+        $(impl<'a> $Type $body)*
+    );
+}
+
+impl_on!(Molecule, MoleculeRef<'a>, MoleculeRefMut<'a>, => {
+    /// Return the center-of-mass of a molecule
+    ///
+    /// # Warning
+    ///
+    /// This function does not check for the particles' positions' nearest
+    /// images. To use this function properly, make sure that all particles of
+    /// the molecule are adjacent.
+    pub fn center_of_mass(&self) -> Vector3D {
+        let mut total_mass = 0.0;
+        let mut com = Vector3D::zero();
+        for (&mass, position) in soa_zip!(&self.particles, [mass, position]) {
+            total_mass += mass;
+            com += mass * position;
+        }
+        com / total_mass
+    }
+
+    /// Get a hash of this molecule. This is a hash of the particles names (in
+    /// order), and the set of bonds in the molecule. This means that two
+    /// molecules will have the same type if and only if they contains the same
+    /// atoms and the same bonds, **in the same order**.
+    pub fn molecule_type(&self) -> u64 {
+        let mut hasher = DefaultHasher::new();
+        self.bonding.hash().hash(&mut hasher);
+        for name in self.particles().name {
+            name.hash(&mut hasher);
+        }
+        hasher.finish()
+    }
+});
+
+impl_on!(Molecule, MoleculeRefMut<'a>, => {
+    /// Move all particles of a molecule such that the molecules center-of-mass
+    /// position resides inside the simulation cell.
+    ///
+    /// # Note
+    ///
+    /// If the `CellShape` is `Infinite` there are no changes to the positions.
+    pub fn wrap(&mut self, cell: &UnitCell) {
+        let com = self.as_ref().center_of_mass();
+        let mut com_wrapped = com;
+        cell.wrap_vector(&mut com_wrapped);
+        let delta = com_wrapped - com;
+        // iterate over all positions and move them accordingly
+        for position in self.particles_mut().position.iter_mut() {
+            *position += delta;
+        }
+    }
+});
 
 #[cfg(test)]
-mod test {
+mod tests {
     use super::*;
-    use sys::{Angle, Bond, BondDistances, Dihedral};
+    use sys::ParticleKind;
 
-    #[test]
-    fn translate() {
-        let mut molecule = Molecule::new(0);
-        for i in 1..4 {
-            molecule.merge_with(Molecule::new(i));
+    /// Create particles with intialized kind for the tests
+    fn particle(name: &str) -> Particle {
+        use std::collections::HashMap;
+        use std::sync::Mutex;
+        lazy_static! {
+            static ref KINDS: Mutex<HashMap<String, u32>> = Mutex::new(HashMap::new());
         }
-        molecule.add_bond(0, 1);
-        molecule.add_bond(1, 2);
-        molecule.add_bond(2, 3);
+        let mut kind_map = KINDS.lock().unwrap();
+        let nkinds = kind_map.len() as u32;
+        let &mut kind = kind_map.entry(name.into()).or_insert(nkinds);
 
-        assert_eq!(molecule.start(), 0);
-        assert_eq!(molecule.end(), 4);
-        assert!(molecule.bonds().contains(&Bond::new(2, 3)));
-        assert!(molecule.angles().contains(&Angle::new(1, 2, 3)));
-        assert!(molecule.dihedrals().contains(&Dihedral::new(0, 1, 2, 3)));
-
-        molecule.translate_by(5);
-        assert_eq!(molecule.start(), 5);
-        assert_eq!(molecule.end(), 9);
-        assert!(molecule.bonds().contains(&Bond::new(7, 8)));
-        assert!(molecule.angles().contains(&Angle::new(6, 7, 8)));
-        assert!(molecule.dihedrals().contains(&Dihedral::new(5, 6, 7, 8)));
-
-        molecule.translate_by(-3);
-        assert_eq!(molecule.start(), 2);
-        assert_eq!(molecule.end(), 6);
-        assert!(molecule.bonds().contains(&Bond::new(4, 5)));
-        assert!(molecule.angles().contains(&Angle::new(3, 4, 5)));
-        assert!(molecule.dihedrals().contains(&Dihedral::new(2, 3, 4, 5)));
+        let mut particle = Particle::new(name);
+        particle.kind = ParticleKind(kind);
+        return particle;
     }
 
     #[test]
-    fn bonding() {
-        // Create ethane like this
-        //       H    H               4    5
-        //       |    |               |    |
-        //   H - C -- C - H       3 - 0 -- 1 - 6
-        //       |    |               |    |
-        //       H    H               2    7
-        let mut molecule = Molecule::new(0);
-
-        for i in 1..8 {
-            molecule.merge_with(Molecule::new(i));
-        }
-
+    fn center_of_mass() {
+        let mut molecule = Molecule::new(particle("O"));
+        molecule.add_particle(particle("O"));
         molecule.add_bond(0, 1);
-        molecule.add_bond(0, 2);
-        molecule.add_bond(0, 3);
-        molecule.add_bond(0, 4);
-        molecule.add_bond(1, 5);
-        molecule.add_bond(1, 6);
-        molecule.add_bond(1, 7);
 
-        assert_eq!(molecule.start(), 0);
-        assert_eq!(molecule.end(), 8);
+        molecule.particles_mut().position[0] = Vector3D::new(1.0, 0.0, 0.0);
+        molecule.particles_mut().position[1] = Vector3D::zero();
 
-        assert_eq!(molecule.size(), 8);
-
-        let bonds = vec![
-            Bond::new(0, 1),
-            Bond::new(0, 2),
-            Bond::new(0, 3),
-            Bond::new(0, 4),
-            Bond::new(1, 5),
-            Bond::new(1, 6),
-            Bond::new(1, 7),
-        ];
-
-        assert_eq!(molecule.bonds().len(), bonds.len());
-        for bond in &bonds {
-            assert!(molecule.bonds().contains(bond));
-        }
-
-        let angles = vec![
-            Angle::new(0, 1, 5),
-            Angle::new(0, 1, 6),
-            Angle::new(0, 1, 7),
-            Angle::new(1, 0, 2),
-            Angle::new(1, 0, 3),
-            Angle::new(1, 0, 4),
-            Angle::new(2, 0, 3),
-            Angle::new(3, 0, 4),
-            Angle::new(2, 0, 4),
-            Angle::new(5, 1, 6),
-            Angle::new(6, 1, 7),
-            Angle::new(5, 1, 7),
-        ];
-
-        assert_eq!(molecule.angles().len(), angles.len());
-        for angle in &angles {
-            assert!(molecule.angles().contains(angle));
-        }
-
-        let dihedrals = vec![
-            Dihedral::new(2, 0, 1, 5),
-            Dihedral::new(2, 0, 1, 6),
-            Dihedral::new(2, 0, 1, 7),
-            Dihedral::new(3, 0, 1, 5),
-            Dihedral::new(3, 0, 1, 6),
-            Dihedral::new(3, 0, 1, 7),
-            Dihedral::new(4, 0, 1, 5),
-            Dihedral::new(4, 0, 1, 6),
-            Dihedral::new(4, 0, 1, 7),
-        ];
-
-        assert_eq!(molecule.dihedrals().len(), dihedrals.len());
-        for dihedral in &dihedrals {
-            assert!(molecule.dihedrals().contains(dihedral));
-        }
-
-        assert!(molecule.bond_distances(0, 1).contains(BondDistances::ONE));
-        assert!(molecule.bond_distances(1, 0).contains(BondDistances::ONE));
-
-        assert!(molecule.bond_distances(0, 7).contains(BondDistances::TWO));
-        assert!(molecule.bond_distances(7, 0).contains(BondDistances::TWO));
-
-        assert!(molecule.bond_distances(3, 5).contains(BondDistances::THREE));
-        assert!(molecule.bond_distances(5, 3).contains(BondDistances::THREE));
-
-        molecule.remove_particle(6);
-        assert_eq!(molecule.bonds().len(), 6);
-        assert_eq!(molecule.angles().len(), 9);
-        assert_eq!(molecule.dihedrals().len(), 6);
+        assert_eq!(molecule.center_of_mass(), Vector3D::new(0.5, 0.0, 0.0));
     }
 
     #[test]
-    fn cyclic() {
-        //   0 -- 1
-        //   |    |
-        //   3 -- 2
-        let mut molecule = Molecule::new(0);
-
-        for i in 1..4 {
-            molecule.merge_with(Molecule::new(i));
-        }
+    fn test_wrap_molecule() {
+        let mut molecule = Molecule::new(particle("O"));
+        molecule.add_particle(particle("O"));
         molecule.add_bond(0, 1);
-        molecule.add_bond(1, 2);
-        molecule.add_bond(2, 3);
-        molecule.add_bond(3, 0);
 
-        assert!(molecule.bond_distances(0, 3).contains(BondDistances::ONE));
-        assert!(molecule.bond_distances(0, 3).contains(BondDistances::THREE));
+        molecule.particles_mut().position[0] = Vector3D::new(-2.0, 0.0, 0.0);
+        molecule.particles_mut().position[1] = Vector3D::zero();
+        molecule.wrap(&UnitCell::cubic(5.0));
 
-        assert!(molecule.angles.contains(&Angle::new(0, 3, 2)));
-        assert!(molecule.angles.contains(&Angle::new(0, 1, 2)));
-    }
-
-    #[test]
-    fn remove_particle() {
-        let mut molecule = Molecule::new(0);
-        for i in 1..4 {
-            molecule.merge_with(Molecule::new(i));
-        }
-
-        assert_eq!(molecule.bonds().len(), 0);
-        assert_eq!(molecule.size(), 4);
-
-        molecule.add_bond(0, 1);
-        molecule.add_bond(2, 3);
-        assert_eq!(molecule.bonds().len(), 2);
-        assert_eq!(molecule.size(), 4);
-
-        molecule.remove_particle(1);
-        assert_eq!(molecule.bonds().len(), 1);
-        assert_eq!(molecule.size(), 3);
-
-        molecule.merge_with(Molecule::new(3));
-        assert_eq!(molecule.bonds().len(), 1);
-        assert_eq!(molecule.size(), 4);
-    }
-
-    #[test]
-    fn hash() {
-        let mut molecule = Molecule::new(0);
-        assert_eq!(molecule.cached_hash, 0);
-
-        for i in 1..4 {
-            molecule.merge_with(Molecule::new(i));
-        }
-
-        let hash = molecule.cached_hash;
-        assert!(hash != 0);
-
-        molecule.add_bond(0, 1);
-        molecule.add_bond(2, 3);
-        assert!(molecule.cached_hash != hash);
-        let hash = molecule.cached_hash;
-
-        molecule.remove_particle(1);
-        assert!(molecule.cached_hash != hash);
-        let hash = molecule.cached_hash;
-
-        // Hash should be the same when translating the molecule
-        molecule.translate_by(67);
-        molecule.rehash();
-        assert_eq!(molecule.cached_hash, hash);
+        assert_eq!(molecule.particles().position[0], Vector3D::new(3.0, 0.0, 0.0));
+        assert_eq!(molecule.particles().position[1], Vector3D::new(5.0, 0.0, 0.0));
+        assert_eq!(molecule.center_of_mass(), Vector3D::new(4.0, 0.0, 0.0))
     }
 }

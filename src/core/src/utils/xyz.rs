@@ -76,7 +76,7 @@ mod tests {
         assert_eq!(system.particles().position[1], Vector3D::new(0.0, 0.0, 0.0));
         assert_eq!(system.particles().position[2], Vector3D::new(0.0, 0.0, 1.5));
 
-        assert_eq!(system.molecules().len(), 1);
+        assert_eq!(system.molecules_count(), 1);
         assert_eq!(system.molecule(0).bonds().len(), 2);
     }
 
@@ -91,7 +91,7 @@ mod tests {
             He 0 0 1",
         );
         assert_eq!(system.size(), 4);
-        assert_eq!(system.molecules().len(), 4);
+        assert_eq!(system.molecules_count(), 4);
         assert_eq!(system.cell, UnitCell::cubic(67.0));
 
         assert_eq!(system.particles().position[0], Vector3D::new(0.0, 0.0, 0.0));
@@ -112,7 +112,7 @@ mod tests {
             ",
         );
         assert_eq!(system.size(), 4);
-        assert_eq!(system.molecules().len(), 4);
+        assert_eq!(system.molecules_count(), 4);
         assert_eq!(system.cell, UnitCell::cubic(67.0));
 
         assert_eq!(system.particles().position[0], Vector3D::new(0.0, 0.0, 0.0));

@@ -81,16 +81,17 @@ impl MCMove for Resize {
             }
         };
 
-        for (mi, molecule) in self.previous.molecules().iter().enumerate() {
+        let cell = system.cell;
+        for mut molecule in system.molecules_mut() {
             // We don't want to change the intramolecular distances so we
             // compute the translation vector of the center-of-mass (com) of a
             // molecule and apply it to all its particles. Note that to do
             // this, the com of a molecule *always* has to reside inside the
             // simulation cell.
-            let old_com = self.previous.molecule_com(mi);
+            let old_com = molecule.as_ref().center_of_mass();
             let frac_com = self.previous.cell.fractional(&old_com);
-            let delta_com = system.cell.cartesian(&frac_com) - old_com;
-            for position in &mut system.particles_mut().position[molecule.iter()] {
+            let delta_com = cell.cartesian(&frac_com) - old_com;
+            for position in molecule.particles_mut().position.iter_mut() {
                 *position += delta_com;
             }
         }
@@ -104,7 +105,7 @@ impl MCMove for Resize {
         let delta_volume = new_volume - old_volume;
         // Build and return the cost function.
         beta * (delta_energy + self.pressure * delta_volume)
-            - (system.molecules().len() as f64) * f64::ln(new_volume / old_volume)
+            - (system.molecules_count() as f64) * f64::ln(new_volume / old_volume)
     }
 
     fn apply(&mut self, _: &mut System) {
