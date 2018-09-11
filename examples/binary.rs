@@ -7,8 +7,8 @@ extern crate lumol_input as input;
 
 use lumol::sim::Simulation;
 use lumol::sim::mc::{MonteCarlo, Rotate, Translate};
-use lumol::sys::{Molecule, Particle, ParticleVec, TrajectoryBuilder, UnitCell};
-use lumol::sys::{molecule_type, read_molecule};
+use lumol::sys::{Molecule, Particle, TrajectoryBuilder, UnitCell};
+use lumol::sys::read_molecule;
 use lumol::units;
 
 use input::InteractionsInput;
@@ -18,7 +18,7 @@ fn main() {
                                              .and_then(|mut traj| traj.read())
                                              .unwrap();
     // Add bonds in the system
-    for i in 0..system.molecules().len() / 3 {
+    for i in 0..system.molecules_count() / 3 {
         system.add_bond(3 * i, 3 * i + 1);
         system.add_bond(3 * i + 1, 3 * i + 2);
     }
@@ -27,26 +27,19 @@ fn main() {
     let input = InteractionsInput::new("data/binary.toml").unwrap();
     input.read(&mut system).unwrap();
 
-    let co2 = {
-        // We can read files to get molecule type
-        let (molecule, atoms) = read_molecule("data/CO2.xyz").unwrap();
-        molecule_type(&molecule, atoms.as_slice())
-    };
+    // We can read files to get molecule type
+    let co2 = read_molecule("data/CO2.xyz").unwrap().molecule_type();
+
+    // Or define a new molecule by hand
     let h2o = {
-        // Or define a new molecule by hand
-        let mut molecule = Molecule::new(0);
-        molecule.merge_with(Molecule::new(1));
-        molecule.merge_with(Molecule::new(2));
+        let mut molecule = Molecule::new(Particle::new("H"));
+        molecule.add_particle(Particle::new("O"));
+        molecule.add_particle(Particle::new("H"));
 
         molecule.add_bond(0, 1);
         molecule.add_bond(1, 2);
 
-        let mut atoms = ParticleVec::new();
-        atoms.push(Particle::new("H"));
-        atoms.push(Particle::new("O"));
-        atoms.push(Particle::new("H"));
-
-        molecule_type(&molecule, atoms.as_slice())
+        molecule.molecule_type()
     };
 
     let mut mc = MonteCarlo::new(units::from(500.0, "K").unwrap());

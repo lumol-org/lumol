@@ -63,10 +63,14 @@ pub trait MCMove {
 fn select_molecule(system: &System, moltype: Option<u64>, rng: &mut RngCore) -> Option<usize> {
     if let Some(moltype) = moltype {
         // Pick a random molecule with matching moltype
-        let mols = system.molecules_with_moltype(moltype);
+        let mols = system.molecules()
+            .enumerate()
+            .filter(|(_, m)| m.molecule_type() == moltype)
+            .map(|(i, _)| i)
+            .collect::<Vec<_>>();
         return rng.choose(&mols).cloned();
     } else {
-        let nmols = system.molecules().len();
+        let nmols = system.molecules_count();
         if nmols == 0 {
             return None;
         } else {

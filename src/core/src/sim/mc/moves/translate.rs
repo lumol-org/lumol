@@ -101,8 +101,7 @@ impl MCMove for Translate {
         // Note that this may move a particles' center-of-mass (com) out of
         // the cell. If the move is accepted, we have to wrap the com such
         // that it lies inside the cell.
-        let indexes = system.molecule(self.molid).iter();
-        self.newpos = system.particles().position[indexes].to_vec();
+        self.newpos = system.molecule(self.molid).particles().position.to_vec();
         for newpos in &mut self.newpos {
             *newpos += delta;
         }
@@ -110,24 +109,22 @@ impl MCMove for Translate {
     }
 
     fn cost(&self, system: &System, beta: f64, cache: &mut EnergyCache) -> f64 {
-        let idxes = system.molecule(self.molid).iter().collect::<Vec<_>>();
-        let cost = cache.move_particles_cost(system, idxes, &self.newpos);
+        let indexes = system.molecule(self.molid).indexes().collect::<Vec<_>>();
+        let cost = cache.move_particles_cost(system, indexes, &self.newpos);
         return cost * beta;
     }
 
     fn apply(&mut self, system: &mut System) {
-        {
-            // Update positions.
-            let indexes = system.molecule(self.molid).iter();
-            let positions = &mut system.particles_mut().position[indexes];
-            for (position, newpos) in izip!(positions, &self.newpos) {
-                *position = *newpos;
-            }
+        let cell = system.cell;
+        let mut molecule = system.molecule_mut(self.molid);
+        for (position, newpos) in soa_zip!(molecule.particles_mut(), [mut position], &self.newpos) {
+            *position = *newpos;
         }
+
         // Move molecule such that its center-of-mass is inside the simulation
         // cell. Note that particles of the molecule may still be outside the
         // cell, but that is not important.
-        system.wrap_molecule(self.molid)
+        molecule.wrap(&cell)
     }
 
     fn restore(&mut self, _: &mut System) {

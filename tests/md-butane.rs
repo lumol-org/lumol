@@ -21,7 +21,7 @@ fn bonds_detection() {
                                  .join("md-butane")
                                  .join("nve.toml");
     let system = Input::new(path).unwrap().read_system().unwrap();
-    assert_eq!(system.molecules().len(), 50);
+    assert_eq!(system.molecules_count(), 50);
 
     for molecule in system.molecules() {
         assert_eq!(molecule.bonds().len(), 3);

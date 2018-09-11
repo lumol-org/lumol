@@ -85,26 +85,23 @@ impl MCMove for Rotate {
         ).normalized();
         let theta = self.range.sample(rng);
 
-        // get indices of particles of selected molecule
-        let indexes = system.molecule(self.molid).iter();
         // store positions of selected molecule
-        self.newpos = system.particles().position[indexes].to_vec();
+        self.newpos = system.molecule(self.molid).particles().position.to_vec();
         // get center-of-mass of molecule
-        let com = system.molecule_com(self.molid);
+        let com = system.molecule(self.molid).center_of_mass();
         rotate_around_axis(&mut self.newpos, com, axis, theta);
         true
     }
 
     fn cost(&self, system: &System, beta: f64, cache: &mut EnergyCache) -> f64 {
-        let idxes = system.molecule(self.molid).iter().collect::<Vec<_>>();
-        let cost = cache.move_particles_cost(system, idxes, &self.newpos);
+        let indexes = system.molecule(self.molid).indexes().collect::<Vec<_>>();
+        let cost = cache.move_particles_cost(system, indexes, &self.newpos);
         return cost * beta;
     }
 
     fn apply(&mut self, system: &mut System) {
-        let indexes = system.molecule(self.molid).iter();
-        let positions = &mut system.particles_mut().position[indexes];
-        for (position, newpos) in izip!(positions, &self.newpos) {
+        let mut molecule = system.molecule_mut(self.molid);
+        for (position, newpos) in soa_zip!(molecule.particles_mut(), [mut position], &self.newpos) {
             *position = *newpos;
         }
     }

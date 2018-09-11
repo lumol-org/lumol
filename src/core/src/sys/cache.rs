@@ -301,17 +301,16 @@ impl EnergyCache {
     /// MUST be called if the molecules are effectively moved.
     pub fn move_all_rigid_molecules_cost(&mut self, system: &System) -> f64 {
         let evaluator = system.energy_evaluator();
-        let positions = system.particles().position;
 
         let mut new_pairs = Array2::<f64>::zeros((system.size(), system.size()));
         let mut pairs_delta = 0.0;
         // Loop over all molecule pairs
-        for (i, mol_i) in system.molecules().iter().enumerate() {
-            for mol_j in system.molecules().iter().skip(i + 1) {
+        for (i, mol_i) in system.molecules().enumerate() {
+            for mol_j in system.molecules().skip(i + 1) {
                 // Loop over all particles in the molecules
-                for part_i in mol_i.iter() {
-                    for part_j in mol_j.iter() {
-                        let r = system.cell.distance(&positions[part_i], &positions[part_j]);
+                for part_i in mol_i.indexes() {
+                    for part_j in mol_j.indexes() {
+                        let r = system.distance(part_i, part_j);
                         let path = system.bond_path(part_i, part_j);
                         let energy = evaluator.pair(path, r, part_i, part_j);
                         pairs_delta += energy;
@@ -342,10 +341,10 @@ impl EnergyCache {
             let (n, m) = new_pairs.dim();
             debug_assert_eq!(n, m);
             debug_assert_eq!((n, m), cache.pairs_cache.dim());
-            for (i, mol_i) in system.molecules().iter().enumerate() {
-                for mol_j in system.molecules().iter().skip(i + 1) {
-                    for part_i in mol_i.iter() {
-                        for part_j in mol_j.iter() {
+            for (i, mol_i) in system.molecules().enumerate() {
+                for mol_j in system.molecules().skip(i + 1) {
+                    for part_i in mol_i.indexes() {
+                        for part_j in mol_j.indexes() {
                             cache.pairs_cache[(part_i, part_j)] = new_pairs[(part_i, part_j)];
                             cache.pairs_cache[(part_j, part_i)] = new_pairs[(part_i, part_j)];
                         }
@@ -395,7 +394,7 @@ mod tests {
             H     3.895669     0.000000    -0.316667
             H     2.104330     0.000000     1.796667",
         );
-        assert!(system.molecules().len() == 2);
+        assert!(system.molecules_count() == 2);
 
         system.add_pair_potential(
             ("H", "H"),
@@ -508,8 +507,8 @@ mod tests {
 
         let mut new_system = system.clone();
         // translate the center of mass
-        for i in system.molecule(0) {
-            new_system.particles_mut().position[i] += delta
+        for position in new_system.molecule_mut(0).particles_mut().position {
+            *position += delta
         }
         let cost = cache.move_all_rigid_molecules_cost(&new_system);
         let new_e = new_system.potential_energy();
@@ -523,8 +522,10 @@ mod tests {
         let delta = Vector3D::new(-0.9, 0.0, 1.8);
         let mut new_system = system.clone();
         // translate the center of mass
-        for i in &system.molecules()[1] {
-            new_system.particles_mut().position[i] += delta
+        for mut molecule in new_system.molecules_mut() {
+            for position in molecule.particles_mut().position {
+                *position += delta;
+            }
         }
         let cost = cache.move_all_rigid_molecules_cost(&new_system);
         let new_e = new_system.potential_energy();

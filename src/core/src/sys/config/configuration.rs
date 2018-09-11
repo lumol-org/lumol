@@ -9,9 +9,47 @@ use types::{Vector3D, Zero};
 
 use energy::BondPath;
 
-use sys::{BondDistances, Molecule, ParticleKind, UnitCell};
-use sys::{Particle, ParticleSlice, ParticleSliceMut, ParticleVec};
-use sys::molecule_type;
+use sys::{BondDistances, Bonding, ParticleKind, UnitCell};
+use sys::{Particle, ParticleSlice, ParticleSliceMut, ParticleVec, ParticlePtrMut};
+use sys::{MoleculeRef, MoleculeRefMut};
+
+struct MoleculeIterMut<'a> {
+    bondings: ::std::slice::Iter<'a, Bonding>,
+    particles: ParticlePtrMut,
+    #[cfg(debug_assertions)]
+    current: usize,
+    #[cfg(debug_assertions)]
+    size: usize,
+}
+
+impl<'a> Iterator for MoleculeIterMut<'a> {
+    type Item = MoleculeRefMut<'a>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        match self.bondings.next() {
+            Some(bonding) => {
+                let len = bonding.size();
+                // Check that we are really in bounds in debug mode
+                #[cfg(debug_assertions)]
+                debug_assert!(self.current < self.size);
+
+                let slice = unsafe {
+                    let slice = ParticleSliceMut::from_raw_parts_mut(self.particles, len);
+                    self.particles = self.particles.add(len);
+                    slice
+                };
+                // Check that we are really in bounds in debug mode
+                #[cfg(debug_assertions)]
+                debug_assert!({
+                    self.current += len;
+                    self.current <= self.size
+                });
+                return Some(MoleculeRefMut::new(bonding, slice));
+            },
+            None => None
+        }
+    }
+}
 
 /// Particles permutations:. Indexes are given in the `(old, new)` form.
 pub type Permutations = Vec<(usize, usize)>;
@@ -27,10 +65,10 @@ pub struct Configuration {
     pub cell: UnitCell,
     /// List of particles in the system
     particles: ParticleVec,
-    /// Molecules in the system
-    molecules: Vec<Molecule>,
+    /// Bonding information in the system
+    bondings: Vec<Bonding>,
     /// Molecules indexes for all the particles
-    molids: Vec<usize>,
+    molecule_ids: Vec<usize>,
 }
 
 impl Configuration {
@@ -38,8 +76,8 @@ impl Configuration {
     pub fn new() -> Configuration {
         Configuration {
             particles: ParticleVec::new(),
-            molecules: Vec::new(),
-            molids: Vec::new(),
+            bondings: Vec::new(),
+            molecule_ids: Vec::new(),
             cell: UnitCell::infinite(),
         }
     }
@@ -47,49 +85,51 @@ impl Configuration {
 
 /// Topology and particles related functions
 impl Configuration {
-    /// Get the type of the molecule at index `molid`. This type is a hash of
-    /// the atoms names, and the set of bonds in the molecule. This means that
-    /// two molecules will have the same type if and only if they contains the
-    /// same atoms and the same bonds, **in the same order**.
-    pub fn molecule_type(&self, molid: usize) -> u64 {
-        let molecule = self.molecule(molid);
-        molecule_type(molecule, self.particles.slice(molecule.into_iter()))
-    }
-
-    /// Get a list of molecules with `moltype` molecule type.
-    pub fn molecules_with_moltype(&self, moltype: u64) -> Vec<usize> {
-        let mut res = Vec::new();
-        for i in 0..self.molecules().len() {
-            if self.molecule_type(i) == moltype {
-                res.push(i);
-            }
-        }
-        return res;
-    }
-
     /// Check if the particles at indexes `i` and `j` are in the same molecule
-    #[inline]
     pub fn are_in_same_molecule(&self, i: usize, j: usize) -> bool {
-        debug_assert_eq!(self.molids.len(), self.particles.len());
-        self.molids[i] == self.molids[j]
+        debug_assert_eq!(self.molecule_ids.len(), self.particles.len());
+        self.molecule_ids[i] == self.molecule_ids[j]
     }
 
-    /// Get the list of molecules in the configuration.
-    #[inline]
-    pub fn molecules(&self) -> &[Molecule] {
-        &self.molecules
+    /// Get the number of molecules in this configuration.
+    pub fn molecules_count(&self) -> usize {
+        self.bondings.len()
+    }
+
+    /// Get an iterator over the molecules in the configuration.
+    pub fn molecules(&self) -> impl Iterator<Item = MoleculeRef> {
+        (0..self.bondings.len()).map(move |i| self.molecule(i))
+    }
+
+    /// Get an iterator over the molecules in the configuration.
+    pub fn molecules_mut(&mut self) -> impl Iterator<Item = MoleculeRefMut> {
+        MoleculeIterMut {
+            bondings: self.bondings.iter(),
+            particles: self.particles.as_mut_ptr(),
+            #[cfg(debug_assertions)]
+            current: 0,
+            #[cfg(debug_assertions)]
+            size: self.size(),
+        }
     }
 
     /// Get the molecule at index `id`
-    #[inline]
-    pub fn molecule(&self, id: usize) -> &Molecule {
-        &self.molecules[id]
+    pub fn molecule(&self, id: usize) -> MoleculeRef {
+        let bonding = &self.bondings[id];
+        let particles = self.particles.slice(bonding.indexes());
+        MoleculeRef::new(bonding, particles)
+    }
+
+    /// Get the molecule at index `id`
+    pub fn molecule_mut(&mut self, id: usize) -> MoleculeRefMut {
+        let bonding = &mut self.bondings[id];
+        let particles = self.particles.slice_mut(bonding.indexes());
+        MoleculeRefMut::new(bonding, particles)
     }
 
     /// Get the index of the molecule containing the particle `i`
-    #[inline]
-    pub fn molid(&self, i: usize) -> usize {
-        self.molids[i]
+    pub fn molecule_id(&self, i: usize) -> usize {
+        self.molecule_ids[i]
     }
 
     /// Get the length of the shortest bond path to go from the particle `i` to
@@ -103,7 +143,7 @@ impl Configuration {
         } else if i == j {
             BondPath::SameParticle
         } else {
-            let connect = self.molecule(self.molid(i)).bond_distances(i, j);
+            let connect = self.molecule(self.molecule_id(i)).bond_distances(i, j);
             if connect.contains(BondDistances::ONE) {
                 BondPath::OneBond
             } else if connect.contains(BondDistances::TWO) {
@@ -120,20 +160,20 @@ impl Configuration {
 
     /// Remove the molecule at index `i`
     pub fn remove_molecule(&mut self, molid: usize) {
-        let molecule = self.molecules.remove(molid);
+        let molecule = self.bondings.remove(molid);
         let first = molecule.start();
         let size = molecule.size();
 
         for _ in 0..size {
             let _ = self.particles.remove(first);
-            let _ = self.molids.remove(first);
+            let _ = self.molecule_ids.remove(first);
         }
 
-        for molecule in self.molecules.iter_mut().skip(molid) {
+        for molecule in self.bondings.iter_mut().skip(molid) {
             molecule.translate_by(-(size as isize));
         }
 
-        for molid in self.molids.iter_mut().skip(first) {
+        for molid in self.molecule_ids.iter_mut().skip(first) {
             *molid -= 1;
         }
     }
@@ -158,17 +198,17 @@ impl Configuration {
             "Adding bond {}-{} between molecules {} and {}",
             particle_i,
             particle_j,
-            self.molids[particle_i],
-            self.molids[particle_j]
+            self.molecule_ids[particle_i],
+            self.molecule_ids[particle_j]
         );
 
         // Getting copy of the molecules before the merge
-        let molid_i = self.molids[particle_i];
-        let molid_j = self.molids[particle_j];
+        let molid_i = self.molecule_ids[particle_i];
+        let molid_j = self.molecule_ids[particle_j];
         let new_molid = min(molid_i, molid_j);
         let old_molid = max(molid_i, molid_j);
-        let new_mol = self.molecules[new_molid].clone();
-        let old_mol = self.molecules[old_molid].clone();
+        let new_mol = self.bondings[new_molid].clone();
+        let old_mol = self.bondings[old_molid].clone();
         let already_in_same_molecule = self.are_in_same_molecule(particle_i, particle_j);
 
         // Effective merge
@@ -188,8 +228,8 @@ impl Configuration {
 
             // Add permutations for molecules that where shifted to make
             // space for the just moved molecule.
-            for molecule in &self.molecules[new_molid + 1..old_molid] {
-                for i in molecule {
+            for connectivity in &self.bondings[new_molid + 1..old_molid] {
+                for i in connectivity.indexes() {
                     permutations.push((i - size, i));
                 }
             }
@@ -203,24 +243,24 @@ impl Configuration {
             particle_i -= delta; // i moved
         };
 
-        assert_eq!(self.molids[particle_i], self.molids[particle_j]);
-        self.molecules[self.molids[particle_i]].add_bond(particle_i, particle_j);
+        assert_eq!(self.molecule_ids[particle_i], self.molecule_ids[particle_j]);
+        self.bondings[self.molecule_ids[particle_i]].add_bond(particle_i, particle_j);
         return permutations;
     }
 
     /// Removes particle at index `i` and any associated bonds, angle or
     /// dihedral.
     pub fn remove_particle(&mut self, i: usize) {
-        let molid = self.molids[i];
+        let molid = self.molecule_ids[i];
 
-        if self.molecules[molid].size() == 1 {
+        if self.bondings[molid].size() == 1 {
             self.remove_molecule(molid);
         } else {
-            self.molecules[molid].remove_particle(i);
-            for molecule in self.molecules.iter_mut().skip(molid + 1) {
+            self.bondings[molid].remove_particle(i);
+            for molecule in self.bondings.iter_mut().skip(molid + 1) {
                 molecule.translate_by(-1);
             }
-            let _ = self.molids.remove(i);
+            let _ = self.molecule_ids.remove(i);
             let _ = self.particles.remove(i);
         }
     }
@@ -237,8 +277,8 @@ impl Configuration {
         }
 
         self.particles.push(particle);
-        self.molecules.push(Molecule::new(self.particles.len() - 1));
-        self.molids.push(self.molecules.len() - 1);
+        self.bondings.push(Bonding::new(self.particles.len() - 1));
+        self.molecule_ids.push(self.bondings.len() - 1);
     }
 
     /// Get the number of particles in this configuration
@@ -253,30 +293,7 @@ impl Configuration {
         self.particles.is_empty()
     }
 
-    /// Return the center-of-mass of a molecule
-    ///
-    /// # Warning
-    ///
-    /// This function does not check for the particles' positions' nearest
-    /// images. To use this function properly, make sure that all particles of
-    /// the molecule are adjacent.
-    pub fn molecule_com(&self, molid: usize) -> Vector3D {
-        let mut total_mass = 0.0;
-        let mut com = Vector3D::zero();
-        for i in self.molecule(molid) {
-            total_mass += self.particles.mass[i];
-            com += self.particles.mass[i] * self.particles.position[i];
-        }
-        com / total_mass
-    }
-
     /// Return the center-of-mass of the configuration
-    ///
-    /// # Warning
-    ///
-    /// This function does not check for the particles' positions' nearest
-    /// images. To use this function properly, make sure that all particles of
-    /// a molecule are adjacent.
     pub fn center_of_mass(&self) -> Vector3D {
         let mut total_mass = 0.0;
         let mut com = Vector3D::zero();
@@ -285,24 +302,6 @@ impl Configuration {
             com += self.particles.mass[i] * self.particles.position[i];
         }
         com / total_mass
-    }
-
-    /// Move all particles of a molecule such that the molecules center-of-mass
-    /// position resides inside the simulation cell.
-    ///
-    /// # Note
-    ///
-    /// If the `CellShape` is `Infinite` there are no changes
-    /// to the positions.
-    pub fn wrap_molecule(&mut self, molid: usize) {
-        let com = self.molecule_com(molid);
-        let mut com_wrapped = com;
-        self.cell.wrap_vector(&mut com_wrapped);
-        let delta = com_wrapped - com;
-        // iterate over all positions and move them accordingly
-        for i in self.molecule(molid) {
-            self.particles.position[i] += delta;
-        }
     }
 
     /// Get the list of particles in this configuration, as a `ParticleSlice`.
@@ -347,44 +346,44 @@ impl Configuration {
             (second, first)
         };
 
-        let mut new_mol = self.molecules[new_molid].clone();
-        let old_mol = self.molecules[old_molid].clone();
+        let mut new_mol = self.bondings[new_molid].clone();
+        let old_mol = self.bondings[old_molid].clone();
 
         if new_mol.end() == old_mol.start() {
             // Just update the molecules ids
-            for i in old_mol {
-                self.molids[i] = new_molid;
+            for i in old_mol.indexes() {
+                self.molecule_ids[i] = new_molid;
             }
         } else {
             // Move the particles close together
             let mut new_index = new_mol.end();
-            for i in old_mol {
+            for i in old_mol.indexes() {
                 // Remove particles from the old position, and insert it to the
                 // new one. The indexes are valid during the movement, because
                 // we insert a new particle for each particle removed.
                 let particle = self.particles.remove(i);
                 self.particles.insert(new_index, particle);
 
-                // Update molids
-                let _ = self.molids.remove(i);
-                self.molids.insert(new_index, new_molid);
+                // Update molecule_ids
+                let _ = self.molecule_ids.remove(i);
+                self.molecule_ids.insert(new_index, new_molid);
 
                 new_index += 1;
             }
         }
 
-        let mut old_mol = self.molecules[old_molid].clone();
+        let mut old_mol = self.bondings[old_molid].clone();
         let size = old_mol.size() as isize;
 
         // translate all indexes in the molecules between new_mol and old_mol
         for molecule in
-            self.molecules.iter_mut().skip(new_molid + 1).take(old_molid - new_molid - 1)
+            self.bondings.iter_mut().skip(new_molid + 1).take(old_molid - new_molid - 1)
         {
             molecule.translate_by(size);
         }
 
         // Update molid for all particles after the old molecule
-        for molid in self.molids.iter_mut().skip(old_mol.end()) {
+        for molid in self.molecule_ids.iter_mut().skip(old_mol.end()) {
             *molid -= 1;
         }
 
@@ -392,19 +391,19 @@ impl Configuration {
         old_mol.translate_by(-(delta as isize));
 
         new_mol.merge_with(old_mol);
-        self.molecules[new_molid] = new_mol;
-        let _ = self.molecules.remove(old_molid);
+        self.bondings[new_molid] = new_mol;
+        let _ = self.bondings.remove(old_molid);
 
-        debug_assert!(check_molid_sorted(&self.molids), "Unsorted molecule ids {:?}", self.molids);
+        debug_assert!(check_molid_sorted(&self.molecule_ids), "Unsorted molecule ids {:?}", self.molecule_ids);
 
         return delta;
     }
 }
 
-/// Check that molids is sorted and only contains successive values
-fn check_molid_sorted(molids: &[usize]) -> bool {
+/// Check that molecule_ids is sorted and only contains successive values
+fn check_molid_sorted(molecule_ids: &[usize]) -> bool {
     let mut previous = 0;
-    for &i in molids {
+    for &i in molecule_ids {
         if i == previous || i == previous + 1 {
             previous = i;
         } else {
@@ -516,7 +515,7 @@ mod tests {
         assert_eq!(configuration.add_bond(0, 1), vec![]);
         assert_eq!(configuration.add_bond(2, 3), vec![]);
 
-        assert_eq!(configuration.molecules().len(), 2);
+        assert_eq!(configuration.molecules_count(), 2);
 
         let molecule = configuration.molecule(0).clone();
         assert!(molecule.bonds().contains(&Bond::new(0, 1)));
@@ -524,7 +523,7 @@ mod tests {
         assert!(molecule.bonds().contains(&Bond::new(2, 3)));
 
         assert_eq!(configuration.add_bond(1, 2), vec![]);
-        assert_eq!(configuration.molecules().len(), 1);
+        assert_eq!(configuration.molecules_count(), 1);
 
         let molecule = configuration.molecule(0).clone();
         assert!(molecule.angles().contains(&Angle::new(0, 1, 2)));
@@ -532,11 +531,11 @@ mod tests {
         assert!(molecule.dihedrals().contains(&Dihedral::new(0, 1, 2, 3)));
 
         configuration.remove_particle(2);
-        assert_eq!(configuration.molecules().len(), 1);
+        assert_eq!(configuration.molecules_count(), 1);
 
-        let molid = configuration.molid(1);
+        let molid = configuration.molecule_id(1);
         configuration.remove_molecule(molid);
-        assert_eq!(configuration.molecules().len(), 0);
+        assert_eq!(configuration.molecules_count(), 0);
         assert_eq!(configuration.size(), 0);
     }
 
@@ -549,14 +548,14 @@ mod tests {
         configuration.add_particle(particle("H"));
 
         assert_eq!(configuration.add_bond(0, 1), vec![]);
-        assert_eq!(configuration.molecules().len(), 3);
+        assert_eq!(configuration.molecules_count(), 3);
 
         configuration.remove_particle(0);
         // Still 3 molecules
-        assert_eq!(configuration.molecules().len(), 3);
+        assert_eq!(configuration.molecules_count(), 3);
 
         configuration.remove_particle(1);
-        assert_eq!(configuration.molecules().len(), 2);
+        assert_eq!(configuration.molecules_count(), 2);
     }
 
     #[test]
@@ -569,7 +568,7 @@ mod tests {
 
         assert_eq!(configuration.add_bond(0, 2), vec![(2, 1), (1, 2)]);
         assert_eq!(configuration.add_bond(2, 1), vec![]);
-        assert_eq!(configuration.molecules().len(), 1);
+        assert_eq!(configuration.molecules_count(), 1);
     }
 
     #[test]
@@ -646,38 +645,7 @@ mod tests {
     }
 
     #[test]
-    fn center_of_mass() {
-        let mut configuration = Configuration::new();
-        configuration.cell = UnitCell::cubic(5.0);
-        configuration.add_particle(particle("O"));
-        configuration.add_particle(particle("O"));
-        let _ = configuration.add_bond(0, 1);
-
-        configuration.particles_mut().position[0] = Vector3D::new(1.0, 0.0, 0.0);
-        configuration.particles_mut().position[1] = Vector3D::zero();
-        assert_eq!(configuration.molecule_com(0), Vector3D::new(0.5, 0.0, 0.0));
-        assert_eq!(configuration.center_of_mass(), Vector3D::new(0.5, 0.0, 0.0));
-    }
-
-    #[test]
-    fn test_wrap_molecule() {
-        let mut configuration = Configuration::new();
-        configuration.cell = UnitCell::cubic(5.0);
-        configuration.add_particle(particle("O"));
-        configuration.add_particle(particle("O"));
-        let _ = configuration.add_bond(0, 1);
-
-        configuration.particles_mut().position[0] = Vector3D::new(-2.0, 0.0, 0.0);
-        configuration.particles_mut().position[1] = Vector3D::zero();
-        configuration.wrap_molecule(0);
-
-        assert_eq!(configuration.particles().position[0], Vector3D::new(3.0, 0.0, 0.0));
-        assert_eq!(configuration.particles().position[1], Vector3D::new(5.0, 0.0, 0.0));
-        assert_eq!(configuration.molecule_com(0), Vector3D::new(4.0, 0.0, 0.0))
-    }
-
-    #[test]
-    fn moltype() {
+    fn molecule_type() {
         let mut configuration = Configuration::new();
         // One helium
         configuration.add_particle(particle("He"));
@@ -701,12 +669,21 @@ mod tests {
         let _ = configuration.add_bond(8, 9);
         let _ = configuration.add_bond(8, 10);
 
-        assert_eq!(configuration.molecules().len(), 5);
+        assert_eq!(configuration.molecules_count(), 5);
         // The helium particles
-        assert_eq!(configuration.molecule_type(0), configuration.molecule_type(3));
+        assert_eq!(
+            configuration.molecule(0).molecule_type(),
+            configuration.molecule(3).molecule_type()
+        );
 
         // The water molecules
-        assert!(configuration.molecule_type(1) == configuration.molecule_type(2));
-        assert!(configuration.molecule_type(1) != configuration.molecule_type(4));
+        assert_eq!(
+            configuration.molecule(1).molecule_type(),
+            configuration.molecule(2).molecule_type()
+        );
+        assert_ne!(
+            configuration.molecule(1).molecule_type(),
+            configuration.molecule(4).molecule_type()
+        );
     }
 }

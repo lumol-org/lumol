@@ -1,11 +1,10 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) Lumol's contributors — BSD license
 
-//! [Chemfiles][Chemfiles] conversion for Lumol.
-//!
-//! [Chemfiles]: https://chemfiles.org/
+//! [Chemfiles](https://chemfiles.org/) conversion for Lumol.
+
 use chemfiles;
-use sys::{CellShape, Molecule, Particle, ParticleRef, ParticleVec, System, UnitCell};
+use sys::{CellShape, Molecule, Particle, ParticleRef, System, UnitCell};
 use types::Vector3D;
 
 use std::error;
@@ -441,15 +440,7 @@ impl Trajectory {
 
 /// Read a the first molecule from the file at `path`. If no bond information
 /// exists in the file, bonds are guessed.
-///
-/// # Examples
-///
-/// ```no_run
-/// # use lumol_core::sys::read_molecule;
-/// let (molecule, particles) = read_molecule("file.xyz").unwrap();
-/// assert_eq!(molecule.size(), particles.len());
-/// ```
-pub fn read_molecule<P: AsRef<Path>>(path: P) -> Result<(Molecule, ParticleVec), Error> {
+pub fn read_molecule<P: AsRef<Path>>(path: P) -> Result<Molecule, Error> {
     let mut trajectory = chemfiles::Trajectory::open(&path, 'r')?;
     let mut frame = chemfiles::Frame::new()?;
     trajectory.read(&mut frame)?;
@@ -462,8 +453,8 @@ pub fn read_molecule<P: AsRef<Path>>(path: P) -> Result<(Molecule, ParticleVec),
     let system = frame.to_lumol()?;
 
     assert!(!system.is_empty(), "No molecule in the file at {}", path.as_ref().display());
-    let molecule = system.molecule(0).clone();
-    return Ok((molecule, system.particles().to_vec()));
+
+    return Ok(system.molecule(0).to_owned());
 }
 
 static REDIRECT_CHEMFILES_WARNING: Once = ONCE_INIT;
@@ -486,7 +477,6 @@ mod tests {
     use super::*;
     use std::io::prelude::*;
     use sys::{Angle, Bond};
-    use sys::molecule_type;
 
     static WATER: &'static str = "3
 
@@ -529,10 +519,9 @@ END
         let mut file = tempfile::Builder::new().suffix(".xyz").tempfile().unwrap();
         write!(file, "{}", WATER).unwrap();
 
-        let (molecule, atoms) = read_molecule(file.path()).unwrap();
+        let molecule = read_molecule(file.path()).unwrap();
 
         assert_eq!(molecule.size(), 3);
-        assert_eq!(molecule.size(), atoms.len());
 
         assert_eq!(molecule.bonds().len(), 2);
         assert!(molecule.bonds().contains(&Bond::new(0, 1)));
@@ -543,13 +532,13 @@ END
 
         assert!(molecule.dihedrals().is_empty());
 
-        assert_eq!(atoms.name[0], "O");
-        assert_eq!(atoms.name[1], "H");
-        assert_eq!(atoms.name[2], "H");
+        assert_eq!(molecule.particles().name[0], "O");
+        assert_eq!(molecule.particles().name[1], "H");
+        assert_eq!(molecule.particles().name[2], "H");
 
         // This is only a simple regression test on the moltype function. Feel
         // free to change the value if the molecule type algorithm change.
-        assert_eq!(molecule_type(&molecule, atoms.as_slice()), 2727145596042757306);
+        assert_eq!(molecule.molecule_type(), 2727145596042757306);
     }
 
     #[test]
@@ -562,7 +551,7 @@ END
             .read().unwrap();
 
         assert_eq!(system.size(), 6);
-        assert_eq!(system.molecules().len(), 4);
+        assert_eq!(system.molecules_count(), 4);
         assert_eq!(system.cell, UnitCell::cubic(28.0));
 
         let molecule = system.molecule(0);
@@ -583,17 +572,15 @@ END
         let mut file = tempfile::Builder::new().suffix(".xyz").tempfile().unwrap();
         write!(file, "{}", PROPANE).unwrap();
 
-        let (molecule, atoms) = read_molecule(file.path()).unwrap();
+        let molecule = read_molecule(file.path()).unwrap();
 
         assert_eq!(molecule.size(), 11);
-        assert_eq!(molecule.size(), atoms.len());
-
         assert_eq!(molecule.bonds().len(), 10);
         assert_eq!(molecule.angles().len(), 18);
         assert_eq!(molecule.dihedrals().len(), 18);
 
         // This is only a simple regression test on the moltype function. Feel
         // free to change the value if the molecule type algorithm change.
-        assert_eq!(molecule_type(&molecule, atoms.as_slice()), 2028056351119909064);
+        assert_eq!(molecule.molecule_type(), 2028056351119909064);
     }
 }
