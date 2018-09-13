@@ -26,7 +26,7 @@ fn main() {
     // Create a Monte Carlo propagator
     let mut mc = MonteCarlo::new(units::from(500.0, "K").unwrap());
     // Add the `Translate` move with 0.5 A amplitude and 1.0 frequency
-    mc.add(Box::new(Translate::new(units::from(0.5, "A").unwrap())), 1.0);
+    mc.add(Box::new(Translate::new(units::from(0.5, "A").unwrap(), None)), 1.0);
     let mut simulation = Simulation::new(Box::new(mc));
 
     let trajectory_out = Box::new(TrajectoryOutput::new("trajectory.xyz").unwrap());

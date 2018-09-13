@@ -476,7 +476,7 @@ mod tests {
 
     use super::*;
     use std::io::prelude::*;
-    use sys::{Angle, Bond};
+    use sys::{Angle, Bond, MoleculeHash};
 
     static WATER: &'static str = "3
 
@@ -538,7 +538,7 @@ END
 
         // This is only a simple regression test on the moltype function. Feel
         // free to change the value if the molecule type algorithm change.
-        assert_eq!(molecule.molecule_type(), 2727145596042757306);
+        assert_eq!(molecule.hash(), MoleculeHash::new(3988311241583852942));
     }
 
     #[test]
@@ -581,6 +581,6 @@ END
 
         // This is only a simple regression test on the moltype function. Feel
         // free to change the value if the molecule type algorithm change.
-        assert_eq!(molecule.molecule_type(), 2028056351119909064);
+        assert_eq!(molecule.hash(), MoleculeHash::new(10634064187773497961));
     }
 }

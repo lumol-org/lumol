@@ -81,8 +81,8 @@ fn main() {
     // I.e. for a dilute gas, translation amplitudes grow infinitely
     // since the system has so few particles that almost all moves are
     // accepted no matter what the amplitude will be.
-    mc.add_move_with_acceptance(Box::new(Translate::new(delta_trans)), 45.0, 0.5);
-    mc.add_move_with_acceptance(Box::new(Rotate::new(delta_rot)), 45.0, 0.5);
+    mc.add_move_with_acceptance(Box::new(Translate::new(delta_trans, None)), 45.0, 0.5);
+    mc.add_move_with_acceptance(Box::new(Rotate::new(delta_rot, None)), 45.0, 0.5);
     mc.add_move_with_acceptance(Box::new(Resize::new(pressure, delta_vol)), 2.0, 0.5);
     mc.set_amplitude_update_frequency(500);
 
