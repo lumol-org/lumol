@@ -2,7 +2,6 @@
 // Copyright (C) Lumol's contributors — BSD license
 
 use std::collections::HashSet;
-use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 use std::ops::Range;
 
@@ -28,8 +27,6 @@ pub struct Bonding {
     distances: Array2<BondDistances>,
     /// Range of atomic indexes in this molecule.
     range: Range<usize>,
-    /// Hashed value of the set of bonds in the system
-    hash: u64,
 }
 
 impl Bonding {
@@ -41,7 +38,6 @@ impl Bonding {
             dihedrals: HashSet::new(),
             distances: Array2::default((1, 1)),
             range: i..i + 1,
-            hash: 0,
         }
     }
 
@@ -65,26 +61,17 @@ impl Bonding {
         self.range.start <= i && i < self.range.end
     }
 
-    /// Get the hash of the bonds
-    pub(crate) fn hash(&self) -> u64 {
-        self.hash
-    }
-
-    /// Cache the hash of the bonds
-    fn rehash(&mut self) {
-        let mut hasher = DefaultHasher::new();
-        self.range.len().hash(&mut hasher);
-
+    /// Hash the bonds in this molecule
+    pub(crate) fn hash<H: Hasher + Sized>(&self, hasher: &mut H) {
         let mut bonds = self.bonds.iter()
             .map(|bond| Bond::new(bond.i() - self.start(), bond.j() - self.start()))
             .collect::<Vec<_>>();
 
         bonds.sort_unstable();
         for bond in &bonds {
-            bond.i().hash(&mut hasher);
-            bond.j().hash(&mut hasher);
+            bond.i().hash(hasher);
+            bond.j().hash(hasher);
         }
-        self.hash = hasher.finish();
     }
 
     /// Rebuild the full list of angles and dihedral angles from the list of bonds
@@ -136,7 +123,6 @@ impl Bonding {
             }
         }
         self.rebuild_connections();
-        self.rehash();
     }
 
     /// Recompute the connectivity matrix from the bonds, angles and dihedrals
@@ -188,7 +174,6 @@ impl Bonding {
         }
 
         self.rebuild_connections();
-        self.rehash();
     }
 
     /// Translate all indexes in this molecule by `delta`.
@@ -474,32 +459,5 @@ mod test {
         bonding.merge_with(Bonding::new(3));
         assert_eq!(bonding.bonds().len(), 1);
         assert_eq!(bonding.size(), 4);
-    }
-
-    #[test]
-    fn hash() {
-        let mut bonding = Bonding::new(0);
-        assert_eq!(bonding.hash, 0);
-
-        for i in 1..4 {
-            bonding.merge_with(Bonding::new(i));
-        }
-
-        let hash = bonding.hash;
-        assert!(hash != 0);
-
-        bonding.add_bond(0, 1);
-        bonding.add_bond(2, 3);
-        assert!(bonding.hash != hash);
-        let hash = bonding.hash;
-
-        bonding.remove_particle(1);
-        assert!(bonding.hash != hash);
-        let hash = bonding.hash;
-
-        // Hash should be the same when translating the bonds
-        bonding.translate_by(67);
-        bonding.rehash();
-        assert_eq!(bonding.hash, hash);
     }
 }

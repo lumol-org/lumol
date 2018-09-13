@@ -82,10 +82,10 @@ impl FromTomlWithData for Translate {
         if config.get("molecule").is_some() {
             let molfile = extract::str("molecule", config, "Translate move")?;
             let molfile = get_input_path(root, molfile);
-            let moltype = read_molecule(molfile)?.as_ref().molecule_type();
-            Ok(Translate::with_moltype(delta, moltype))
+            let hash = read_molecule(molfile)?.as_ref().hash();
+            Ok(Translate::new(delta, hash))
         } else {
-            Ok(Translate::new(delta))
+            Ok(Translate::new(delta, None))
         }
     }
 }
@@ -99,10 +99,10 @@ impl FromTomlWithData for Rotate {
         if config.get("molecule").is_some() {
             let molfile = extract::str("molecule", config, "Rotate move")?;
             let molfile = get_input_path(root, molfile);
-            let moltype = read_molecule(molfile)?.as_ref().molecule_type();
-            Ok(Rotate::with_moltype(delta, moltype))
+            let hash = read_molecule(molfile)?.as_ref().hash();
+            Ok(Rotate::new(delta, hash))
         } else {
-            Ok(Rotate::new(delta))
+            Ok(Rotate::new(delta, None))
         }
     }
 }

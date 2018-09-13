@@ -645,7 +645,7 @@ mod tests {
     }
 
     #[test]
-    fn molecule_type() {
+    fn hash() {
         let mut configuration = Configuration::new();
         // One helium
         configuration.add_particle(particle("He"));
@@ -672,18 +672,18 @@ mod tests {
         assert_eq!(configuration.molecules_count(), 5);
         // The helium particles
         assert_eq!(
-            configuration.molecule(0).molecule_type(),
-            configuration.molecule(3).molecule_type()
+            configuration.molecule(0).hash(),
+            configuration.molecule(3).hash()
         );
 
         // The water molecules
         assert_eq!(
-            configuration.molecule(1).molecule_type(),
-            configuration.molecule(2).molecule_type()
+            configuration.molecule(1).hash(),
+            configuration.molecule(2).hash()
         );
         assert_ne!(
-            configuration.molecule(1).molecule_type(),
-            configuration.molecule(4).molecule_type()
+            configuration.molecule(1).hash(),
+            configuration.molecule(4).hash()
         );
     }
 }

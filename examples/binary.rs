@@ -27,8 +27,8 @@ fn main() {
     let input = InteractionsInput::new("data/binary.toml").unwrap();
     input.read(&mut system).unwrap();
 
-    // We can read files to get molecule type
-    let co2 = read_molecule("data/CO2.xyz").unwrap().molecule_type();
+    // We can read files to get molecule hash
+    let co2 = read_molecule("data/CO2.xyz").unwrap().hash();
 
     // Or define a new molecule by hand
     let h2o = {
@@ -39,17 +39,17 @@ fn main() {
         molecule.add_bond(0, 1);
         molecule.add_bond(1, 2);
 
-        molecule.molecule_type()
+        molecule.hash()
     };
 
     let mut mc = MonteCarlo::new(units::from(500.0, "K").unwrap());
 
     // Use the molecular types of CO2 and H2O to specify different probabilities
-    mc.add(Box::new(Translate::with_moltype(units::from(0.5, "A").unwrap(), co2)), 1.0);
-    mc.add(Box::new(Rotate::with_moltype(units::from(10.0, "deg").unwrap(), co2)), 1.0);
+    mc.add(Box::new(Translate::new(units::from(0.5, "A").unwrap(), co2)), 1.0);
+    mc.add(Box::new(Rotate::new(units::from(10.0, "deg").unwrap(), co2)), 1.0);
 
-    mc.add(Box::new(Translate::with_moltype(units::from(10.0, "A").unwrap(), h2o)), 2.0);
-    mc.add(Box::new(Rotate::with_moltype(units::from(20.0, "deg").unwrap(), h2o)), 2.0);
+    mc.add(Box::new(Translate::new(units::from(10.0, "A").unwrap(), h2o)), 2.0);
+    mc.add(Box::new(Rotate::new(units::from(20.0, "deg").unwrap(), h2o)), 2.0);
 
     let mut simulation = Simulation::new(Box::new(mc));
     simulation.run(&mut system, 200_000_000);

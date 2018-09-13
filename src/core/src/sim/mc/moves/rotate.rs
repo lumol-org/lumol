@@ -9,13 +9,13 @@ use std::usize;
 use super::MCMove;
 use super::select_molecule;
 
-use sys::{EnergyCache, System};
+use sys::{EnergyCache, System, MoleculeHash};
 use types::{Matrix3, Vector3D};
 
 /// Monte Carlo move for rotating a rigid molecule
 pub struct Rotate {
-    /// Type of molecule to rotate. `None` means all molecules.
-    moltype: Option<u64>,
+    /// Hash of molecule to rotate. `None` means all molecules.
+    hash: Option<MoleculeHash>,
     /// Index of the molecule to rotate
     molid: usize,
     /// New positions of the atom in the rotated molecule
@@ -29,35 +29,19 @@ pub struct Rotate {
 }
 
 impl Rotate {
-    /// Create a new `Rotate` move, with maximum angular displacement of `theta`,
-    /// rotating all the molecules in the system.
-    pub fn new(theta: f64) -> Rotate {
-        Rotate::create(theta, None)
-    }
-
-    /// Create a new `Rotate` move, with maximum angular displacement of `theta`,
-    /// rotating only molecules with `moltype` type.
-    pub fn with_moltype(theta: f64, moltype: u64) -> Rotate {
-        Rotate::create(theta, Some(moltype))
-    }
-
-    // Factorizing the constructors
-    fn create(theta: f64, moltype: Option<u64>) -> Rotate {
+    /// Create a new `Rotate` move, with maximum angular displacement of
+    /// `theta`. This move will apply to the molecules with the given `hash`,
+    /// or all molecules if `hash` is `None`.
+    pub fn new<H: Into<Option<MoleculeHash>>>(theta: f64, hash: H) -> Rotate {
         assert!(theta > 0.0, "theta must be positive in Rotate move");
         Rotate {
-            moltype: moltype,
+            hash: hash.into(),
             molid: usize::MAX,
             newpos: Vec::new(),
             axis_rng: Normal::new(0.0, 1.0),
             theta: theta,
             range: Range::new(-theta, theta),
         }
-    }
-}
-
-impl Default for Rotate {
-    fn default() -> Rotate {
-        Rotate::new(0.2)
     }
 }
 
@@ -69,7 +53,7 @@ impl MCMove for Rotate {
     fn setup(&mut self, _: &System) {}
 
     fn prepare(&mut self, system: &mut System, rng: &mut RngCore) -> bool {
-        if let Some(id) = select_molecule(system, self.moltype, rng) {
+        if let Some(id) = select_molecule(system, self.hash, rng) {
             self.molid = id;
         } else {
             warn!("Can not rotate molecule: no molecule of this type in the system.");

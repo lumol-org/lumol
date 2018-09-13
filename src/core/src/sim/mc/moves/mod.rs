@@ -10,7 +10,7 @@
 //! In all this module, beta refers to the Boltzmann factor 1/(kB T)
 use rand::{RngCore, Rng};
 
-use sys::{EnergyCache, System};
+use sys::{EnergyCache, System, MoleculeHash};
 
 /// The `MCMove` trait correspond to the set of methods used in Monte Carlo
 /// simulations.
@@ -54,18 +54,18 @@ pub trait MCMove {
 }
 
 /// Select a random molecule in the system using `rng` as random number
-/// generator. If `moltype` is `None`, any molecule can be chosen. If `moltype`
-/// is `Some(molecule_type)`, then a molecule with matching type is selected.
+/// generator. If `hash` is `None`, any molecule can be chosen. If `hash` is
+/// `Some(hash)`, then a molecule with matching hash is selected.
 ///
 /// This function returns `None` if no matching molecule was found, and
 /// `Some(molid)` with `molid` the index of the molecule if a molecule was
 /// selected.
-fn select_molecule(system: &System, moltype: Option<u64>, rng: &mut RngCore) -> Option<usize> {
-    if let Some(moltype) = moltype {
+fn select_molecule(system: &System, hash: Option<MoleculeHash>, rng: &mut RngCore) -> Option<usize> {
+    if let Some(hash) = hash {
         // Pick a random molecule with matching moltype
         let mols = system.molecules()
             .enumerate()
-            .filter(|(_, m)| m.molecule_type() == moltype)
+            .filter(|(_, m)| m.hash() == hash)
             .map(|(i, _)| i)
             .collect::<Vec<_>>();
         return rng.choose(&mols).cloned();

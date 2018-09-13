@@ -9,6 +9,19 @@ use sys::{Particle, ParticleVec, ParticleSlice, ParticleSliceMut};
 use sys::{Bonding, UnitCell};
 use types::{Vector3D, Zero};
 
+/// A molecule hash allow to identify a molecule from its atoms and bonds, and
+/// to know wether two molecules are the same without checking each atom and
+/// bond.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct MoleculeHash(u64);
+
+#[cfg(test)]
+impl MoleculeHash {
+    pub(crate) fn new(value: u64) -> MoleculeHash {
+        MoleculeHash(value)
+    }
+}
+
 /// A Molecule associate some particles bonded together.
 ///
 /// [`Molecule`] implement `Deref` to a [`Bonding`] struct, to give read access
@@ -248,13 +261,13 @@ impl_on!(Molecule, MoleculeRef<'a>, MoleculeRefMut<'a>, => {
     /// order), and the set of bonds in the molecule. This means that two
     /// molecules will have the same type if and only if they contains the same
     /// atoms and the same bonds, **in the same order**.
-    pub fn molecule_type(&self) -> u64 {
+    pub fn hash(&self) -> MoleculeHash {
         let mut hasher = DefaultHasher::new();
-        self.bonding.hash().hash(&mut hasher);
+        self.bonding.hash(&mut hasher);
         for name in self.particles().name {
             name.hash(&mut hasher);
         }
-        hasher.finish()
+        MoleculeHash(hasher.finish())
     }
 });
 

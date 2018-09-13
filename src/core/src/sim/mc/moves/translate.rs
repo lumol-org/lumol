@@ -10,13 +10,13 @@ use std::usize;
 use super::MCMove;
 use super::select_molecule;
 
-use sys::{EnergyCache, System};
+use sys::{EnergyCache, System, MoleculeHash};
 use types::Vector3D;
 
 /// Monte Carlo move for translating a molecule
 pub struct Translate {
-    /// Type of molecule to translate. `None` means all molecules.
-    moltype: Option<u64>,
+    /// Hash of molecule to translate. `None` means all molecules.
+    hash: Option<MoleculeHash>,
     /// Index of the molecule to translate
     molid: usize,
     /// New positions of the atom in the translated molecule
@@ -31,35 +31,19 @@ pub struct Translate {
 
 impl Translate {
     /// Create a new `Translate` move, with maximum displacement of `delta`.
-    /// Translating all the molecules in the system.
-    pub fn new(delta: f64) -> Translate {
-        Translate::create(delta, None)
-    }
-
-    /// Create a new `Translate` move, with maximum displacement of `delta`.
-    /// Translating only molecules with `moltype` type.
-    pub fn with_moltype(delta: f64, moltype: u64) -> Translate {
-        Translate::create(delta, Some(moltype))
-    }
-
-    /// Factorizing the constructors
-    fn create(delta: f64, moltype: Option<u64>) -> Translate {
+    /// This move will apply to the molecules with the given `hash`, or all
+    /// molecules if `hash` is `None`.
+    pub fn new<H: Into<Option<MoleculeHash>>>(delta: f64, hash: H) -> Translate {
         assert!(delta > 0.0, "delta must be positive in Translate move");
         let delta = delta / f64::sqrt(3.0);
         Translate {
-            moltype: moltype,
+            hash: hash.into(),
             molid: usize::MAX,
             newpos: Vec::new(),
             delta: delta,
             maximum_cutoff: None,
             range: Range::new(-delta, delta),
         }
-    }
-}
-
-impl Default for Translate {
-    fn default() -> Translate {
-        Translate::new(1.0)
     }
 }
 
@@ -83,7 +67,7 @@ impl MCMove for Translate {
     }
 
     fn prepare(&mut self, system: &mut System, rng: &mut RngCore) -> bool {
-        if let Some(id) = select_molecule(system, self.moltype, rng) {
+        if let Some(id) = select_molecule(system, self.hash, rng) {
             self.molid = id;
         } else {
             warn!("Can not translate molecule: no molecule of this type in the system.");

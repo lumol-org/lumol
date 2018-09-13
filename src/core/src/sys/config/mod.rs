@@ -26,7 +26,7 @@ mod bonding;
 pub use self::bonding::Bonding;
 
 mod molecules;
-pub use self::molecules::{Molecule, MoleculeRef, MoleculeRefMut};
+pub use self::molecules::{Molecule, MoleculeRef, MoleculeRefMut, MoleculeHash};
 
 mod configuration;
 pub use self::configuration::Configuration;
