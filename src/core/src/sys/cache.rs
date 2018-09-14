@@ -384,7 +384,7 @@ mod tests {
     fn testing_system() -> System {
         let mut system = system_from_xyz(
             "8
-            bonds cell: 10.0
+            cell: 10.0
             O     0.000000     0.000000     0.000000
             O     0.000000     0.000000     1.480000
             H     0.895669     0.000000    -0.316667
@@ -394,6 +394,13 @@ mod tests {
             H     3.895669     0.000000    -0.316667
             H     2.104330     0.000000     1.796667",
         );
+        assert!(system.add_bond(0, 1).is_empty());
+        assert!(system.add_bond(0, 2).is_empty());
+        assert!(system.add_bond(1, 3).is_empty());
+
+        assert!(system.add_bond(4, 5).is_empty());
+        assert!(system.add_bond(4, 6).is_empty());
+        assert!(system.add_bond(5, 7).is_empty());
         assert!(system.molecules_count() == 2);
 
         system.add_pair_potential(
