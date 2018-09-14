@@ -1,4 +1,4 @@
-sphinx >= 1.6
+sphinx ==1.7.9
 sphinx_rtd_theme
 pygments
 toml
