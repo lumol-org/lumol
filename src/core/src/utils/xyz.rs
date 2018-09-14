@@ -11,9 +11,6 @@ use types::Vector3D;
 /// system. This function is intended for testing purposes only, and will
 /// panic if the string is not well-formatted.
 ///
-/// If the comment line contains `bonds`, Chemfiles will be used to guess the
-/// bonds in the system.
-///
 /// If the comment line contains `cell: <a>`, the system will have a cubic unit
 /// cell of size a.
 pub fn system_from_xyz(content: &str) -> System {
@@ -45,10 +42,6 @@ pub fn system_from_xyz(content: &str) -> System {
         system.cell = cell;
     }
 
-    if lines[1].contains("bonds") {
-        system.guess_bonds();
-    }
-
     return system;
 }
 
@@ -56,29 +49,6 @@ pub fn system_from_xyz(content: &str) -> System {
 mod tests {
     use super::*;
     use types::Vector3D;
-
-    #[test]
-    fn bonds() {
-        let system = system_from_xyz(
-            "3
-            bonds
-            O 0 0 -1.5
-            C 0 0 0
-            O 0 0 1.5",
-        );
-        assert_eq!(system.size(), 3);
-
-        assert_eq!(system.particles().name[0], "O");
-        assert_eq!(system.particles().name[1], "C");
-        assert_eq!(system.particles().name[2], "O");
-
-        assert_eq!(system.particles().position[0], Vector3D::new(0.0, 0.0, -1.5));
-        assert_eq!(system.particles().position[1], Vector3D::new(0.0, 0.0, 0.0));
-        assert_eq!(system.particles().position[2], Vector3D::new(0.0, 0.0, 1.5));
-
-        assert_eq!(system.molecules_count(), 1);
-        assert_eq!(system.molecule(0).bonds().len(), 2);
-    }
 
     #[test]
     fn cell() {

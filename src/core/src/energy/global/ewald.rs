@@ -930,11 +930,13 @@ mod tests {
     pub fn water() -> System {
         use utils::system_from_xyz;
         let mut system = system_from_xyz("3
-        bonds cell: 20.0
+        cell: 20.0
         O  0.0  0.0  0.0
         H -0.7 -0.7  0.3
         H  0.3 -0.3 -0.8
         ");
+        assert!(system.add_bond(0, 1).is_empty());
+        assert!(system.add_bond(0, 2).is_empty());
         assert!(system.molecules_count() == 1);
 
         for particle in system.particles_mut() {
@@ -1239,7 +1241,7 @@ mod tests {
         pub fn testing_system() -> System {
             use utils::system_from_xyz;
             let mut system = system_from_xyz("6
-            bonds cell: 20.0
+            cell: 20.0
             O  0.0  0.0  0.0
             H -0.7 -0.7  0.3
             H  0.3 -0.3 -0.8
@@ -1247,6 +1249,10 @@ mod tests {
             H  1.3  1.3  0.3
             H  2.3  1.7 -0.8
             ");
+            assert!(system.add_bond(0, 1).is_empty());
+            assert!(system.add_bond(0, 2).is_empty());
+            assert!(system.add_bond(3, 4).is_empty());
+            assert!(system.add_bond(3, 5).is_empty());
             assert!(system.molecules_count() == 2);
 
             for particle in system.particles_mut() {
