@@ -6,6 +6,7 @@ use types::Vector3D;
 
 use out::Output;
 use sim::Propagator;
+use sim::DegreesOfFreedom;
 use sim::TemperatureStrategy;
 
 /// Writing an output at a given frequency
@@ -74,6 +75,13 @@ impl Simulation {
             }
             TemperatureStrategy::Velocities => system.external_temperature(None),
             TemperatureStrategy::None => {}
+        }
+
+        system.simulated_degrees_of_freedom = self.propagator.degrees_of_freedom(system);
+        match system.simulated_degrees_of_freedom {
+            DegreesOfFreedom::Molecules => info!("All molecules are treated as rigid bodies"),
+            DegreesOfFreedom::Particles => info!("All particles are allowed to move in this simulation"),
+            DegreesOfFreedom::Frozen(n) => info!("{} degrees of freedom are frozen", n),
         }
 
         self.setup(system);
