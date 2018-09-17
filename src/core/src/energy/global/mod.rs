@@ -61,7 +61,7 @@ use types::{Matrix3, Vector3D};
 /// // Not implementing `GlobalCache` means that we will not be able to use
 /// // `ShiftAll` in Monte Carlo simulations.
 /// impl GlobalCache for ShiftAll {
-///     fn move_particles_cost(&self, _: &Configuration, _: &[usize], _: &[Vector3D]) -> f64 {
+///     fn move_molecule_cost(&self, _: &Configuration, _: usize, _: &[Vector3D]) -> f64 {
 ///         unimplemented!()
 ///     }
 ///
@@ -149,7 +149,7 @@ impl_box_clone!(GlobalPotential, BoxCloneGlobal, box_clone_gobal);
 /// }
 ///
 /// impl GlobalCache for ShiftAll {
-///     fn move_particles_cost(&self, _: &Configuration, _: &[usize], _: &[Vector3D]) -> f64 {
+///     fn move_molecule_cost(&self, _: &Configuration, _: usize, _: &[Vector3D]) -> f64 {
 ///         // The cost of moving particles is null, because all the particles
 ///         // get the same energy shift whatever there position are.
 ///         return 0.0
@@ -162,21 +162,20 @@ impl_box_clone!(GlobalPotential, BoxCloneGlobal, box_clone_gobal);
 /// }
 /// ```
 pub trait GlobalCache {
-    /// Get the cost of moving particles in the system.
+    /// Get the cost of moving a rigid molecule in the system.
     ///
-    /// This function is passed the current `system`, and two slices with the
-    /// same  size: `idxes` contains the indexes of the moves particles (getting
-    /// the first moved particle is a call to `system[idxes[0]]`); and `newpos`
-    /// contains the new positions of the particles. The previous positions of
-    /// the particles are still in the system.
-    fn move_particles_cost(
+    /// This function is passed the current `configuration`, the index of the
+    /// molecule in the configuration; and the `new_positions` of the
+    /// particles. The previous positions of the particles are still in the
+    /// system.
+    fn move_molecule_cost(
         &self,
         configuration: &Configuration,
-        idxes: &[usize],
-        newpos: &[Vector3D],
+        molecule_id: usize,
+        new_positions: &[Vector3D],
     ) -> f64;
 
-    /// Update the cache as needed after a call to `move_particles_cost`.
+    /// Update the cache as needed after a call to `move_molecule_cost`.
     ///
     /// If the Monte Carlo move is accepted, this function will be called and
     /// should update any cached quantity so that further call to
