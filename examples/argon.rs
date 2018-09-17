@@ -15,7 +15,7 @@ use lumol::sys::veloc::{BoltzmannVelocities, InitVelocities};
 use lumol::types::Vector3D;
 use lumol::units;
 
-fn main() {
+fn main() -> Result<(), Box<std::error::Error>> {
     let mut system = System::with_cell(UnitCell::cubic(17.0));
 
     // Create a cubic crystal of Argon by hand.
@@ -30,30 +30,31 @@ fn main() {
     }
 
     let lj = Box::new(LennardJones {
-        sigma: units::from(3.4, "A").unwrap(),
-        epsilon: units::from(1.0, "kJ/mol").unwrap(),
+        sigma: units::from(3.4, "A")?,
+        epsilon: units::from(1.0, "kJ/mol")?,
     });
     system.add_pair_potential(
         ("Ar", "Ar"),
-        PairInteraction::new(lj, units::from(8.5, "A").unwrap()),
+        PairInteraction::new(lj, units::from(8.5, "A")?),
     );
 
-    let mut velocities = BoltzmannVelocities::new(units::from(300.0, "K").unwrap());
+    let mut velocities = BoltzmannVelocities::new(units::from(300.0, "K")?);
     velocities.seed(129);
     velocities.init(&mut system);
 
-    let md = MolecularDynamics::new(units::from(1.0, "fs").unwrap());
+    let md = MolecularDynamics::new(units::from(1.0, "fs")?);
     let mut simulation = Simulation::new(Box::new(md));
 
-    let trajectory_out = Box::new(TrajectoryOutput::new("trajectory.xyz").unwrap());
+    let trajectory_out = Box::new(TrajectoryOutput::new("trajectory.xyz")?);
     // Write the trajectory to `trajectory.xyz` every 10 steps
     simulation.add_output_with_frequency(trajectory_out, 10);
 
-    let energy_out = Box::new(EnergyOutput::new("energy.dat").unwrap());
+    let energy_out = Box::new(EnergyOutput::new("energy.dat")?);
     // Write the energy to `energy.dat` every step
     simulation.add_output(energy_out);
 
     simulation.run(&mut system, 5000);
 
-    println!("All done!")
+    println!("All done!");
+    return Ok(());
 }

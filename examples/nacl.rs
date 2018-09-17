@@ -14,24 +14,25 @@ use lumol::units;
 
 use input::InteractionsInput;
 
-fn main() {
+fn main() -> Result<(), Box<std::error::Error>> {
     // Read the system fromt the `data/nacl.xyz` file
-    let mut system = TrajectoryBuilder::new().open("data/nacl.xyz")
-                                             .and_then(|mut traj| traj.read())
-                                             .unwrap();
+    let mut system = TrajectoryBuilder::new().open("data/nacl.xyz")?
+                                             .read()?;
     // Set the unit cell, as there is no unit cell data in XYZ files
-    system.cell = UnitCell::cubic(units::from(22.5608, "A").unwrap());
+    system.cell = UnitCell::cubic(units::from(22.5608, "A")?);
     // Read the interactions from the `data/NaCl.toml` TOML file
-    let input = InteractionsInput::new("data/NaCl.toml").unwrap();
-    input.read(&mut system).unwrap();
+    let input = InteractionsInput::new("data/NaCl.toml")?;
+    input.read(&mut system)?;
 
-    let mut velocities = BoltzmannVelocities::new(units::from(300.0, "K").unwrap());
+    let mut velocities = BoltzmannVelocities::new(units::from(300.0, "K")?);
     velocities.init(&mut system);
 
-    let mut md = MolecularDynamics::new(units::from(1.0, "fs").unwrap());
+    let mut md = MolecularDynamics::new(units::from(1.0, "fs")?);
     // Use a velocity rescaling thermostat
-    md.set_thermostat(Box::new(RescaleThermostat::new(units::from(300.0, "K").unwrap())));
+    md.set_thermostat(Box::new(RescaleThermostat::new(units::from(300.0, "K")?)));
 
     let mut simulation = Simulation::new(Box::new(md));
     simulation.run(&mut system, 1000);
+
+    return Ok(());
 }

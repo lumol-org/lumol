@@ -51,19 +51,21 @@ impl PairPotential for LJ {
     }
 }
 
-fn main() {
+fn main() -> Result<(), Box<std::error::Error>> {
     let mut system = System::new();
     system.add_molecule(Molecule::new(Particle::with_position("F", Vector3D::new(0.0, 0.0, 0.0))));
     system.add_molecule(Molecule::new(Particle::with_position("F", Vector3D::new(1.5, 0.0, 0.0))));
 
     // We can now use our new potential in the system
     let lj = Box::new(LJ {
-        a: units::from(675.5, "kJ/mol/A^12").unwrap(),
-        b: units::from(40.26, "kJ/mol/A^6").unwrap(),
+        a: units::from(675.5, "kJ/mol/A^12")?,
+        b: units::from(40.26, "kJ/mol/A^6")?,
     });
     system.add_pair_potential(("F", "F"), PairInteraction::new(lj, 10.0));
 
-    let mut simulation =
-        Simulation::new(Box::new(MolecularDynamics::new(units::from(1.0, "fs").unwrap())));
+    let md = MolecularDynamics::new(units::from(1.0, "fs")?);
+    let mut simulation = Simulation::new(Box::new(md));
     simulation.run(&mut system, 1000);
+
+    return Ok(());
 }
