@@ -106,10 +106,14 @@ impl Molecule {
         self.particles.as_mut_slice()
     }
 
-    /// Add a new `particle` to this molecule
-    pub fn add_particle(&mut self, particle: Particle) {
+    /// Add a new `particle` in this molecule, bonded to an `other` particle
+    /// in the molecule.
+    pub fn add_particle_bonded_to(&mut self, other: usize, particle: Particle) {
+        assert!(self.contains(other));
         self.particles.push(particle);
-        self.bonding.merge_with(Bonding::new(self.particles.len() - 1));
+        let i = self.particles.len() - 1;
+        self.bonding.merge_with(Bonding::new(i));
+        self.bonding.add_bond(i, other);
     }
 
     /// Add bond between particles at indexes `i` and `j` in this molecule.
@@ -314,8 +318,7 @@ mod tests {
     #[test]
     fn center_of_mass() {
         let mut molecule = Molecule::new(particle("O"));
-        molecule.add_particle(particle("O"));
-        molecule.add_bond(0, 1);
+        molecule.add_particle_bonded_to(0, particle("O"));
 
         molecule.particles_mut().position[0] = Vector3D::new(1.0, 0.0, 0.0);
         molecule.particles_mut().position[1] = Vector3D::zero();
@@ -326,8 +329,7 @@ mod tests {
     #[test]
     fn test_wrap_molecule() {
         let mut molecule = Molecule::new(particle("O"));
-        molecule.add_particle(particle("O"));
-        molecule.add_bond(0, 1);
+        molecule.add_particle_bonded_to(0, particle("O"));
 
         molecule.particles_mut().position[0] = Vector3D::new(-2.0, 0.0, 0.0);
         molecule.particles_mut().position[1] = Vector3D::zero();

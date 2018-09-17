@@ -31,16 +31,11 @@ fn main() {
     let co2 = read_molecule("data/CO2.xyz").unwrap().hash();
 
     // Or define a new molecule by hand
-    let h2o = {
-        let mut molecule = Molecule::new(Particle::new("H"));
-        molecule.add_particle(Particle::new("O"));
-        molecule.add_particle(Particle::new("H"));
+    let mut molecule = Molecule::new(Particle::new("H"));
+    molecule.add_particle_bonded_to(0, Particle::new("O"));
+    molecule.add_particle_bonded_to(1, Particle::new("H"));
 
-        molecule.add_bond(0, 1);
-        molecule.add_bond(1, 2);
-
-        molecule.hash()
-    };
+    let h2o = molecule.hash();
 
     let mut mc = MonteCarlo::new(units::from(500.0, "K").unwrap());
 
