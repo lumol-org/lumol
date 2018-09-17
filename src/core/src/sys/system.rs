@@ -12,6 +12,8 @@ use energy::{CoulombicPotential, GlobalPotential};
 use sys::{Composition, EnergyEvaluator, Interactions};
 use sys::{Configuration, Molecule, ParticleKind, UnitCell};
 
+use sim::DegreesOfFreedom;
+
 /// The `System` type hold all the data about a simulated system.
 ///
 /// This data contains:
@@ -36,6 +38,9 @@ pub struct System {
     step: u64,
     /// Externally managed temperature for the system
     external_temperature: Option<f64>,
+    /// Number of degrees of freedom simulated in the system. This default to
+    /// `DegreesOfFreedom::Particles`, and is set in the simulation setup.
+    pub(crate) simulated_degrees_of_freedom: DegreesOfFreedom,
 }
 
 impl System {
@@ -59,6 +64,7 @@ impl System {
             interactions: Interactions::new(),
             step: 0,
             external_temperature: None,
+            simulated_degrees_of_freedom: DegreesOfFreedom::Particles,
         }
     }
 
@@ -311,8 +317,12 @@ use sys::compute::Volume;
 /// Functions to get physical properties of a system.
 impl System {
     /// Get the number of degrees of freedom in the system
-    pub fn degrees_of_freedom(&self) -> u64 {
-        3 * self.size() as u64
+    pub fn degrees_of_freedom(&self) -> usize {
+        match self.simulated_degrees_of_freedom {
+            DegreesOfFreedom::Particles => 3 * self.size(),
+            DegreesOfFreedom::Frozen(frozen) => 3 * self.size() - frozen,
+            DegreesOfFreedom::Molecules => 3 * self.molecules_count(),
+        }
     }
 
     /// Get the kinetic energy of the system.
