@@ -4,7 +4,7 @@
 //! Read static string using the XYZ file format, and create the corresponding
 //! system.
 
-use sys::{Particle, System, UnitCell};
+use sys::{Molecule, Particle, System, UnitCell};
 use types::Vector3D;
 
 /// Read the `content` string, assuming XYZ format, and create the corresponding
@@ -32,7 +32,7 @@ pub fn system_from_xyz(content: &str) -> System {
             let vz = splitted[6].parse::<f64>().expect("Could not parse float");
             particle.velocity = Vector3D::new(vx, vy, vz);
         }
-        system.add_particle(particle);
+        system.add_molecule(Molecule::new(particle));
     }
 
     if lines[1].contains("cell:") {

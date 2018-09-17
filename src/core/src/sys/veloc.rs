@@ -136,7 +136,7 @@ impl InitVelocities for UniformVelocities {
 mod test {
     use super::*;
     use rand::random;
-    use sys::{Particle, System};
+    use sys::{Molecule, Particle, System};
     use utils::system_from_xyz;
 
     fn testing_system() -> System {
@@ -148,7 +148,7 @@ mod test {
                 random::<f64>() * 100.0,
                 random::<f64>() * 100.0,
             );
-            system.add_particle(particle);
+            system.add_molecule(Molecule::new(particle));
         }
         return system;
     }

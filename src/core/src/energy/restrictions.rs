@@ -118,7 +118,7 @@ impl PairRestriction {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use sys::{Particle, System};
+    use sys::{Molecule, Particle, System};
 
     fn testing_system() -> System {
         // Creating 2 pentane molecule
@@ -126,19 +126,14 @@ mod tests {
         //   / \ / \      / \ / \
         //  C   C   C    C   C   C
         let mut system = System::new();
-        for _ in 0..10 {
-            system.add_particle(Particle::new("C"));
-        }
+        let mut pentane = Molecule::new(Particle::new("CH3"));
+        pentane.add_particle_bonded_to(0, Particle::new("CH2"));
+        pentane.add_particle_bonded_to(1, Particle::new("CH2"));
+        pentane.add_particle_bonded_to(2, Particle::new("CH2"));
+        pentane.add_particle_bonded_to(3, Particle::new("CH3"));
 
-        let _ = system.add_bond(0, 1);
-        let _ = system.add_bond(1, 2);
-        let _ = system.add_bond(2, 3);
-        let _ = system.add_bond(3, 4);
-
-        let _ = system.add_bond(5, 6);
-        let _ = system.add_bond(6, 7);
-        let _ = system.add_bond(7, 8);
-        let _ = system.add_bond(8, 9);
+        system.add_molecule(pentane.clone());
+        system.add_molecule(pentane);
 
         return system;
     }

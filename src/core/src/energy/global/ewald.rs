@@ -233,17 +233,12 @@ impl EwaldFactors {
 /// # Examples
 ///
 /// ```
-/// use lumol_core::energy::{Ewald, SharedEwald};
-/// use lumol_core::units;
-///
+/// # use lumol_core::sys::{Particle, Molecule, UnitCell, System};
+/// # use lumol_core::energy::{Ewald, SharedEwald};
+/// # use lumol_core::types::Vector3D;
 /// let ewald = SharedEwald::new(
 ///     Ewald::new(/* cutoff */ 12.0, /* kmax */ 7, /* alpha */ None)
 /// );
-///
-/// use lumol_core::sys::System;
-/// use lumol_core::sys::Particle;
-/// use lumol_core::sys::UnitCell;
-/// use lumol_core::types::Vector3D;
 ///
 /// // Setup a system containing a NaCl pair
 /// let mut system = System::with_cell(UnitCell::cubic(30.0));
@@ -256,8 +251,8 @@ impl EwaldFactors {
 /// cl.charge = -1.0;
 /// cl.position = Vector3D::new(2.0, 0.0, 0.0);
 ///
-/// system.add_particle(na);
-/// system.add_particle(cl);
+/// system.add_molecule(Molecule::new(na));
+/// system.add_molecule(Molecule::new(cl));
 ///
 /// // Use Ewald summation for electrostatic interactions
 /// system.set_coulomb_potential(Box::new(ewald));
