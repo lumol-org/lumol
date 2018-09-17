@@ -46,11 +46,12 @@ fn cache_move_particle(bencher: &mut Bencher) {
         1, 129, 243, 102, 31, 147, 250, 56, 212, 237, 170, 250, 161, 185, 59, 151
     ]);
 
-    let i: usize = rng.gen_range(0, system.size());
-    let mut delta = system.particles().position[i];
-    delta += Vector3D::new(rng.gen(), rng.gen(), rng.gen());
+    let molid = rng.gen_range(0, system.size());
+    let mut new_position = system.particles().position[molid];
+    new_position += Vector3D::new(rng.gen(), rng.gen(), rng.gen());
 
-    bencher.iter(|| cache.move_particles_cost(&system, vec![i], &[delta]))
+    cache.move_molecule_cost(&system, molid, &[new_position]);
+    bencher.iter(|| cache.move_molecule_cost(&system, molid, &[new_position]))
 }
 
 benchmark_group!(energy_computation, energy, forces, virial);

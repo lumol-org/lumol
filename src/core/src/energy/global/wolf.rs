@@ -116,65 +116,47 @@ impl Wolf {
 }
 
 impl GlobalCache for Wolf {
-    fn move_particles_cost(
+    fn move_molecule_cost(
         &self,
-        config: &Configuration,
-        idxes: &[usize],
-        newpos: &[Vector3D],
+        configuration: &Configuration,
+        molecule_id: usize,
+        new_positions: &[Vector3D],
     ) -> f64 {
-        let mut e_old = 0.0;
-        let mut e_new = 0.0;
+        let mut old_energynergy = 0.0;
+        let mut new_energynergy = 0.0;
 
-        // Iterate over all interactions between a moved particle and a
-        // particle not moved
-        let charges = config.particles().charge;
-        let positions = config.particles().position;
-        for (idx, &i) in idxes.iter().enumerate() {
-            let qi = charges[i];
+        let charges = configuration.particles().charge;
+        let positions = configuration.particles().position;
+
+        // Iterate over all interactions between a particle in the moved
+        // molecule and a particle in another molecule
+        let molecule = configuration.molecule(molecule_id);
+        for (i, part_i) in molecule.indexes().enumerate() {
+            let qi = charges[part_i];
             if qi == 0.0 {
                 continue;
             }
-            for j in (0..config.size()).filter(|x| !idxes.contains(x)) {
-                let qj = charges[j];
-                if qj == 0.0 {
-                    continue;
+
+            for (_, other_molecule) in configuration.molecules().enumerate().filter(|(id, _)| molecule_id != *id) {
+                for part_j in other_molecule.indexes() {
+                    let qj = charges[part_j];
+                    if qj == 0.0 {
+                        continue;
+                    }
+
+                    let old_r = configuration.distance(part_i, part_j);
+                    let new_r = configuration.cell.distance(&new_positions[i], &positions[part_j]);
+
+                    let path = configuration.bond_path(part_i, part_j);
+                    let info = self.restriction.information(path);
+
+                    old_energynergy += self.energy_pair(info, qi * qj, old_r);
+                    new_energynergy += self.energy_pair(info, qi * qj, new_r);
                 }
-
-                let r_old = config.cell.distance(&positions[i], &positions[j]);
-                let r_new = config.cell.distance(&newpos[idx], &positions[j]);
-
-                let path = config.bond_path(i, j);
-                let info = self.restriction.information(path);
-
-                e_old += self.energy_pair(info, qi * qj, r_old);
-                e_new += self.energy_pair(info, qi * qj, r_new);
             }
         }
 
-        // Iterate over all interactions between two moved particles
-        for (idx, &i) in idxes.iter().enumerate() {
-            let qi = charges[i];
-            if qi == 0.0 {
-                continue;
-            }
-            for (jdx, &j) in idxes.iter().enumerate().skip(idx + 1) {
-                let qj = charges[j];
-                if qj == 0.0 {
-                    continue;
-                }
-
-                let r_old = config.distance(i, j);
-                let r_new = config.cell.distance(&newpos[idx], &newpos[jdx]);
-
-                let path = config.bond_path(i, j);
-                let info = self.restriction.information(path);
-
-                e_old += self.energy_pair(info, qi * qj, r_old);
-                e_new += self.energy_pair(info, qi * qj, r_new);
-            }
-        }
-
-        return e_new - e_old;
+        return new_energynergy - old_energynergy;
     }
 
     fn update(&self) {
@@ -435,23 +417,27 @@ mod tests {
         }
 
         #[test]
-        fn move_atoms() {
+        fn move_rigid_molecule() {
             let mut system = testing_system();
             let mut wolf = Wolf::new(8.0);
             wolf.set_restriction(PairRestriction::InterMolecular);
 
             let check = wolf.clone();
 
-            let old_e = check.energy(&system);
-            let idxes = &[0, 1];
-            let newpos = &[Vector3D::new(0.0, 0.0, 0.5), Vector3D::new(-0.7, 0.2, 1.5)];
+            let old_energy = check.energy(&system);
 
-            let cost = wolf.move_particles_cost(&system, idxes, newpos);
+            let new_positions = &[
+                Vector3D::new(4.0, 0.0, -2.0),
+                Vector3D::new(3.0100101914949688, 0.19045656166589708, -2.11664352187198654),
+                Vector3D::new(4.07610780627224825, -0.8995901989882638, -2.07032123227505443),
+            ];
+            let cost = wolf.move_molecule_cost(&system, 0, new_positions);
 
-            system.particles_mut().position[0] = newpos[0];
-            system.particles_mut().position[1] = newpos[1];
-            let new_e = check.energy(&system);
-            assert_ulps_eq!(cost, new_e - old_e);
+            system.particles_mut().position[0] = new_positions[0];
+            system.particles_mut().position[1] = new_positions[1];
+            system.particles_mut().position[2] = new_positions[2];
+            let new_energy = check.energy(&system);
+            assert_ulps_eq!(cost, new_energy - old_energy);
         }
     }
 }

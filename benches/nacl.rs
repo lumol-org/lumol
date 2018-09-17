@@ -62,13 +62,12 @@ mod ewald {
             228, 140, 229, 238, 195, 151, 56, 106, 68, 11, 24, 143, 231, 175, 55, 52
         ]);
 
-        let i: usize = rng.gen_range(0, system.size());
-        let mut delta = system.particles().position[i];
-        delta += Vector3D::new(rng.gen(), rng.gen(), rng.gen());
+        let molid = rng.gen_range(0, system.size());
+        let mut new_position = system.particles().position[molid];
+        new_position += Vector3D::new(rng.gen(), rng.gen(), rng.gen());
 
-        cache.move_particles_cost(&system, vec![i], &[delta]);
-
-        bencher.iter(|| cache.move_particles_cost(&system, vec![i], &[delta]))
+        cache.move_molecule_cost(&system, molid, &[new_position]);
+        bencher.iter(|| cache.move_molecule_cost(&system, molid, &[new_position]))
     }
 }
 
@@ -124,13 +123,12 @@ mod wolf {
             12, 197, 68, 124, 239, 99, 89, 228, 140, 170, 228, 215, 97, 218, 201, 24
         ]);
 
-        let i: usize = rng.gen_range(0, system.size());
-        let mut delta = system.particles().position[i];
-        delta += Vector3D::new(rng.gen(), rng.gen(), rng.gen());
+        let molid = rng.gen_range(0, system.size());
+        let mut new_position = system.particles().position[molid];
+        new_position += Vector3D::new(rng.gen(), rng.gen(), rng.gen());
 
-        cache.move_particles_cost(&system, vec![i], &[delta]);
-
-        bencher.iter(|| cache.move_particles_cost(&system, vec![i], &[delta]))
+        cache.move_molecule_cost(&system, molid, &[new_position]);
+        bencher.iter(|| cache.move_molecule_cost(&system, molid, &[new_position]))
     }
 }
 

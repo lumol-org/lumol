@@ -567,53 +567,47 @@ impl Ewald {
         return virials.sum();
     }
 
-    fn real_space_move_particles_cost(&self, configuration: &Configuration, idxes: &[usize], newpos: &[Vector3D]) -> f64 {
+    fn real_space_move_molecule_cost(
+        &self,
+        configuration: &Configuration,
+        molecule_id: usize,
+        new_positions: &[Vector3D],
+    ) -> f64 {
+        let mut old_energy = 0.0;
+        let mut new_energy = 0.0;
+
         let charges = configuration.particles().charge;
         let positions = configuration.particles().position;
 
-        let mut e_old = 0.0;
-        let mut e_new = 0.0;
+        // Iterate over all interactions between a particle in the moved
+        // molecule and a particle in another molecule
+        let molecule = configuration.molecule(molecule_id);
+        for (i, part_i) in molecule.indexes().enumerate() {
+            let qi = charges[part_i];
+            if qi == 0.0 {
+                continue;
+            }
 
-        // Iterate over all interactions between a moved particle and a
-        // particle not moved
-        for (idx, &i) in idxes.iter().enumerate() {
-            let qi = charges[i];
-            if qi == 0.0 {continue}
-            for j in (0..configuration.size()).filter(|x| !idxes.contains(x)) {
-                let qj = charges[j];
-                if qi == 0.0 {continue}
+            for (_, other_molecule) in configuration.molecules().enumerate().filter(|(id, _)| molecule_id != *id) {
+                for part_j in other_molecule.indexes() {
+                    let qj = charges[part_j];
+                    if qj == 0.0 {
+                        continue;
+                    }
 
-                let r_old = configuration.distance(i, j);
-                let r_new = configuration.cell.distance(&newpos[idx], &positions[j]);
+                    let old_r = configuration.distance(part_i, part_j);
+                    let new_r = configuration.cell.distance(&new_positions[i], &positions[part_j]);
 
-                let path = configuration.bond_path(i, j);
-                let info = self.restriction.information(path);
+                    let path = configuration.bond_path(part_i, part_j);
+                    let info = self.restriction.information(path);
 
-                e_old += self.real_space_energy_pair(info, qi * qj, r_old);
-                e_new += self.real_space_energy_pair(info, qi * qj, r_new);
+                    old_energy += self.real_space_energy_pair(info, qi * qj, old_r);
+                    new_energy += self.real_space_energy_pair(info, qi * qj, new_r);
+                }
             }
         }
 
-        // Iterate over all interactions between two moved particles
-        for (idx, &i) in idxes.iter().enumerate() {
-            let qi = charges[i];
-            if qi == 0.0 {continue}
-            for (jdx, &j) in idxes.iter().enumerate().skip(i + 1) {
-                let qj = charges[j];
-                if qj == 0.0 {continue}
-
-                let r_old = configuration.distance(i, j);
-                let r_new = configuration.cell.distance(&newpos[idx], &newpos[jdx]);
-
-                let path = configuration.bond_path(i, j);
-                let info = self.restriction.information(path);
-
-                e_old += self.real_space_energy_pair(info, qi * qj, r_old);
-                e_new += self.real_space_energy_pair(info, qi * qj, r_new);
-            }
-        }
-
-        return e_new - e_old;
+        return new_energy - old_energy;
     }
 }
 
@@ -732,30 +726,35 @@ impl Ewald {
     }
 
     /// Compute the Fourier transform of the electrostatic density changes
-    /// while moving the particles in `idxes` from there curent position in
-    /// the configuration to `newpos`;
-    fn delta_rho_move_particles(&mut self, configuration: &Configuration, idxes: &[usize], newpos: &[Vector3D]) -> Vec<Complex> {
-        let natoms = idxes.len();
-        let mut new_eikr = Ewald3DArray::zeros((-self.kmax..(self.kmax + 1), 3, natoms));
+    /// while moving the molecule with the given `molecule_id` to
+    /// `new_positions`
+    fn delta_rho_move_rigid_molecules(
+        &mut self,
+        configuration: &Configuration,
+        molecule_id: usize,
+        new_positions: &[Vector3D],
+    ) -> Vec<Complex> {
+        let molecule = configuration.molecule(molecule_id);
+        let mut new_energyikr = Ewald3DArray::zeros((-self.kmax..(self.kmax + 1), 3, molecule.size()));
 
         // Do the k=0, 1 cases first
         for spatial in 0..3 {
             let mut k_idx = [0.0, 0.0, 0.0];
             k_idx[spatial] = 1.0;
             let kvec = configuration.cell.k_vector(k_idx);
-            for i in 0..natoms {
-                new_eikr[(0, spatial, i)] = Complex::cartesian(1.0, 0.0);
-                new_eikr[(1, spatial, i)] = Complex::polar(1.0, kvec * newpos[i]);
-                new_eikr[(-1, spatial, i)] = new_eikr[(1, spatial, i)].conj();
+            for i in 0..molecule.size() {
+                new_energyikr[(0, spatial, i)] = Complex::cartesian(1.0, 0.0);
+                new_energyikr[(1, spatial, i)] = Complex::polar(1.0, kvec * new_positions[i]);
+                new_energyikr[(-1, spatial, i)] = new_energyikr[(1, spatial, i)].conj();
             }
         }
 
         // Use recursive definition for computing the factor for all the other values of k.
         for spatial in 0..3 {
             for k in 2..(self.kmax + 1) {
-                for i in 0..natoms {
-                    new_eikr[(k, spatial, i)] = new_eikr[(k - 1, spatial, i)] * new_eikr[(1, spatial, i)];
-                    new_eikr[(-k, spatial, i)] = new_eikr[(k, spatial, i)].conj();
+                for i in 0..molecule.size() {
+                    new_energyikr[(k, spatial, i)] = new_energyikr[(k - 1, spatial, i)] * new_energyikr[(1, spatial, i)];
+                    new_energyikr[(-k, spatial, i)] = new_energyikr[(k, spatial, i)].conj();
                 }
             }
         }
@@ -764,16 +763,16 @@ impl Ewald {
         let charges = configuration.particles().charge;
         for &(ikx, iky, ikz) in &self.factors.kvecs {
             let mut partial = Complex::zero();
-            for (idx, &i) in idxes.iter().enumerate() {
-                let old_phi = self.eikr[(ikx, 0, i)] *
-                              self.eikr[(iky, 1, i)] *
-                              self.eikr[(ikz, 2, i)];
+            for (i, part_i) in molecule.indexes().enumerate() {
+                let old_phi = self.eikr[(ikx, 0, part_i)] *
+                              self.eikr[(iky, 1, part_i)] *
+                              self.eikr[(ikz, 2, part_i)];
 
-                let new_phi = new_eikr[(ikx, 0, idx)] *
-                              new_eikr[(iky, 1, idx)] *
-                              new_eikr[(ikz, 2, idx)];
+                let new_phi = new_energyikr[(ikx, 0, i)] *
+                              new_energyikr[(iky, 1, i)] *
+                              new_energyikr[(ikz, 2, i)];
 
-                partial += charges[i] * (new_phi - old_phi);
+                partial += charges[part_i] * (new_phi - old_phi);
             }
             delta.push(partial);
         }
@@ -781,20 +780,27 @@ impl Ewald {
         return delta;
     }
 
-    fn kspace_move_particles_cost(&mut self, configuration: &Configuration, idxes: &[usize], newpos: &[Vector3D]) -> f64 {
-        let mut e_old = 0.0;
+    fn kspace_move_molecule_cost(
+        &mut self,
+        configuration: &Configuration,
+        molecule_id: usize,
+        new_positions: &[Vector3D],
+    ) -> f64 {
+        let mut old_energy = 0.0;
         for (factor, &rho) in izip!(&self.factors.energy, &self.rho) {
-            e_old += factor * rho.norm2();
+            old_energy += factor * rho.norm2();
         }
-        e_old /= ELCC;
+        old_energy /= ELCC;
 
-        let delta_rho = self.delta_rho_move_particles(configuration, idxes, newpos);
+        let delta_rho = self.delta_rho_move_rigid_molecules(
+            configuration, molecule_id, new_positions
+        );
 
-        let mut e_new = 0.0;
+        let mut new_energy = 0.0;
         for (factor, &rho, &delta) in izip!(&self.factors.energy, &self.rho, &delta_rho) {
-            e_new += factor * (rho + delta).norm2();
+            new_energy += factor * (rho + delta).norm2();
         }
-        e_new /= ELCC;
+        new_energy /= ELCC;
 
         self.updater = Some(Box::new(move |ewald: &mut Ewald| {
             for (rho, &delta) in izip!(&mut ewald.rho, &delta_rho) {
@@ -802,7 +808,7 @@ impl Ewald {
             }
         }));
 
-        return e_new - e_old;
+        return new_energy - old_energy;
     }
 }
 
@@ -888,22 +894,25 @@ impl CoulombicPotential for SharedEwald {
 }
 
 impl GlobalCache for SharedEwald {
-    fn move_particles_cost(&self, configuration: &Configuration, idxes: &[usize], newpos: &[Vector3D]) -> f64 {
+    fn move_molecule_cost(
+        &self,
+        configuration: &Configuration,
+        molecule_id: usize,
+        new_positions: &[Vector3D]
+    ) -> f64 {
         let mut ewald = self.write();
         ewald.precompute(&configuration.cell);
-        let real = ewald.real_space_move_particles_cost(configuration, idxes, newpos);
+        let real = ewald.real_space_move_molecule_cost(configuration, molecule_id, new_positions);
         /* No self cost */
-        let kspace = ewald.kspace_move_particles_cost(configuration, idxes, newpos);
+        let kspace = ewald.kspace_move_molecule_cost(configuration, molecule_id, new_positions);
         return real + kspace;
     }
 
     fn update(&self) {
-        use std::mem;
-
         let mut ewald = self.write();
         if ewald.updater.is_some() {
             let mut updater = None;
-            mem::swap(&mut updater, &mut ewald.updater);
+            ::std::mem::swap(&mut updater, &mut ewald.updater);
             let updater = updater.unwrap();
             updater(&mut *ewald);
         }
@@ -1232,107 +1241,94 @@ mod tests {
         }
     }
 
-    mod cache {
-        use super::*;
-        use sys::System;
-        use types::Vector3D;
-        use energy::{GlobalPotential, PairRestriction, CoulombicPotential, GlobalCache};
+    #[test]
+    fn move_molecule() {
+        use utils::system_from_xyz;
+        let mut system = system_from_xyz("6
+        cell: 20.0
+        H  0.3 -0.3 -0.8
+        O  0.0  0.0  0.0
+        H -0.7 -0.7  0.3
+        H  2.3  1.7 -0.8
+        O  2.0  2.0  0.0
+        H  1.3  1.3  0.3
+        ");
+        assert!(system.add_bond(0, 1).is_empty());
+        assert!(system.add_bond(1, 2).is_empty());
+        assert!(system.add_bond(3, 4).is_empty());
+        assert!(system.add_bond(4, 5).is_empty());
+        assert!(system.molecules_count() == 2);
 
-        pub fn testing_system() -> System {
-            use utils::system_from_xyz;
-            let mut system = system_from_xyz("6
-            cell: 20.0
-            O  0.0  0.0  0.0
-            H -0.7 -0.7  0.3
-            H  0.3 -0.3 -0.8
-            O  2.0  2.0  0.0
-            H  1.3  1.3  0.3
-            H  2.3  1.7 -0.8
-            ");
-            assert!(system.add_bond(0, 1).is_empty());
-            assert!(system.add_bond(0, 2).is_empty());
-            assert!(system.add_bond(3, 4).is_empty());
-            assert!(system.add_bond(3, 5).is_empty());
-            assert!(system.molecules_count() == 2);
-
-            for particle in system.particles_mut() {
-                if particle.name == "O" {
-                    *particle.charge = -0.8476;
-                } else if particle.name == "H" {
-                    *particle.charge = 0.4238;
-                }
+        for particle in system.particles_mut() {
+            if particle.name == "O" {
+                *particle.charge = -0.8476;
+            } else if particle.name == "H" {
+                *particle.charge = 0.4238;
             }
-            return system;
         }
 
-        #[test]
-        fn move_atoms() {
-            let mut system = testing_system();
-            let mut ewald = SharedEwald::new(Ewald::new(8.0, 10, None));
+        type CostCompute = fn (ewald: &SharedEwald, system: &System, molecule: usize, positions: &[Vector3D]) -> f64;
+        type EnergyCompute = fn (ewald: &SharedEwald, system: &System) -> f64;
+
+        fn check_cache(mut system: System, ewald: Ewald, compute_energy: EnergyCompute, compute_cost: CostCompute) {
+            let mut ewald = SharedEwald::new(ewald);
             ewald.set_restriction(PairRestriction::InterMolecular);
             ewald.write().precompute(&system.cell);
 
             let check = ewald.clone();
             // Initialize cached values
-            let _ = ewald.energy(&system);
+            let _ = compute_energy(&ewald, &system);
+            let old_energy = compute_energy(&check, &system);
 
-            let old_e = check.energy(&system);
-            let idxes = &[0, 1];
-            let newpos = &[Vector3D::new(0.0, 0.0, 0.5), Vector3D::new(-0.7, 0.2, 1.5)];
+            let new_positions = &[
+                Vector3D::new(0.41727, 2.29401, -0.0558),
+                Vector3D::new(0.5097743599026461, 3.194114034722624, -0.020364564697826326),
+                Vector3D::new(-0.2501317777731211, 3.562366060753896, -0.6178033542374419),
+            ];
+            let cost = compute_cost(&ewald, &system, 0, new_positions);
 
-            let cost = ewald.move_particles_cost(&system, idxes, newpos);
+            system.particles_mut().position[0] = new_positions[0];
+            system.particles_mut().position[1] = new_positions[1];
+            system.particles_mut().position[2] = new_positions[2];
+            let new_energy = compute_energy(&check, &system);
+            assert_relative_eq!(cost, new_energy - old_energy, max_relative = 1e-12);
+        };
 
-            system.particles_mut().position[0] = newpos[0];
-            system.particles_mut().position[1] = newpos[1];
-            let new_e = check.energy(&system);
-            assert_ulps_eq!(cost, new_e - old_e);
-        }
+        // Real space energy
+        check_cache(
+            system.clone(),
+            Ewald::new(8.0, 10, None),
+            |ewald, system| {
+                ewald.read().real_space_energy(system)
+            },
+            |ewald, system, molecule, positions| {
+                ewald.read().real_space_move_molecule_cost(system, molecule, positions)
+            }
+        );
 
-        #[test]
-        fn move_atoms_real_space() {
-            let mut system = testing_system();
-            let mut ewald = Ewald::new(8.0, 10, None);
-            ewald.restriction = PairRestriction::InterMolecular;
-            ewald.precompute(&system.cell);
+        // kspace energy
+        check_cache(
+            system.clone(),
+            Ewald::new(2.0, 10, None),
+            |ewald, system| {
+                ewald.write().kspace_energy(system)
+            },
+            |ewald, system, molecule, positions| {
+                ewald.write().kspace_move_molecule_cost(system, molecule, positions)
+            }
+        );
 
-            let check = ewald.clone();
-            // Initialize cached values
-            let _ = ewald.real_space_energy(&system);
-
-            let old_e = check.real_space_energy(&system);
-            let idxes = &[0, 1];
-            let newpos = &[Vector3D::new(0.0, 0.0, 0.5), Vector3D::new(-0.7, 0.2, 1.5)];
-
-            let cost = ewald.real_space_move_particles_cost(&system, idxes, newpos);
-
-            system.particles_mut().position[0] = newpos[0];
-            system.particles_mut().position[1] = newpos[1];
-            let new_e = check.real_space_energy(&system);
-            assert_ulps_eq!(cost, new_e - old_e);
-        }
-
-        #[test]
-        fn move_atoms_kspace() {
-            let mut system = testing_system();
-            let mut ewald = Ewald::new(2.0, 10, None);
-            ewald.restriction = PairRestriction::InterMolecular;
-            ewald.precompute(&system.cell);
-
-            let mut check = ewald.clone();
-            // Initialize cached values
-            let _ = ewald.kspace_energy(&system);
-
-            let old_e = check.kspace_energy(&system);
-            let idxes = &[0, 1];
-            let newpos = &[Vector3D::new(0.0, 0.0, 0.5), Vector3D::new(-0.7, 0.2, 1.5)];
-
-            let cost = ewald.kspace_move_particles_cost(&system, idxes, newpos);
-
-            system.particles_mut().position[0] = newpos[0];
-            system.particles_mut().position[1] = newpos[1];
-            let new_e = check.kspace_energy(&system);
-            assert_ulps_eq!(cost, new_e - old_e);
-        }
+        // Whole energy at once
+        check_cache(
+            system.clone(),
+            Ewald::new(8.0, 10, None),
+            |ewald, system| {
+                ewald.energy(system)
+            },
+            |ewald, system, molecule, positions| {
+                ewald.move_molecule_cost(system, molecule, positions)
+            }
+        );
     }
 
     // Comparing the value for each component of Ewald energy with the NIST

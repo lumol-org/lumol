@@ -78,9 +78,7 @@ impl MCMove for Rotate {
     }
 
     fn cost(&self, system: &System, beta: f64, cache: &mut EnergyCache) -> f64 {
-        let indexes = system.molecule(self.molid).indexes().collect::<Vec<_>>();
-        let cost = cache.move_particles_cost(system, indexes, &self.newpos);
-        return cost * beta;
+        return beta * cache.move_molecule_cost(system, self.molid, &self.newpos);
     }
 
     fn apply(&mut self, system: &mut System) {

@@ -99,7 +99,7 @@ impl MCMove for Resize {
     }
 
     fn cost(&self, system: &System, beta: f64, cache: &mut EnergyCache) -> f64 {
-        let delta_energy = cache.move_all_rigid_molecules_cost(system);
+        let delta_energy = cache.move_all_molecules_cost(system);
         let new_volume = system.volume();
         let old_volume = self.previous.cell.volume();
         let delta_volume = new_volume - old_volume;

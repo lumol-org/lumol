@@ -28,3 +28,4 @@ soa_derive = "0.7"
 lumol = {path = "../.."}
 tempfile = "3"
 approx = "0.3"
+env_logger = "*"
