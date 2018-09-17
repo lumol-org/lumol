@@ -3,10 +3,11 @@
 use rand::RngCore;
 use rand::distributions::{Normal, Range, Distribution};
 
+use std::collections::BTreeSet;
 use std::f64;
 use std::usize;
 
-use super::MCMove;
+use super::{MCDegreeOfFreedom, MCMove};
 use super::select_molecule;
 
 use sys::{EnergyCache, System, MoleculeHash};
@@ -48,6 +49,17 @@ impl Rotate {
 impl MCMove for Rotate {
     fn describe(&self) -> &str {
         "molecular rotation"
+    }
+
+    fn degrees_of_freedom(&self) -> MCDegreeOfFreedom {
+        match self.hash {
+            Some(hash) => {
+                let mut all = BTreeSet::new();
+                let _ = all.insert(hash);
+                MCDegreeOfFreedom::Molecules(all)
+            }
+            None => MCDegreeOfFreedom::AllMolecules,
+        }
     }
 
     fn setup(&mut self, _: &System) {}

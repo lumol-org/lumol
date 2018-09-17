@@ -5,10 +5,10 @@
 use rand::{self, Rng, SeedableRng};
 
 use consts::K_BOLTZMANN;
-use sim::{Propagator, TemperatureStrategy};
+use sim::{DegreesOfFreedom, Propagator, TemperatureStrategy};
 use sys::{EnergyCache, System};
 
-use super::MCMove;
+use super::{MCDegreeOfFreedom, MCMove};
 
 /// Metropolis Monte Carlo propagator
 pub struct MonteCarlo {
@@ -144,6 +144,40 @@ impl MonteCarlo {
 impl Propagator for MonteCarlo {
     fn temperature_strategy(&self) -> TemperatureStrategy {
         TemperatureStrategy::External(self.temperature())
+    }
+
+    fn degrees_of_freedom(&self, system: &System) -> DegreesOfFreedom {
+        if self.moves.is_empty() {
+            return DegreesOfFreedom::Particles;
+        }
+
+        let mut mc_dof = self.moves[0].0.degrees_of_freedom();
+        for other in &self.moves[1..] {
+            mc_dof = mc_dof.combine(other.0.degrees_of_freedom());
+        }
+
+        match mc_dof {
+            MCDegreeOfFreedom::Particles => DegreesOfFreedom::Particles,
+            MCDegreeOfFreedom::AllMolecules => DegreesOfFreedom::Molecules,
+            MCDegreeOfFreedom::Molecules(hashes) => {
+                // This is only a warning and not an error, because the
+                // composition of the system could change during the simulation
+                //
+                // They might also be some moves working with molecules that
+                // does not exist (yet) in the system.
+                let composition = system.composition();
+                for (hash, _) in composition.all_molecules() {
+                    if !hashes.contains(&hash) {
+                        warn!(
+                            "the molecules with hash {:?} are not simulated by \
+                             this set of Monte Carlo moves",
+                            hash
+                        )
+                    }
+                }
+                DegreesOfFreedom::Molecules
+            }
+        }
     }
 
     fn setup(&mut self, system: &System) {
@@ -341,13 +375,16 @@ impl MoveCounter {
 mod tests {
     use rand::RngCore;
     use sim::Propagator;
-    use sim::mc::{MCMove, MonteCarlo, MoveCounter};
+    use sim::mc::{MCDegreeOfFreedom, MCMove, MonteCarlo, MoveCounter};
     use sys::{EnergyCache, System};
 
     struct DummyMove;
     impl MCMove for DummyMove {
         fn describe(&self) -> &str {
             "dummy"
+        }
+        fn degrees_of_freedom(&self) -> MCDegreeOfFreedom {
+            MCDegreeOfFreedom::Particles
         }
         fn setup(&mut self, _: &System) {}
         fn prepare(&mut self, _: &mut System, _: &mut RngCore) -> bool {

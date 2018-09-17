@@ -1,7 +1,7 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) Lumol's contributors — BSD license
 
-use sim::{Propagator, TemperatureStrategy};
+use sim::{DegreesOfFreedom, Propagator, TemperatureStrategy};
 use sys::System;
 
 use super::{Control, Integrator, Thermostat};
@@ -48,6 +48,12 @@ impl MolecularDynamics {
 impl Propagator for MolecularDynamics {
     fn temperature_strategy(&self) -> TemperatureStrategy {
         TemperatureStrategy::Velocities
+    }
+
+    fn degrees_of_freedom(&self, _: &System) -> DegreesOfFreedom {
+        // default to particles for now. change this if/when constrains are
+        // implemented
+        DegreesOfFreedom::Particles
     }
 
     fn setup(&mut self, system: &System) {

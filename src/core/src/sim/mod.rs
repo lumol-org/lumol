@@ -3,6 +3,7 @@
 
 //! Types and traits for representing simulation algorithms
 mod propagator;
+pub use self::propagator::DegreesOfFreedom;
 pub use self::propagator::Propagator;
 pub use self::propagator::TemperatureStrategy;
 
