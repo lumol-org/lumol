@@ -308,6 +308,11 @@ use sys::compute::Volume;
 
 /// Functions to get physical properties of a system.
 impl System {
+    /// Get the number of degrees of freedom in the system
+    pub fn degrees_of_freedom(&self) -> u64 {
+        3 * self.size() as u64
+    }
+
     /// Get the kinetic energy of the system.
     pub fn kinetic_energy(&self) -> f64 {
         KineticEnergy.compute(self)

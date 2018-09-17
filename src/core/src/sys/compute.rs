@@ -155,8 +155,8 @@ impl Compute for Temperature {
     type Output = f64;
     fn compute(&self, system: &System) -> f64 {
         let kinetic = KineticEnergy.compute(system);
-        let natoms = system.size() as f64;
-        return 1.0 / K_BOLTZMANN * 2.0 * kinetic / (3.0 * natoms);
+        let dof = system.degrees_of_freedom() as f64;
+        return 1.0 / K_BOLTZMANN * 2.0 * kinetic / dof;
     }
 }
 
@@ -249,8 +249,8 @@ impl Compute for PressureAtTemperature {
         assert!(self.temperature >= 0.0);
         let virial = system.virial().trace();
         let volume = system.volume();
-        let natoms = system.size() as f64;
-        return natoms * K_BOLTZMANN * self.temperature / volume + virial / (3.0 * volume);
+        let dof = system.degrees_of_freedom() as f64;
+        return (dof * K_BOLTZMANN * self.temperature + virial) / (3.0 * volume);
     }
 }
 
@@ -271,8 +271,8 @@ impl Compute for StressAtTemperature {
         assert!(!system.cell.is_infinite(), "Can not compute stress for infinite cell");
         let virial = system.virial();
         let volume = system.volume();
-        let natoms = system.size() as f64;
-        let kinetic = natoms * K_BOLTZMANN * self.temperature * Matrix3::one();
+        let dof = system.degrees_of_freedom() as f64;
+        let kinetic = dof / 3.0 * K_BOLTZMANN * self.temperature * Matrix3::one();
         return (kinetic + virial) / volume;
     }
 }
