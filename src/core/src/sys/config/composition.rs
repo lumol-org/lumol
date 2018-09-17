@@ -1,239 +1,237 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) Lumol's contributors — BSD license
 
-use std::ops::{Index, IndexMut};
-use std::iter::{Map, Enumerate};
-use std::vec;
-use std::slice;
+use std::collections::BTreeMap;
+use std::collections::btree_map::Entry;
 
-use sys::ParticleKind;
+use sys::{ParticleKind, MoleculeHash};
 
 /// The system composition contains the number of particles of each kind
-/// in the system.
-///
-/// # Examples
-/// ```
-/// # use lumol_core::sys::{Composition, ParticleKind};
-/// let mut composition = Composition::new();
-/// composition.resize(10);
-///
-/// composition[ParticleKind(2)] = 56;
-/// composition[ParticleKind(8)] = 2;
-/// composition[ParticleKind(5)] = 42;
-///
-/// assert_eq!(composition[ParticleKind(2)], 56);
-/// assert_eq!(composition[ParticleKind(8)], 2);
-/// assert_eq!(composition[ParticleKind(5)], 42);
-///
-/// for (kind, number) in &composition {
-///     println!("We have {} particles of kind {}", number, kind);
-/// }
-/// ```
+/// in the system, as well as the number of molecules of each molecule type.
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub struct Composition(Vec<usize>);
+pub struct Composition {
+    /// The particles composition, indexes by particles kind
+    particles: Vec<usize>,
+    /// The molecules compostion, indexes by molecule type
+    molecules: BTreeMap<MoleculeHash, usize>,
+}
 
 impl Composition {
     /// Create a new empty composition
     ///
     /// # Examples
+    ///
     /// ```
-    /// # use lumol_core::sys::Composition;
+    /// # use lumol_core::sys::{Composition, ParticleKind};
     /// let composition = Composition::new();
-    /// assert_eq!(composition.len(), 0);
+    ///
+    /// // no particles
+    /// assert_eq!(composition.all_particles().count(), 0);
+    ///
+    /// // no molecules
+    /// assert_eq!(composition.all_molecules().count(), 0);
     /// ```
     pub fn new() -> Composition {
-        Composition(Vec::new())
+        Composition {
+            particles: Vec::new(),
+            molecules: BTreeMap::new(),
+        }
     }
 
-    /// Get the size of the composition, *i.e.* the number of different
-    /// particle kinds in the composition.
+    /// Add a particle with the given `kind` to the internal counter
     ///
     /// # Examples
-    /// ```
-    /// # use lumol_core::sys::Composition;
-    /// let mut composition = Composition::new();
-    /// assert_eq!(composition.len(), 0);
     ///
-    /// composition.resize(10);
-    /// assert_eq!(composition.len(), 10);
-    /// ```
-    pub fn len(&self) -> usize {
-        self.0.len()
-    }
-
-    /// Check if the composition is empty, *i.e.* if it contains no particle
-    /// kind. A composition with only zero entries (`0 => 0, 2 => 0, 3 => 0`)
-    /// is not empty.
-    ///
-    /// # Examples
-    /// ```
-    /// # use lumol_core::sys::Composition;
-    /// let mut composition = Composition::new();
-    /// assert_eq!(composition.len(), 0);
-    /// assert!(composition.is_empty());
-    /// ```
-    pub fn is_empty(&self) -> bool {
-        self.0.is_empty()
-    }
-
-    /// Resize the composition to hold `size` items. The new particles kinds
-    /// start with no associated particles.
-    ///
-    /// # Examples
     /// ```
     /// # use lumol_core::sys::{Composition, ParticleKind};
     /// let mut composition = Composition::new();
-    /// assert_eq!(composition.len(), 0);
     ///
-    /// composition.resize(10);
-    /// assert_eq!(composition.len(), 10);
-    /// assert_eq!(composition[ParticleKind(8)], 0);
+    /// composition.add_particle(ParticleKind(3));
+    /// composition.add_particle(ParticleKind(3));
+    ///
+    /// assert_eq!(composition.particles(ParticleKind(3)), 2);
     /// ```
-    pub fn resize(&mut self, size: usize) {
-        self.0.resize(size, 0)
+    pub fn add_particle(&mut self, kind: ParticleKind) {
+        let i = kind.0 as usize;
+        if i >= self.particles.len() {
+            self.particles.resize(i + 1, 0);
+        }
+        self.particles[i] += 1;
     }
 
-    /// Get an iterator over `(kind, number of particles)`
+    /// Remove a particle with the given `kind` to the internal counter
     ///
     /// # Examples
+    ///
     /// ```
     /// # use lumol_core::sys::{Composition, ParticleKind};
     /// let mut composition = Composition::new();
-    /// composition.resize(2);
-    /// composition[ParticleKind(0)] = 10;
-    /// composition[ParticleKind(1)] = 55;
     ///
-    /// for (kind, number) in composition.iter() {
-    ///     println!("{}: {}", kind, number);
-    /// }
+    /// composition.add_particle(ParticleKind(3));
+    /// composition.add_particle(ParticleKind(3));
     ///
-    /// let mut iter = composition.iter();
-    /// assert_eq!(iter.next(), Some((ParticleKind(0), &10)));
-    /// assert_eq!(iter.next(), Some((ParticleKind(1), &55)));
+    /// assert_eq!(composition.particles(ParticleKind(3)), 2);
+    ///
+    /// composition.remove_particle(ParticleKind(3));
+    ///
+    /// assert_eq!(composition.particles(ParticleKind(3)), 1);
+    /// ```
+    pub fn remove_particle(&mut self, kind: ParticleKind) {
+        let i = kind.0 as usize;
+        assert!(i < self.particles.len());
+        assert!(self.particles[i] > 0);
+        self.particles[i] -= 1;
+    }
+
+    /// Get the number of particles with a given kind
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use lumol_core::sys::{Composition, ParticleKind};
+    /// let mut composition = Composition::new();
+    ///
+    /// assert_eq!(composition.particles(ParticleKind(3)), 0);
+    ///
+    /// composition.add_particle(ParticleKind(3));
+    /// composition.add_particle(ParticleKind(3));
+    ///
+    /// assert_eq!(composition.particles(ParticleKind(3)), 2);
+    /// ```
+    pub fn particles(&self, kind: ParticleKind) -> usize {
+        let i = kind.0 as usize;
+        return self.particles.get(i).cloned().unwrap_or(0);
+    }
+
+    /// Get an iterator over the particles kind and count
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use lumol_core::sys::{Composition, ParticleKind};
+    /// let mut composition = Composition::new();
+    ///
+    /// composition.add_particle(ParticleKind(10));
+    /// composition.add_particle(ParticleKind(4));
+    /// composition.add_particle(ParticleKind(4));
+    ///
+    /// let mut iter = composition.all_particles();
+    /// assert_eq!(iter.next(), Some((ParticleKind(4), 2)));
+    /// assert_eq!(iter.next(), Some((ParticleKind(10), 1)));
     /// assert_eq!(iter.next(), None);
     /// ```
-    pub fn iter(&self) -> Iter {
-        self.into_iter()
+    pub fn all_particles<'a>(&'a self) -> impl Iterator<Item = (ParticleKind, usize)> + 'a {
+        self.particles
+            .iter()
+            .enumerate()
+            .filter(|&(_, &n)| n != 0)
+            .map(|(i, &n)| (ParticleKind(i as u32), n))
     }
 
-    /// Get an iterator over `(kind, mutable number of particles)`
+    /// Add a molecule with the given `moltype` to the internal counter
     ///
     /// # Examples
+    ///
     /// ```
-    /// # use lumol_core::sys::{Composition, ParticleKind};
+    /// # use lumol_core::sys::{Composition, Molecule, Particle};
+    /// // Getting a molecule hash
+    /// let he = Molecule::new(Particle::new("He")).hash();
+    ///
     /// let mut composition = Composition::new();
-    /// composition.resize(2);
-    /// composition[ParticleKind(0)] = 10;
-    /// composition[ParticleKind(1)] = 55;
+    /// assert_eq!(composition.molecules(he), 0);
     ///
-    /// for (kind, number) in composition.iter_mut() {
-    ///     if kind == ParticleKind(0) {
-    ///         *number += 10;
-    ///     }
-    /// }
+    /// composition.add_molecule(he);
+    /// composition.add_molecule(he);
     ///
-    /// let mut iter = composition.iter_mut();
-    /// assert_eq!(iter.next(), Some((ParticleKind(0), &mut 20)));
-    /// assert_eq!(iter.next(), Some((ParticleKind(1), &mut 55)));
+    /// assert_eq!(composition.molecules(he), 2);
+    /// ```
+    pub fn add_molecule(&mut self, hash: MoleculeHash) {
+        *self.molecules.entry(hash).or_insert(0) += 1;
+    }
+
+    /// Add a molecule with the given `moltype` to the internal counter
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use lumol_core::sys::{Composition, Molecule, Particle};
+    /// // Getting a molecule hash
+    /// let he = Molecule::new(Particle::new("He")).hash();
+    ///
+    /// let mut composition = Composition::new();
+    /// assert_eq!(composition.molecules(he), 0);
+    ///
+    /// composition.add_molecule(he);
+    /// composition.add_molecule(he);
+    ///
+    /// assert_eq!(composition.molecules(he), 2);
+    ///
+    /// composition.remove_molecule(he);
+    ///
+    /// assert_eq!(composition.molecules(he), 1);
+    /// ```
+    pub fn remove_molecule(&mut self, hash: MoleculeHash) {
+        if let Entry::Occupied(mut count) = self.molecules.entry(hash) {
+            let count = count.get_mut();
+            if *count > 0 {
+                *count -= 1;
+            }
+        }
+    }
+
+    /// Get the number of particles with the given `hash`
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use lumol_core::sys::{Composition, Molecule, Particle};
+    /// // Getting some molecules hashes
+    /// let he = Molecule::new(Particle::new("He")).hash();
+    ///
+    /// let ar = Molecule::new(Particle::new("Ar")).hash();
+    ///
+    /// let mut n2 = Molecule::new(Particle::new("N"));
+    /// n2.add_particle_bonded_to(0, Particle::new("N"));
+    /// let n2 = n2.hash();
+    ///
+    /// let mut composition = Composition::new();
+    ///
+    /// composition.add_molecule(he);
+    /// composition.add_molecule(he);
+    /// composition.add_molecule(n2);
+    ///
+    /// assert_eq!(composition.molecules(he), 2);
+    /// assert_eq!(composition.molecules(n2), 1);
+    /// assert_eq!(composition.molecules(ar), 0);
+    /// ```
+    pub fn molecules(&self, hash: MoleculeHash) -> usize {
+        self.molecules.get(&hash).cloned().unwrap_or(0)
+    }
+
+    /// Get an iterator over the molecules hashes and count
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use lumol_core::sys::{Composition, Particle, Molecule};
+    /// let mut composition = Composition::new();
+    /// let he = Molecule::new(Particle::new("He")).hash();
+    /// let ar = Molecule::new(Particle::new("Ar")).hash();
+    ///
+    /// composition.add_molecule(he);
+    /// composition.add_molecule(he);
+    /// composition.add_molecule(ar);
+    ///
+    /// let mut iter = composition.all_molecules();
+    /// assert_eq!(iter.next(), Some((he, 2)));
+    /// assert_eq!(iter.next(), Some((ar, 1)));
     /// assert_eq!(iter.next(), None);
     /// ```
-    pub fn iter_mut(&mut self) -> IterMut {
-        self.into_iter()
-    }
-}
-
-pub struct IntoIter {
-    iter: Map<Enumerate<vec::IntoIter<usize>>, fn((usize, usize)) -> (ParticleKind, usize)>
-}
-
-impl Iterator for IntoIter {
-    type Item = (ParticleKind, usize);
-    #[inline]
-    fn next(&mut self) -> Option<Self::Item> {
-        self.iter.next()
-    }
-}
-
-impl IntoIterator for Composition {
-    type Item = (ParticleKind, usize);
-    type IntoIter = IntoIter;
-    fn into_iter(self) -> Self::IntoIter {
-        fn convert((i, ni): (usize, usize)) -> (ParticleKind, usize) {
-            (ParticleKind(i as u32), ni)
-        }
-
-        IntoIter {
-            iter: self.0.into_iter().enumerate().map(convert)
-        }
-    }
-}
-
-pub struct Iter<'a> {
-    iter: Map<Enumerate<slice::Iter<'a, usize>>, fn((usize, &'a usize)) -> (ParticleKind, &'a usize)>
-}
-
-impl<'a> Iterator for Iter<'a> {
-    type Item = (ParticleKind, &'a usize);
-    #[inline]
-    fn next(&mut self) -> Option<Self::Item> {
-        self.iter.next()
-    }
-}
-
-impl<'a> IntoIterator for &'a Composition {
-    type Item = (ParticleKind, &'a usize);
-    type IntoIter = Iter<'a>;
-    fn into_iter(self) -> Self::IntoIter {
-        fn convert((i, ni): (usize, &usize)) -> (ParticleKind, &usize) {
-            (ParticleKind(i as u32), ni)
-        }
-
-        Iter {
-            iter: self.0.iter().enumerate().map(convert)
-        }
-    }
-}
-
-pub struct IterMut<'a> {
-    iter: Map<Enumerate<slice::IterMut<'a, usize>>, fn((usize, &'a mut usize)) -> (ParticleKind, &'a mut usize)>
-}
-
-impl<'a> Iterator for IterMut<'a> {
-    type Item = (ParticleKind, &'a mut usize);
-    #[inline]
-    fn next(&mut self) -> Option<Self::Item> {
-        self.iter.next()
-    }
-}
-
-impl<'a> IntoIterator for &'a mut Composition {
-    type Item = (ParticleKind, &'a mut usize);
-    type IntoIter = IterMut<'a>;
-    fn into_iter(self) -> Self::IntoIter {
-        fn convert((i, ni): (usize, &mut usize)) -> (ParticleKind, &mut usize) {
-            (ParticleKind(i as u32), ni)
-        }
-
-        IterMut {
-            iter: self.0.iter_mut().enumerate().map(convert)
-        }
-    }
-}
-
-
-impl Index<ParticleKind> for Composition {
-    type Output = usize;
-
-    #[inline]
-    fn index(&self, i: ParticleKind) -> &usize {
-        &self.0[i.0 as usize]
-    }
-}
-
-impl IndexMut<ParticleKind> for Composition {
-    #[inline]
-    fn index_mut(&mut self, i: ParticleKind) -> &mut usize {
-        &mut self.0[i.0 as usize]
+    pub fn all_molecules<'a>(&'a self) -> impl Iterator<Item = (MoleculeHash, usize)> + 'a {
+        self.molecules
+            .iter()
+            .filter(|(_, n)| **n != 0)
+            .map(|(&m, &n)| (m, n))
     }
 }
 
@@ -242,56 +240,35 @@ mod tests {
     use super::*;
 
     #[test]
-    fn len() {
+    fn particles() {
         let mut composition = Composition::new();
-        assert_eq!(composition.len(), 0);
-        assert!(composition.is_empty());
-
-        composition.resize(10);
-        assert_eq!(composition.len(), 10);
-    }
-
-    #[test]
-    fn index() {
-        let mut composition = Composition::new();
-        composition.resize(10);
-
-        composition[ParticleKind(2)] = 56;
-        composition[ParticleKind(8)] = 2;
-        composition[ParticleKind(5)] = 42;
-
-        assert_eq!(composition[ParticleKind(2)], 56);
-        assert_eq!(composition[ParticleKind(8)], 2);
-        assert_eq!(composition[ParticleKind(5)], 42);
-    }
-
-    #[test]
-    fn iter() {
-        let mut composition = Composition::new();
-        composition.resize(4);
-        composition[ParticleKind(0)] = 2;
-        composition[ParticleKind(1)] = 4;
-        composition[ParticleKind(2)] = 6;
-        composition[ParticleKind(3)] = 8;
-
-        let mut expected = 2;
-        for (_, &count) in &composition {
-            assert_eq!(count, expected);
-            expected += 2;
-        }
-
-        for (_, count) in &mut composition {
-            *count *= 3;
-        }
-
-        for (kind, count) in composition {
-            match kind {
-                ParticleKind(0) => assert_eq!(count, 6),
-                ParticleKind(1) => assert_eq!(count, 12),
-                ParticleKind(2) => assert_eq!(count, 18),
-                ParticleKind(3) => assert_eq!(count, 24),
-                _ => panic!(),
+        for _ in 0..2 {
+            composition.add_particle(ParticleKind(0));
+            for _ in 0..2 {
+                composition.add_particle(ParticleKind(1));
+                for _ in 0..2 {
+                    composition.add_particle(ParticleKind(2));
+                }
             }
         }
+
+        let mut expected = 2;
+        for (_, count) in composition.all_particles() {
+            assert_eq!(count, expected);
+            expected *= 2;
+        }
+    }
+
+    #[test]
+    fn molecules() {
+        let mut composition = Composition::new();
+
+        composition.add_molecule(MoleculeHash::new(22));
+        composition.add_molecule(MoleculeHash::new(10));
+        composition.add_molecule(MoleculeHash::new(22));
+
+        assert_eq!(composition.molecules(MoleculeHash::new(22)), 2);
+        assert_eq!(composition.molecules(MoleculeHash::new(10)), 1);
+        assert_eq!(composition.molecules(MoleculeHash::new(124)), 0);
     }
 }
