@@ -9,8 +9,37 @@
 //!
 //! In all this module, beta refers to the Boltzmann factor 1/(kB T)
 use rand::{RngCore, Rng};
-
+use std::collections::BTreeSet;
 use sys::{EnergyCache, System, MoleculeHash};
+
+/// Possible degrees of freedom simulated by a given Monte Carlo move
+#[derive(Clone, PartialEq, Debug)]
+pub enum MCDegreeOfFreedom {
+    /// All molecules are simulated
+    AllMolecules,
+    /// All molecules with a molecule type in the `BTreeSet` are simulated
+    Molecules(BTreeSet<MoleculeHash>),
+    /// All the particles are simulated
+    Particles,
+}
+
+impl MCDegreeOfFreedom {
+    /// Combine the degrees of freedom represented by this `MCDegreeOfFreedom`
+    /// and `other`
+    pub fn combine(self, other: MCDegreeOfFreedom) -> MCDegreeOfFreedom {
+        use super::MCDegreeOfFreedom as DOF;
+        match (self, other) {
+            (DOF::Particles, _) => DOF::Particles,
+            (_, DOF::Particles) => DOF::Particles,
+            (DOF::AllMolecules, _) => DOF::AllMolecules,
+            (_, DOF::AllMolecules) => DOF::AllMolecules,
+            (DOF::Molecules(mut all), DOF::Molecules(others)) => {
+                all.extend(others);
+                DOF::Molecules(all)
+            }
+        }
+    }
+}
 
 /// The `MCMove` trait correspond to the set of methods used in Monte Carlo
 /// simulations.
@@ -20,6 +49,9 @@ pub trait MCMove {
 
     /// Set up move before simulation is run
     fn setup(&mut self, system: &System);
+
+    /// Get the number of degrees of freedom simulated by this move
+    fn degrees_of_freedom(&self) -> MCDegreeOfFreedom;
 
     /// Prepare the move by selecting the particles to move, and the parameters
     /// of the move. The `rng` random number generator should be used to

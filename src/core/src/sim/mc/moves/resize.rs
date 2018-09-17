@@ -7,7 +7,7 @@ use rand::distributions::{Range, Distribution};
 use std::f64;
 use std::mem;
 
-use super::MCMove;
+use super::{MCDegreeOfFreedom, MCMove};
 
 use sys::{Configuration, EnergyCache, System};
 use types::{Matrix3, One};
@@ -44,6 +44,10 @@ impl Resize {
 impl MCMove for Resize {
     fn describe(&self) -> &str {
         "resizing of the cell"
+    }
+
+    fn degrees_of_freedom(&self) -> MCDegreeOfFreedom {
+        MCDegreeOfFreedom::AllMolecules
     }
 
     fn setup(&mut self, system: &System) {

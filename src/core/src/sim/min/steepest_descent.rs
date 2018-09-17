@@ -5,6 +5,7 @@ use sys::System;
 use utils;
 
 use super::{Minimizer, Tolerance};
+use sim::DegreesOfFreedom;
 
 use std::f64;
 
@@ -27,6 +28,10 @@ impl SteepestDescent {
 }
 
 impl Minimizer for SteepestDescent {
+    fn degrees_of_freedom(&self, _: &System) -> DegreesOfFreedom {
+        DegreesOfFreedom::Particles
+    }
+
     fn minimize(&mut self, system: &mut System) -> Tolerance {
         // Store the current coordinates
         let prevpos = system.particles().position.to_vec();

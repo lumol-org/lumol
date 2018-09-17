@@ -8,6 +8,7 @@ use sys::System;
 /// different ways to compute the temperature: Monte Carlo temperature is a
 /// constant of the simulation, whereas for molecular dynamics we use the
 /// instantaneous velocities.
+#[derive(Clone, PartialEq, Debug)]
 pub enum TemperatureStrategy {
     /// No specific strategy, use whatever strategy was already in use.
     None,
@@ -17,16 +18,35 @@ pub enum TemperatureStrategy {
     External(f64),
 }
 
+/// The number of degrees of freedom simulated by a given propagator
+#[derive(Clone, PartialEq, Debug)]
+pub enum DegreesOfFreedom {
+    /// All particles are explicitly simulated
+    Particles,
+    /// All molecules are simulated as rigid bodies
+    Molecules,
+    /// All particles are explicitly simulated, but some degrees of freedom
+    /// are frozen. The usize value is the number of frozen degree of freedom.
+    Frozen(usize),
+}
+
 /// The propagator trait is the main algorithm of a simulation, i.e. the one
 /// which update the system. The main function here is `propagate`, which
 /// should propagate the simulation for one step.
 pub trait Propagator {
+    /// Get the temperature computation strategy for this propagator.
+    ///
+    /// This function is called once at thr beginning of the simulation
+    fn temperature_strategy(&self) -> TemperatureStrategy;
+
+    /// Get the number of degrees of freedom simulated by this propagator
+    ///
+    /// This function is called once at thr beginning of the simulation
+    fn degrees_of_freedom(&self, system: &System) -> DegreesOfFreedom;
+
     /// Setup code, preparing all the meta-information needed about the
     /// simulation.
     fn setup(&mut self, _: &System) {}
-
-    /// Get the temperature computation strategy for this propagator
-    fn temperature_strategy(&self) -> TemperatureStrategy;
 
     /// Propagate the system for one simulation step.
     fn propagate(&mut self, system: &mut System);

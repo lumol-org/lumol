@@ -2,7 +2,7 @@
 // Copyright (C) Lumol's contributors — BSD license
 
 //! Energy minimization algorithms
-use sim::{Propagator, TemperatureStrategy};
+use sim::{DegreesOfFreedom, Propagator, TemperatureStrategy};
 use sys::System;
 use utils;
 
@@ -24,9 +24,15 @@ pub trait Minimizer {
     /// Setup the minimizer. This function is called once at the begining of
     /// every simulation run.
     fn setup(&mut self, _: &System) {}
+
     /// Find a new configuration of lower energy, and return the corresponding
     /// values for energy and forces.
     fn minimize(&mut self, system: &mut System) -> Tolerance;
+
+    /// Get the number of degrees of freedom simulated by this minimizer
+    ///
+    /// This function is called once at thr beginning of the simulation
+    fn degrees_of_freedom(&self, system: &System) -> DegreesOfFreedom;
 }
 
 /// Minimization propagator for simulations.
@@ -71,6 +77,10 @@ impl Minimization {
 impl Propagator for Minimization {
     fn temperature_strategy(&self) -> TemperatureStrategy {
         TemperatureStrategy::None
+    }
+
+    fn degrees_of_freedom(&self, system: &System) -> DegreesOfFreedom {
+        self.minimizer.degrees_of_freedom(system)
     }
 
     fn setup(&mut self, system: &System) {
