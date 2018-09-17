@@ -80,12 +80,14 @@ impl System {
         self.configuration.add_molecule(molecule);
     }
 
-    /// Get the number of particles of each kind in the configuration
+    /// Get the composition in particles and molecules of the configuration
     pub fn composition(&self) -> Composition {
         let mut composition = Composition::new();
-        composition.resize(self.kinds.len());
         for &kind in self.particles().kind {
-            composition[kind] += 1;
+            composition.add_particle(kind);
+        }
+        for molecule in self.molecules() {
+            composition.add_molecule(molecule.hash());
         }
         return composition;
     }
@@ -454,11 +456,10 @@ mod tests {
         system.add_molecule(Molecule::new(Particle::new("H")));
 
         let composition = system.composition();
-        assert_eq!(composition.len(), 4);
-        assert_eq!(composition[ParticleKind(0)], 3);
-        assert_eq!(composition[ParticleKind(1)], 2);
-        assert_eq!(composition[ParticleKind(2)], 1);
-        assert_eq!(composition[ParticleKind(3)], 1);
+        assert_eq!(composition.particles(ParticleKind(0)), 3);
+        assert_eq!(composition.particles(ParticleKind(1)), 2);
+        assert_eq!(composition.particles(ParticleKind(2)), 1);
+        assert_eq!(composition.particles(ParticleKind(3)), 1);
     }
 
     #[test]

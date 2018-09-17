@@ -63,8 +63,8 @@ impl<'a> EnergyEvaluator<'a> {
         let mut energy = 0.0;
         let volume = self.system.volume();
         let composition = self.system.composition();
-        for (i, &ni) in &composition {
-            for (j, &nj) in &composition {
+        for (i, ni) in composition.all_particles() {
+            for (j, nj) in composition.all_particles() {
                 let two_pi_density = 2.0 * PI * (ni as f64) * (nj as f64) / volume;
                 for potential in self.system.interactions().pairs((i, j)) {
                     energy += two_pi_density * potential.tail_energy();

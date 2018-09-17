@@ -12,7 +12,7 @@ use types::{Vector3D, Zero};
 /// A molecule hash allow to identify a molecule from its atoms and bonds, and
 /// to know wether two molecules are the same without checking each atom and
 /// bond.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct MoleculeHash(u64);
 
 #[cfg(test)]
