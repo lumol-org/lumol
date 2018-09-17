@@ -87,11 +87,10 @@ impl ToLumol for chemfiles::Frame {
         let positions = self.positions()?;
         for i in 0..natoms {
             let atom = topology.atom(i as u64)?;
-            let particle = atom.to_lumol()?;
+            let mut particle = atom.to_lumol()?;
+            particle.position = Vector3D::new(positions[i][0], positions[i][1], positions[i][2]);
 
-            system.add_particle(particle);
-            let position = Vector3D::new(positions[i][0], positions[i][1], positions[i][2]);
-            system.particles_mut().position[i] = position;
+            system.add_molecule(Molecule::new(particle));
         }
 
         let mut bonds = topology.bonds()?;

@@ -206,7 +206,7 @@ impl Control for Rewrap {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use sys::{Particle, System, UnitCell};
+    use sys::{Particle, Molecule, System, UnitCell};
     use sys::veloc::{BoltzmannVelocities, InitVelocities};
     use utils::system_from_xyz;
 
@@ -217,9 +217,8 @@ mod tests {
             for j in 0..10 {
                 for k in 0..10 {
                     let mut particle = Particle::new("Cl");
-                    particle.position =
-                        Vector3D::new(i as f64 * 2.0, j as f64 * 2.0, k as f64 * 2.0);
-                    system.add_particle(particle);
+                    particle.position = Vector3D::new(i as f64 * 2.0, j as f64 * 2.0, k as f64 * 2.0);
+                    system.add_molecule(Molecule::new(particle));
                 }
             }
         }

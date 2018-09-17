@@ -30,7 +30,7 @@ use types::{Matrix3, Vector3D};
 /// ```
 /// use lumol_core::energy::{GlobalPotential, GlobalCache};
 /// use lumol_core::types::{Vector3D, Matrix3, Zero};
-/// use lumol_core::sys::{System, Configuration, Particle, UnitCell};
+/// use lumol_core::sys::{System, Configuration, Particle, Molecule, UnitCell};
 ///
 /// /// Shift the energy of all the particles by a given delta.
 /// #[derive(Clone)]
@@ -72,18 +72,13 @@ use types::{Matrix3, Vector3D};
 ///
 /// // A simple test
 /// let mut system = System::with_cell(UnitCell::cubic(10.0));
-/// system.add_particle(Particle::new("Na"));
-/// system.add_particle(Particle::new("Cl"));
+/// system.add_molecule(Molecule::new(Particle::new("Ar")));
+/// system.add_molecule(Molecule::new(Particle::new("Ar")));
 ///
-/// let shift = ShiftAll{delta: 1.0};
-/// system.add_global_potential(Box::new(shift));
+/// system.add_global_potential(Box::new(ShiftAll{delta: 1.0}));
 ///
 /// assert_eq!(system.potential_energy(), 2.0);
-///
-/// system.add_particle(Particle::new("Ar"));
-/// assert_eq!(system.potential_energy(), 3.0);
-///
-/// assert_eq!(system.forces(), vec![Vector3D::zero(); 3]);
+/// assert_eq!(system.forces(), vec![Vector3D::zero(); 2]);
 /// assert_eq!(system.virial(), Matrix3::zero());
 /// ```
 pub trait GlobalPotential: GlobalCache + BoxCloneGlobal + Send + Sync {

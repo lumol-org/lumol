@@ -20,16 +20,12 @@ use super::{CoulombicPotential, GlobalCache, GlobalPotential};
 /// # Examples
 ///
 /// ```
-/// use lumol_core::energy::Wolf;
-/// use lumol_core::units;
+/// # use lumol_core::sys::{Particle, Molecule, UnitCell, System};
+/// # use lumol_core::energy::Wolf;
+/// # use lumol_core::types::Vector3D;
 ///
 /// // A relatively large cutoff is needed for Wolf summation
 /// let wolf = Wolf::new(12.0);
-///
-/// use lumol_core::sys::System;
-/// use lumol_core::sys::Particle;
-/// use lumol_core::sys::UnitCell;
-/// use lumol_core::types::Vector3D;
 ///
 /// // Setup a system containing a NaCl pair
 /// let mut system = System::with_cell(UnitCell::cubic(30.0));
@@ -42,8 +38,8 @@ use super::{CoulombicPotential, GlobalCache, GlobalPotential};
 /// cl.charge = -1.0;
 /// cl.position = Vector3D::new(2.0, 0.0, 0.0);
 ///
-/// system.add_particle(na);
-/// system.add_particle(cl);
+/// system.add_molecule(Molecule::new(na));
+/// system.add_molecule(Molecule::new(cl));
 ///
 /// // Use Wolf summation for electrostatic interactions
 /// system.set_coulomb_potential(Box::new(wolf));

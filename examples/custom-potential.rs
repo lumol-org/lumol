@@ -3,11 +3,14 @@
 
 //! Using a custom potential in simulations
 extern crate lumol;
-use lumol::energy::{PairInteraction, PairPotential, Potential};
-use lumol::sim::{MolecularDynamics, Simulation};
-use lumol::sys::{Particle, System};
+
 use lumol::types::Vector3D;
 use lumol::units;
+
+use lumol::sys::{Particle, Molecule, System};
+
+use lumol::energy::{PairInteraction, PairPotential, Potential};
+use lumol::sim::{MolecularDynamics, Simulation};
 
 /// Let's define a new version of the Lennard-Jones potential, using the
 /// alternative form:
@@ -50,8 +53,8 @@ impl PairPotential for LJ {
 
 fn main() {
     let mut system = System::new();
-    system.add_particle(Particle::with_position("F", Vector3D::new(0.0, 0.0, 0.0)));
-    system.add_particle(Particle::with_position("F", Vector3D::new(1.5, 0.0, 0.0)));
+    system.add_molecule(Molecule::new(Particle::with_position("F", Vector3D::new(0.0, 0.0, 0.0))));
+    system.add_molecule(Molecule::new(Particle::with_position("F", Vector3D::new(1.5, 0.0, 0.0))));
 
     // We can now use our new potential in the system
     let lj = Box::new(LJ {

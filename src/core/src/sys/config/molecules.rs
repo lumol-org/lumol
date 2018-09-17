@@ -33,8 +33,8 @@ impl MoleculeHash {
 /// [`Molecule::add_bond()`]: struct.Molecule.html#method.add_bond
 #[derive(Debug, Clone)]
 pub struct Molecule {
-    bonding: Bonding,
-    particles: ParticleVec
+    pub(crate) bonding: Bonding,
+    pub(crate) particles: ParticleVec
 }
 
 /// An analog to [`&Molecule`] using particles stored elsewhere (in a system or

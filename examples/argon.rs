@@ -10,7 +10,7 @@ extern crate lumol;
 use lumol::energy::{LennardJones, PairInteraction};
 use lumol::out::{EnergyOutput, TrajectoryOutput};
 use lumol::sim::{MolecularDynamics, Simulation};
-use lumol::sys::{Particle, System, UnitCell};
+use lumol::sys::{Particle, Molecule, System, UnitCell};
 use lumol::sys::veloc::{BoltzmannVelocities, InitVelocities};
 use lumol::types::Vector3D;
 use lumol::units;
@@ -22,9 +22,9 @@ fn main() {
     for i in 0..5 {
         for j in 0..5 {
             for k in 0..5 {
-                let mut part = Particle::new("Ar");
-                part.position = Vector3D::new(i as f64 * 3.4, j as f64 * 3.4, k as f64 * 3.4);
-                system.add_particle(part);
+                let position = Vector3D::new(i as f64 * 3.4, j as f64 * 3.4, k as f64 * 3.4);
+                let particle = Particle::with_position("Ar", position);
+                system.add_molecule(Molecule::new(particle));
             }
         }
     }
@@ -42,8 +42,8 @@ fn main() {
     velocities.seed(129);
     velocities.init(&mut system);
 
-    let mut simulation =
-        Simulation::new(Box::new(MolecularDynamics::new(units::from(1.0, "fs").unwrap())));
+    let md = MolecularDynamics::new(units::from(1.0, "fs").unwrap());
+    let mut simulation = Simulation::new(Box::new(md));
 
     let trajectory_out = Box::new(TrajectoryOutput::new("trajectory.xyz").unwrap());
     // Write the trajectory to `trajectory.xyz` every 10 steps

@@ -10,7 +10,7 @@ use energy::{AnglePotential, BondPotential, DihedralPotential, PairInteraction};
 use energy::{CoulombicPotential, GlobalPotential};
 
 use sys::{Composition, EnergyEvaluator, Interactions};
-use sys::{Configuration, Particle, ParticleKind, UnitCell};
+use sys::{Configuration, Molecule, ParticleKind, UnitCell};
 
 /// The `System` type hold all the data about a simulated system.
 ///
@@ -72,12 +72,12 @@ impl System {
         }
     }
 
-    /// Insert a particle at the end of the internal list.
-    pub fn add_particle(&mut self, mut particle: Particle) {
-        if particle.kind == ParticleKind::invalid() {
-            particle.kind = self.get_kind(&particle.name);
+    /// Add a molecule to the system
+    pub fn add_molecule(&mut self, mut molecule: Molecule) {
+        for (kind, name) in soa_zip!(molecule.particles_mut(), [mut kind, name]) {
+            *kind = self.get_kind(name);
         }
-        self.configuration.add_particle(particle);
+        self.configuration.add_molecule(molecule);
     }
 
     /// Get the number of particles of each kind in the configuration
@@ -112,8 +112,6 @@ impl System {
         }
         self.external_temperature = temperature;
     }
-
-
 
     /// Guess the bonds in the configuration using the chemfiles algorithm.
     ///
@@ -391,7 +389,7 @@ impl DerefMut for System {
 #[cfg(test)]
 mod tests {
     use super::System;
-    use sys::{Particle, ParticleKind};
+    use sys::{Molecule, Particle, ParticleKind};
 
     #[test]
     fn step() {
@@ -414,9 +412,9 @@ mod tests {
     #[test]
     fn deref() {
         let mut system = System::new();
-        system.add_particle(Particle::new("H"));
-        system.add_particle(Particle::new("O"));
-        system.add_particle(Particle::new("H"));
+        system.add_molecule(Molecule::new(Particle::new("H")));
+        system.add_molecule(Molecule::new(Particle::new("O")));
+        system.add_molecule(Molecule::new(Particle::new("H")));
         assert_eq!(system.molecules_count(), 3);
 
         // This uses deref_mut
@@ -428,11 +426,11 @@ mod tests {
     }
 
     #[test]
-    fn add_particle() {
+    fn add_molecule() {
         let mut system = System::new();
-        system.add_particle(Particle::new("H"));
-        system.add_particle(Particle::new("O"));
-        system.add_particle(Particle::new("H"));
+        system.add_molecule(Molecule::new(Particle::new("H")));
+        system.add_molecule(Molecule::new(Particle::new("O")));
+        system.add_molecule(Molecule::new(Particle::new("H")));
 
         assert_eq!(system.particles().kind[0], ParticleKind(0));
         assert_eq!(system.particles().kind[1], ParticleKind(1));
@@ -442,13 +440,13 @@ mod tests {
     #[test]
     fn composition() {
         let mut system = System::new();
-        system.add_particle(Particle::new("H"));
-        system.add_particle(Particle::new("O"));
-        system.add_particle(Particle::new("O"));
-        system.add_particle(Particle::new("H"));
-        system.add_particle(Particle::new("C"));
-        system.add_particle(Particle::new("U"));
-        system.add_particle(Particle::new("H"));
+        system.add_molecule(Molecule::new(Particle::new("H")));
+        system.add_molecule(Molecule::new(Particle::new("O")));
+        system.add_molecule(Molecule::new(Particle::new("O")));
+        system.add_molecule(Molecule::new(Particle::new("H")));
+        system.add_molecule(Molecule::new(Particle::new("C")));
+        system.add_molecule(Molecule::new(Particle::new("U")));
+        system.add_molecule(Molecule::new(Particle::new("H")));
 
         let composition = system.composition();
         assert_eq!(composition.len(), 4);
@@ -461,10 +459,10 @@ mod tests {
     #[test]
     fn missing_interaction() {
         let mut system = System::new();
-        system.add_particle(Particle::new("He"));
-        system.add_particle(Particle::new("He"));
-        system.add_particle(Particle::new("He"));
-        system.add_particle(Particle::new("He"));
+        system.add_molecule(Molecule::new(Particle::new("He")));
+        system.add_molecule(Molecule::new(Particle::new("He")));
+        system.add_molecule(Molecule::new(Particle::new("He")));
+        system.add_molecule(Molecule::new(Particle::new("He")));
         assert_eq!(system.pair_potentials(0, 0).len(), 0);
         assert_eq!(system.bond_potentials(0, 0).len(), 0);
         assert_eq!(system.angle_potentials(0, 0, 0).len(), 0);

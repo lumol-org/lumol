@@ -10,8 +10,8 @@ use types::{Vector3D, Zero};
 use energy::BondPath;
 
 use sys::{BondDistances, Bonding, ParticleKind, UnitCell};
-use sys::{Particle, ParticleSlice, ParticleSliceMut, ParticleVec, ParticlePtrMut};
-use sys::{MoleculeRef, MoleculeRefMut};
+use sys::{ParticleSlice, ParticleSliceMut, ParticleVec, ParticlePtrMut};
+use sys::{Molecule, MoleculeRef, MoleculeRefMut};
 
 struct MoleculeIterMut<'a> {
     bondings: ::std::slice::Iter<'a, Bonding>,
@@ -248,37 +248,25 @@ impl Configuration {
         return permutations;
     }
 
-    /// Removes particle at index `i` and any associated bonds, angle or
-    /// dihedral.
-    pub fn remove_particle(&mut self, i: usize) {
-        let molid = self.molecule_ids[i];
-
-        if self.bondings[molid].size() == 1 {
-            self.remove_molecule(molid);
-        } else {
-            self.bondings[molid].remove_particle(i);
-            for molecule in self.bondings.iter_mut().skip(molid + 1) {
-                molecule.translate_by(-1);
+    /// Add a molecule to the configuration, putting the new particles at the
+    /// end of the particles list
+    pub fn add_molecule(&mut self, mut molecule: Molecule) {
+        for particle in molecule.particles() {
+            assert_ne!(*particle.kind, ParticleKind::invalid());
+            if *particle.mass < 0.0 || f64::is_nan(*particle.mass) {
+                warn_once!(
+                    "Adding a particle ({}) with an invalid mass: {}",
+                    particle.name, particle.mass
+                );
             }
-            let _ = self.molecule_ids.remove(i);
-            let _ = self.particles.remove(i);
-        }
-    }
-
-    /// Insert a particle at the end of the internal list. The new particle
-    /// must have a valid particle kind.
-    pub fn add_particle(&mut self, particle: Particle) {
-        assert_ne!(particle.kind, ParticleKind::invalid());
-        if particle.mass < 0.0 || f64::is_nan(particle.mass) {
-            warn_once!(
-                "Adding a particle ({}) with an invalid mass: {}",
-                particle.name, particle.mass
-            );
         }
 
-        self.particles.push(particle);
-        self.bondings.push(Bonding::new(self.particles.len() - 1));
-        self.molecule_ids.push(self.bondings.len() - 1);
+        let mut bonding = molecule.bonding;
+        bonding.translate_by(self.particles.len() as isize);
+
+        self.molecule_ids.append(&mut vec![self.bondings.len(); bonding.size()]);
+        self.bondings.push(bonding);
+        self.particles.append(&mut molecule.particles);
     }
 
     /// Get the number of particles in this configuration
@@ -484,7 +472,7 @@ impl Configuration {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use sys::{Angle, Bond, Dihedral};
+    use sys::{Angle, Bond, Dihedral, Particle, Molecule};
     use energy::BondPath;
     use types::Vector3D;
 
@@ -507,10 +495,10 @@ mod tests {
     #[test]
     fn molecules() {
         let mut configuration = Configuration::new();
-        configuration.add_particle(particle("H"));
-        configuration.add_particle(particle("O"));
-        configuration.add_particle(particle("O"));
-        configuration.add_particle(particle("H"));
+        configuration.add_molecule(Molecule::new(particle("H")));
+        configuration.add_molecule(Molecule::new(particle("O")));
+        configuration.add_molecule(Molecule::new(particle("O")));
+        configuration.add_molecule(Molecule::new(particle("H")));
 
         assert_eq!(configuration.add_bond(0, 1), vec![]);
         assert_eq!(configuration.add_bond(2, 3), vec![]);
@@ -530,9 +518,6 @@ mod tests {
         assert!(molecule.angles().contains(&Angle::new(1, 2, 3)));
         assert!(molecule.dihedrals().contains(&Dihedral::new(0, 1, 2, 3)));
 
-        configuration.remove_particle(2);
-        assert_eq!(configuration.molecules_count(), 1);
-
         let molid = configuration.molecule_id(1);
         configuration.remove_molecule(molid);
         assert_eq!(configuration.molecules_count(), 0);
@@ -540,51 +525,17 @@ mod tests {
     }
 
     #[test]
-    fn remove_particles() {
-        let mut configuration = Configuration::new();
-        configuration.add_particle(particle("H"));
-        configuration.add_particle(particle("F"));
-        configuration.add_particle(particle("Na"));
-        configuration.add_particle(particle("H"));
-
-        assert_eq!(configuration.add_bond(0, 1), vec![]);
-        assert_eq!(configuration.molecules_count(), 3);
-
-        configuration.remove_particle(0);
-        // Still 3 molecules
-        assert_eq!(configuration.molecules_count(), 3);
-
-        configuration.remove_particle(1);
-        assert_eq!(configuration.molecules_count(), 2);
-    }
-
-    #[test]
-    fn add_bonds() {
-        // This is a regression test for issue #76
-        let mut configuration = Configuration::new();
-        configuration.add_particle(particle("H"));
-        configuration.add_particle(particle("H"));
-        configuration.add_particle(particle("O"));
-
-        assert_eq!(configuration.add_bond(0, 2), vec![(2, 1), (1, 2)]);
-        assert_eq!(configuration.add_bond(2, 1), vec![]);
-        assert_eq!(configuration.molecules_count(), 1);
-    }
-
-    #[test]
     fn bond_path() {
         let mut configuration = Configuration::new();
-        configuration.add_particle(particle("C"));
-        configuration.add_particle(particle("C"));
-        configuration.add_particle(particle("C"));
-        configuration.add_particle(particle("C"));
-        configuration.add_particle(particle("C"));
-        configuration.add_particle(particle("Zn"));
 
-        let _ = configuration.add_bond(0, 1);
-        let _ = configuration.add_bond(1, 2);
-        let _ = configuration.add_bond(2, 3);
-        let _ = configuration.add_bond(3, 4);
+        let mut pentane = Molecule::new(particle("CH3"));
+        pentane.add_particle_bonded_to(0, particle("CH2"));
+        pentane.add_particle_bonded_to(1, particle("CH2"));
+        pentane.add_particle_bonded_to(2, particle("CH2"));
+        pentane.add_particle_bonded_to(3, particle("CH3"));
+
+        configuration.add_molecule(pentane);
+        configuration.add_molecule(Molecule::new(particle("Zn")));
 
         assert_eq!(configuration.bond_path(0, 0), BondPath::SameParticle);
         assert_eq!(configuration.bond_path(0, 1), BondPath::OneBond);
@@ -595,17 +546,17 @@ mod tests {
     }
 
     #[test]
-    fn molecules_permutations() {
+    fn add_bond_permutations() {
         let mut configuration = Configuration::new();
-        configuration.add_particle(particle("C"));
-        configuration.add_particle(particle("H"));
-        configuration.add_particle(particle("H"));
-        configuration.add_particle(particle("H"));
+        configuration.add_molecule(Molecule::new(particle("C")));
+        configuration.add_molecule(Molecule::new(particle("H")));
+        configuration.add_molecule(Molecule::new(particle("H")));
+        configuration.add_molecule(Molecule::new(particle("H")));
 
-        configuration.add_particle(particle("C"));
-        configuration.add_particle(particle("H"));
-        configuration.add_particle(particle("H"));
-        configuration.add_particle(particle("H"));
+        configuration.add_molecule(Molecule::new(particle("C")));
+        configuration.add_molecule(Molecule::new(particle("H")));
+        configuration.add_molecule(Molecule::new(particle("H")));
+        configuration.add_molecule(Molecule::new(particle("H")));
 
         assert_eq!(configuration.add_bond(0, 3), vec![(3, 1), (1, 2), (2, 3)]);
         assert_eq!(configuration.add_bond(0, 3), vec![(3, 2), (2, 3)]);
@@ -614,14 +565,24 @@ mod tests {
         assert_eq!(configuration.add_bond(4, 5), vec![]);
         assert_eq!(configuration.add_bond(4, 7), vec![(7, 6), (6, 7)]);
         assert_eq!(configuration.add_bond(4, 7), vec![]);
+
+        // This is a regression test for issue #76
+        let mut configuration = Configuration::new();
+        configuration.add_molecule(Molecule::new(particle("H")));
+        configuration.add_molecule(Molecule::new(particle("H")));
+        configuration.add_molecule(Molecule::new(particle("O")));
+
+        assert_eq!(configuration.add_bond(0, 2), vec![(2, 1), (1, 2)]);
+        assert_eq!(configuration.add_bond(2, 1), vec![]);
+        assert_eq!(configuration.molecules_count(), 1);
     }
 
     #[test]
     fn particles() {
         let mut configuration = Configuration::new();
-        configuration.add_particle(particle("O"));
-        configuration.add_particle(particle("H"));
-        configuration.add_particle(particle("H"));
+        configuration.add_molecule(Molecule::new(particle("O")));
+        configuration.add_molecule(Molecule::new(particle("H")));
+        configuration.add_molecule(Molecule::new(particle("H")));
 
         assert_eq!(configuration.size(), 3);
         assert_eq!(configuration.particles().name[0], "O");
@@ -633,8 +594,8 @@ mod tests {
     fn distances() {
         let mut configuration = Configuration::new();
         configuration.cell = UnitCell::cubic(5.0);
-        configuration.add_particle(particle("O"));
-        configuration.add_particle(particle("H"));
+        configuration.add_molecule(Molecule::new(particle("O")));
+        configuration.add_molecule(Molecule::new(particle("H")));
 
         configuration.particles_mut().position[0] = Vector3D::new(9.0, 0.0, 0.0);
         configuration.particles_mut().position[1] = Vector3D::zero();
@@ -648,26 +609,23 @@ mod tests {
     fn hash() {
         let mut configuration = Configuration::new();
         // One helium
-        configuration.add_particle(particle("He"));
+        configuration.add_molecule(Molecule::new(particle("He")));
+
         // Two water molecules
-        configuration.add_particle(particle("H"));
-        configuration.add_particle(particle("O"));
-        configuration.add_particle(particle("H"));
-        let _ = configuration.add_bond(1, 2);
-        let _ = configuration.add_bond(2, 3);
-        configuration.add_particle(particle("H"));
-        configuration.add_particle(particle("O"));
-        configuration.add_particle(particle("H"));
-        let _ = configuration.add_bond(4, 5);
-        let _ = configuration.add_bond(5, 6);
+        let mut water = Molecule::new(particle("H"));
+        water.add_particle_bonded_to(0, particle("O"));
+        water.add_particle_bonded_to(1, particle("H"));
+        configuration.add_molecule(water.clone());
+        configuration.add_molecule(water);
+
         // Another helium
-        configuration.add_particle(particle("He"));
+        configuration.add_molecule(Molecule::new(particle("He")));
+
         // A water molecules, with different atoms order
-        configuration.add_particle(particle("O"));
-        configuration.add_particle(particle("H"));
-        configuration.add_particle(particle("H"));
-        let _ = configuration.add_bond(8, 9);
-        let _ = configuration.add_bond(8, 10);
+        let mut water = Molecule::new(particle("O"));
+        water.add_particle_bonded_to(0, particle("H"));
+        water.add_particle_bonded_to(0, particle("H"));
+        configuration.add_molecule(water);
 
         assert_eq!(configuration.molecules_count(), 5);
         // The helium particles
