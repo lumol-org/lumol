@@ -46,7 +46,7 @@ fn cache_move_particles(bencher: &mut Bencher) {
         145, 59, 58, 50, 238, 182, 97, 28, 107, 149, 227, 40, 90, 109, 196, 129
     ]);
 
-    let molid = rng.gen_range(0, system.molecules_count());
+    let molid = rng.gen_range(0, system.molecules().count());
     let molecule = system.molecule(molid);
     let delta = Vector3D::new(rng.gen(), rng.gen(), rng.gen());
     let mut new_positions = Vec::new();

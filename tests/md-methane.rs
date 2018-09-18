@@ -21,7 +21,7 @@ fn bonds_detection() {
                                  .join("md-methane")
                                  .join("nve.toml");
     let system = Input::new(path).unwrap().read_system().unwrap();
-    assert_eq!(system.molecules_count(), 150);
+    assert_eq!(system.molecules().count(), 150);
 
     for molecule in system.molecules() {
         assert_eq!(molecule.bonds().len(), 4);

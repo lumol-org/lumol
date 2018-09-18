@@ -550,7 +550,7 @@ END
             .read().unwrap();
 
         assert_eq!(system.size(), 6);
-        assert_eq!(system.molecules_count(), 4);
+        assert_eq!(system.molecules().count(), 4);
         assert_eq!(system.cell, UnitCell::cubic(28.0));
 
         let molecule = system.molecule(0);

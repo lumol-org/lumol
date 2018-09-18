@@ -400,7 +400,7 @@ mod tests {
             assert!(system.add_bond(0, 2).is_empty());
             assert!(system.add_bond(3, 4).is_empty());
             assert!(system.add_bond(3, 5).is_empty());
-            assert!(system.molecules_count() == 2);
+            assert!(system.molecules().count() == 2);
 
             for particle in system.particles_mut() {
                 if particle.name == "O" {

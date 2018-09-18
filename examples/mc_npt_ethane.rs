@@ -39,7 +39,7 @@ fn get_system() -> System {
     system.add_bond_potential(("C", "C"), bond);
 
     // Check if bonds are guessed correctly.
-    assert_eq!(system.size(), 2 * system.molecules_count());
+    assert_eq!(system.size(), 2 * system.molecules().count());
     system
 }
 

@@ -321,7 +321,7 @@ impl System {
         match self.simulated_degrees_of_freedom {
             DegreesOfFreedom::Particles => 3 * self.size(),
             DegreesOfFreedom::Frozen(frozen) => 3 * self.size() - frozen,
-            DegreesOfFreedom::Molecules => 3 * self.molecules_count(),
+            DegreesOfFreedom::Molecules => 3 * self.molecules().count(),
         }
     }
 
@@ -432,14 +432,14 @@ mod tests {
         system.add_molecule(Molecule::new(Particle::new("H")));
         system.add_molecule(Molecule::new(Particle::new("O")));
         system.add_molecule(Molecule::new(Particle::new("H")));
-        assert_eq!(system.molecules_count(), 3);
+        assert_eq!(system.molecules().count(), 3);
 
         // This uses deref_mut
         let _ = system.add_bond(0, 1);
         let _ = system.add_bond(2, 1);
 
         // This uses deref
-        assert_eq!(system.molecules_count(), 1);
+        assert_eq!(system.molecules().count(), 1);
     }
 
     #[test]

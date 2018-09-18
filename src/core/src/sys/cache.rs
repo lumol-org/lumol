@@ -327,7 +327,7 @@ mod tests {
         assert!(system.add_bond(4, 5).is_empty());
         assert!(system.add_bond(4, 6).is_empty());
         assert!(system.add_bond(5, 7).is_empty());
-        assert!(system.molecules_count() == 2);
+        assert!(system.molecules().count() == 2);
 
         system.add_pair_potential(
             ("H", "H"),

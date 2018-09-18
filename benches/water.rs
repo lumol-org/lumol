@@ -69,7 +69,7 @@ mod ewald {
             206, 1, 245, 36, 62, 147, 30, 213, 177, 131, 94, 148, 239, 154, 161, 1
         ]);
 
-        let molid = rng.gen_range(0, system.molecules_count());
+        let molid = rng.gen_range(0, system.molecules().count());
         let molecule = system.molecule(molid);
         let delta = Vector3D::new(rng.gen(), rng.gen(), rng.gen());
         let mut new_positions = Vec::new();
@@ -163,7 +163,7 @@ mod wolf {
             215, 235, 194, 22, 205, 151, 210, 241, 188, 67, 241, 2, 204, 62, 11, 201
         ]);
 
-        let molid = rng.gen_range(0, system.molecules_count());
+        let molid = rng.gen_range(0, system.molecules().count());
         let molecule = system.molecule(molid);
         let delta = Vector3D::new(rng.gen(), rng.gen(), rng.gen());
         let mut new_positions = Vec::new();

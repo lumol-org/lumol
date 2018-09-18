@@ -109,7 +109,7 @@ impl MCMove for Resize {
         let delta_volume = new_volume - old_volume;
         // Build and return the cost function.
         beta * (delta_energy + self.pressure * delta_volume)
-            - (system.molecules_count() as f64) * f64::ln(new_volume / old_volume)
+            - (system.molecules().count() as f64) * f64::ln(new_volume / old_volume)
     }
 
     fn apply(&mut self, _: &mut System) {

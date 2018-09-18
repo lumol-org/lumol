@@ -4,52 +4,16 @@
 //! The Configuration type definition
 
 use std::cmp::{max, min};
+use std::marker::PhantomData;
+// use std::iter::DoubleEndedIterator
 
 use types::{Vector3D, Zero};
 
 use energy::BondPath;
 
 use sys::{BondDistances, Bonding, ParticleKind, UnitCell};
-use sys::{ParticleSlice, ParticleSliceMut, ParticleVec, ParticlePtrMut};
+use sys::{ParticleSlice, ParticleSliceMut, ParticleVec, ParticlePtr, ParticlePtrMut};
 use sys::{Molecule, MoleculeRef, MoleculeRefMut};
-
-struct MoleculeIterMut<'a> {
-    bondings: ::std::slice::Iter<'a, Bonding>,
-    particles: ParticlePtrMut,
-    #[cfg(debug_assertions)]
-    current: usize,
-    #[cfg(debug_assertions)]
-    size: usize,
-}
-
-impl<'a> Iterator for MoleculeIterMut<'a> {
-    type Item = MoleculeRefMut<'a>;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        match self.bondings.next() {
-            Some(bonding) => {
-                let len = bonding.size();
-                // Check that we are really in bounds in debug mode
-                #[cfg(debug_assertions)]
-                debug_assert!(self.current < self.size);
-
-                let slice = unsafe {
-                    let slice = ParticleSliceMut::from_raw_parts_mut(self.particles, len);
-                    self.particles = self.particles.add(len);
-                    slice
-                };
-                // Check that we are really in bounds in debug mode
-                #[cfg(debug_assertions)]
-                debug_assert!({
-                    self.current += len;
-                    self.current <= self.size
-                });
-                return Some(MoleculeRefMut::new(bonding, slice));
-            },
-            None => None
-        }
-    }
-}
 
 /// Particles permutations:. Indexes are given in the `(old, new)` form.
 pub type Permutations = Vec<(usize, usize)>;
@@ -91,25 +55,31 @@ impl Configuration {
         self.molecule_ids[i] == self.molecule_ids[j]
     }
 
-    /// Get the number of molecules in this configuration.
-    pub fn molecules_count(&self) -> usize {
-        self.bondings.len()
+    /// Get an iterator over the molecules in the configuration.
+    pub fn molecules(&self) -> MoleculeIter {
+        let ptr = self.particles.as_ptr();
+        let end = unsafe {
+            ptr.add(self.particles.len())
+        };
+        MoleculeIter {
+            bondings: self.bondings.iter(),
+            ptr: ptr,
+            end: end,
+            _marker: PhantomData,
+        }
     }
 
     /// Get an iterator over the molecules in the configuration.
-    pub fn molecules(&self) -> impl Iterator<Item = MoleculeRef> {
-        (0..self.bondings.len()).map(move |i| self.molecule(i))
-    }
-
-    /// Get an iterator over the molecules in the configuration.
-    pub fn molecules_mut(&mut self) -> impl Iterator<Item = MoleculeRefMut> {
+    pub fn molecules_mut(&mut self) -> MoleculeIterMut {
+        let ptr = self.particles.as_mut_ptr();
+        let end = unsafe {
+            ptr.add(self.particles.len())
+        };
         MoleculeIterMut {
             bondings: self.bondings.iter(),
-            particles: self.particles.as_mut_ptr(),
-            #[cfg(debug_assertions)]
-            current: 0,
-            #[cfg(debug_assertions)]
-            size: self.size(),
+            ptr: ptr,
+            end: end,
+            _marker: PhantomData,
         }
     }
 
@@ -469,6 +439,123 @@ impl Configuration {
     }
 }
 
+/// An iterator over all the molecules in a `Configuration`
+pub struct MoleculeIter<'a> {
+    bondings: ::std::slice::Iter<'a, Bonding>,
+    ptr: ParticlePtr,
+    end: ParticlePtr,
+    _marker: PhantomData<ParticleSlice<'a>>
+}
+
+impl<'a> Iterator for MoleculeIter<'a> {
+    type Item = MoleculeRef<'a>;
+
+    #[inline]
+    fn next(&mut self) -> Option<Self::Item> {
+        if let Some(bonding) = self.bondings.next() {
+            debug_assert!(self.ptr.name < self.end.name);
+            let len = bonding.size();
+            let slice = unsafe {
+                let slice = ParticleSlice::from_raw_parts(self.ptr, len);
+                self.ptr = self.ptr.add(len);
+                slice
+            };
+            debug_assert!(self.ptr.name <= self.end.name);
+            return Some(MoleculeRef::new(bonding, slice));
+        } else {
+            None
+        }
+    }
+
+    #[inline]
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        self.bondings.size_hint()
+    }
+
+    #[inline]
+    fn count(self) -> usize {
+        self.bondings.count()
+    }
+}
+
+impl<'a> DoubleEndedIterator for MoleculeIter<'a> {
+    #[inline]
+    fn next_back(&mut self) -> Option<Self::Item> {
+        if let Some(bonding) = self.bondings.next_back() {
+            debug_assert!(self.ptr.name < self.end.name);
+            let len = bonding.size();
+            let slice = unsafe {
+                self.end = self.end.sub(len);
+                let slice = ParticleSlice::from_raw_parts(self.end, len);
+                slice
+            };
+            debug_assert!(self.ptr.name <= self.end.name);
+            return Some(MoleculeRef::new(bonding, slice));
+        } else {
+            None
+        }
+    }
+}
+
+/// A mutable iterator over all the molecules in a `Configuration`
+pub struct MoleculeIterMut<'a> {
+    bondings: ::std::slice::Iter<'a, Bonding>,
+    ptr: ParticlePtrMut,
+    end: ParticlePtrMut,
+    _marker: PhantomData<ParticleSliceMut<'a>>
+}
+
+impl<'a> Iterator for MoleculeIterMut<'a> {
+    type Item = MoleculeRefMut<'a>;
+
+    #[inline]
+    fn next(&mut self) -> Option<Self::Item> {
+        if let Some(bonding) = self.bondings.next() {
+            debug_assert!(self.ptr.name < self.end.name);
+            let len = bonding.size();
+            let slice = unsafe {
+                let slice = ParticleSliceMut::from_raw_parts_mut(self.ptr, len);
+                self.ptr = self.ptr.add(len);
+                slice
+            };
+            debug_assert!(self.ptr.name <= self.end.name);
+            return Some(MoleculeRefMut::new(bonding, slice));
+        } else {
+            None
+        }
+    }
+
+    #[inline]
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        self.bondings.size_hint()
+    }
+
+    #[inline]
+    fn count(self) -> usize {
+        self.bondings.count()
+    }
+}
+
+impl<'a> DoubleEndedIterator for MoleculeIterMut<'a> {
+    #[inline]
+    fn next_back(&mut self) -> Option<Self::Item> {
+        if let Some(bonding) = self.bondings.next_back() {
+            debug_assert!(self.ptr.name < self.end.name);
+            let len = bonding.size();
+            let slice = unsafe {
+                self.end = self.end.sub(len);
+                let slice = ParticleSliceMut::from_raw_parts_mut(self.end, len);
+                slice
+            };
+            debug_assert!(self.ptr.name <= self.end.name);
+            return Some(MoleculeRefMut::new(bonding, slice));
+        } else {
+            None
+        }
+    }
+}
+
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -495,23 +582,22 @@ mod tests {
     #[test]
     fn molecules() {
         let mut configuration = Configuration::new();
-        configuration.add_molecule(Molecule::new(particle("H")));
-        configuration.add_molecule(Molecule::new(particle("O")));
-        configuration.add_molecule(Molecule::new(particle("O")));
-        configuration.add_molecule(Molecule::new(particle("H")));
 
-        assert_eq!(configuration.add_bond(0, 1), vec![]);
-        assert_eq!(configuration.add_bond(2, 3), vec![]);
+        let mut molecule = Molecule::new(particle("H"));
+        molecule.add_particle_bonded_to(0, particle("O"));
+        configuration.add_molecule(molecule);
 
-        assert_eq!(configuration.molecules_count(), 2);
+        let mut molecule = Molecule::new(particle("0"));
+        molecule.add_particle_bonded_to(0, particle("H"));
+        configuration.add_molecule(molecule);
 
-        let molecule = configuration.molecule(0).clone();
-        assert!(molecule.bonds().contains(&Bond::new(0, 1)));
-        let molecule = configuration.molecule(1).clone();
-        assert!(molecule.bonds().contains(&Bond::new(2, 3)));
+        assert_eq!(configuration.molecules().count(), 2);
 
-        assert_eq!(configuration.add_bond(1, 2), vec![]);
-        assert_eq!(configuration.molecules_count(), 1);
+        assert!(configuration.molecule(0).bonds().contains(&Bond::new(0, 1)));
+        assert!(configuration.molecule(1).bonds().contains(&Bond::new(2, 3)));
+
+        assert!(configuration.add_bond(1, 2).is_empty());
+        assert_eq!(configuration.molecules().count(), 1);
 
         let molecule = configuration.molecule(0).clone();
         assert!(molecule.angles().contains(&Angle::new(0, 1, 2)));
@@ -520,8 +606,126 @@ mod tests {
 
         let molid = configuration.molecule_id(1);
         configuration.remove_molecule(molid);
-        assert_eq!(configuration.molecules_count(), 0);
+        assert_eq!(configuration.molecules().count(), 0);
         assert_eq!(configuration.size(), 0);
+    }
+
+    mod iterators {
+        use super::super::*;
+        use super::particle;
+        use sys::Molecule;
+
+        #[test]
+        fn count() {
+            let mut configuration = Configuration::new();
+            assert_eq!(configuration.molecules().count(), 0);
+            assert_eq!(configuration.molecules_mut().count(), 0);
+
+            configuration.add_molecule(Molecule::new(particle("Ar")));
+            configuration.add_molecule(Molecule::new(particle("Ar")));
+            configuration.add_molecule(Molecule::new(particle("He")));
+
+            assert_eq!(configuration.molecules().count(), 3);
+            assert_eq!(configuration.molecules_mut().count(), 3);
+        }
+
+        #[test]
+        fn next() {
+            let mut configuration = Configuration::new();
+
+            {
+                let mut iter = configuration.molecules();
+                assert!(iter.next().is_none());
+                assert_eq!(iter.ptr.name, iter.end.name);
+            }
+            {
+                let mut iter = configuration.molecules_mut();
+                assert!(iter.next().is_none());
+                assert_eq!(iter.ptr.name, iter.end.name);
+            }
+
+            configuration.add_molecule(Molecule::new(particle("Ar")));
+
+            let mut molecule = Molecule::new(particle("H"));
+            molecule.add_particle_bonded_to(0, particle("O"));
+            molecule.add_particle_bonded_to(1, particle("H"));
+            configuration.add_molecule(molecule);
+
+            for (i, molecule) in configuration.molecules().enumerate() {
+                if i == 0 {
+                    assert_eq!(molecule.size(), 1);
+                    assert_eq!(molecule.particles().name[0], "Ar");
+                } else if i == 1 {
+                    assert_eq!(molecule.size(), 3);
+                    assert_eq!(molecule.particles().name[0], "H");
+                    assert_eq!(molecule.particles().name[1], "O");
+                    assert_eq!(molecule.particles().name[2], "H");
+                }
+            }
+
+            for mut molecule in configuration.molecules_mut() {
+                for name in molecule.particles_mut().name {
+                    if *name == "Ar" {
+                        *name = String::from("He");
+                    }
+                }
+            }
+
+            assert_eq!(configuration.molecule(0).particles().name[0], "He");
+
+            {
+                let mut iter = configuration.molecules();
+                assert_eq!(iter.next().unwrap().size(), 1);
+                assert_eq!(iter.next().unwrap().size(), 3);
+                assert!(iter.next().is_none());
+            }
+
+            {
+                let mut iter = configuration.molecules_mut();
+                assert_eq!(iter.next().unwrap().size(), 1);
+                assert_eq!(iter.next().unwrap().size(), 3);
+                assert!(iter.next().is_none());
+            }
+        }
+
+        #[test]
+        fn next_back() {
+            let mut configuration = Configuration::new();
+
+            {
+                let mut iter = configuration.molecules();
+                assert_eq!(iter.ptr.name, iter.end.name);
+                assert!(iter.next_back().is_none());
+            }
+            {
+                let mut iter = configuration.molecules_mut();
+                assert_eq!(iter.ptr.name, iter.end.name);
+                assert!(iter.next_back().is_none());
+            }
+
+            configuration.add_molecule(Molecule::new(particle("Ar")));
+
+            let mut molecule = Molecule::new(particle("H"));
+            molecule.add_particle_bonded_to(0, particle("O"));
+            molecule.add_particle_bonded_to(1, particle("H"));
+            configuration.add_molecule(molecule);
+
+            {
+                let mut iter = configuration.molecules();
+                assert_eq!(iter.next_back().unwrap().size(), 3);
+                assert_eq!(iter.next().unwrap().size(), 1);
+                assert!(iter.next().is_none());
+                assert!(iter.next_back().is_none());
+            }
+
+            {
+                let mut iter = configuration.molecules_mut();
+                assert_eq!(iter.next_back().unwrap().size(), 3);
+                assert_eq!(iter.next().unwrap().size(), 1);
+                assert!(iter.next().is_none());
+                assert!(iter.next_back().is_none());
+            }
+        }
     }
 
     #[test]
@@ -574,7 +778,7 @@ mod tests {
 
         assert_eq!(configuration.add_bond(0, 2), vec![(2, 1), (1, 2)]);
         assert_eq!(configuration.add_bond(2, 1), vec![]);
-        assert_eq!(configuration.molecules_count(), 1);
+        assert_eq!(configuration.molecules().count(), 1);
     }
 
     #[test]
@@ -627,7 +831,7 @@ mod tests {
         water.add_particle_bonded_to(0, particle("H"));
         configuration.add_molecule(water);
 
-        assert_eq!(configuration.molecules_count(), 5);
+        assert_eq!(configuration.molecules().count(), 5);
         // The helium particles
         assert_eq!(
             configuration.molecule(0).hash(),

@@ -102,7 +102,7 @@ fn select_molecule(system: &System, hash: Option<MoleculeHash>, rng: &mut RngCor
             .collect::<Vec<_>>();
         return rng.choose(&mols).cloned();
     } else {
-        let nmols = system.molecules_count();
+        let nmols = system.molecules().count();
         if nmols == 0 {
             return None;
         } else {
