@@ -18,11 +18,13 @@ pub struct Collecter {
 }
 
 impl Collecter {
-    pub fn new(start: u64) -> Collecter {
+    pub fn starting_at(start: u64) -> Collecter {
+        let pressures = Vec::with_capacity(10_000);
+        let temperatures = Vec::with_capacity(10_000);
         Collecter {
             start: start,
-            pressures: Rc::new(RwLock::new(Vec::new())),
-            temperatures: Rc::new(RwLock::new(Vec::new())),
+            pressures: Rc::new(RwLock::new(pressures)),
+            temperatures: Rc::new(RwLock::new(temperatures)),
         }
     }
 

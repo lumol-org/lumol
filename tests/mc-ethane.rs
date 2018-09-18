@@ -1,5 +1,6 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) Lumol's contributors — BSD license
+
 extern crate env_logger;
 extern crate lumol;
 extern crate lumol_input as input;
@@ -14,23 +15,23 @@ static START: Once = ONCE_INIT;
 mod utils;
 
 #[test]
-fn npt() {
+fn constant_pressure() {
     START.call_once(::env_logger::init);
     let path = Path::new(file!()).parent()
                                  .unwrap()
                                  .join("data")
-                                 .join("mc-argon")
+                                 .join("mc-ethane")
                                  .join("npt.toml");
-
     let mut config = Input::new(path).unwrap().read().unwrap();
 
-    let collecter = utils::Collecter::starting_at(500);
+    let collecter = utils::Collecter::starting_at((config.nsteps - 50_000) as u64);
     let pressures = collecter.pressures();
 
     config.simulation.add_output(Box::new(collecter));
     config.simulation.run(&mut config.system, config.nsteps);
 
+    let pressure = utils::mean(pressures.clone());
     let expected = units::from(200.0, "bar").unwrap();
-    let pressure = ::utils::mean(pressures.clone());
-    assert!(f64::abs(pressure - expected) / expected < 1e-2);
+    let tolerance = units::from(200.0, "bar").unwrap();
+    assert!(f64::abs(pressure - expected) < tolerance);
 }
