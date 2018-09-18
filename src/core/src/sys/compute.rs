@@ -359,7 +359,7 @@ mod test {
         assert!(system.add_bond(0, 1).is_empty());
         assert!(system.add_bond(1, 2).is_empty());
         assert!(system.add_bond(2, 3).is_empty());
-        assert_eq!(system.molecules_count(), 1);
+        assert_eq!(system.molecules().count(), 1);
         assert_eq!(system.molecule(0).bonds().len(), 3);
 
         system.add_pair_potential(("F", "F"), PairInteraction::new(Box::new(NullPotential), 0.0));

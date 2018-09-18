@@ -30,3 +30,4 @@ pub use self::molecules::{Molecule, MoleculeRef, MoleculeRefMut, MoleculeHash};
 
 mod configuration;
 pub use self::configuration::Configuration;
+pub use self::configuration::{MoleculeIter, MoleculeIterMut};

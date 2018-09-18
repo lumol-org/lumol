@@ -941,7 +941,7 @@ mod tests {
         ");
         assert!(system.add_bond(0, 1).is_empty());
         assert!(system.add_bond(0, 2).is_empty());
-        assert!(system.molecules_count() == 1);
+        assert!(system.molecules().count() == 1);
 
         for particle in system.particles_mut() {
             if particle.name == "O" {
@@ -1252,7 +1252,7 @@ mod tests {
         assert!(system.add_bond(1, 2).is_empty());
         assert!(system.add_bond(3, 4).is_empty());
         assert!(system.add_bond(4, 5).is_empty());
-        assert!(system.molecules_count() == 2);
+        assert!(system.molecules().count() == 2);
 
         for particle in system.particles_mut() {
             if particle.name == "O" {
