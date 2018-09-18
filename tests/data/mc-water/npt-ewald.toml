@@ -1,0 +1,18 @@
+[input]
+version = 1
+
+[[systems]]
+file = "water.pdb"
+potentials = "ewald.toml"
+
+[[simulations]]
+nsteps = 10_000
+
+[simulations.propagator]
+type = "MonteCarlo"
+temperature = "300 K"
+moves = [
+    {type = "Translate", delta = "0.3 A", frequency = 50},
+    {type = "Rotate", delta = "20 deg", frequency = 50},
+    {type = "Resize", pressure = "1000 bar", delta = "100 A^3", frequency = 1},
+]

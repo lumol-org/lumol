@@ -2,11 +2,8 @@
 version = 1
 
 [[systems]]
-file = "water.xyz"
-cell = 18
-guess_bonds = true
+file = "water.pdb"
 potentials = "ewald.toml"
-
 
 [[simulations]]
 nsteps = 5_000
@@ -15,6 +12,7 @@ nsteps = 5_000
 type = "MonteCarlo"
 temperature = "300 K"
 moves = [
-    {type = "Translate", delta = "3 A", frequency = 1},
-    {type = "Rotate", delta = "20 deg", frequency = 1},
+    # WHAAAT ? The deltas are way too low ...
+    {type = "Translate", delta = "0.1 A", frequency = 1},
+    {type = "Rotate", delta = "10 deg", frequency = 1},
 ]
