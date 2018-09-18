@@ -532,8 +532,8 @@ impl Ewald {
         thread_forces.sum_local_values(forces);
     }
 
-    /// Real space contribution to the virial
-    fn real_space_virial(&self, configuration: &Configuration) -> Matrix3 {
+    /// Real space contribution to the atomic virial
+    fn real_space_atomic_virial(&self, configuration: &Configuration) -> Matrix3 {
         let natoms = configuration.size();
         let charges = configuration.particles().charge;
 
@@ -562,25 +562,65 @@ impl Ewald {
         return virials.sum();
     }
 
-    fn real_space_move_molecule_cost(
-        &self,
-        configuration: &Configuration,
-        molecule_id: usize,
-        new_positions: &[Vector3D],
-    ) -> f64 {
-        let mut old_energy = 0.0;
-        let mut new_energy = 0.0;
-
+    /// Real space contribution to the molecular virial
+    fn real_space_molecular_virial(&self, configuration: &Configuration) -> Matrix3 {
         let charges = configuration.particles().charge;
-        let positions = configuration.particles().position;
+        let virials = configuration.molecules().enumerate().par_bridge().map(|(i, molecule_i)| {
+            let mut local_virial = Matrix3::zero();
+            let ri = molecule_i.center_of_mass();
 
-        // Iterate over all interactions between a particle in the moved
-        // molecule and a particle in another molecule
-        let molecule = configuration.molecule(molecule_id);
-        for (i, part_i) in molecule.indexes().enumerate() {
-            let qi = charges[part_i];
-            if qi == 0.0 {
-                continue;
+            for molecule_j in configuration.molecules().skip(i + 1) {
+                let rj = molecule_j.center_of_mass();
+                let mut r_ij = ri - rj;
+                configuration.cell.vector_image(&mut r_ij);
+
+                for part_a in molecule_i.indexes() {
+                    let q_a = charges[part_a];
+                    if q_a == 0.0 {
+                        continue;
+                    }
+
+                    for part_b in molecule_j.indexes() {
+                        let q_b = charges[part_b];
+                        if q_b == 0.0 {
+                            continue;
+                        }
+
+                        let path = configuration.bond_path(part_a, part_b);
+                        let info = self.restriction.information(path);
+
+                        let r_ab = configuration.nearest_image(part_a, part_b);
+                        let force = self.real_space_force_pair(info, q_a * q_b, r_ab.norm()) * r_ab;
+                        let w_ab = force.tensorial(&r_ab);
+                        local_virial += w_ab * (r_ab * r_ij) / r_ab.norm2();
+                    }
+                }
+            }
+            return local_virial;
+        });
+
+        return virials.sum();
+     }
+
+     fn real_space_move_molecule_cost(
+         &self,
+         configuration: &Configuration,
+         molecule_id: usize,
+         new_positions: &[Vector3D],
+     ) -> f64 {
+         let mut old_energy = 0.0;
+         let mut new_energy = 0.0;
+
+         let charges = configuration.particles().charge;
+         let positions = configuration.particles().position;
+
+         // Iterate over all interactions between a particle in the moved
+         // molecule and a particle in another molecule
+         let molecule = configuration.molecule(molecule_id);
+         for (i, part_i) in molecule.indexes().enumerate() {
+             let qi = charges[part_i];
+             if qi == 0.0 {
+                 continue;
             }
 
             for (_, other_molecule) in configuration.molecules().enumerate().filter(|(id, _)| molecule_id != *id) {
@@ -698,7 +738,7 @@ impl Ewald {
                     let partial = eikr * rho.conj();
                     thread_efield[i] += partial.imag() * factor;
                 }
-        });
+            });
 
         thread_efield.sum_local_values(&mut self.efield);
 
@@ -708,16 +748,36 @@ impl Ewald {
         }
     }
 
-    /// k-space contribution to the virial
-    fn kspace_virial(&mut self, configuration: &Configuration) -> Matrix3 {
+    /// k-space contribution to the atomic virial
+    fn kspace_atomic_virial(&mut self, configuration: &Configuration) -> Matrix3 {
         self.eik_dot_r(configuration);
 
-        let virial: Matrix3 = Zip::from(&self.factors.virial)
+        let virial = Zip::from(&self.factors.virial)
             .and(&self.rho)
             .par_map(|(factor, rho)| rho.norm2() * factor)
-            .sum();
+            .sum::<Matrix3>();
 
         return virial / ELCC;
+    }
+
+    /// k-space contribution to the molecular virial
+    fn kspace_molecular_virial(&mut self, configuration: &Configuration) -> Matrix3 {
+        let atomic = self.kspace_atomic_virial(configuration);
+
+        let mut forces = vec![Vector3D::zero(); configuration.size()];
+        self.kspace_forces(configuration, &mut forces);
+
+        let positions = configuration.particles().position;
+        let mut correction = Matrix3::zero();
+        for molecule in configuration.molecules() {
+            let com = molecule.center_of_mass();
+            for i in molecule.indexes() {
+                let di = positions[i] - com;
+                correction += forces[i].tensorial(&di);
+            }
+        }
+
+        return atomic - correction;
     }
 
     /// Compute the Fourier transform of the electrostatic density changes
@@ -872,12 +932,21 @@ impl GlobalPotential for SharedEwald {
         ewald.kspace_forces(configuration, forces);
     }
 
-    fn virial(&self, configuration: &Configuration) -> Matrix3 {
+    fn atomic_virial(&self, configuration: &Configuration) -> Matrix3 {
         let mut ewald = self.write();
         ewald.precompute(&configuration.cell);
-        let real = ewald.real_space_virial(configuration);
+        let real = ewald.real_space_atomic_virial(configuration);
         // No self virial
-        let kspace = ewald.kspace_virial(configuration);
+        let kspace = ewald.kspace_atomic_virial(configuration);
+        return real + kspace;
+    }
+
+    fn molecular_virial(&self, configuration: &Configuration) -> Matrix3 {
+        let mut ewald = self.write();
+        ewald.precompute(&configuration.cell);
+        let real = ewald.real_space_molecular_virial(configuration);
+        // No self virial
+        let kspace = ewald.kspace_molecular_virial(configuration);
         return real + kspace;
     }
 }
@@ -1148,7 +1217,7 @@ mod tests {
         }
     }
 
-    mod virial {
+    mod atomic_virial {
         use super::*;
         use types::{Matrix3, Zero, One};
         use energy::PairRestriction;
@@ -1172,14 +1241,14 @@ mod tests {
             let ewald = SharedEwald::new(Ewald::new(8.0, 10, None));
 
             let energy = ewald.energy(&system);
-            let virial = ewald.virial(&system).trace();
+            let virial = ewald.atomic_virial(&system).trace();
             assert_relative_eq!(energy, virial, max_relative = 1e-3);
 
             let system = nacl_pair();
             let ewald = SharedEwald::new(Ewald::new(8.0, 10, None));
 
             let energy = ewald.energy(&system);
-            let virial = ewald.virial(&system).trace();
+            let virial = ewald.atomic_virial(&system).trace();
             assert_relative_eq!(energy, virial, max_relative = 1e-3);
         }
 
@@ -1191,7 +1260,7 @@ mod tests {
             ewald.precompute(&system.cell);
 
             let eps = 1e-9;
-            let virial = ewald.real_space_virial(&system);
+            let virial = ewald.real_space_atomic_virial(&system);
             let mut finite_diff = Matrix3::zero();
 
             for i in 0..3 {
@@ -1216,7 +1285,7 @@ mod tests {
             ewald.precompute(&system.cell);
 
             let eps = 1e-9;
-            let virial = ewald.kspace_virial(&system);
+            let virial = ewald.kspace_atomic_virial(&system);
             let mut finite_diff = Matrix3::zero();
 
             for i in 0..3 {
@@ -1447,7 +1516,7 @@ mod tests {
 
                 let convert = units::from(1.0, "atm").unwrap() * system.volume();
 
-                let virial = ewald.real_space_virial(&system);
+                let virial = ewald.real_space_atomic_virial(&system);
                 let expected = convert * Matrix3::new([
                     [-3852.8846,   264.92131,  15.263331],
                     [ 264.92131,  -3778.4993, -108.79484],
@@ -1455,7 +1524,7 @@ mod tests {
                 ]);
                 assert_relative_eq!(virial, expected, max_relative = 1e-3);
 
-                let virial = ewald.kspace_virial(&system);
+                let virial = ewald.kspace_atomic_virial(&system);
                 let expected = convert * Matrix3::new([
                     [-124.54878,  5.3873858,   15.093282],
                     [ 5.3873858, -111.92329,  -36.333371],
@@ -1465,7 +1534,7 @@ mod tests {
 
                 let ewald = SharedEwald::new(ewald);
                 let energy = ewald.energy(&system);
-                let virial = ewald.virial(&system).trace();
+                let virial = ewald.atomic_virial(&system).trace();
                 assert_relative_eq!(energy, virial, max_relative = 1e-3)
             }
 
@@ -1500,7 +1569,7 @@ mod tests {
 
                 let convert = units::from(1.0, "atm").unwrap() * system.volume();
 
-                let virial = ewald.real_space_virial(&system);
+                let virial = ewald.real_space_atomic_virial(&system);
                 let expected = convert * Matrix3::new([
                     [-6388.8957, -158.39688, -344.71965],
                     [-158.39688, -6988.116,   443.24826],
@@ -1508,7 +1577,7 @@ mod tests {
                 ]);
                 assert_relative_eq!(virial, expected, max_relative = 1e-3);
 
-                let virial = ewald.kspace_virial(&system);
+                let virial = ewald.kspace_atomic_virial(&system);
                 let expected = convert * Matrix3::new([
                     [-296.86013, -10.296217, -3.0451399],
                     [-10.296217, -250.90827, -7.9310376],
@@ -1518,7 +1587,7 @@ mod tests {
 
                 let ewald = SharedEwald::new(ewald);
                 let energy = ewald.energy(&system);
-                let virial = ewald.virial(&system).trace();
+                let virial = ewald.atomic_virial(&system).trace();
                 assert_relative_eq!(energy, virial, max_relative = 1e-3)
             }
 
@@ -1553,7 +1622,7 @@ mod tests {
 
                 let convert = units::from(1.0, "atm").unwrap() * system.volume();
 
-                let virial = ewald.real_space_virial(&system);
+                let virial = ewald.real_space_atomic_virial(&system);
                 let expected = convert * Matrix3::new([
                     [-10038.765, -1366.2912,  95.727168],
                     [-1366.2912, -12683.884, -213.42417],
@@ -1561,7 +1630,7 @@ mod tests {
                 ]);
                 assert_relative_eq!(virial, expected, max_relative = 1e-3);
 
-                let virial = ewald.kspace_virial(&system);
+                let virial = ewald.kspace_atomic_virial(&system);
                 let expected = convert * Matrix3::new([
                     [-255.20669,  18.680095, -37.1178  ],
                     [ 18.680095, -275.89451, -5.1062841],
@@ -1571,7 +1640,7 @@ mod tests {
 
                 let ewald = SharedEwald::new(ewald);
                 let energy = ewald.energy(&system);
-                let virial = ewald.virial(&system).trace();
+                let virial = ewald.atomic_virial(&system).trace();
                 assert_relative_eq!(energy, virial, max_relative = 1e-3)
             }
 
@@ -1606,7 +1675,7 @@ mod tests {
 
                 let convert = units::from(1.0, "atm").unwrap() * system.volume();
 
-                let virial = ewald.real_space_virial(&system);
+                let virial = ewald.real_space_atomic_virial(&system);
                 let expected = convert * Matrix3::new([
                     [-5586.0358, -136.58999, -30.075826],
                     [-136.58999, -5846.9018, -121.54568],
@@ -1614,7 +1683,7 @@ mod tests {
                 ]);
                 assert_relative_eq!(virial, expected, max_relative = 5e-3);
 
-                let virial = ewald.kspace_virial(&system);
+                let virial = ewald.kspace_atomic_virial(&system);
                 let expected = convert * Matrix3::new([
                     [ -482.8217, -17.877365,  11.908942],
                     [-17.877365, -465.33957,  3.5274012],
@@ -1624,7 +1693,7 @@ mod tests {
 
                 let ewald = SharedEwald::new(ewald);
                 let energy = ewald.energy(&system);
-                let virial = ewald.virial(&system).trace();
+                let virial = ewald.atomic_virial(&system).trace();
                 assert_relative_eq!(energy, virial, max_relative = 1e-3)
             }
         }
@@ -1666,7 +1735,7 @@ mod tests {
 
                 let convert = units::from(1.0, "atm").unwrap() * system.volume();
 
-                let virial = ewald.real_space_virial(&system);
+                let virial = ewald.real_space_atomic_virial(&system);
                 let expected = convert * Matrix3::new([
                     [-3916.4836,  268.02381,  23.686442],
                     [ 268.02381, -3839.2663, -118.84454],
@@ -1674,7 +1743,7 @@ mod tests {
                 ]);
                 assert_relative_eq!(virial, expected, max_relative = 1e-3);
 
-                let virial = ewald.kspace_virial(&system);
+                let virial = ewald.kspace_atomic_virial(&system);
                 let expected = convert * Matrix3::new([
                     [-61.298853,  2.0228732,    6.70617],
                     [ 2.0228732, -51.134442,   -26.2246],
@@ -1684,7 +1753,7 @@ mod tests {
 
                 let ewald = SharedEwald::new(ewald);
                 let energy = ewald.energy(&system);
-                let virial = ewald.virial(&system).trace();
+                let virial = ewald.atomic_virial(&system).trace();
                 assert_relative_eq!(energy, virial, max_relative = 1e-3)
             }
 
@@ -1719,7 +1788,7 @@ mod tests {
 
                 let convert = units::from(1.0, "atm").unwrap() * system.volume();
 
-                let virial = ewald.real_space_virial(&system);
+                let virial = ewald.real_space_atomic_virial(&system);
                 let expected = convert * Matrix3::new([
                     [-6515.4904, -161.25038, -340.79656],
                     [-161.25038,  -7099.813,  440.80231],
@@ -1727,7 +1796,7 @@ mod tests {
                 ]);
                 assert_relative_eq!(virial, expected, max_relative = 1e-3);
 
-                let virial = ewald.kspace_virial(&system);
+                let virial = ewald.kspace_atomic_virial(&system);
                 let expected = convert * Matrix3::new([
                     [-171.16013, -7.5200295, -6.7910143],
                     [-7.5200295, -140.58412, -5.5476543],
@@ -1737,7 +1806,7 @@ mod tests {
 
                 let ewald = SharedEwald::new(ewald);
                 let energy = ewald.energy(&system);
-                let virial = ewald.virial(&system).trace();
+                let virial = ewald.atomic_virial(&system).trace();
                 assert_relative_eq!(energy, virial, max_relative = 1e-3)
             }
 
@@ -1772,7 +1841,7 @@ mod tests {
 
                 let convert = units::from(1.0, "atm").unwrap() * system.volume();
 
-                let virial = ewald.real_space_virial(&system);
+                let virial = ewald.real_space_atomic_virial(&system);
                 let expected = convert * Matrix3::new([
                     [-10159.552, -1365.6921,  85.837259],
                     [-1365.6921, -12806.406, -202.68293],
@@ -1780,7 +1849,7 @@ mod tests {
                 ]);
                 assert_relative_eq!(virial, expected, max_relative = 1e-3);
 
-                let virial = ewald.kspace_virial(&system);
+                let virial = ewald.kspace_atomic_virial(&system);
                 let expected = convert * Matrix3::new([
                     [-136.28835,   18.49649, -27.386553],
                     [  18.49649, -155.56804, -15.667645],
@@ -1790,7 +1859,7 @@ mod tests {
 
                 let ewald = SharedEwald::new(ewald);
                 let energy = ewald.energy(&system);
-                let virial = ewald.virial(&system).trace();
+                let virial = ewald.atomic_virial(&system).trace();
                 assert_relative_eq!(energy, virial, max_relative = 1e-3)
             }
 
@@ -1825,7 +1894,7 @@ mod tests {
 
                 let convert = units::from(1.0, "atm").unwrap() * system.volume();
 
-                let virial = ewald.real_space_virial(&system);
+                let virial = ewald.real_space_atomic_virial(&system);
                 let expected = convert * Matrix3::new([
                     [-5782.9498, -144.67187, -31.932323],
                     [-144.67187, -6052.8821, -121.95614],
@@ -1833,7 +1902,7 @@ mod tests {
                 ]);
                 assert_relative_eq!(virial, expected, max_relative = 1e-3);
 
-                let virial = ewald.kspace_virial(&system);
+                let virial = ewald.kspace_atomic_virial(&system);
                 let expected = convert * Matrix3::new([
                     [-288.2612,  -9.676199,  13.775332],
                     [-9.676199, -261.38081,  3.8066323],
@@ -1843,7 +1912,7 @@ mod tests {
 
                 let ewald = SharedEwald::new(ewald);
                 let energy = ewald.energy(&system);
-                let virial = ewald.virial(&system).trace();
+                let virial = ewald.atomic_virial(&system).trace();
                 assert_relative_eq!(energy, virial, max_relative = 1e-3)
             }
         }

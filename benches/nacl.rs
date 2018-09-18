@@ -41,13 +41,23 @@ mod ewald {
         })
     }
 
-    pub fn virial(bencher: &mut Bencher) {
+    pub fn atomic_virial(bencher: &mut Bencher) {
         let system = utils::get_system("nacl");
         let ewald = SharedEwald::new(Ewald::new(9.5, 7, None));
-        ewald.virial(&system);
+        ewald.atomic_virial(&system);
 
         bencher.iter(|| {
-            let _ = ewald.virial(&system);
+            let _ = ewald.atomic_virial(&system);
+        })
+    }
+
+    pub fn molecular_virial(bencher: &mut Bencher) {
+        let system = utils::get_system("nacl");
+        let ewald = SharedEwald::new(Ewald::new(9.5, 7, None));
+        ewald.molecular_virial(&system);
+
+        bencher.iter(|| {
+            let _ = ewald.molecular_virial(&system);
         })
     }
 
@@ -102,13 +112,23 @@ mod wolf {
         })
     }
 
-    pub fn virial(bencher: &mut Bencher) {
+    pub fn atomic_virial(bencher: &mut Bencher) {
         let system = utils::get_system("nacl");
         let wolf = Wolf::new(12.0);
-        wolf.virial(&system);
+        wolf.atomic_virial(&system);
 
         bencher.iter(|| {
-            let _ = wolf.virial(&system);
+            let _ = wolf.atomic_virial(&system);
+        })
+    }
+
+    pub fn molecular_virial(bencher: &mut Bencher) {
+        let system = utils::get_system("nacl");
+        let wolf = Wolf::new(12.0);
+        wolf.molecular_virial(&system);
+
+        bencher.iter(|| {
+            let _ = wolf.molecular_virial(&system);
         })
     }
 
@@ -132,8 +152,8 @@ mod wolf {
     }
 }
 
-benchmark_group!(ewald, ewald::energy, ewald::forces, ewald::virial);
-benchmark_group!(wolf, wolf::energy, wolf::forces, wolf::virial);
+benchmark_group!(ewald, ewald::energy, ewald::forces, ewald::atomic_virial, ewald::molecular_virial);
+benchmark_group!(wolf, wolf::energy, wolf::forces, wolf::atomic_virial, wolf::molecular_virial);
 benchmark_group!(monte_carlo_cache, ewald::cache_move_particle, wolf::cache_move_particle);
 
 benchmark_main!(ewald, wolf, monte_carlo_cache);

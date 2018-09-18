@@ -233,7 +233,7 @@ impl GlobalPotential for Wolf {
         thread_forces_store.sum_local_values(forces);
     }
 
-    fn virial(&self, configuration: &Configuration) -> Matrix3 {
+    fn atomic_virial(&self, configuration: &Configuration) -> Matrix3 {
         let natoms = configuration.size();
         let charges = configuration.particles().charge;
 
@@ -263,6 +263,44 @@ impl GlobalPotential for Wolf {
 
         return virials.sum();
     }
+
+    fn molecular_virial(&self, configuration: &Configuration) -> Matrix3 {
+        let charges = configuration.particles().charge;
+        let virials = configuration.molecules().enumerate().par_bridge().map(|(i, molecule_i)| {
+            let mut local_virial = Matrix3::zero();
+            let ri = molecule_i.center_of_mass();
+
+            for molecule_j in configuration.molecules().skip(i + 1) {
+                let rj = molecule_j.center_of_mass();
+                let mut r_ij = ri - rj;
+                configuration.cell.vector_image(&mut r_ij);
+
+                for part_a in molecule_i.indexes() {
+                    let q_a = charges[part_a];
+                    if q_a == 0.0 {
+                        continue;
+                    }
+
+                    for part_b in molecule_j.indexes() {
+                        let q_b = charges[part_b];
+                        if q_b == 0.0 {
+                            continue;
+                        }
+
+                        let path = configuration.bond_path(part_a, part_b);
+                        let info = self.restriction.information(path);
+
+                        let r_ab = configuration.nearest_image(part_a, part_b);
+                        let force = self.force_pair(info, q_a * q_b, r_ab);
+                        let w_ab = force.tensorial(&r_ab);
+                        local_virial += w_ab * (r_ab * r_ij) / r_ab.norm2();
+                     }
+                 }
+             }
+             return local_virial;
+         });
+         return virials.sum();
+     }
 }
 
 impl CoulombicPotential for Wolf {
@@ -327,7 +365,7 @@ mod tests {
     }
 
     #[test]
-    fn virial() {
+    fn atomic_virial() {
         let system = testing_system();
         let wolf = Wolf::new(8.0);
 
@@ -336,11 +374,11 @@ mod tests {
         let force = forces[0][0];
         let expected = Matrix3::new([[-force * 1.5, 0.0, 0.0], [0.0; 3], [0.0; 3]]);
 
-        assert_eq!(wolf.virial(&system), expected);
+        assert_eq!(wolf.atomic_virial(&system), expected);
     }
 
     #[test]
-    fn virial_finite_differences() {
+    fn atomic_virial_finite_differences() {
         fn scale(system: &mut System, i: usize, j: usize, eps: f64) {
             let mut scaling = Matrix3::one();
             scaling[i][j] += eps;
@@ -357,7 +395,7 @@ mod tests {
         let mut system = testing_system();
         let wolf = Wolf::new(8.0);
 
-        let virial = wolf.virial(&system);
+        let virial = wolf.atomic_virial(&system);
 
         let mut finite_diff = Matrix3::zero();
         let energy_0 = wolf.energy(&system);
