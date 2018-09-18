@@ -447,6 +447,8 @@ pub struct MoleculeIter<'a> {
     _marker: PhantomData<ParticleSlice<'a>>
 }
 
+unsafe impl<'a> Send for MoleculeIter<'a> {}
+
 impl<'a> Iterator for MoleculeIter<'a> {
     type Item = MoleculeRef<'a>;
 
@@ -504,6 +506,8 @@ pub struct MoleculeIterMut<'a> {
     end: ParticlePtrMut,
     _marker: PhantomData<ParticleSliceMut<'a>>
 }
+
+unsafe impl<'a> Send for MoleculeIterMut<'a> {}
 
 impl<'a> Iterator for MoleculeIterMut<'a> {
     type Item = MoleculeRefMut<'a>;

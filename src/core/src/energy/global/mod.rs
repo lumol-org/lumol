@@ -52,7 +52,7 @@ use types::{Matrix3, Vector3D};
 ///         // this potential does not changes the forces
 ///     }
 ///
-///     fn virial(&self, configuration: &Configuration) -> Matrix3 {
+///     fn atomic_virial(&self, configuration: &Configuration) -> Matrix3 {
 ///         // the virial is null as all the forces are null
 ///         Matrix3::zero()
 ///     }
@@ -84,14 +84,24 @@ use types::{Matrix3, Vector3D};
 pub trait GlobalPotential: GlobalCache + BoxCloneGlobal + Send + Sync {
     /// Return the cut off radius.
     fn cutoff(&self) -> Option<f64>;
+
     /// Compute the energetic contribution of this potential
     fn energy(&self, configuration: &Configuration) -> f64;
+
     /// Compute the force contribution of this potential. This function should
     /// return a vector containing the force acting on each particle in the
     /// configuration.
     fn forces(&self, configuration: &Configuration, forces: &mut [Vector3D]);
-    /// Compute the total virial contribution of this potential
-    fn virial(&self, configuration: &Configuration) -> Matrix3;
+
+    /// Compute the total virial contribution of this potential, using the
+    /// atomic virial definition
+    fn atomic_virial(&self, configuration: &Configuration) -> Matrix3;
+
+    /// Compute the total virial contribution of this potential, using the
+    /// molecular virial definition. This default to `atomic_virial`.
+    fn molecular_virial(&self, configuration: &Configuration) -> Matrix3 {
+        return self.atomic_virial(configuration);
+    }
 }
 
 impl_box_clone!(GlobalPotential, BoxCloneGlobal, box_clone_gobal);
@@ -137,7 +147,7 @@ impl_box_clone!(GlobalPotential, BoxCloneGlobal, box_clone_gobal);
 ///         // this potential does not changes the forces
 ///     }
 ///
-///     fn virial(&self, configuration: &Configuration) -> Matrix3 {
+///     fn atomic_virial(&self, configuration: &Configuration) -> Matrix3 {
 ///         // the virial is null as all the forces are null
 ///         Matrix3::zero()
 ///     }

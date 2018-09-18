@@ -8,6 +8,7 @@ use consts::K_BOLTZMANN;
 use types::{Matrix3, One, Vector3D, Zero};
 
 use sys::System;
+use sim::DegreesOfFreedom;
 
 use parallel::ThreadLocalStore;
 use parallel::prelude::*;
@@ -170,10 +171,12 @@ impl Compute for Volume {
     }
 }
 
-/// Compute the virial tensor of the system, defined by
-/// $$ W = \sum_i \sum_{j > i} \vec r_{ij} \otimes \vec f_{ij} $$
-pub struct Virial;
-impl Compute for Virial {
+
+/// Compute the atomic virial tensor of the system, defined by
+/// $$ W = \sum_i \sum_{j > i} \vec r_{ij} \otimes \vec f_{ij} $$, where `i`
+/// and `j` run over all the particles in the system.
+pub struct AtomicVirial;
+impl Compute for AtomicVirial {
     type Output = Matrix3;
     fn compute(&self, system: &System) -> Matrix3 {
         assert!(!system.cell.is_infinite(), "Can not compute virial for infinite cell");
@@ -223,14 +226,117 @@ impl Compute for Virial {
         // CCP5 Information Quarterly, 39, 14. 18, 21, 24).
 
         if let Some(coulomb) = system.coulomb_potential() {
-            virial += coulomb.virial(system);
+            virial += coulomb.atomic_virial(system);
         }
 
         for global in system.global_potentials() {
-            virial += global.virial(system);
+            virial += global.atomic_virial(system);
         }
 
         return virial;
+    }
+}
+
+/// Compute the molecular virial tensor of the system, defined by
+/// $$ W = \sum_i \sum_{j > i} \sum_{a \in i} \sum_{b \in i} \frac{\vec r_{ab}
+/// \otimes \vec f_{ab}}{r_{ab}^2} \vec r_{ab} \cdot \vec r_{ij} $$, where `i`
+/// and `j` run over all the molecules in the system, while `a` and `b` run over
+/// all the particles in these molecules
+pub struct MolecularVirial;
+impl Compute for MolecularVirial {
+    type Output = Matrix3;
+    fn compute(&self, system: &System) -> Matrix3 {
+        assert!(!system.cell.is_infinite(), "Can not compute virial for infinite cell");
+
+        // Pair potentials contributions, using the molecular virial definition
+        // This is defined in Allen & Tildesley in equations 2.54; 2.61; 2.63.
+        let pair_virials = system.molecules().enumerate().par_bridge().map(|(i, molecule_i)| {
+            let mut local_virial = Matrix3::zero();
+            let ri = molecule_i.center_of_mass();
+
+            for molecule_j in system.molecules().skip(i + 1) {
+                let rj = molecule_j.center_of_mass();
+                let mut r_ij = ri - rj;
+                system.cell.vector_image(&mut r_ij);
+
+                for part_a in molecule_i.indexes() {
+                    for part_b in molecule_j.indexes() {
+                        let path = system.bond_path(part_a, part_b);
+                        let r_ab = system.nearest_image(part_a, part_b);
+                        for potential in system.pair_potentials(part_a, part_b) {
+                            let info = potential.restriction().information(path);
+                            if !info.excluded {
+                                let w_ab = info.scaling * potential.virial(&r_ab);
+                                local_virial += w_ab * (r_ab * r_ij) / r_ab.norm2();
+                            }
+                        }
+                     }
+                 }
+            }
+            return local_virial;
+        });
+        let mut virial = pair_virials.sum();
+
+        // Tail correction for pair potentials contribution
+        let volume = system.cell.volume();
+        let composition = system.composition();
+        for (i, ni) in composition.all_particles() {
+            for (j, nj) in composition.all_particles() {
+                let two_pi_density = 2.0 * PI * (ni as f64) * (nj as f64) / volume;
+                for potential in system.interactions().pairs((i, j)) {
+                    virial += two_pi_density * potential.tail_virial();
+                }
+            }
+        }
+
+        // Bond potentials contributions
+        for molecule in system.molecules() {
+            for bond in molecule.bonds() {
+                let (i, j) = (bond.i(), bond.j());
+                let r = system.nearest_image(i, j);
+                for potential in system.bond_potentials(i, j) {
+                    let w = potential.virial(&r);
+                    if w.norm() > 1e-30 {
+                        warn_once!(
+                            "Ignoring bond potential between particles {} and {}
+                            during molecular Virial computation",
+                            system.particles().name[i], system.particles().name[j]
+                        )
+                    }
+                }
+            }
+        }
+
+        // Angles and dihedrals potentials do not contribute as they only have
+        // an angular part (see DL_POLY 4 manual page 18, or Smith, W., 1993,
+        // CCP5 Information Quarterly, 39, 14. 18, 21, 24).
+
+        if let Some(coulomb) = system.coulomb_potential() {
+            virial += coulomb.molecular_virial(system);
+        }
+
+        for global in system.global_potentials() {
+            virial += global.molecular_virial(system);
+        }
+
+        return virial;
+    }
+}
+
+/// Compute the virial tensor of the system, picking between [`AtomicVirial`]
+/// and [`MolecularVirial`] depending on the number of degrees of freedom
+/// simulated on the system.
+///
+/// [`AtomicVirial`]: struct.AtomicVirial.html
+/// [`MolecularVirial`]: struct.MolecularVirial.html
+pub struct Virial;
+impl Compute for Virial {
+    type Output = Matrix3;
+    fn compute(&self, system: &System) -> Matrix3 {
+        match system.simulated_degrees_of_freedom {
+            DegreesOfFreedom::Molecules => MolecularVirial.compute(system),
+            DegreesOfFreedom::Particles | DegreesOfFreedom::Frozen(_) => AtomicVirial.compute(system),
+        }
     }
 }
 

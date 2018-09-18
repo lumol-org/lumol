@@ -48,13 +48,23 @@ mod ewald {
         })
     }
 
-    pub fn virial(bencher: &mut Bencher) {
+    pub fn atomic_virial(bencher: &mut Bencher) {
         let system = utils::get_system("water");
         let ewald = get_ewald();
-        ewald.virial(&system);
+        ewald.atomic_virial(&system);
 
         bencher.iter(|| {
-            let _ = ewald.virial(&system);
+            let _ = ewald.atomic_virial(&system);
+        })
+    }
+
+    pub fn molecular_virial(bencher: &mut Bencher) {
+        let system = utils::get_system("water");
+        let ewald = get_ewald();
+        ewald.molecular_virial(&system);
+
+        bencher.iter(|| {
+            let _ = ewald.molecular_virial(&system);
         })
     }
 
@@ -142,13 +152,23 @@ mod wolf {
         })
     }
 
-    pub fn virial(bencher: &mut Bencher) {
+    pub fn atomic_virial(bencher: &mut Bencher) {
         let system = utils::get_system("water");
         let wolf = get_wolf();
-        wolf.virial(&system);
+        wolf.atomic_virial(&system);
 
         bencher.iter(|| {
-            let _ = wolf.virial(&system);
+            let _ = wolf.atomic_virial(&system);
+        })
+    }
+
+    pub fn molecular_virial(bencher: &mut Bencher) {
+        let system = utils::get_system("water");
+        let wolf = get_wolf();
+        wolf.molecular_virial(&system);
+
+        bencher.iter(|| {
+            let _ = wolf.molecular_virial(&system);
         })
     }
 
@@ -199,8 +219,8 @@ mod wolf {
     }
 }
 
-benchmark_group!(ewald, ewald::energy, ewald::forces, ewald::virial);
-benchmark_group!(wolf, wolf::energy, wolf::forces, wolf::virial);
+benchmark_group!(ewald, ewald::energy, ewald::forces, ewald::atomic_virial, ewald::molecular_virial);
+benchmark_group!(wolf, wolf::energy, wolf::forces, wolf::atomic_virial, wolf::molecular_virial);
 benchmark_group!(monte_carlo_cache,
     ewald::cache_move_particles,
     ewald::cache_move_all_rigid_molecules,
