@@ -1,0 +1,18 @@
+[input]
+version = 1
+
+[[systems]]
+file = "ethane.pdb"
+potentials = "ethane.toml"
+
+[[simulations]]
+nsteps = 100_000
+
+[simulations.propagator]
+type = "MonteCarlo"
+temperature = "451 K"
+moves = [
+    {type = "Translate", delta = "0.5 A", frequency = 50},
+    {type = "Rotate", delta = "60 deg", frequency = 50},
+    {type = "Resize", pressure = "200 bar", delta = "200 A^3", frequency = 1},
+]

@@ -98,7 +98,7 @@ fn berendsen_barostat() {
                                  .join("npt-berendsen-barostat.toml");
     let mut config = Input::new(path).unwrap().read().unwrap();
 
-    let collecter = utils::Collecter::new(4000);
+    let collecter = utils::Collecter::starting_at(4000);
     let temperatures = collecter.temperatures();
     let pressures = collecter.pressures();
 

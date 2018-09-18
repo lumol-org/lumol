@@ -44,7 +44,7 @@ mod wolf {
                                      .join("npt-wolf-small.toml");
         let mut config = Input::new(path).unwrap().read().unwrap();
 
-        let collecter = ::utils::Collecter::new(9000);
+        let collecter = ::utils::Collecter::starting_at(9000);
         let temperatures = collecter.temperatures();
         let pressures = collecter.pressures();
 
