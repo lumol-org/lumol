@@ -68,7 +68,7 @@ mod ewald {
         })
     }
 
-    pub fn cache_move_particles(bencher: &mut Bencher) {
+    pub fn cache_move_molecule(bencher: &mut Bencher) {
         let mut system = utils::get_system("water");
         system.set_coulomb_potential(Box::new(get_ewald()));
 
@@ -91,7 +91,7 @@ mod ewald {
         bencher.iter(|| cache.move_molecule_cost(&system, molid, &new_positions))
     }
 
-    pub fn cache_move_all_rigid_molecules(bencher: &mut Bencher) {
+    pub fn cache_move_all_molecules(bencher: &mut Bencher) {
         let mut system = utils::get_system("water");
         system.set_coulomb_potential(Box::new(get_ewald()));
 
@@ -172,7 +172,7 @@ mod wolf {
         })
     }
 
-    pub fn cache_move_particles(bencher: &mut Bencher) {
+    pub fn cache_move_molecule(bencher: &mut Bencher) {
         let mut system = utils::get_system("water");
         system.set_coulomb_potential(Box::new(get_wolf()));
 
@@ -195,7 +195,7 @@ mod wolf {
         bencher.iter(|| cache.move_molecule_cost(&system, molid, &new_positions))
     }
 
-    pub fn cache_move_all_rigid_molecules(bencher: &mut Bencher) {
+    pub fn cache_move_all_molecules(bencher: &mut Bencher) {
         let mut system = utils::get_system("water");
         system.set_coulomb_potential(Box::new(get_wolf()));
 
@@ -222,10 +222,10 @@ mod wolf {
 benchmark_group!(ewald, ewald::energy, ewald::forces, ewald::atomic_virial, ewald::molecular_virial);
 benchmark_group!(wolf, wolf::energy, wolf::forces, wolf::atomic_virial, wolf::molecular_virial);
 benchmark_group!(monte_carlo_cache,
-    ewald::cache_move_particles,
-    ewald::cache_move_all_rigid_molecules,
-    wolf::cache_move_particles,
-    wolf::cache_move_all_rigid_molecules
+    ewald::cache_move_molecule,
+    ewald::cache_move_all_molecules,
+    wolf::cache_move_molecule,
+    wolf::cache_move_all_molecules
 );
 
 benchmark_main!(ewald, wolf, monte_carlo_cache);

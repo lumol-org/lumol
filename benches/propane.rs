@@ -37,7 +37,7 @@ fn virial(bencher: &mut Bencher) {
     })
 }
 
-fn cache_move_particles(bencher: &mut Bencher) {
+fn cache_move_molecule(bencher: &mut Bencher) {
     let system = utils::get_system("propane");
     let mut cache = EnergyCache::new();
     cache.init(&system);
@@ -58,7 +58,7 @@ fn cache_move_particles(bencher: &mut Bencher) {
     bencher.iter(|| cache.move_molecule_cost(&system, molid, &new_positions))
 }
 
-fn cache_move_all_rigid_molecules(bencher: &mut Bencher) {
+fn cache_move_all_molecules(bencher: &mut Bencher) {
     let mut system = utils::get_system("propane");
     let mut cache = EnergyCache::new();
     cache.init(&system);
@@ -79,6 +79,6 @@ fn cache_move_all_rigid_molecules(bencher: &mut Bencher) {
 
 
 benchmark_group!(energy_computation, energy, forces, virial);
-benchmark_group!(monte_carlo_cache, cache_move_particles, cache_move_all_rigid_molecules);
+benchmark_group!(monte_carlo_cache, cache_move_molecule, cache_move_all_molecules);
 
 benchmark_main!(energy_computation, monte_carlo_cache);
