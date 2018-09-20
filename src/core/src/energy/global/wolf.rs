@@ -1,9 +1,9 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) Lumol's contributors — BSD license
-use std::f64::consts::PI;
+use std::f64::consts::{PI, FRAC_2_SQRT_PI};
 
 use consts::FOUR_PI_EPSILON_0;
-use energy::{PairRestriction, RestrictionInfo};
+use energy::PairRestriction;
 use math::*;
 use parallel::ThreadLocalStore;
 use parallel::prelude::*;
@@ -44,7 +44,7 @@ use super::{CoulombicPotential, GlobalCache, GlobalPotential};
 /// // Use Wolf summation for electrostatic interactions
 /// system.set_coulomb_potential(Box::new(wolf));
 ///
-/// assert_eq!(system.potential_energy(), -0.07292902695393541);
+/// assert_eq!(system.potential_energy(), -0.0729290269539354);
 /// ```
 ///
 /// [Wolf1999]: Wolf, D. et al. J. Chem. Phys. 110, 8254 (1999).
@@ -55,9 +55,9 @@ pub struct Wolf {
     /// Cutoff radius in real space
     cutoff: f64,
     /// Energy constant for wolf computation
-    energy_cst: f64,
+    energy_constant: f64,
     /// Force constant for wolf computation
-    force_cst: f64,
+    force_constant: f64,
     /// Restriction scheme
     restriction: PairRestriction,
 }
@@ -67,14 +67,17 @@ impl Wolf {
     pub fn new(cutoff: f64) -> Wolf {
         assert!(cutoff > 0.0, "Got a negative cutoff in Wolf summation");
         let alpha = PI / cutoff;
-        let e_cst = erfc(alpha * cutoff) / cutoff;
-        let f_cst = erfc(alpha * cutoff) / (cutoff * cutoff)
-            + 2.0 * alpha / sqrt(PI) * exp(-alpha * alpha * cutoff * cutoff) / cutoff;
+
+        let alpha_cutoff = alpha * cutoff;
+        let alpha_cutoff_2 = alpha_cutoff * alpha_cutoff;
+
+        let energy_constant = erfc(alpha_cutoff) / cutoff;
+        let force_constant = erfc(alpha_cutoff) / (cutoff * cutoff) + FRAC_2_SQRT_PI * alpha * exp(-alpha_cutoff_2) / cutoff;
         Wolf {
             alpha: alpha,
             cutoff: cutoff,
-            energy_cst: e_cst,
-            force_cst: f_cst,
+            energy_constant: energy_constant,
+            force_constant: force_constant,
             restriction: PairRestriction::None,
         }
     }
@@ -83,31 +86,33 @@ impl Wolf {
     /// at the distance of `rij`. The `scaling` parameter comes from the
     /// restriction associated with this potential.
     #[inline]
-    fn energy_pair(&self, info: RestrictionInfo, qiqj: f64, rij: f64) -> f64 {
-        if rij > self.cutoff || info.excluded {
-            return 0.0;
+    fn energy_pair(&self, qiqj: f64, rij: f64) -> f64 {
+        if rij > self.cutoff {
+            0.0
+        } else {
+            qiqj * (erfc(self.alpha * rij) / rij - self.energy_constant) / FOUR_PI_EPSILON_0
         }
-        info.scaling * qiqj * (erfc(self.alpha * rij) / rij - self.energy_cst) / FOUR_PI_EPSILON_0
     }
 
     /// Compute the energy for self interaction of a particle with charge `qi`
     #[inline]
     fn energy_self(&self, qi: f64) -> f64 {
-        qi * qi * (self.energy_cst / 2.0 + self.alpha / sqrt(PI)) / FOUR_PI_EPSILON_0
+        qi * qi * 0.5 * (self.energy_constant + self.alpha * FRAC_2_SQRT_PI) / FOUR_PI_EPSILON_0
     }
 
-    /// Compute the force for self the pair of particles with charge `qi` and
-    /// `qj`, at the distance of `rij`. The `scaling` parameter comes from the
-    /// restriction associated with this potential.
+    /// Compute the force over the distance for the pair of particles with
+    /// charge `qi` and `qj`, at the distance `rij`.
     #[inline]
-    fn force_pair(&self, info: RestrictionInfo, qiqj: f64, rij: Vector3D) -> Vector3D {
-        let d = rij.norm();
-        if d > self.cutoff || info.excluded {
-            return Vector3D::zero();
+    fn force_pair(&self, qiqj: f64, rij: f64) -> f64 {
+        if rij > self.cutoff {
+            0.0
+        } else {
+            let rij2 = rij * rij;
+            let alpha_rij = self.alpha * rij;
+            let exp_alpha_rij = exp(-alpha_rij * alpha_rij);
+            let factor = erfc(alpha_rij) / rij2 + self.alpha * FRAC_2_SQRT_PI * exp_alpha_rij / rij;
+            return qiqj * (factor - self.force_constant) / (rij * FOUR_PI_EPSILON_0);
         }
-        let factor = erfc(self.alpha * d) / (d * d)
-            + 2.0 * self.alpha / sqrt(PI) * exp(-self.alpha * self.alpha * d * d) / d;
-        return info.scaling * qiqj * (factor - self.force_cst) * rij.normalized() / FOUR_PI_EPSILON_0;
     }
 }
 
@@ -140,14 +145,17 @@ impl GlobalCache for Wolf {
                         continue;
                     }
 
+                    let path = configuration.bond_path(part_i, part_j);
+                    let info = self.restriction.information(path);
+                    if info.excluded {
+                        continue;
+                    }
+
                     let old_r = configuration.distance(part_i, part_j);
                     let new_r = configuration.cell.distance(&new_positions[i], &positions[part_j]);
 
-                    let path = configuration.bond_path(part_i, part_j);
-                    let info = self.restriction.information(path);
-
-                    old_energy += self.energy_pair(info, qi * qj, old_r);
-                    new_energy += self.energy_pair(info, qi * qj, new_r);
+                    old_energy += info.scaling * self.energy_pair(qi * qj, old_r);
+                    new_energy += info.scaling * self.energy_pair(qi * qj, new_r);
                 }
             }
         }
@@ -170,7 +178,7 @@ impl GlobalPotential for Wolf {
         let charges = configuration.particles().charge;
 
         let energies = (0..natoms).par_map(|i| {
-            let mut local_energy = 0.0;
+            let mut energy = 0.0;
             let qi = charges[i];
             if qi == 0.0 {
                 return 0.0;
@@ -184,12 +192,15 @@ impl GlobalPotential for Wolf {
 
                 let path = configuration.bond_path(i, j);
                 let info = self.restriction.information(path);
+                if info.excluded {
+                    continue;
+                }
 
                 let rij = configuration.distance(i, j);
-                local_energy += self.energy_pair(info, qi * qj, rij);
+                energy += info.scaling * self.energy_pair(qi * qj, rij);
             }
 
-            local_energy - self.energy_self(qi)
+            return energy - self.energy_self(qi);
         });
         return energies.sum();
     }
@@ -219,9 +230,12 @@ impl GlobalPotential for Wolf {
 
                 let path = configuration.bond_path(i, j);
                 let info = self.restriction.information(path);
+                if info.excluded {
+                    continue;
+                }
 
                 let rij = configuration.nearest_image(i, j);
-                let force = self.force_pair(info, qi * qj, rij);
+                let force = info.scaling * self.force_pair(qi * qj, rij.norm()) * rij;
                 thread_forces[i] += force;
                 thread_forces[j] -= force;
             }
@@ -252,9 +266,12 @@ impl GlobalPotential for Wolf {
 
                 let path = configuration.bond_path(i, j);
                 let info = self.restriction.information(path);
+                if info.excluded {
+                    continue;
+                }
 
                 let rij = configuration.nearest_image(i, j);
-                let force = self.force_pair(info, qi * qj, rij);
+                let force = info.scaling * self.force_pair(qi * qj, rij.norm()) * rij;
                 local_virial += force.tensorial(&rij);
             }
 
@@ -289,9 +306,12 @@ impl GlobalPotential for Wolf {
 
                         let path = configuration.bond_path(part_a, part_b);
                         let info = self.restriction.information(path);
+                        if info.excluded {
+                            continue;
+                        }
 
                         let r_ab = configuration.nearest_image(part_a, part_b);
-                        let force = self.force_pair(info, q_a * q_b, r_ab);
+                        let force = info.scaling * self.force_pair(q_a * q_b, r_ab.norm()) * r_ab;
                         let w_ab = force.tensorial(&r_ab);
                         local_virial += w_ab * (r_ab * r_ij) / r_ab.norm2();
                      }
