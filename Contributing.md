@@ -74,10 +74,10 @@ Then, run all the test and check that they still pass:
 
 ```bash
 # Unit tests
-cargo test -p lumol-core
-cargo test -p lumol-input
-# Simulation tests, in relase mode to be faster
-cargo test --all --release
+cargo test -all --lib
+cargo test -all --doc
+# integratop, tests, in relase mode to be faster
+cargo test --all --tests --release
 ```
 
 Finally, you can push your code to Github, and create a [Pull-Request][PR] to

@@ -28,8 +28,8 @@ script:
     # Run all tests in release mode
     - cargo test --all --release -- --test-threads=2
     # Run unit tests and doc tests in debug mode
-    - cargo test -p lumol-core -- --test-threads=2
-    - cargo test -p lumol-input -- --test-threads=2
+    - cargo test --all --lib -- --test-threads=2
+    - cargo test --all --doc -- --test-threads=2
     # Check that benchmarks still compile
     - cargo bench --no-run
     # Check if tutorials compile
