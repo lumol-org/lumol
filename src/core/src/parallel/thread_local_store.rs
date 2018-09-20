@@ -14,31 +14,6 @@ use thread_local::CachedThreadLocal;
 /// for doing so. `ThreadLocalStore` implements `Deref`
 /// to a `RefCell`, which will give access to the thread local
 /// data.
-///
-/// # Example
-///
-/// Computing in parallel how many times a remainder of
-/// the division by 3 (so either 0, 1 or 2) appears in the
-/// range `(0..100)`.
-///
-/// ```
-///
-/// use lumol_core::parallel::prelude::*;
-/// use lumol_core::parallel::ThreadLocalStore;
-///
-/// let store = ThreadLocalStore::new(|| vec![0, 0, 0]);
-///
-/// (0..100_usize).into_par_iter().for_each(|i| {
-///     let mut thread_local_vec = store.borrow_mut();
-///     thread_local_vec[i % 3] += 1;
-/// });
-///
-/// let mut result = vec![0, 0, 0];
-/// store.sum_local_values(&mut result);
-///
-/// assert_eq!(result, vec![34, 33, 33]);
-/// ```
-///
 pub struct ThreadLocalStore<T, F>
 where
     T: Send,

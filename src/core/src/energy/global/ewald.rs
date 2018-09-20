@@ -8,6 +8,8 @@ use std::f64::consts::{PI, FRAC_2_SQRT_PI};
 use std::f64;
 
 use ndarray::Zip;
+use ndarray_parallel::prelude::*;
+use rayon::prelude::*;
 
 use math::*;
 use sys::{Configuration, UnitCell, CellShape};
@@ -15,7 +17,6 @@ use types::{Matrix3, Vector3D, Array3, Complex, Zero, One};
 use consts::FOUR_PI_EPSILON_0;
 use energy::{PairRestriction, RestrictionInfo};
 use parallel::ThreadLocalStore;
-use parallel::prelude::*;
 
 use super::{GlobalPotential, CoulombicPotential, GlobalCache};
 
@@ -469,7 +470,7 @@ impl Ewald {
         let natoms = configuration.size();
         let charges = configuration.particles().charge;
 
-        let energies = (0..natoms).par_map(|i| {
+        let energies = (0..natoms).into_par_iter().map(|i| {
             let mut local_energy = 0.0;
             let qi = charges[i];
             if qi == 0.0 {
@@ -537,7 +538,7 @@ impl Ewald {
         let natoms = configuration.size();
         let charges = configuration.particles().charge;
 
-        let virials = (0..natoms).par_map(|i| {
+        let virials = (0..natoms).into_par_iter().map(|i| {
             let qi = charges[i];
             if qi == 0.0 {
                 return Matrix3::zero();
@@ -711,7 +712,8 @@ impl Ewald {
         self.eik_dot_r(configuration);
         let energy: f64 = Zip::from(&self.factors.energy)
             .and(&self.rho)
-            .par_map(|(factor, rho)| factor * rho.norm2())
+            .into_par_iter()
+            .map(|(factor, rho)| factor * rho.norm2())
             .sum();
         return energy / FOUR_PI_EPSILON_0;
     }
@@ -754,7 +756,8 @@ impl Ewald {
 
         let virial = Zip::from(&self.factors.virial)
             .and(&self.rho)
-            .par_map(|(factor, rho)| rho.norm2() * factor)
+            .into_par_iter()
+            .map(|(factor, rho)| rho.norm2() * factor)
             .sum::<Matrix3>();
 
         return virial / FOUR_PI_EPSILON_0;
