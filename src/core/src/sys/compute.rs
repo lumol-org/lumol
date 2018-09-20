@@ -12,7 +12,7 @@ use types::{Matrix3, One, Vector3D, Zero};
 use sys::System;
 use sim::DegreesOfFreedom;
 
-use parallel::ThreadLocalStore;
+use utils::ThreadLocalVec;
 
 /// The compute trait allow to compute properties of a system, without
 /// modifying this system. The Output type is the type of the computed
@@ -31,11 +31,11 @@ impl Compute for Forces {
     type Output = Vec<Vector3D>;
     fn compute(&self, system: &System) -> Vec<Vector3D> {
         let natoms = system.size();
-        let thread_forces_store = ThreadLocalStore::new(|| vec![Vector3D::zero(); natoms]);
+        let thread_local_forces = ThreadLocalVec::with_size(natoms);
 
         (0..natoms).into_par_iter().for_each(|i| {
-            let mut thread_forces = thread_forces_store.borrow_mut();
-
+            let mut forces = thread_local_forces.borrow_mut();
+            let mut force_i = Vector3D::zero();
             for j in (i + 1)..system.size() {
                 let path = system.bond_path(i, j);
                 let d = system.nearest_image(i, j);
@@ -45,18 +45,18 @@ impl Compute for Forces {
                     let info = potential.restriction().information(path);
                     if !info.excluded {
                         let force = info.scaling * potential.force(r) * dn;
-                        thread_forces[i] += force;
-                        thread_forces[j] -= force;
+                        force_i += force;
+                        forces[j] -= force;
                     }
                 }
             }
+            forces[i] += force_i;
         });
 
-        // At this point all the forces are computed, but the
-        // results are scattered across all thread local Vecs,
-        // here we gather them.
+        // At this point all the forces are computed, but the results are
+        // scattered across all thread local Vecs, here we gather them.
         let mut forces = vec![Vector3D::zero(); natoms];
-        thread_forces_store.sum_local_values(&mut forces);
+        thread_local_forces.sum_into(&mut forces);
 
         for molecule in system.molecules() {
             for bond in molecule.bonds() {

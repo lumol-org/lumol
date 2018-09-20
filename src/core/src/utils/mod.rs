@@ -10,6 +10,8 @@ mod xyz;
 #[cfg(test)]
 pub use self::xyz::system_from_xyz;
 
+mod thread_vec;
+pub use self::thread_vec::ThreadLocalVec;
 
 /// Internal version of `units::from`, where the unit is assumed to be correct
 pub fn unit_from(value: f64, unit: &str) -> f64 {
