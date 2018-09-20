@@ -309,8 +309,14 @@ impl Zero for Vector3D {
 }
 
 impl From<[f64; 3]> for Vector3D {
-    fn from(data: [f64; 3]) -> Vector3D {
+    fn from(data: [f64; 3]) -> Self {
         Vector3D(data)
+    }
+}
+
+impl Default for Vector3D {
+    fn default() -> Self {
+        Vector3D::zero()
     }
 }
 

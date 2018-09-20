@@ -7,8 +7,6 @@ use std::sync::{RwLock, RwLockReadGuard, RwLockWriteGuard};
 use std::f64::consts::{PI, FRAC_2_SQRT_PI};
 use std::f64;
 
-use ndarray::Zip;
-use ndarray_parallel::prelude::*;
 use rayon::prelude::*;
 
 use math::*;
@@ -16,7 +14,7 @@ use sys::{Configuration, UnitCell, CellShape};
 use types::{Matrix3, Vector3D, Array3, Complex, Zero, One};
 use consts::FOUR_PI_EPSILON_0;
 use energy::{PairRestriction, RestrictionInfo};
-use parallel::ThreadLocalStore;
+use utils::ThreadLocalVec;
 
 use super::{GlobalPotential, CoulombicPotential, GlobalCache};
 
@@ -501,13 +499,15 @@ impl Ewald {
 
         let natoms = configuration.size();
         let charges = configuration.particles().charge;
-
-        let thread_forces = ThreadLocalStore::new(|| vec![Vector3D::zero(); natoms]);
+        // Each thread (and not each iteration of the loop below) get its own
+        // storage in a `ThreadLocalVec`.
+        let thread_local_forces = ThreadLocalVec::with_size(natoms);
 
         (0..natoms).into_par_iter().for_each(|i| {
             // Get the thread local forces Vec
-            let mut thread_forces = thread_forces.borrow_mut();
+            let mut forces = thread_local_forces.borrow_mut();
 
+            let mut force_i = Vector3D::zero();
             let qi = charges[i];
             if qi == 0.0 {
                 return;
@@ -524,13 +524,15 @@ impl Ewald {
 
                 let rij = configuration.nearest_image(i, j);
                 let force = self.real_space_force_pair(info, qi * qj, rij.norm()) * rij;
-                thread_forces[i] += force;
-                thread_forces[j] -= force;
+                force_i += force;
+                forces[j] -= force;
             }
+            forces[i] += force_i;
         });
 
-        // reduce the thread local values
-        thread_forces.sum_local_values(forces);
+        // At this point all the forces are computed, but the results are
+        // scattered across all thread local Vecs, here we gather them.
+        thread_local_forces.sum_into(forces);
     }
 
     /// Real space contribution to the atomic virial
@@ -710,11 +712,13 @@ impl Ewald {
     /// k-space contribution to the energy
     fn kspace_energy(&mut self, configuration: &Configuration) -> f64 {
         self.eik_dot_r(configuration);
-        let energy: f64 = Zip::from(&self.factors.energy)
-            .and(&self.rho)
-            .into_par_iter()
+
+        let energy = self.factors.energy
+            .par_iter()
+            .zip_eq(&self.rho)
             .map(|(factor, rho)| factor * rho.norm2())
-            .sum();
+            .sum::<f64>();
+
         return energy / FOUR_PI_EPSILON_0;
     }
 
@@ -727,22 +731,23 @@ impl Ewald {
         self.efield.clear();
         self.efield.resize(natoms, Vector3D::zero());
 
-        let thread_efield = ThreadLocalStore::new(|| vec![Vector3D::zero(); natoms]);
-        Zip::from(&self.factors.kvecs)
-            .and(&self.factors.efield)
-            .and(&self.rho)
-            .par_apply(|&(ikx, iky, ikz), factor, rho| {
-                let mut thread_efield = thread_efield.borrow_mut();
+        let thread_local_efield = ThreadLocalVec::with_size(natoms);
+        self.factors.kvecs
+            .par_iter()
+            .zip_eq(&self.factors.efield)
+            .zip_eq(&self.rho)
+            .for_each(|((&(ikx, iky, ikz), factor), rho)| {
+                let mut efield = thread_local_efield.borrow_mut();
                 for i in 0..natoms {
                     let eikr = self.eikr[(ikx, 0, i)] *
                                self.eikr[(iky, 1, i)] *
                                self.eikr[(ikz, 2, i)];
                     let partial = eikr * rho.conj();
-                    thread_efield[i] += partial.imag() * factor;
+                    efield[i] += partial.imag() * factor;
                 }
             });
 
-        thread_efield.sum_local_values(&mut self.efield);
+        thread_local_efield.sum_into(&mut self.efield);
 
         let charges = configuration.particles().charge;
         for (force, &charge, field) in izip!(&mut *forces, charges, &self.efield) {
@@ -754,9 +759,9 @@ impl Ewald {
     fn kspace_atomic_virial(&mut self, configuration: &Configuration) -> Matrix3 {
         self.eik_dot_r(configuration);
 
-        let virial = Zip::from(&self.factors.virial)
-            .and(&self.rho)
-            .into_par_iter()
+        let virial = self.factors.virial
+            .par_iter()
+            .zip_eq(&self.rho)
             .map(|(factor, rho)| rho.norm2() * factor)
             .sum::<Matrix3>();
 

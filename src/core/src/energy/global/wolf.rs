@@ -7,7 +7,7 @@ use rayon::prelude::*;
 use consts::FOUR_PI_EPSILON_0;
 use energy::PairRestriction;
 use math::*;
-use parallel::ThreadLocalStore;
+use utils::ThreadLocalVec;
 use sys::Configuration;
 use types::{Matrix3, Vector3D, Zero};
 
@@ -209,16 +209,16 @@ impl GlobalPotential for Wolf {
     fn forces(&self, configuration: &Configuration, forces: &mut [Vector3D]) {
         assert_eq!(forces.len(), configuration.size());
 
-        // To avoid race conditions, each thread needs its
-        // own local forces Vec
         let natoms = configuration.size();
         let charges = configuration.particles().charge;
-        let thread_forces_store = ThreadLocalStore::new(|| vec![Vector3D::zero(); natoms]);
+        // To avoid race conditions, each thread needs its own local forces Vec
+        let thread_local_forces = ThreadLocalVec::with_size(natoms);
 
         (0..natoms).into_par_iter().for_each(|i| {
             // Get the thread local forces Vec
-            let mut thread_forces = thread_forces_store.borrow_mut();
+            let mut forces = thread_local_forces.borrow_mut();
 
+            let mut force_i = Vector3D::zero();
             let qi = charges[i];
             if qi == 0.0 {
                 return;
@@ -237,15 +237,15 @@ impl GlobalPotential for Wolf {
 
                 let rij = configuration.nearest_image(i, j);
                 let force = info.scaling * self.force_pair(qi * qj, rij.norm()) * rij;
-                thread_forces[i] += force;
-                thread_forces[j] -= force;
+                force_i += force;
+                forces[j] -= force;
             }
+            forces[i] += force_i;
         });
 
-        // At this point all the forces are computed, but the
-        // results are scattered across all thread local Vecs,
-        // here we gather them.
-        thread_forces_store.sum_local_values(forces);
+        // At this point all the forces are computed, but the results are
+        // scattered across all thread local Vecs, here we gather them.
+        thread_local_forces.sum_into(forces)
     }
 
     fn atomic_virial(&self, configuration: &Configuration) -> Matrix3 {
