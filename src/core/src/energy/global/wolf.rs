@@ -2,7 +2,7 @@
 // Copyright (C) Lumol's contributors — BSD license
 use std::f64::consts::PI;
 
-use consts::ELCC;
+use consts::FOUR_PI_EPSILON_0;
 use energy::{PairRestriction, RestrictionInfo};
 use math::*;
 use parallel::ThreadLocalStore;
@@ -87,13 +87,13 @@ impl Wolf {
         if rij > self.cutoff || info.excluded {
             return 0.0;
         }
-        info.scaling * qiqj * (erfc(self.alpha * rij) / rij - self.energy_cst) / ELCC
+        info.scaling * qiqj * (erfc(self.alpha * rij) / rij - self.energy_cst) / FOUR_PI_EPSILON_0
     }
 
     /// Compute the energy for self interaction of a particle with charge `qi`
     #[inline]
     fn energy_self(&self, qi: f64) -> f64 {
-        qi * qi * (self.energy_cst / 2.0 + self.alpha / sqrt(PI)) / ELCC
+        qi * qi * (self.energy_cst / 2.0 + self.alpha / sqrt(PI)) / FOUR_PI_EPSILON_0
     }
 
     /// Compute the force for self the pair of particles with charge `qi` and
@@ -107,7 +107,7 @@ impl Wolf {
         }
         let factor = erfc(self.alpha * d) / (d * d)
             + 2.0 * self.alpha / sqrt(PI) * exp(-self.alpha * self.alpha * d * d) / d;
-        return info.scaling * qiqj * (factor - self.force_cst) * rij.normalized() / ELCC;
+        return info.scaling * qiqj * (factor - self.force_cst) * rij.normalized() / FOUR_PI_EPSILON_0;
     }
 }
 
@@ -118,8 +118,8 @@ impl GlobalCache for Wolf {
         molecule_id: usize,
         new_positions: &[Vector3D],
     ) -> f64 {
-        let mut old_energynergy = 0.0;
-        let mut new_energynergy = 0.0;
+        let mut old_energy = 0.0;
+        let mut new_energy = 0.0;
 
         let charges = configuration.particles().charge;
         let positions = configuration.particles().position;
@@ -146,13 +146,13 @@ impl GlobalCache for Wolf {
                     let path = configuration.bond_path(part_i, part_j);
                     let info = self.restriction.information(path);
 
-                    old_energynergy += self.energy_pair(info, qi * qj, old_r);
-                    new_energynergy += self.energy_pair(info, qi * qj, new_r);
+                    old_energy += self.energy_pair(info, qi * qj, old_r);
+                    new_energy += self.energy_pair(info, qi * qj, new_r);
                 }
             }
         }
 
-        return new_energynergy - old_energynergy;
+        return new_energy - old_energy;
     }
 
     fn update(&self) {

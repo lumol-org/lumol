@@ -21,7 +21,7 @@ use std::num;
 
 // Using a separated module because lazy_static does not support pub(crate)
 mod detail {
-    use consts::{BOHR_RADIUS, NA};
+    use consts::{BOHR_RADIUS, AVOGADRO_NUMBER};
     use std::collections::BTreeMap;
     use std::f64::consts::PI;
 
@@ -55,7 +55,7 @@ mod detail {
             // Temperature units.
             assert!(map.insert("K", 1.0).is_none());
             // Quantity of matter units.
-            assert!(map.insert("mol", NA).is_none());
+            assert!(map.insert("mol", AVOGADRO_NUMBER).is_none());
 
             // Angle units.
             assert!(map.insert("rad", 1.0).is_none());
