@@ -12,7 +12,7 @@ use ndarray::Zip;
 use math::*;
 use sys::{Configuration, UnitCell, CellShape};
 use types::{Matrix3, Vector3D, Array3, Complex, Zero, One};
-use consts::ELCC;
+use consts::FOUR_PI_EPSILON_0;
 use energy::{PairRestriction, RestrictionInfo};
 use parallel::ThreadLocalStore;
 use parallel::prelude::*;
@@ -360,7 +360,7 @@ impl Ewald {
         for charge in configuration.particles().charge {
             q2 += charge * charge;
         }
-        q2 /= ELCC;
+        q2 /= FOUR_PI_EPSILON_0;
 
         let natoms = configuration.size() as f64;
         let lengths = configuration.cell.lengths();
@@ -429,11 +429,11 @@ impl Ewald {
         }
 
         if !info.excluded {
-            qiqj / ELCC * erfc(self.alpha * r) / r
+            qiqj / FOUR_PI_EPSILON_0 * erfc(self.alpha * r) / r
         } else {
             // use a correction for excluded interaction, removing the energy
             // from kspace
-            - qiqj / ELCC * erf(self.alpha * r) / r
+            - qiqj / FOUR_PI_EPSILON_0 * erf(self.alpha * r) / r
         }
     }
 
@@ -450,14 +450,14 @@ impl Ewald {
         }
 
         if !info.excluded {
-            qiqj / (ELCC * r * r) * (
+            qiqj / (FOUR_PI_EPSILON_0 * r * r) * (
                 self.alpha * FRAC_2_SQRT_PI * exp(-self.alpha * self.alpha * r * r)
                 + erfc(self.alpha * r) / r
             )
         } else {
             // use a correction for excluded interaction, removing the force
             // from kspace
-            qiqj / (ELCC * r * r) * (
+            qiqj / (FOUR_PI_EPSILON_0 * r * r) * (
                 self.alpha * FRAC_2_SQRT_PI * exp(-self.alpha * self.alpha * r * r)
                 - erf(self.alpha * r) / r
             )
@@ -655,7 +655,7 @@ impl Ewald {
                               .iter()
                               .map(|q| q * q)
                               .sum::<f64>();
-        return -self.alpha / sqrt(PI) * q2 / ELCC;
+        return -self.alpha / sqrt(PI) * q2 / FOUR_PI_EPSILON_0;
     }
 }
 
@@ -713,7 +713,7 @@ impl Ewald {
             .and(&self.rho)
             .par_map(|(factor, rho)| factor * rho.norm2())
             .sum();
-        return energy / ELCC;
+        return energy / FOUR_PI_EPSILON_0;
     }
 
     /// k-space contribution to the forces
@@ -744,7 +744,7 @@ impl Ewald {
 
         let charges = configuration.particles().charge;
         for (force, &charge, field) in izip!(&mut *forces, charges, &self.efield) {
-            *force += charge * field / ELCC;
+            *force += charge * field / FOUR_PI_EPSILON_0;
         }
     }
 
@@ -757,7 +757,7 @@ impl Ewald {
             .par_map(|(factor, rho)| rho.norm2() * factor)
             .sum::<Matrix3>();
 
-        return virial / ELCC;
+        return virial / FOUR_PI_EPSILON_0;
     }
 
     /// k-space contribution to the molecular virial
@@ -845,7 +845,7 @@ impl Ewald {
         for (factor, &rho) in izip!(&self.factors.energy, &self.rho) {
             old_energy += factor * rho.norm2();
         }
-        old_energy /= ELCC;
+        old_energy /= FOUR_PI_EPSILON_0;
 
         let delta_rho = self.delta_rho_move_rigid_molecules(
             configuration, molecule_id, new_positions
@@ -855,7 +855,7 @@ impl Ewald {
         for (factor, &rho, &delta) in izip!(&self.factors.energy, &self.rho, &delta_rho) {
             new_energy += factor * (rho + delta).norm2();
         }
-        new_energy /= ELCC;
+        new_energy /= FOUR_PI_EPSILON_0;
 
         self.updater = Some(Box::new(move |ewald: &mut Ewald| {
             for (rho, &delta) in izip!(&mut ewald.rho, &delta_rho) {
