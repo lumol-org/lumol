@@ -8,7 +8,8 @@
 
 use std::f64::consts::PI;
 
-use parallel::prelude::*;
+use rayon::prelude::*;
+
 use energy::BondPath;
 use sys::System;
 
@@ -41,7 +42,7 @@ impl<'a> EnergyEvaluator<'a> {
 
     /// Compute the energy of all the pairs in the system
     pub fn pairs(&self) -> f64 {
-        let energies = (0..self.system.size()).par_map(|i| {
+        let energies = (0..self.system.size()).into_par_iter().map(|i| {
             let mut local_energy = 0.0;
 
             for j in (i + 1)..self.system.size() {

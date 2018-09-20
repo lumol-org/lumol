@@ -2,11 +2,12 @@
 // Copyright (C) Lumol's contributors — BSD license
 use std::f64::consts::{PI, FRAC_2_SQRT_PI};
 
+use rayon::prelude::*;
+
 use consts::FOUR_PI_EPSILON_0;
 use energy::PairRestriction;
 use math::*;
 use parallel::ThreadLocalStore;
-use parallel::prelude::*;
 use sys::Configuration;
 use types::{Matrix3, Vector3D, Zero};
 
@@ -177,7 +178,7 @@ impl GlobalPotential for Wolf {
         let natoms = configuration.size();
         let charges = configuration.particles().charge;
 
-        let energies = (0..natoms).par_map(|i| {
+        let energies = (0..natoms).into_par_iter().map(|i| {
             let mut energy = 0.0;
             let qi = charges[i];
             if qi == 0.0 {
@@ -251,7 +252,7 @@ impl GlobalPotential for Wolf {
         let natoms = configuration.size();
         let charges = configuration.particles().charge;
 
-        let virials = (0..natoms).par_map(|i| {
+        let virials = (0..natoms).into_par_iter().map(|i| {
             let qi = charges[i];
             if qi == 0.0 {
                 return Matrix3::zero();

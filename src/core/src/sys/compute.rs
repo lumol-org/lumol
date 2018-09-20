@@ -4,6 +4,8 @@
 //! Computing properties of a system
 use std::f64::consts::PI;
 
+use rayon::prelude::*;
+
 use consts::K_BOLTZMANN;
 use types::{Matrix3, One, Vector3D, Zero};
 
@@ -11,7 +13,6 @@ use sys::System;
 use sim::DegreesOfFreedom;
 
 use parallel::ThreadLocalStore;
-use parallel::prelude::*;
 
 /// The compute trait allow to compute properties of a system, without
 /// modifying this system. The Output type is the type of the computed
@@ -182,7 +183,7 @@ impl Compute for AtomicVirial {
         assert!(!system.cell.is_infinite(), "Can not compute virial for infinite cell");
 
         // Pair potentials contributions
-        let pair_virials = (0..system.size()).par_map(|i| {
+        let pair_virials = (0..system.size()).into_par_iter().map(|i| {
             let mut local_virial = Matrix3::zero();
             for j in (i + 1)..system.size() {
                 let path = system.bond_path(i, j);
