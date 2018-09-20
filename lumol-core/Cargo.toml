@@ -2,9 +2,9 @@
 name = "lumol-core"
 version = "0.1.0"
 authors = ["Luthaf <luthaf@luthaf.fr>"]
-documentation = "https://lumol-org.github.io/lumol"
+documentation = "https://lumol.org/"
 repository = "https://github.com/lumol-org/lumol"
-readme = "../../README.md"
+readme = "../README.md"
 license = "BSD-3-Clause"
 
 [dependencies]
@@ -25,7 +25,5 @@ itertools = "0.7"
 soa_derive = "0.7"
 
 [dev-dependencies]
-lumol = {path = "../.."}
 tempfile = "3"
 approx = "0.3"
-env_logger = "*"

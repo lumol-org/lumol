@@ -2,13 +2,13 @@
 name = "lumol-input"
 version = "0.1.0"
 authors = ["Luthaf <luthaf@luthaf.fr>"]
-documentation = "https://lumol-org.github.io/lumol"
+documentation = "https://lumol.org/"
 repository = "https://github.com/lumol-org/lumol"
-readme = "../../README.md"
+readme = "../README.md"
 license = "BSD-3-Clause"
 
 [dependencies]
-lumol-core = {path = "../core"}
+lumol-core = {path = "../lumol-core"}
 toml = "0.4"
 log = "0.4"
 chemfiles = "0.8"

@@ -1414,7 +1414,7 @@ mod tests {
         use std::io::Read;
 
         pub fn get_system(path: &str) -> System {
-            let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("..")
+            let path = Path::new(env!("CARGO_MANIFEST_DIR"))
                 .join("..")
                 .join("tests")
                 .join("data")
