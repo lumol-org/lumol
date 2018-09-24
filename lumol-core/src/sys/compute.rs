@@ -7,10 +7,9 @@ use std::f64::consts::PI;
 use rayon::prelude::*;
 
 use consts::K_BOLTZMANN;
-use types::{Matrix3, One, Vector3D, Zero};
+use types::{Matrix3, Vector3D};
 
-use sys::System;
-use sim::DegreesOfFreedom;
+use sys::{System, DegreesOfFreedom};
 
 use utils::ThreadLocalVec;
 
@@ -423,22 +422,22 @@ mod test {
     use consts::K_BOLTZMANN;
     use energy::{Harmonic, NullPotential, PairInteraction};
     use sys::System;
-    use sys::veloc::{BoltzmannVelocities, InitVelocities};
-    use utils::{system_from_xyz, unit_from};
+    use utils::system_from_xyz;
+    use units;
 
     fn test_pairs_system() -> System {
         let mut system = system_from_xyz(
             "2
             cell: 10.0
-            F 0.0 0.0 0.0
-            F 1.3 0.0 0.0
+            F 0.0 0.0 0.0 -0.007225222699367925 -0.002405756495275919  0.0026065109398392215
+            F 1.3 0.0 0.0  0.001179633958023287  0.003525262341736351 -0.0004132774783154952
             ",
         );
 
         let mut interaction = PairInteraction::new(
             Box::new(Harmonic {
-                k: unit_from(300.0, "kJ/mol/A^2"),
-                x0: unit_from(1.2, "A"),
+                k: units::from(300.0, "kJ/mol/A^2").unwrap(),
+                x0: units::from(1.2, "A").unwrap(),
             }),
             5.0,
         );
@@ -448,8 +447,7 @@ mod test {
         // unused interaction to check that we do handle this right
         system.add_pair_potential(("H", "O"), PairInteraction::new(Box::new(NullPotential), 0.0));
 
-        let mut velocities = BoltzmannVelocities::new(unit_from(300.0, "K"));
-        velocities.init(&mut system);
+
         return system;
     }
 
@@ -474,24 +472,24 @@ mod test {
         system.add_bond_potential(
             ("F", "F"),
             Box::new(Harmonic {
-                k: unit_from(100.0, "kJ/mol/A^2"),
-                x0: unit_from(2.0, "A"),
+                k: units::from(100.0, "kJ/mol/A^2").unwrap(),
+                x0: units::from(2.0, "A").unwrap(),
             }),
         );
 
         system.add_angle_potential(
             ("F", "F", "F"),
             Box::new(Harmonic {
-                k: unit_from(100.0, "kJ/mol/deg^2"),
-                x0: unit_from(88.0, "deg"),
+                k: units::from(100.0, "kJ/mol/deg^2").unwrap(),
+                x0: units::from(88.0, "deg").unwrap(),
             }),
         );
 
         system.add_dihedral_potential(
             ("F", "F", "F", "F"),
             Box::new(Harmonic {
-                k: unit_from(100.0, "kJ/mol/deg^2"),
-                x0: unit_from(185.0, "deg"),
+                k: units::from(100.0, "kJ/mol/deg^2").unwrap(),
+                x0: units::from(185.0, "deg").unwrap(),
             }),
         );
 
@@ -509,7 +507,7 @@ mod test {
         let forces_tot = res[0] + res[1];
         assert_eq!(forces_tot, Vector3D::zero());
 
-        let force = unit_from(30.0, "kJ/mol/A");
+        let force = units::from(30.0, "kJ/mol/A").unwrap();
         assert_ulps_eq!(res[0][0], force);
         assert_ulps_eq!(res[0][1], 0.0);
         assert_ulps_eq!(res[0][1], 0.0);
@@ -545,7 +543,7 @@ mod test {
     #[test]
     fn energy_molecular() {
         let system = test_molecular_system();
-        assert_ulps_eq!(PotentialEnergy.compute(&system), unit_from(1800.0, "kJ/mol"));
+        assert_ulps_eq!(PotentialEnergy.compute(&system), units::from(1800.0, "kJ/mol").unwrap());
     }
 
     #[test]
@@ -576,7 +574,7 @@ mod test {
         let virial = Virial.compute(system);
 
         let mut expected = Matrix3::zero();
-        let force = unit_from(30.0, "kJ/mol/A^2");
+        let force = units::from(30.0, "kJ/mol/A^2").unwrap();
         expected[0][0] = -force * 1.3;
 
         assert_ulps_eq!(virial, expected);
@@ -589,7 +587,7 @@ mod test {
         let virial = Virial.compute(system);
 
         let mut expected = Matrix3::zero();
-        let w = unit_from(100.0, "kJ/mol/A");
+        let w = units::from(100.0, "kJ/mol/A").unwrap();
         expected[0][0] = 2.0 * w;
         expected[1][1] = 1.0 * w;
 
@@ -617,7 +615,7 @@ mod test {
         let system = &mut test_pairs_system();
 
         let temperature = 550.0;
-        let force = unit_from(30.0, "kJ/mol/A");
+        let force = units::from(30.0, "kJ/mol/A").unwrap();
         let virial = -force * 1.3;
         let natoms = 2.0;
         let volume = 1000.0;
@@ -642,7 +640,7 @@ mod test {
             temperature: temperature,
         };
         let pressure = pressure.compute(system);
-        system.external_temperature(Some(temperature));
+        system.simulated_temperature(Some(temperature));
         assert_eq!(pressure, system.pressure());
     }
 
@@ -678,7 +676,7 @@ mod test {
         let trace = (stress[0][0] + stress[1][1] + stress[2][2]) / 3.0;
         assert_ulps_eq!(trace, pressure);
 
-        system.external_temperature(Some(temperature));
+        system.simulated_temperature(Some(temperature));
         assert_eq!(stress, system.stress());
     }
 
@@ -710,7 +708,7 @@ mod test {
         let system = &test_pairs_system();
         let pressure = Pressure.compute(system);
 
-        let force = unit_from(30.0, "kJ/mol/A");
+        let force = units::from(30.0, "kJ/mol/A").unwrap();
         let virial = -force * 1.3;
         let natoms = 2.0;
         let temperature = 300.0;

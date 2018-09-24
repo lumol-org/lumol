@@ -86,6 +86,46 @@ impl Matrix3 {
         Matrix3(data)
     }
 
+    /// Create a new `Matrix3` with components set to `0`
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use lumol_core::types::Matrix3;
+    /// let matrix = Matrix3::zero();
+    ///
+    /// for i in 0..3 {
+    ///     for j in 0..3 {
+    ///         assert_eq!(matrix[i][j], 0.0);
+    ///     }
+    /// }
+    /// ```
+    pub fn zero() -> Matrix3 {
+        <Matrix3 as Zero>::zero()
+    }
+
+    /// Create a new `Vector3D` with components all components set to `0`,
+    /// except the diagonal components set to 1.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use lumol_core::types::Matrix3;
+    /// let matrix = Matrix3::one();
+    ///
+    /// for i in 0..3 {
+    ///     for j in 0..3 {
+    ///         if i == j {
+    ///             assert_eq!(matrix[i][j], 1.0);
+    ///         } else {
+    ///             assert_eq!(matrix[i][j], 0.0);
+    ///         }
+    ///     }
+    /// }
+    /// ```
+    pub fn one() -> Matrix3 {
+        <Matrix3 as One>::one()
+    }
 
     /// Returns rotation matrix given a rotation angle and an axis.
     ///
@@ -474,7 +514,7 @@ impl From<[[f64; 3]; 3]> for Matrix3 {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use types::{Vector3D, Zero, One};
+    use types::Vector3D;
 
     use approx::{AbsDiffEq, RelativeEq, UlpsEq};
 

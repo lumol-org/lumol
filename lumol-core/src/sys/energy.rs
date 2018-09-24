@@ -172,7 +172,8 @@ mod tests {
     use super::*;
     use energy::{Harmonic, LennardJones, NullPotential, PairInteraction};
     use sys::{System, UnitCell};
-    use utils::{system_from_xyz, unit_from};
+    use utils::system_from_xyz;
+    use units;
 
     fn testing_system() -> System {
         let mut system = system_from_xyz(
@@ -190,8 +191,8 @@ mod tests {
 
         let mut pair = PairInteraction::new(
             Box::new(LennardJones {
-                epsilon: unit_from(100.0, "kJ/mol/A^2"),
-                sigma: unit_from(0.8, "A"),
+                epsilon: units::from(100.0, "kJ/mol/A^2").unwrap(),
+                sigma: units::from(0.8, "A").unwrap(),
             }),
             5.0,
         );
@@ -202,24 +203,24 @@ mod tests {
         system.add_bond_potential(
             ("F", "F"),
             Box::new(Harmonic {
-                k: unit_from(100.0, "kJ/mol/A^2"),
-                x0: unit_from(2.0, "A"),
+                k: units::from(100.0, "kJ/mol/A^2").unwrap(),
+                x0: units::from(2.0, "A").unwrap(),
             }),
         );
 
         system.add_angle_potential(
             ("F", "F", "F"),
             Box::new(Harmonic {
-                k: unit_from(100.0, "kJ/mol/deg^2"),
-                x0: unit_from(88.0, "deg"),
+                k: units::from(100.0, "kJ/mol/deg^2").unwrap(),
+                x0: units::from(88.0, "deg").unwrap(),
             }),
         );
 
         system.add_dihedral_potential(
             ("F", "F", "F", "F"),
             Box::new(Harmonic {
-                k: unit_from(100.0, "kJ/mol/deg^2"),
-                x0: unit_from(185.0, "deg"),
+                k: units::from(100.0, "kJ/mol/deg^2").unwrap(),
+                x0: units::from(185.0, "deg").unwrap(),
             }),
         );
 
@@ -233,7 +234,7 @@ mod tests {
     fn pairs() {
         let system = testing_system();
         let evaluator = EnergyEvaluator::new(&system);
-        assert_ulps_eq!(evaluator.pairs(), unit_from(-258.3019360389957, "kJ/mol"));
+        assert_ulps_eq!(evaluator.pairs(), units::from(-258.3019360389957, "kJ/mol").unwrap());
         assert_ulps_eq!(evaluator.pairs_tail(), -0.0000028110338032153973);
     }
 
@@ -250,20 +251,20 @@ mod tests {
     fn bonds() {
         let system = testing_system();
         let evaluator = EnergyEvaluator::new(&system);
-        assert_ulps_eq!(evaluator.bonds(), unit_from(150.0, "kJ/mol"));
+        assert_ulps_eq!(evaluator.bonds(), units::from(150.0, "kJ/mol").unwrap());
     }
 
     #[test]
     fn angles() {
         let system = testing_system();
         let evaluator = EnergyEvaluator::new(&system);
-        assert_ulps_eq!(evaluator.angles(), unit_from(400.0, "kJ/mol"));
+        assert_ulps_eq!(evaluator.angles(), units::from(400.0, "kJ/mol").unwrap());
     }
 
     #[test]
     fn dihedrals() {
         let system = testing_system();
         let evaluator = EnergyEvaluator::new(&system);
-        assert_ulps_eq!(evaluator.dihedrals(), unit_from(1250.0, "kJ/mol"), max_ulps = 15);
+        assert_ulps_eq!(evaluator.dihedrals(), units::from(1250.0, "kJ/mol").unwrap(), max_ulps = 15);
     }
 }

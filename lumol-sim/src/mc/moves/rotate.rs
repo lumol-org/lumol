@@ -10,8 +10,7 @@ use std::usize;
 use super::{MCDegreeOfFreedom, MCMove};
 use super::select_molecule;
 
-use sys::{EnergyCache, System, MoleculeHash};
-use types::{Matrix3, Vector3D};
+use core::{EnergyCache, System, MoleculeHash, Matrix3, Vector3D};
 
 /// Monte Carlo move for rotating a rigid molecule
 pub struct Rotate {

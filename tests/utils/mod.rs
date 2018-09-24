@@ -2,7 +2,7 @@
 // Copyright (C) Lumol's contributors — BSD license
 #![allow(dead_code)]
 
-use lumol::out::Output;
+use lumol::sim::Output;
 use lumol::sys::System;
 
 use std::rc::Rc;
@@ -39,7 +39,7 @@ impl Collecter {
 
 impl Output for Collecter {
     fn write(&mut self, system: &System) {
-        if system.step() < self.start {
+        if system.step < self.start {
             return;
         }
 

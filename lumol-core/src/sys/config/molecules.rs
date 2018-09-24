@@ -7,7 +7,7 @@ use std::hash::{Hash, Hasher};
 
 use sys::{Particle, ParticleVec, ParticleSlice, ParticleSliceMut};
 use sys::{Bonding, UnitCell};
-use types::{Vector3D, Zero};
+use types::Vector3D;
 
 /// A molecule hash allow to identify a molecule from its atoms and bonds, and
 /// to know wether two molecules are the same without checking each atom and

@@ -2,8 +2,6 @@
 name = "lumol_tutorial_potential"
 version = "0.0.0"
 publish = false
-authors = ["Gernot Bauer <gernotbauer85@googlemail.com>"]
 
 [dependencies]
-lumol = {git = "https://github.com/lumol-org/lumol"}
-lumol-input = {git = "https://github.com/lumol-org/lumol"}
+lumol = {path = "../../"}

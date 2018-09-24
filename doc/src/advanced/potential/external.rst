@@ -10,13 +10,16 @@ We start by creating a new package using ``cargo``:
 
 Open ``Cargo.toml`` and add the lines
 
-.. literalinclude:: ../../../../tutorials/potential/Cargo.toml
-    :lines: 7-8
+.. code:: bash
+
+    [dependencies]
+    lumol = {git = "https://github.com/lumol-org/lumol"}
 
 to add the ``lumol`` crate as a dependency to the package. To test if everything
 works, open the ``lib.rs`` file in ``src`` and add
 
 .. literalinclude:: ../../../../tutorials/potential/src/lib.rs
+    :language: rust
     :lines: 1
 
 in the first line.
@@ -33,29 +36,30 @@ The energy function of the Mie potential reads
 
 .. math::
 
-    u(x) = \frac{n}{n-m} \left(\frac{n}{m}\right)^{m/(n-m)}\epsilon \left[ \left( \frac{\sigma}{x}\right)^n - \left( \frac{\sigma}{x}\right)^m \right]
+    u(x) = \varepsilon \frac{n}{n-m} \left(\frac{n}{m}\right)^{\frac{m}{n-m}} \left[ \left( \frac{\sigma}{x}\right)^n - \left( \frac{\sigma}{x}\right)^m \right]
 
 where :math:`x` denotes the distance between two interaction sites :math:`i, j`,
 with :math:`x = x_{ij} = | \mathbf{r}_j - \mathbf{r}_i |`.  The parameters of
 the potential are
 
 -  :math:`n, m` the repulsive and attractive exponents, respectively,
--  :math:`\epsilon` the energetic paramater,
+-  :math:`\varepsilon` the energetic paramater,
 -  :math:`\sigma` the particle diameter or structural parameter.
 
 We start by defining the ``struct`` for our potential. Add the following lines
 to ``lib.rs``:
 
 .. literalinclude:: ../../../../tutorials/potential/src/lib.rs
+    :language: rust
     :lines: 1-14
 
 In the first two lines we define our imports from ``Lumol``, following with our
-structure. Notice that we don't store the ``epsilon`` value, instead we store an
-energetic prefactor that will make it easier to compute the potential.
+``Mie`` structure. Notice that we don't store the ``epsilon`` value, instead we
+store an energetic prefactor that will make it easier to compute the potential.
 
 .. math::
 
-    \text{prefactor} = \frac{n}{n-m} \left(\frac{n}{m}\right)^{m/(n-m)}\epsilon
+    \text{prefactor} = \varepsilon \frac{n}{n-m} \left(\frac{n}{m}\right)^{m/(n-m)}
 
 Next, we implement a constructor function. That's usefull in this case since we
 want to compute the prefactor of the potential once before we start our
@@ -64,6 +68,7 @@ simulation.
 In Rust we typically use ``new`` for the constructors' name.
 
 .. literalinclude:: ../../../../tutorials/potential/src/lib.rs
+    :language: rust
     :lines: 16-29
 
 Our function takes the parameter set as input, computes the prefactor and
@@ -76,7 +81,7 @@ Implementing ``Potential``
 Add the following lines below the structs implementation.
 
 .. literalinclude:: ../../../../tutorials/potential/src/lib.rs
-    :lines: 32-45
+    :lines: 31-45
 
 ``energy`` is the implementation of the Mie potential equation shown above.
 ``force`` is the negative derivative of the energy with respect to the distance,

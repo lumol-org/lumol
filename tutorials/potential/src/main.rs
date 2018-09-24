@@ -2,8 +2,7 @@ extern crate lumol_tutorial_potential;
 use lumol_tutorial_potential::Mie;
 
 extern crate lumol;
-extern crate lumol_input as input;
-use input::Input;
+use lumol::input::Input;
 use lumol::energy::PairInteraction;
 use lumol::units;
 

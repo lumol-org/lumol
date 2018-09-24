@@ -4,12 +4,10 @@
 //! Using a custom potential in simulations
 extern crate lumol;
 
-use lumol::types::Vector3D;
+use lumol::energy::{PairInteraction, PairPotential, Potential};
+use lumol::{Particle, Molecule, System, Vector3D};
 use lumol::units;
 
-use lumol::sys::{Particle, Molecule, System};
-
-use lumol::energy::{PairInteraction, PairPotential, Potential};
 use lumol::sim::{MolecularDynamics, Simulation};
 
 /// Let's define a new version of the Lennard-Jones potential, using the

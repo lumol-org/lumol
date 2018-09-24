@@ -46,7 +46,9 @@ pub struct Complex {
 
 impl Complex {
     /// Create a new `Complex` from a norm `r` and a phase `phi` in radians.
+    ///
     /// # Examples
+    ///
     /// ```
     /// # use lumol_core::types::Complex;
     /// # use std::f64;
@@ -61,7 +63,9 @@ impl Complex {
     }
 
     /// Create a complex from Cartesian coordinates
+    ///
     /// # Examples
+    ///
     /// ```
     /// # use lumol_core::types::Complex;
     /// let z = Complex::cartesian(3.0, -2.0);
@@ -70,6 +74,20 @@ impl Complex {
     /// ```
     pub fn cartesian(x: f64, y: f64) -> Complex {
         Complex { real: x, imag: y }
+    }
+
+    /// Create a new `Complex` with both cartesian coordinate set to 0.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use lumol_core::types::Complex;
+    /// # use std::f64;
+    /// let z = Complex::zero();
+    /// assert_eq!(z.norm(), 0.0);
+    /// ```
+    pub fn zero() -> Complex {
+        <Complex as Zero>::zero()
     }
 
     /// Get the real part of the complex

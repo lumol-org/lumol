@@ -1,7 +1,6 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) Lumol's contributors — BSD license
-use sys::System;
-use types::{Matrix3, One, Vector3D, Zero};
+use core::{System, Matrix3, Vector3D};
 
 /// The `Integrator` trait define integrator interface for molecular dynamics.
 /// An integrator is an algorithm responsible for propagating the equations of
@@ -217,7 +216,7 @@ impl Integrator for BerendsenBarostat {
 
         if let Some(maximum_cutoff) = system.maximum_cutoff() {
             if system.cell.lengths().iter().any(|&d| 0.5 * d <= maximum_cutoff) {
-                fatal_error!(
+                panic!(
                     "Tried to decrease the cell size in Berendesen barostat \
                      but the new size is smaller than the interactions cut off \
                      radius. You can try to increase the cell size or the number \
@@ -299,7 +298,7 @@ impl Integrator for AnisoBerendsenBarostat {
 
         if let Some(maximum_cutoff) = system.maximum_cutoff() {
             if system.cell.lengths().iter().any(|&d| 0.5 * d <= maximum_cutoff) {
-                fatal_error!(
+                panic!(
                     "Tried to decrease the cell size in anisotropic Berendesen \
                      barostat but the new size is smaller than the interactions \
                      cut off radius. You can try to increase the cell size or \

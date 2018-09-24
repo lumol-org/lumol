@@ -1,7 +1,7 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) Lumol's contributors — BSD license
 use sys::PeriodicTable;
-use types::{Vector3D, Zero};
+use types::Vector3D;
 
 use std::fmt;
 

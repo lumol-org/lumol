@@ -32,12 +32,14 @@
 #![allow(new_without_default, new_without_default_derive, should_implement_trait)]
 #![allow(needless_pass_by_value, unreadable_literal, redundant_field_names, range_plus_one)]
 
-#[macro_use]
-extern crate bitflags;
-#[macro_use]
-extern crate itertools;
-#[macro_use]
-extern crate lazy_static;
+extern crate lumol_core as core;
+
+// #[macro_use]
+// extern crate bitflags;
+// #[macro_use]
+// extern crate itertools;
+// #[macro_use]
+// extern crate lazy_static;
 #[macro_use]
 extern crate log;
 #[macro_use]
@@ -49,25 +51,25 @@ extern crate soa_derive;
 #[macro_use]
 extern crate approx;
 
-extern crate chemfiles;
-extern crate ndarray;
-extern crate num_traits as num;
-extern crate rayon;
-extern crate special;
-extern crate thread_local;
+extern crate caldyn;
+extern crate rand;
 
-// Helper modules
-#[macro_use]
-mod utils;
-mod math;
+mod propagator;
+pub use self::propagator::Propagator;
+pub use self::propagator::TemperatureStrategy;
 
-// Main modules
-pub mod units;
-pub mod consts;
-pub mod types;
-pub mod energy;
-pub mod sys;
+pub mod md;
+pub mod mc;
+pub mod min;
 
-pub use self::types::*;
-pub use self::energy::*;
-pub use self::sys::*;
+mod simulations;
+pub use self::mc::MonteCarlo;
+pub use self::md::MolecularDynamics;
+pub use self::min::Minimization;
+pub use self::simulations::Simulation;
+
+mod velocities;
+pub use self::velocities::{InitVelocities, BoltzmannVelocities, UniformVelocities};
+
+mod output;
+pub use self::output::*;

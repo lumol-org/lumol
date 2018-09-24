@@ -167,7 +167,7 @@ impl ToChemfiles for System {
     fn to_chemfiles(&self) -> Result<Self::Output, Error> {
         let mut frame = chemfiles::Frame::new()?;
         frame.resize(self.size() as u64)?;
-        frame.set_step(self.step() as u64)?;
+        frame.set_step(self.step as u64)?;
 
         {
             let chfl_positions = frame.positions_mut()?;

@@ -2,7 +2,7 @@
 // Copyright (C) Lumol's contributors — BSD license
 
 //! A propagator is responsible for updating the system during a simulation
-use sys::System;
+use core::{System, DegreesOfFreedom};
 
 /// Possible temperature computation strategies. Different propagators needs
 /// different ways to compute the temperature: Monte Carlo temperature is a
@@ -16,18 +16,6 @@ pub enum TemperatureStrategy {
     Velocities,
     /// Use a fixed external temperature
     External(f64),
-}
-
-/// The number of degrees of freedom simulated by a given propagator
-#[derive(Clone, PartialEq, Debug)]
-pub enum DegreesOfFreedom {
-    /// All particles are explicitly simulated
-    Particles,
-    /// All molecules are simulated as rigid bodies
-    Molecules,
-    /// All particles are explicitly simulated, but some degrees of freedom
-    /// are frozen. The usize value is the number of frozen degree of freedom.
-    Frozen(usize),
 }
 
 /// The propagator trait is the main algorithm of a simulation, i.e. the one

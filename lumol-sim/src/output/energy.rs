@@ -7,8 +7,8 @@ use std::io::prelude::*;
 use std::path::{Path, PathBuf};
 
 use super::Output;
-use sys::System;
-use utils;
+use core::System;
+use core::units;
 
 /// The `EnergyOutput` writes the energy of the system to a text file, organized
 /// as: `steps PotentialEnergy KineticEnergy TotalEnergy`.
@@ -35,10 +35,10 @@ impl Output for EnergyOutput {
     }
 
     fn write(&mut self, system: &System) {
-        let potential = utils::unit_to(system.potential_energy(), "kJ/mol");
-        let kinetic = utils::unit_to(system.kinetic_energy(), "kJ/mol");
-        let total = utils::unit_to(system.total_energy(), "kJ/mol");
-        writeln_or_log!(self, "{} {} {} {}", system.step(), potential, kinetic, total);
+        let potential = units::to(system.potential_energy(), "kJ/mol").expect("bad unit");
+        let kinetic = units::to(system.kinetic_energy(), "kJ/mol").expect("bad unit");
+        let total = units::to(system.total_energy(), "kJ/mol").expect("bad unit");
+        writeln_or_log!(self, "{} {} {} {}", system.step, potential, kinetic, total);
     }
 }
 

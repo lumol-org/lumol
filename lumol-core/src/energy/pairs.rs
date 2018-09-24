@@ -2,7 +2,7 @@
 // Copyright (C) Lumol's contributors — BSD license
 
 use energy::{PairPotential, PairRestriction};
-use types::{Matrix3, One, Vector3D, Zero};
+use types::{Matrix3, Vector3D};
 
 /// The different way to compute non-bonded pair interactions
 #[derive(Clone, Copy, Debug)]

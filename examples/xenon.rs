@@ -5,11 +5,12 @@
 extern crate lumol;
 
 use lumol::energy::{LennardJones, PairInteraction};
-use lumol::out::TrajectoryOutput;
+use lumol::{TrajectoryBuilder, UnitCell};
+use lumol::units;
+
+use lumol::sim::TrajectoryOutput;
 use lumol::sim::Simulation;
 use lumol::sim::mc::{MonteCarlo, Translate};
-use lumol::sys::{TrajectoryBuilder, UnitCell};
-use lumol::units;
 
 fn main() -> Result<(), Box<std::error::Error>> {
     let mut system = TrajectoryBuilder::new().open("data/xenon.xyz")?

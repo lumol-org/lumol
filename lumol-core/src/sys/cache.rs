@@ -121,9 +121,8 @@ impl EnergyCache {
         if let Some(updater) = updater {
             updater(self, system);
         } else {
-            fatal_error!(
-                "Error in `EnergyCache::update`: \
-                 This function MUST be called after a call to a `*_cost` function"
+            panic!(
+                "called EnergyCache::update without call a `*_cost` function first"
             );
         }
     }
@@ -304,10 +303,10 @@ mod tests {
     use energy::PairInteraction;
     use sys::System;
     use types::Vector3D;
-    use utils::unit_from;
+    use utils::system_from_xyz;
+    use units;
 
     fn testing_system() -> System {
-        use utils::system_from_xyz;
         let mut system = system_from_xyz(
             "8
             cell: 10.0
@@ -334,7 +333,7 @@ mod tests {
             PairInteraction::new(
                 Box::new(LennardJones {
                     sigma: 3.0,
-                    epsilon: unit_from(0.5, "kJ/mol"),
+                    epsilon: units::from(0.5, "kJ/mol").unwrap(),
                 }),
                 3.0,
             ),
@@ -347,7 +346,7 @@ mod tests {
             PairInteraction::new(
                 Box::new(LennardJones {
                     sigma: 1.0,
-                    epsilon: unit_from(0.3, "kJ/mol"),
+                    epsilon: units::from(0.3, "kJ/mol").unwrap(),
                 }),
                 3.0,
             ),
@@ -357,7 +356,7 @@ mod tests {
             ("O", "O"),
             Box::new(Harmonic {
                 x0: 2.4,
-                k: unit_from(522.0, "kJ/mol/A^2"),
+                k: units::from(522.0, "kJ/mol/A^2").unwrap(),
             }),
         );
 
@@ -365,7 +364,7 @@ mod tests {
             ("O", "H"),
             Box::new(Harmonic {
                 x0: 1.4,
-                k: unit_from(122.0, "kJ/mol/A^2"),
+                k: units::from(122.0, "kJ/mol/A^2").unwrap(),
             }),
         );
 
@@ -373,7 +372,7 @@ mod tests {
             ("O", "O", "H"),
             Box::new(Harmonic {
                 x0: f64::to_radians(120.0),
-                k: unit_from(150.0, "kJ/mol/deg^2"),
+                k: units::from(150.0, "kJ/mol/deg^2").unwrap(),
             }),
         );
 
@@ -381,7 +380,7 @@ mod tests {
             ("H", "O", "O", "H"),
             Box::new(Harmonic {
                 x0: f64::to_radians(180.0),
-                k: unit_from(800.0, "kJ/mol/deg^2"),
+                k: units::from(800.0, "kJ/mol/deg^2").unwrap(),
             }),
         );
 

@@ -7,7 +7,7 @@ use std::io::prelude::*;
 use std::path::{Path, PathBuf};
 
 use super::Output;
-use sys::System;
+use core::System;
 
 /// The `CellOutput` writes all the components of a cell to a file . The columns
 /// in the file contain the following values: `step A B C α β γ`.
@@ -35,7 +35,7 @@ impl Output for CellOutput {
 
     fn write(&mut self, system: &System) {
         writeln_or_log!(self, "{} {} {} {} {} {} {}",
-            system.step(),
+            system.step,
             system.cell.a(),
             system.cell.b(),
             system.cell.c(),

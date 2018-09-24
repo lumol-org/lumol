@@ -5,7 +5,6 @@
 //! system.
 
 use sys::{Molecule, Particle, System, UnitCell};
-use types::Vector3D;
 
 /// Read the `content` string, assuming XYZ format, and create the corresponding
 /// system. This function is intended for testing purposes only, and will
@@ -24,13 +23,12 @@ pub fn system_from_xyz(content: &str) -> System {
         let x = splitted[1].parse::<f64>().expect("Could not parse float");
         let y = splitted[2].parse::<f64>().expect("Could not parse float");
         let z = splitted[3].parse::<f64>().expect("Could not parse float");
-        let mut particle = Particle::new(name);
-        particle.position = Vector3D::new(x, y, z);
+        let mut particle = Particle::with_position(name, [x, y, z].into());
         if splitted.len() == 7 {
             let vx = splitted[4].parse::<f64>().expect("Could not parse float");
             let vy = splitted[5].parse::<f64>().expect("Could not parse float");
             let vz = splitted[6].parse::<f64>().expect("Could not parse float");
-            particle.velocity = Vector3D::new(vx, vy, vz);
+            particle.velocity = [vx, vy, vz].into();
         }
         system.add_molecule(Molecule::new(particle));
     }

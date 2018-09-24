@@ -12,9 +12,8 @@ use caldyn::{Context, Expr};
 use caldyn::Error as CaldynError;
 
 use super::Output;
-use sys::System;
-use types::Zero;
-use units;
+use core::{units, System};
+// use types::Zero;
 
 /// Possible causes of error when using a custom output
 #[derive(Debug)]
@@ -132,7 +131,7 @@ impl FormatArgs {
         let mut context = Context::new();
         context.set_query(move |name| {
             // Get unit conversion factor firsts
-            units::FACTORS.get(name).cloned().or_else(|| {
+            units::CONVERSION_FACTORS.get(name).cloned().or_else(|| {
                 macro_rules! get_particle_data {
                     ($index: ident, $data: ident) => (
                         system.particles()
@@ -145,7 +144,7 @@ impl FormatArgs {
                                       index is {}, but we only have {} atoms",
                                       $index, system.size()
                                   );
-                                  return Zero::zero();
+                                  return ::core::types::Zero::zero();
                               })
                     );
                 }
@@ -169,7 +168,7 @@ impl FormatArgs {
                 } else {
                     // scalar data
                     match name {
-                        "step" => Some(system.step() as f64),
+                        "step" => Some(system.step as f64),
                         "pressure" => Some(system.pressure()),
                         "volume" => Some(system.volume()),
                         "temperature" => Some(system.temperature()),

@@ -60,12 +60,32 @@ impl Vector3D {
     /// Create a new `Vector3D` with components `x`, `y`, `z`
     ///
     /// # Examples
+    ///
     /// ```
     /// # use lumol_core::types::Vector3D;
-    /// let vec = Vector3D::new(1.0, 0.0, -42.0);
+    /// let vector = Vector3D::new(1.0, 0.0, -42.0);
+    ///
+    /// assert_eq!(vector[0], 1.0);
+    /// assert_eq!(vector[1], 0.0);
+    /// assert_eq!(vector[2], -42.0);
     /// ```
     pub fn new(x: f64, y: f64, z: f64) -> Vector3D {
         Vector3D([x, y, z])
+    }
+
+    /// Create a new `Vector3D` with components `0`, `0`, `0`
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use lumol_core::types::Vector3D;
+    /// let vector = Vector3D::zero();
+    /// assert_eq!(vector[0], 0.0);
+    /// assert_eq!(vector[1], 0.0);
+    /// assert_eq!(vector[2], 0.0);
+    /// ```
+    pub fn zero() -> Vector3D {
+        <Vector3D as Zero>::zero()
     }
 
     /// Return the squared euclidean norm of a `Vector3D`

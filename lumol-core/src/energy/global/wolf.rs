@@ -9,7 +9,7 @@ use energy::PairRestriction;
 use math::*;
 use utils::ThreadLocalVec;
 use sys::Configuration;
-use types::{Matrix3, Vector3D, Zero};
+use types::{Matrix3, Vector3D};
 
 use super::{CoulombicPotential, GlobalCache, GlobalPotential};
 
@@ -335,7 +335,7 @@ mod tests {
     pub use super::*;
     use energy::GlobalPotential;
     use sys::System;
-    use types::{Matrix3, One};
+    use types::Matrix3;
     use utils::system_from_xyz;
 
     const E_BRUTE_FORCE: f64 = -0.09262397663346732;
@@ -441,9 +441,9 @@ mod tests {
         use energy::{CoulombicPotential, GlobalCache, GlobalPotential, PairRestriction};
         use sys::System;
         use types::Vector3D;
+        use utils::system_from_xyz;
 
         pub fn testing_system() -> System {
-            use utils::system_from_xyz;
             let mut system = system_from_xyz(
                 "6
                 cell: 20.0

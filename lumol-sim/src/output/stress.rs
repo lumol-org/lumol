@@ -7,8 +7,8 @@ use std::io::prelude::*;
 use std::path::{Path, PathBuf};
 
 use super::Output;
-use sys::System;
-use utils;
+use core::System;
+use core::units;
 
 /// The `StressOutput` writes the stress of the system to a text file, organized
 /// as: `step stress.xx stress.yy stress.zz stress.xy stress.xz stress.yz`.
@@ -31,25 +31,26 @@ impl StressOutput {
 impl Output for StressOutput {
     fn setup(&mut self, _: &System) {
         if let Err(err) = writeln!(&mut self.file, "# Stress tensor of the simulation (bar)") {
-            fatal_error!("Could not write to file '{}': {}", self.path.display(), err);
+            panic!("Could not write to file '{}': {}", self.path.display(), err);
         }
         if let Err(err) = writeln!(
             &mut self.file,
             "# step stress.xx stress.yy stress.zz stress.xy stress.xz stress.yz"
         ) {
-            fatal_error!("Could not write to file '{}': {}", self.path.display(), err);
+            panic!("Could not write to file '{}': {}", self.path.display(), err);
         }
     }
 
     fn write(&mut self, system: &System) {
+        let conversion = units::to(1.0, "bar").expect("bad unit");
         let stress = system.stress();
-        let xx = utils::unit_to(stress[0][0], "bar");
-        let yy = utils::unit_to(stress[1][1], "bar");
-        let zz = utils::unit_to(stress[2][2], "bar");
-        let xy = utils::unit_to(stress[0][1], "bar");
-        let xz = utils::unit_to(stress[0][2], "bar");
-        let yz = utils::unit_to(stress[1][2], "bar");
-        writeln_or_log!(self, "{} {} {} {} {} {} {}", system.step(), xx, yy, zz, xy, xz, yz);
+        let xx = stress[0][0] * conversion;
+        let yy = stress[1][1] * conversion;
+        let zz = stress[2][2] * conversion;
+        let xy = stress[0][1] * conversion;
+        let xz = stress[0][2] * conversion;
+        let yz = stress[1][2] * conversion;
+        writeln_or_log!(self, "{} {} {} {} {} {} {}", system.step, xx, yy, zz, xy, xz, yz);
     }
 }
 

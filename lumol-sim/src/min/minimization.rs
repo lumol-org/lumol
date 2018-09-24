@@ -2,9 +2,9 @@
 // Copyright (C) Lumol's contributors — BSD license
 
 //! Energy minimization algorithms
-use sim::{DegreesOfFreedom, Propagator, TemperatureStrategy};
-use sys::System;
-use utils;
+use core::{System, DegreesOfFreedom};
+
+use propagator::{Propagator, TemperatureStrategy};
 
 use std::f64;
 
@@ -48,18 +48,9 @@ pub struct Minimization {
 }
 
 impl Minimization {
-    /// Create a new `Minimization` using the given `minimizer`.
-    pub fn new(minimizer: Box<Minimizer>) -> Minimization {
-        let tolerance = Tolerance {
-            energy: utils::unit_from(1e-5, "kJ/mol"),
-            force2: utils::unit_from(1e-5, "kJ^2/mol^2/A^2"),
-        };
-        return Minimization::with_tolerance(minimizer, tolerance);
-    }
-
     /// Create a new `Minimization` using the given `minimizer` and specific
     /// energy and force `tolerance`.
-    pub fn with_tolerance(minimizer: Box<Minimizer>, tolerance: Tolerance) -> Minimization {
+    pub fn new(minimizer: Box<Minimizer>, tolerance: Tolerance) -> Minimization {
         Minimization {
             minimizer: minimizer,
             is_converged: false,

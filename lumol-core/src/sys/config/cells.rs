@@ -8,7 +8,7 @@ use std::f64;
 use std::f64::consts::PI;
 
 use math::*;
-use types::{Matrix3, Vector3D, Zero};
+use types::{Matrix3, Vector3D};
 
 /// The shape of a cell determine how we will be able to compute the periodic
 /// boundaries condition.
@@ -424,7 +424,7 @@ mod tests {
     use super::*;
     use std::f64;
     use std::f64::consts::PI;
-    use types::{Matrix3, One};
+    use types::Matrix3;
 
     #[test]
     #[should_panic]

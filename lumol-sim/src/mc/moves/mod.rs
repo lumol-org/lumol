@@ -10,7 +10,7 @@
 //! In all this module, beta refers to the Boltzmann factor 1/(kB T)
 use rand::{RngCore, Rng};
 use std::collections::BTreeSet;
-use sys::{EnergyCache, System, MoleculeHash};
+use core::{EnergyCache, System, MoleculeHash};
 
 /// Possible degrees of freedom simulated by a given Monte Carlo move
 #[derive(Clone, PartialEq, Debug)]
