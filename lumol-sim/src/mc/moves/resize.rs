@@ -9,8 +9,7 @@ use std::mem;
 
 use super::{MCDegreeOfFreedom, MCMove};
 
-use sys::{Configuration, EnergyCache, System};
-use types::{Matrix3, One};
+use core::{Configuration, EnergyCache, System, Matrix3};
 
 /// Monte Carlo move that changes the size of the simulation cell
 pub struct Resize {
@@ -53,7 +52,7 @@ impl MCMove for Resize {
     fn setup(&mut self, system: &System) {
         // check if the cell is infinite
         if system.cell.is_infinite() {
-            fatal_error!("Cannot use `Resize` move with infinite simulation cell.")
+            panic!("Cannot use `Resize` move with infinite simulation cell.")
         }
 
         // Get the largest cutoff of all intermolecular interactions in the
@@ -76,7 +75,7 @@ impl MCMove for Resize {
         // Abort simulation when box gets smaller than twice the cutoff radius.
         if let Some(maximum_cutoff) = self.maximum_cutoff {
             if system.cell.lengths().iter().any(|&d| 0.5 * d <= maximum_cutoff) {
-                fatal_error!(
+                panic!(
                     "Tried to decrease the cell size in Monte Carlo Resize move \
                      but the new size is smaller than the interactions cut off \
                      radius. You can try to increase the cell size or the number \

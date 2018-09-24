@@ -9,9 +9,9 @@ license = "BSD-3-Clause"
 
 [dependencies]
 lumol-core = {path = "../lumol-core"}
+lumol-sim = {path = "../lumol-sim"}
 toml = "0.4"
 log = "0.4"
-chemfiles = "0.8"
 
 [dependencies.log4rs]
 version = "0.8"

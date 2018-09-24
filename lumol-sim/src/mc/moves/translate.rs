@@ -11,8 +11,7 @@ use std::usize;
 use super::{MCDegreeOfFreedom, MCMove};
 use super::select_molecule;
 
-use sys::{EnergyCache, System, MoleculeHash};
-use types::Vector3D;
+use core::{EnergyCache, System, MoleculeHash, Vector3D};
 
 /// Monte Carlo move for translating a molecule
 pub struct Translate {

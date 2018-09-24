@@ -5,8 +5,8 @@ use std::path::Path;
 
 use super::Output;
 
-use sys::{OpenMode, Trajectory, TrajectoryBuilder, TrajectoryError};
-use sys::System;
+use core::{OpenMode, Trajectory, TrajectoryBuilder, TrajectoryError};
+use core::System;
 
 /// The `TrajectoryOutput` allows to write the trajectory of the system to a
 /// file, using any format supported by the [Chemfiles][chemfiles] library.
@@ -56,7 +56,7 @@ impl Output for TrajectoryOutput {
         match self.file.write(system) {
             Ok(()) => (),
             Err(err) => {
-                fatal_error!("Error in while writing trajectory: {}", err);
+                panic!("Error in while writing trajectory: {}", err);
             }
         }
     }

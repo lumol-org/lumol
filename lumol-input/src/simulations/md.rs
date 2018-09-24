@@ -2,7 +2,7 @@
 // Copyright (C) Lumol's contributors — BSD license
 use toml::value::Table;
 
-use lumol::sim::Alternator;
+use alternator::Alternator;
 use lumol::sim::md::*;
 use lumol::units;
 

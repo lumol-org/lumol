@@ -11,7 +11,7 @@ use rayon::prelude::*;
 
 use math::*;
 use sys::{Configuration, UnitCell, CellShape};
-use types::{Matrix3, Vector3D, Array3, Complex, Zero, One};
+use types::{Matrix3, Vector3D, Array3, Complex};
 use consts::FOUR_PI_EPSILON_0;
 use energy::{PairRestriction, RestrictionInfo};
 use utils::ThreadLocalVec;
@@ -314,11 +314,11 @@ impl Ewald {
     pub fn new<I: Into<Option<f64>>>(cutoff: f64, kmax: usize, alpha: I) -> Ewald {
         let alpha = alpha.into().unwrap_or(PI / cutoff);
         if cutoff < 0.0 {
-            fatal_error!("the cutoff can not be negative in Ewald");
+            panic!("the cutoff can not be negative in Ewald");
         } else if alpha < 0.0 {
-            fatal_error!("alpha can not be negative in Ewald");
+            panic!("alpha can not be negative in Ewald");
         } else if kmax == 0 {
-            fatal_error!("kmax can not be 0 in Ewald");
+            panic!("kmax can not be 0 in Ewald");
         }
 
         let parameters = EwaldParameters {
@@ -347,9 +347,9 @@ impl Ewald {
     /// unit cell.
     pub fn with_accuracy(cutoff: f64, accuracy: f64, configuration: &Configuration) -> Ewald {
         if cutoff < 0.0 {
-            fatal_error!("the cutoff can not be negative in Ewald");
+            panic!("the cutoff can not be negative in Ewald");
         } else if accuracy < 0.0 {
-            fatal_error!("accuracy can not be negative in Ewald");
+            panic!("accuracy can not be negative in Ewald");
         } else if accuracy > 1.0 {
             warn!("accuracy is bigger than 1 in Ewald::with_precision")
         }
@@ -1009,7 +1009,6 @@ mod tests {
     }
 
     pub fn water() -> System {
-        use utils::system_from_xyz;
         let mut system = system_from_xyz("3
         cell: 20.0
         O  0.0  0.0  0.0
@@ -1151,7 +1150,7 @@ mod tests {
 
     mod molecules {
         use super::*;
-        use types::{Vector3D, Zero};
+        use types::Vector3D;
         use energy::{GlobalPotential, PairRestriction, CoulombicPotential};
 
         #[test]
@@ -1227,7 +1226,7 @@ mod tests {
 
     mod atomic_virial {
         use super::*;
-        use types::{Matrix3, Zero, One};
+        use types::Matrix3;
         use energy::PairRestriction;
 
         fn scale(system: &mut System, i: usize, j: usize, eps: f64) {
@@ -1315,7 +1314,6 @@ mod tests {
 
     #[test]
     fn move_molecule() {
-        use utils::system_from_xyz;
         let mut system = system_from_xyz("6
         cell: 20.0
         H  0.3 -0.3 -0.8

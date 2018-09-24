@@ -58,9 +58,17 @@
 #![allow(use_self, redundant_field_names, or_fun_call, needless_return)]
 #![allow(missing_docs_in_private_items, should_implement_trait)]
 
-extern crate chemfiles;
-extern crate lumol_core as lumol;
+// extern crate chemfiles;
 extern crate toml;
+
+pub extern crate lumol_core;
+pub extern crate lumol_sim;
+
+mod lumol {
+    pub use super::lumol_core as core;
+    pub use super::lumol_sim as sim;
+    pub use self::core::*;
+}
 
 extern crate log4rs;
 #[macro_use]
@@ -83,6 +91,7 @@ mod extract;
 mod error;
 mod interactions;
 mod simulations;
+mod alternator;
 
 pub use self::error::{Error, Result};
 pub use self::interactions::Input as InteractionsInput;

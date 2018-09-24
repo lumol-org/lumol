@@ -1,8 +1,8 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) Lumol's contributors — BSD license
 
-use sim::{DegreesOfFreedom, Propagator, TemperatureStrategy};
-use sys::System;
+use propagator::{Propagator, TemperatureStrategy};
+use core::{System, DegreesOfFreedom};
 
 use super::{Control, Integrator, Thermostat};
 use super::VelocityVerlet;

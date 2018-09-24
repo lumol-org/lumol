@@ -8,8 +8,8 @@ use std::path::{Path, PathBuf};
 
 use super::Output;
 
-use sys::System;
-use utils;
+use core::System;
+use core::units;
 
 /// The `PropertiesOutput` write various physical properties of the system to
 /// a file. These properties are:
@@ -40,10 +40,10 @@ impl Output for PropertiesOutput {
     }
 
     fn write(&mut self, system: &System) {
-        let volume = utils::unit_to(system.volume(), "A^3");
-        let temperature = utils::unit_to(system.temperature(), "K");
-        let pressure = utils::unit_to(system.pressure(), "bar");
-        writeln_or_log!(self, "{} {} {} {}", system.step(), volume, temperature, pressure);
+        let volume = units::to(system.volume(), "A^3").expect("bad unit");
+        let temperature = units::to(system.temperature(), "K").expect("bad unit");
+        let pressure = units::to(system.pressure(), "bar").expect("bad unit");
+        writeln_or_log!(self, "{} {} {} {}", system.step, volume, temperature, pressure);
     }
 }
 

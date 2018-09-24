@@ -6,10 +6,10 @@ use std::io;
 use std::path::PathBuf;
 use std::result;
 
-use chemfiles;
+// use chemfiles;
 
-use lumol::out::CustomOutputError;
-use lumol::sys::TrajectoryError;
+use lumol::sim::CustomOutputError;
+use lumol::TrajectoryError;
 use lumol::units::ParseError;
 
 /// Custom `Result` type for input files
@@ -44,11 +44,11 @@ impl From<TrajectoryError> for Error {
     }
 }
 
-impl From<chemfiles::Error> for Error {
-    fn from(err: chemfiles::Error) -> Error {
-        Error::Trajectory(TrajectoryError::from(err))
-    }
-}
+// impl From<chemfiles::Error> for Error {
+//     fn from(err: chemfiles::Error) -> Error {
+//         Error::Trajectory(TrajectoryError::from(err))
+//     }
+// }
 
 impl<'a> From<&'a str> for Error {
     fn from(err: &'a str) -> Error {

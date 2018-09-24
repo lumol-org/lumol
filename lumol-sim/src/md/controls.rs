@@ -4,10 +4,10 @@
 //! While running a simulation, we often want to have control over some
 //! simulation parameters: the temperature, the pressure, etc. This is the goal
 //! of the control algorithms, all implementing of the `Control` trait.
-use sim::Alternator;
-use sys::System;
-use sys::veloc;
-use types::{Matrix3, Vector3D, Zero};
+use core::System;
+use core::{Matrix3, Vector3D};
+
+use velocities;
 
 /// Trait for controlling some parameters in a system during a simulation.
 pub trait Control {
@@ -62,7 +62,7 @@ impl Control for RescaleThermostat {
     fn control(&mut self, system: &mut System) {
         let instant_temperature = system.temperature();
         if f64::abs(instant_temperature - self.temperature) > self.tol {
-            veloc::scale(system, self.temperature);
+            velocities::scale(system, self.temperature);
         }
     }
 }
@@ -108,17 +108,6 @@ impl Control for BerendsenThermostat {
     }
 }
 impl Thermostat for BerendsenThermostat {}
-
-impl<T> Control for Alternator<T>
-where
-    T: Control,
-{
-    fn control(&mut self, system: &mut System) {
-        if self.can_run() {
-            self.as_mut().control(system)
-        }
-    }
-}
 
 /// Remove global translation from the system
 pub struct RemoveTranslation;
@@ -206,9 +195,8 @@ impl Control for Rewrap {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use sys::{Particle, Molecule, System, UnitCell};
-    use sys::veloc::{BoltzmannVelocities, InitVelocities};
-    use utils::system_from_xyz;
+    use core::{Particle, Molecule, System, UnitCell};
+    use velocities::{BoltzmannVelocities, InitVelocities};
 
     fn testing_system() -> System {
         let mut system = System::with_cell(UnitCell::cubic(20.0));
@@ -273,46 +261,40 @@ mod tests {
 
     #[test]
     fn remove_translation() {
-        let mut system = system_from_xyz(
-            "2
-            cell: 20.0
-            Ag 0 0 0 1 2 0
-            Ag 1 1 1 1 0 0
-            ",
-        );
+        let mut system = System::with_cell(UnitCell::cubic(10.0));
+        system.add_molecule(Molecule::new(Particle::with_position("Ag", [0.0, 0.0, 0.0].into())));
+        system.add_molecule(Molecule::new(Particle::with_position("Ag", [1.0, 1.0, 1.0].into())));
+
+        system.particles_mut().velocity[0] = [1.0, 2.0, 0.0].into();
+        system.particles_mut().velocity[1] = [1.0, 0.0, 0.0].into();
 
         RemoveTranslation::new().control(&mut system);
-        assert_ulps_eq!(system.particles().velocity[0], Vector3D::new(0.0, 1.0, 0.0));
-        assert_ulps_eq!(system.particles().velocity[1], Vector3D::new(0.0, -1.0, 0.0));
+        assert_eq!(system.particles().velocity[0], Vector3D::new(0.0, 1.0, 0.0));
+        assert_eq!(system.particles().velocity[1], Vector3D::new(0.0, -1.0, 0.0));
     }
 
     #[test]
     fn remove_rotation() {
-        let mut system = system_from_xyz(
-            "2
-            cell: 20.0
-            Ag 0 0 0 0 1 0
-            Ag 1 0 0 0 -1 2
-            ",
-        );
+        let mut system = System::with_cell(UnitCell::cubic(10.0));
+        system.add_molecule(Molecule::new(Particle::with_position("Ag", [0.0, 0.0, 0.0].into())));
+        system.add_molecule(Molecule::new(Particle::with_position("Ag", [1.0, 0.0, 0.0].into())));
+
+        system.particles_mut().velocity[0] = [0.0, 1.0, 0.0].into();
+        system.particles_mut().velocity[1] = [0.0, -1.0, 2.0].into();
 
         RemoveRotation::new().control(&mut system);
-        assert_ulps_eq!(system.particles().velocity[0], Vector3D::new(0.0, 0.0, 1.0));
-        assert_ulps_eq!(system.particles().velocity[1], Vector3D::new(0.0, 0.0, 1.0));
+        assert_eq!(system.particles().velocity[0], Vector3D::new(0.0, 0.0, 1.0));
+        assert_eq!(system.particles().velocity[1], Vector3D::new(0.0, 0.0, 1.0));
     }
 
     #[test]
     fn rewrap() {
-        let mut system = system_from_xyz(
-            "2
-            cell: 20.0
-            Ag 0 0 0
-            Ag 25 0 0
-            ",
-        );
+        let mut system = System::with_cell(UnitCell::cubic(10.0));
+        system.add_molecule(Molecule::new(Particle::with_position("Ag", [0.0, 0.0, 0.0].into())));
+        system.add_molecule(Molecule::new(Particle::with_position("Ag", [15.0, 0.0, 0.0].into())));
 
         Rewrap::new().control(&mut system);
-        assert_ulps_eq!(system.particles().position[0], Vector3D::new(0.0, 0.0, 0.0));
-        assert_ulps_eq!(system.particles().position[1], Vector3D::new(5.0, 0.0, 0.0));
+        assert_eq!(system.particles().position[0], Vector3D::new(0.0, 0.0, 0.0));
+        assert_eq!(system.particles().position[1], Vector3D::new(5.0, 0.0, 0.0));
     }
 }

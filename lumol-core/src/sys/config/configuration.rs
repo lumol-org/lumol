@@ -7,7 +7,7 @@ use std::cmp::{max, min};
 use std::marker::PhantomData;
 // use std::iter::DoubleEndedIterator
 
-use types::{Vector3D, Zero};
+use types::Vector3D;
 
 use energy::BondPath;
 

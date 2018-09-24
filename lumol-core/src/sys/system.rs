@@ -12,7 +12,17 @@ use energy::{CoulombicPotential, GlobalPotential};
 use sys::{Composition, EnergyEvaluator, Interactions};
 use sys::{Configuration, Molecule, ParticleKind, UnitCell};
 
-use sim::DegreesOfFreedom;
+/// The number of degrees of freedom simulated in a given system
+#[derive(Clone, PartialEq, Debug)]
+pub enum DegreesOfFreedom {
+    /// All particles are explicitly simulated
+    Particles,
+    /// All molecules are simulated as rigid bodies
+    Molecules,
+    /// All particles are explicitly simulated, but some degrees of freedom
+    /// are frozen. The usize value is the number of frozen degree of freedom.
+    Frozen(usize),
+}
 
 /// The `System` type hold all the data about a simulated system.
 ///
@@ -34,13 +44,13 @@ pub struct System {
     interactions: Interactions,
     /// Association particles names to particle kinds
     kinds: BTreeMap<String, ParticleKind>,
-    /// The current simulation step
-    step: u64,
     /// Externally managed temperature for the system
     external_temperature: Option<f64>,
     /// Number of degrees of freedom simulated in the system. This default to
     /// `DegreesOfFreedom::Particles`, and is set in the simulation setup.
-    pub(crate) simulated_degrees_of_freedom: DegreesOfFreedom,
+    pub simulated_degrees_of_freedom: DegreesOfFreedom,
+    /// The current simulation step
+    pub step: u64,
 }
 
 impl System {
@@ -98,41 +108,17 @@ impl System {
         return composition;
     }
 
-    /// Get the current step of the system
-    pub fn step(&self) -> u64 {
-        self.step
-    }
-
-    /// Increment the system step
-    pub fn increment_step(&mut self) {
-        self.step += 1;
-    }
-
     /// Use an external temperature for all the system properties. Calling this
     /// with `Some(temperature)` will replace all the computation of the
     /// temperature from the velocities with the given values. Calling it with
     /// `None` will use the velocities.
     ///
     /// The default is to use the velocities unless this function is called.
-    pub fn external_temperature(&mut self, temperature: Option<f64>) {
+    pub fn simulated_temperature(&mut self, temperature: Option<f64>) {
         if let Some(temperature) = temperature {
             assert!(temperature >= 0.0, "External temperature must be positive");
         }
         self.external_temperature = temperature;
-    }
-
-    /// Guess the bonds in the configuration using the chemfiles algorithm.
-    ///
-    /// This function removes any existing bond, and tries to guess bonds using
-    /// a distance criteria. Because this function does a round trip to
-    /// chemfiles, it might be costly when dealing with big systems.
-    pub fn guess_bonds(&mut self) {
-        use sys::chfl::{ToChemfiles, ToLumol};
-        let mut frame =
-            self.to_chemfiles().expect("can not convert the configuration to a chemfiles frame");
-        frame.guess_topology().expect("can not guess system topology in chemfiles");
-        *self = frame.to_lumol()
-                     .expect("can not convert the chemfiles frame to a configuration");
     }
 }
 
@@ -146,7 +132,7 @@ impl System {
     /// Add the `potential` pair interaction for atoms with types `i` and `j`
     pub fn add_pair_potential(&mut self, (i, j): (&str, &str), potential: PairInteraction) {
         if self.cell.lengths().iter().any(|&d| 0.5 * d < potential.cutoff()) {
-            fatal_error!(
+            panic!(
                 "Can not add a potential with a cutoff bigger than half of the \
                 smallest cell length. Try increasing the cell size or decreasing \
                 the cutoff."
@@ -194,7 +180,7 @@ impl System {
     pub fn set_coulomb_potential(&mut self, potential: Box<CoulombicPotential>) {
         if let Some(cutoff) = potential.cutoff() {
             if self.cell.lengths().iter().any(|&d| 0.5 * d < cutoff) {
-                fatal_error!(
+                panic!(
                     "Can not add a potential with a cutoff bigger than half of the \
                     smallest cell length. Try increasing the cell size or decreasing \
                     the cutoff."
@@ -409,21 +395,10 @@ mod tests {
     use sys::{Molecule, Particle, ParticleKind};
 
     #[test]
-    fn step() {
-        let mut system = System::new();
-        assert_eq!(system.step(), 0);
-
-        system.increment_step();
-        system.increment_step();
-        system.increment_step();
-        assert_eq!(system.step(), 3);
-    }
-
-    #[test]
     #[should_panic]
-    fn negative_external_temperature() {
+    fn negative_simulated_temperature() {
         let mut system = System::new();
-        system.external_temperature(Some(-1.0));
+        system.simulated_temperature(Some(-1.0));
     }
 
     #[test]

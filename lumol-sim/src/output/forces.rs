@@ -7,8 +7,8 @@ use std::io::prelude::*;
 use std::path::{Path, PathBuf};
 
 use super::Output;
-use sys::System;
-use utils;
+use core::System;
+use core::units;
 
 /// The `ForcesOutput` writes the forces acting on the atoms using XYZ format
 pub struct ForcesOutput {
@@ -33,10 +33,10 @@ impl Output for ForcesOutput {
     fn write(&mut self, system: &System) {
         let forces = system.forces();
         let names = system.particles().name;
-        let conversion = utils::unit_to(1.0, "kJ/mol/A");
+        let conversion = units::to(1.0, "kJ/mol/A").expect("bad unit");
 
         writeln_or_log!(self, "{}", forces.len());
-        writeln_or_log!(self, "forces in kJ/mol/A at step {}", system.step());
+        writeln_or_log!(self, "forces in kJ/mol/A at step {}", system.step);
         for (i, force) in forces.iter().enumerate() {
             let x = conversion * force[0];
             let y = conversion * force[1];

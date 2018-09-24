@@ -4,14 +4,12 @@
 //! Geometry minization of a molecule of water
 extern crate lumol;
 
-use lumol::types::Vector3D;
+use lumol::energy::Harmonic;
+use lumol::{Particle, Molecule, System, Vector3D};
 use lumol::units;
 
-use lumol::energy::Harmonic;
-use lumol::sys::{Particle, Molecule, System};
-
 use lumol::sim::{Minimization, Simulation};
-use lumol::sim::min::SteepestDescent;
+use lumol::sim::min::{SteepestDescent, Tolerance};
 
 fn main() -> Result<(), Box<std::error::Error>> {
     let mut system = System::new();
@@ -39,7 +37,11 @@ fn main() -> Result<(), Box<std::error::Error>> {
         }),
     );
 
-    let minimization = Minimization::new(Box::new(SteepestDescent::new()));
+    let tolerance = Tolerance {
+        energy: units::from(1e-5, "kJ/mol")?,
+        force2: units::from(1e-5, "(kJ/mol/A)^2")?,
+    };
+    let minimization = Minimization::new(Box::new(SteepestDescent::new()), tolerance);
     let mut simulation = Simulation::new(Box::new(minimization));
     simulation.run(&mut system, 500);
 

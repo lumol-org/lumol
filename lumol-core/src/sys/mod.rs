@@ -8,6 +8,7 @@ pub use self::config::*;
 
 mod system;
 pub use self::system::System;
+pub use self::system::DegreesOfFreedom;
 
 mod interactions;
 use self::interactions::Interactions;
@@ -22,5 +23,4 @@ mod chfl;
 pub use self::chfl::{OpenMode, Trajectory, TrajectoryBuilder, Error as TrajectoryError};
 pub use self::chfl::read_molecule;
 
-pub mod veloc;
 pub mod compute;

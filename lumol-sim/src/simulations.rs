@@ -1,13 +1,10 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) Lumol's contributors — BSD license
 
-use sys::System;
-use types::Vector3D;
+use core::{System, DegreesOfFreedom, Vector3D};
 
-use out::Output;
-use sim::Propagator;
-use sim::DegreesOfFreedom;
-use sim::TemperatureStrategy;
+use output::Output;
+use propagator::{Propagator, TemperatureStrategy};
 
 /// Writing an output at a given frequency
 struct OutputFrequency {
@@ -40,7 +37,7 @@ impl Output for OutputFrequency {
     }
 
     fn write(&mut self, system: &System) {
-        if system.step() % self.frequency == 0 {
+        if system.step % self.frequency == 0 {
             self.output.write(system);
         }
     }
@@ -71,9 +68,9 @@ impl Simulation {
     pub fn run(&mut self, system: &mut System, nsteps: usize) {
         match self.propagator.temperature_strategy() {
             TemperatureStrategy::External(temperature) => {
-                system.external_temperature(Some(temperature))
+                system.simulated_temperature(Some(temperature))
             }
-            TemperatureStrategy::Velocities => system.external_temperature(None),
+            TemperatureStrategy::Velocities => system.simulated_temperature(None),
             TemperatureStrategy::None => {}
         }
 
@@ -87,7 +84,7 @@ impl Simulation {
         self.setup(system);
         for i in 0..nsteps {
             self.propagator.propagate(system);
-            system.increment_step();
+            system.step += 1;
             for output in &mut self.outputs {
                 output.write(system);
             }

@@ -18,15 +18,18 @@ impl FromToml for Minimization {
             other => return Err(Error::from(format!("Unknown minimizer '{}'", other))),
         };
 
-        if let Some(tolerance) = config.get("tolerance") {
+        let tolerance = if let Some(tolerance) = config.get("tolerance") {
             let tolerance = tolerance.as_table().ok_or(
                 Error::from("'tolerance' must be a table in minimization propagator")
             )?;
-            let tolerance = Tolerance::from_toml(tolerance)?;
-            Ok(Minimization::with_tolerance(minimizer, tolerance))
+            Tolerance::from_toml(tolerance)?
         } else {
-            Ok(Minimization::new(minimizer))
-        }
+            Tolerance {
+                energy: units::from(1e-5, "kJ/mol").expect("bad unit"),
+                force2: units::from(1e-5, "kJ^2/mol^2/A^2").expect("bad unit"),
+            }
+        };
+        Ok(Minimization::new(minimizer, tolerance))
     }
 }
 

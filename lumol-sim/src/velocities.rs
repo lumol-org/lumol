@@ -6,10 +6,10 @@ use rand::XorShiftRng;
 use rand::SeedableRng;
 use rand::distributions::{Normal, Range, Distribution};
 
-use consts::K_BOLTZMANN;
-use sim::md::{Control, RemoveRotation, RemoveTranslation};
-use sys::System;
-use types::Vector3D;
+use core::consts::K_BOLTZMANN;
+use core::{System, Vector3D};
+
+use md::{Control, RemoveRotation, RemoveTranslation};
 
 /// Scale all velocities in the `System` such that the `system` temperature
 /// is `temperature`.
@@ -106,10 +106,11 @@ impl InitVelocities for UniformVelocities {
     fn init(&mut self, system: &mut System) {
         for particle in system.particles_mut() {
             let m_inv = 1.0 / (*particle.mass);
-            let x = f64::sqrt(m_inv) * self.dist.sample(&mut self.rng);
-            let y = f64::sqrt(m_inv) * self.dist.sample(&mut self.rng);
-            let z = f64::sqrt(m_inv) * self.dist.sample(&mut self.rng);
-            *particle.velocity = Vector3D::new(x, y, z);
+            *particle.velocity = f64::sqrt(m_inv) * Vector3D::new(
+                self.dist.sample(&mut self.rng),
+                self.dist.sample(&mut self.rng),
+                self.dist.sample(&mut self.rng),
+            );
         }
         RemoveTranslation.control(system);
         RemoveRotation.control(system);
@@ -136,8 +137,7 @@ impl InitVelocities for UniformVelocities {
 mod test {
     use super::*;
     use rand::random;
-    use sys::{Molecule, Particle, System};
-    use utils::system_from_xyz;
+    use core::{Molecule, Particle, System, Vector3D, UnitCell};
 
     fn testing_system() -> System {
         let mut system = System::new();
@@ -154,13 +154,13 @@ mod test {
     }
 
     fn global_translation(system: &System) -> f64 {
-        use types::{Vector3D, Zero};
-
-        let total_mass = system.particles().mass.iter().sum();
+        let mut total_mass = 0.0;
         let mut com_velocity = Vector3D::zero();
         for (&mass, velocity) in soa_zip!(system.particles(), [mass, velocity]) {
-            com_velocity += velocity * mass / total_mass;
+            total_mass += mass;
+            com_velocity += velocity * mass;
         }
+        com_velocity /= total_mass;
         return com_velocity.norm();
     }
 
@@ -188,20 +188,18 @@ mod test {
 
     #[test]
     fn scaling_keeps_global_velocity() {
-        let mut system = system_from_xyz(
-            "2
-            cell: 20.0
-            Ag 0 0 0 1 0 0
-            Ag 1 1 1 2 0 0
-            ",
-        );
+        let mut system = System::with_cell(UnitCell::cubic(10.0));
+        system.add_molecule(Molecule::new(Particle::with_position("Ag", [0.0, 0.0, 0.0].into())));
+        system.add_molecule(Molecule::new(Particle::with_position("Ag", [1.0, 1.0, 1.0].into())));
+
+        system.particles_mut().velocity[0] = [1.0, 0.0, 0.0].into();
+        system.particles_mut().velocity[1] = [2.0, 0.0, 0.0].into();
         assert!(global_translation(&system) > 1.0);
 
         scale(&mut system, 452.0);
         let temperature = system.temperature();
         assert_ulps_eq!(temperature, 452.0, epsilon = 1e-9);
 
-        println!("{:?}", global_translation(&system));
         assert!(global_translation(&system) > 1e-5);
     }
 }

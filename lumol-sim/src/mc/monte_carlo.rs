@@ -4,10 +4,10 @@
 //! Metropolis Monte Carlo propagator implementation
 use rand::{self, Rng, SeedableRng};
 
-use consts::K_BOLTZMANN;
-use sim::{DegreesOfFreedom, Propagator, TemperatureStrategy};
-use sys::{EnergyCache, System};
+use core::consts::K_BOLTZMANN;
+use core::{DegreesOfFreedom, EnergyCache, System};
 
+use propagator::{Propagator, TemperatureStrategy};
 use super::{MCDegreeOfFreedom, MCMove};
 
 /// Metropolis Monte Carlo propagator
@@ -65,7 +65,7 @@ impl MonteCarlo {
     /// If called after a simulation run.
     pub fn add(&mut self, mcmove: Box<MCMove>, frequency: f64) {
         if self.initialized {
-            fatal_error!(
+            panic!(
                 "Monte Carlo simulation has already been initialized, we can not add \
                  new moves."
             );
@@ -89,7 +89,7 @@ impl MonteCarlo {
         target_acceptance: f64,
     ) {
         if self.initialized {
-            fatal_error!(
+            panic!(
                 "Monte Carlo simulation has already been initialized, we can not add \
                  new moves."
             );
@@ -253,7 +253,7 @@ impl Propagator for MonteCarlo {
 /// # Example
 ///
 /// ```
-/// use lumol_core::sim::mc::MoveCounter;
+/// use lumol_sim::mc::MoveCounter;
 ///
 /// // Create a new counter with a target acceptance of 0.5 (=50 %)
 /// let mut counter = MoveCounter::new(Some(0.5));
@@ -374,9 +374,9 @@ impl MoveCounter {
 #[cfg(test)]
 mod tests {
     use rand::RngCore;
-    use sim::Propagator;
-    use sim::mc::{MCDegreeOfFreedom, MCMove, MonteCarlo, MoveCounter};
-    use sys::{EnergyCache, System};
+    use propagator::Propagator;
+    use mc::{MCDegreeOfFreedom, MCMove, MonteCarlo, MoveCounter};
+    use core::{EnergyCache, System};
 
     struct DummyMove;
     impl MCMove for DummyMove {

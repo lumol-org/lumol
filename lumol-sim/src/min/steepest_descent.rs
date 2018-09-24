@@ -1,11 +1,9 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) Lumol's contributors — BSD license
 
-use sys::System;
-use utils;
+use core::{units, System, DegreesOfFreedom};
 
 use super::{Minimizer, Tolerance};
-use sim::DegreesOfFreedom;
 
 use std::f64;
 
@@ -22,7 +20,7 @@ impl SteepestDescent {
     /// Create a new `SteepestDescent` minimizer
     pub fn new() -> SteepestDescent {
         SteepestDescent {
-            gamma: utils::unit_from(0.1, "fs^2/u"),
+            gamma: units::from(0.1, "fs^2/u").expect("bad unit"),
         }
     }
 }
@@ -43,9 +41,7 @@ impl Minimizer for SteepestDescent {
         // Update coordinates, reducing gamma until we find a configuration of
         // lower energy
         loop {
-            for (position, prevpos, force) in izip!(
-                system.particles_mut().position, &prevpos, &forces
-            ) {
+            for (position, prevpos, force) in soa_zip!(system.particles_mut(), [mut position], &prevpos, &forces) {
                 *position = prevpos + self.gamma * force;
             }
 
@@ -73,19 +69,15 @@ impl Minimizer for SteepestDescent {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use energy::{Harmonic, PairInteraction};
-    use sim::{Minimization, Propagator};
-    use sys::System;
-    use utils::system_from_xyz;
+    use core::energy::{Harmonic, PairInteraction};
+    use core::{System, UnitCell, Molecule, Particle};
+    use min::Minimization;
+    use propagator::Propagator;
 
     fn testing_system() -> System {
-        let mut system = system_from_xyz(
-            "2
-            cell: 20.0
-            Cl 0.0 0.0 0.0
-            Cl 0.0 0.0 2.0
-            ",
-        );
+        let mut system = System::with_cell(UnitCell::cubic(20.0));
+        system.add_molecule(Molecule::new(Particle::with_position("Cl", [0.0, 0.0, 0.0].into())));
+        system.add_molecule(Molecule::new(Particle::with_position("Cl", [0.0, 0.0, 2.0].into())));
 
         let pair = PairInteraction::new(Box::new(Harmonic { x0: 2.3, k: 0.1 }), 10.0);
         system.add_pair_potential(("Cl", "Cl"), pair);
@@ -96,7 +88,13 @@ mod tests {
     fn minization() {
         let mut system = testing_system();
 
-        let mut minization = Minimization::new(Box::new(SteepestDescent::new()));
+        let mut minization = Minimization::new(
+            Box::new(SteepestDescent::new()),
+            Tolerance {
+                energy: 1e-10,
+                force2: 1e-10,
+            },
+        );
         for _ in 0..100 {
             minization.propagate(&mut system);
         }

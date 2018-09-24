@@ -16,7 +16,7 @@ mod ewald {
 
     use lumol::energy::{CoulombicPotential, Ewald, GlobalPotential, PairRestriction, SharedEwald};
     use lumol::sys::EnergyCache;
-    use lumol::types::{Vector3D, Zero};
+    use lumol::types::Vector3D;
 
     use utils;
 
@@ -121,7 +121,7 @@ mod wolf {
 
     use lumol::energy::{CoulombicPotential, GlobalPotential, PairRestriction, Wolf};
     use lumol::sys::EnergyCache;
-    use lumol::types::{Vector3D, Zero};
+    use lumol::types::Vector3D;
 
     use utils;
 

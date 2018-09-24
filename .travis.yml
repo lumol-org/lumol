@@ -33,7 +33,13 @@ script:
     # Check that benchmarks still compile
     - cargo bench --no-run
     # Check if tutorials compile
-    - ./scripts/ci/compile-tutorials.py
+    - |
+      for tutorial in tutorials/*/
+      do
+        cd $tutorial
+        cargo build
+        cd -
+      done
     # Misc style checking
     - ./scripts/ci/check-whitespaces.py
     # Generate documentation and place it in target/gh-pages

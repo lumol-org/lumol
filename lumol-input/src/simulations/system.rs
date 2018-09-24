@@ -3,7 +3,7 @@
 use toml::value::{Table, Value};
 
 use lumol::sys::*;
-use lumol::sys::veloc::{BoltzmannVelocities, InitVelocities};
+use lumol::sim::{BoltzmannVelocities, InitVelocities};
 use lumol::units;
 
 use {Input, InteractionsInput};

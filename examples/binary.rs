@@ -3,15 +3,15 @@
 
 //! Monte Carlo simulation of a binary mixture of H20 and CO2.
 extern crate lumol;
-extern crate lumol_input as input;
+
+use lumol::{Molecule, Particle, TrajectoryBuilder};
+use lumol::read_molecule;
+use lumol::units;
 
 use lumol::sim::Simulation;
 use lumol::sim::mc::{MonteCarlo, Rotate, Translate};
-use lumol::sys::{Molecule, Particle, TrajectoryBuilder};
-use lumol::sys::read_molecule;
-use lumol::units;
 
-use input::InteractionsInput;
+use lumol::input::InteractionsInput;
 
 fn main() -> Result<(), Box<std::error::Error>> {
     let mut system = TrajectoryBuilder::new().open("data/binary.pdb")?

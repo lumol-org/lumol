@@ -7,13 +7,13 @@
 //! simulation run.
 extern crate lumol;
 
+use lumol::{Particle, Molecule, System, UnitCell, Vector3D};
 use lumol::energy::{LennardJones, PairInteraction};
-use lumol::out::{EnergyOutput, TrajectoryOutput};
-use lumol::sim::{MolecularDynamics, Simulation};
-use lumol::sys::{Particle, Molecule, System, UnitCell};
-use lumol::sys::veloc::{BoltzmannVelocities, InitVelocities};
-use lumol::types::Vector3D;
 use lumol::units;
+
+use lumol::sim::{EnergyOutput, TrajectoryOutput};
+use lumol::sim::{MolecularDynamics, Simulation};
+use lumol::sim::{BoltzmannVelocities, InitVelocities};
 
 fn main() -> Result<(), Box<std::error::Error>> {
     let mut system = System::with_cell(UnitCell::cubic(17.0));

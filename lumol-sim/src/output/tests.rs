@@ -12,9 +12,9 @@ use std::io::prelude::*;
 use std::path::Path;
 
 use super::Output;
-use energy::{Harmonic, PairInteraction};
-use sys::System;
-use utils::{system_from_xyz, unit_from};
+use core::energy::{Harmonic, PairInteraction};
+use core::{System, Molecule, Particle, UnitCell};
+use core::units;
 
 pub fn test_output<F>(function: F, expected: &str)
 where
@@ -34,22 +34,19 @@ where
 }
 
 pub fn testing_system() -> System {
-    let mut system = system_from_xyz(
-        "2
-        cell: 10
-        F 0.0 0.0 0.0 0.1 0.0 0.0
-        F 1.3 0.0 0.0 0.0 0.0 0.0
-        ",
-    );
+    let mut system = System::with_cell(UnitCell::cubic(10.0));
+    system.add_molecule(Molecule::new(Particle::with_position("F", [0.0, 0.0, 0.0].into())));
+    system.add_molecule(Molecule::new(Particle::with_position("F", [1.3, 0.0, 0.0].into())));
+
+    system.particles_mut().velocity[0] = [0.1, 0.0, 0.0].into();
+    system.particles_mut().velocity[1] = [0.0, 0.0, 0.0].into();
 
     let harmonic = Box::new(Harmonic {
-        k: unit_from(300.0, "kJ/mol/A^2"),
-        x0: unit_from(1.2, "A"),
+        k: units::from(300.0, "kJ/mol/A^2").unwrap(),
+        x0: units::from(1.2, "A").unwrap(),
     });
     system.add_pair_potential(("F", "F"), PairInteraction::new(harmonic, 5.0));
-    for _ in 0..42 {
-        system.increment_step();
-    }
+    system.step = 42;
     return system;
 }
 
