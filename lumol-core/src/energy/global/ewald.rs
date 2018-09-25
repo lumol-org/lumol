@@ -750,7 +750,7 @@ impl Ewald {
         thread_local_efield.sum_into(&mut self.efield);
 
         let charges = configuration.particles().charge;
-        for (force, &charge, field) in izip!(&mut *forces, charges, &self.efield) {
+        for (force, &charge, field) in zip!(&mut *forces, charges, &self.efield) {
             *force += charge * field / FOUR_PI_EPSILON_0;
         }
     }
@@ -850,7 +850,7 @@ impl Ewald {
         new_positions: &[Vector3D],
     ) -> f64 {
         let mut old_energy = 0.0;
-        for (factor, &rho) in izip!(&self.factors.energy, &self.rho) {
+        for (factor, &rho) in zip!(&self.factors.energy, &self.rho) {
             old_energy += factor * rho.norm2();
         }
         old_energy /= FOUR_PI_EPSILON_0;
@@ -860,13 +860,13 @@ impl Ewald {
         );
 
         let mut new_energy = 0.0;
-        for (factor, &rho, &delta) in izip!(&self.factors.energy, &self.rho, &delta_rho) {
+        for (factor, &rho, &delta) in zip!(&self.factors.energy, &self.rho, &delta_rho) {
             new_energy += factor * (rho + delta).norm2();
         }
         new_energy /= FOUR_PI_EPSILON_0;
 
         self.updater = Some(Box::new(move |ewald: &mut Ewald| {
-            for (rho, &delta) in izip!(&mut ewald.rho, &delta_rho) {
+            for (rho, &delta) in zip!(&mut ewald.rho, &delta_rho) {
                 *rho += delta;
             }
         }));

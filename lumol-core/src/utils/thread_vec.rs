@@ -48,7 +48,7 @@ impl<T: Send> ThreadLocalVec<T> {
     /// the `output` buffer
     pub fn sum_into(self, output: &mut [T]) where T: AddAssign {
         for local in self.into_iter() {
-            for (a, b) in output.iter_mut().zip(local) {
+            for (a, b) in zip!(&mut *output, local) {
                 *a += b;
             }
         }
