@@ -172,7 +172,7 @@ impl ToChemfiles for System {
         {
             let chfl_positions = frame.positions_mut()?;
             let positions = self.particles().position;
-            for (chfl_position, position) in izip!(chfl_positions, positions) {
+            for (chfl_position, position) in zip!(chfl_positions, positions) {
                 chfl_position[0] = position[0];
                 chfl_position[1] = position[1];
                 chfl_position[2] = position[2];
@@ -183,7 +183,7 @@ impl ToChemfiles for System {
             frame.add_velocities()?;
             let chfl_velocities = frame.velocities_mut()?;
             let velocities = self.particles().velocity;
-            for (chfl_velocity, velocity) in izip!(chfl_velocities, velocities) {
+            for (chfl_velocity, velocity) in zip!(chfl_velocities, velocities) {
                 chfl_velocity[0] = velocity[0];
                 chfl_velocity[1] = velocity[1];
                 chfl_velocity[2] = velocity[2];
