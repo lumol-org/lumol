@@ -1,5 +1,5 @@
 language: rust
-sudo: false
+sudo: required
 addons:
   apt:
     sources:
@@ -30,6 +30,7 @@ script:
     # Run unit tests and doc tests in debug mode
     - cargo test --all --lib -- --test-threads=2
     - cargo test --all --doc -- --test-threads=2
+    - cargo test -p lumol-input --tests -- --test-threads=2
     # Check that benchmarks still compile
     - cargo bench --no-run
     # Check if tutorials compile
@@ -47,8 +48,8 @@ script:
     # Generate and publish coverage
     - |
       if ${DO_COVERAGE}; then
-          for test in $(find target/debug/deps/ ! -name "lib*" -type f); do
-              kcov --include-pattern=$(pwd) --exclude-pattern=target target/kcov $test
+          for test in $(find target/debug/ -maxdepth 1 -executable -type f); do
+              kcov --include-pattern=$(pwd) --exclude-pattern=target --exclude-pattern=tutorials target/kcov $test
           done
           bash <(curl -s https://codecov.io/bash) -s target/kcov
       fi
