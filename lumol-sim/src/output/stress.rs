@@ -2,7 +2,7 @@
 // Copyright (C) Lumol's contributors — BSD license
 
 use std::fs::File;
-use std::io;
+use std::io::{self, BufWriter};
 use std::io::prelude::*;
 use std::path::{Path, PathBuf};
 
@@ -13,7 +13,7 @@ use core::units;
 /// The `StressOutput` writes the stress of the system to a text file, organized
 /// as: `step stress.xx stress.yy stress.zz stress.xy stress.xz stress.yz`.
 pub struct StressOutput {
-    file: File,
+    file: BufWriter<File>,
     path: PathBuf,
 }
 
@@ -22,7 +22,7 @@ impl StressOutput {
     /// if it already exists.
     pub fn new<P: AsRef<Path>>(filename: P) -> Result<StressOutput, io::Error> {
         Ok(StressOutput {
-            file: File::create(filename.as_ref())?,
+            file: BufWriter::new(File::create(filename.as_ref())?),
             path: filename.as_ref().to_owned(),
         })
     }

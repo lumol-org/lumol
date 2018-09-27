@@ -2,7 +2,7 @@
 // Copyright (C) Lumol's contributors — BSD license
 
 use std::fs::File;
-use std::io;
+use std::io::{self, BufWriter};
 use std::io::prelude::*;
 use std::path::{Path, PathBuf};
 
@@ -18,7 +18,7 @@ use core::units;
 /// - instant temperature;
 /// - instant pressure;
 pub struct PropertiesOutput {
-    file: File,
+    file: BufWriter<File>,
     path: PathBuf,
 }
 
@@ -27,7 +27,7 @@ impl PropertiesOutput {
     /// if it already exists.
     pub fn new<P: AsRef<Path>>(filename: P) -> Result<PropertiesOutput, io::Error> {
         Ok(PropertiesOutput {
-            file: File::create(filename.as_ref())?,
+            file: BufWriter::new(File::create(filename.as_ref())?),
             path: filename.as_ref().to_owned(),
         })
     }
