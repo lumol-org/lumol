@@ -4,7 +4,7 @@
 use std::error;
 use std::fmt;
 use std::fs::File;
-use std::io;
+use std::io::{self, BufWriter};
 use std::io::prelude::*;
 use std::path::{Path, PathBuf};
 
@@ -261,7 +261,7 @@ fn parse_index(input: &str) -> (&str, usize) {
 ///   vector lengths; `cell.alpha`, `cell.beta` and `cell.gamma` are the unit
 ///   cell angles.
 pub struct CustomOutput {
-    file: File,
+    file: BufWriter<File>,
     path: PathBuf,
     template: String,
     args: FormatArgs,
@@ -276,7 +276,7 @@ impl CustomOutput {
         template: &str,
     ) -> Result<CustomOutput, CustomOutputError> {
         Ok(CustomOutput {
-            file: File::create(filename.as_ref())?,
+            file: BufWriter::new(File::create(filename.as_ref())?),
             path: filename.as_ref().to_owned(),
             template: template.into(),
             args: FormatArgs::new(template)?,

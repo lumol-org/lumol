@@ -2,7 +2,7 @@
 // Copyright (C) Lumol's contributors — BSD license
 
 use std::fs::File;
-use std::io;
+use std::io::{self, BufWriter};
 use std::io::prelude::*;
 use std::path::{Path, PathBuf};
 
@@ -12,7 +12,7 @@ use core::System;
 /// The `CellOutput` writes all the components of a cell to a file . The columns
 /// in the file contain the following values: `step A B C α β γ`.
 pub struct CellOutput {
-    file: File,
+    file: BufWriter<File>,
     path: PathBuf,
 }
 
@@ -21,7 +21,7 @@ impl CellOutput {
     /// it already exists.
     pub fn new<P: AsRef<Path>>(filename: P) -> Result<CellOutput, io::Error> {
         Ok(CellOutput {
-            file: File::create(filename.as_ref())?,
+            file: BufWriter::new(File::create(filename.as_ref())?),
             path: filename.as_ref().to_owned(),
         })
     }

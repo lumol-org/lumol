@@ -2,7 +2,7 @@
 // Copyright (C) Lumol's contributors — BSD license
 
 use std::fs::File;
-use std::io;
+use std::io::{self, BufWriter};
 use std::io::prelude::*;
 use std::path::{Path, PathBuf};
 
@@ -12,7 +12,7 @@ use core::units;
 
 /// The `ForcesOutput` writes the forces acting on the atoms using XYZ format
 pub struct ForcesOutput {
-    file: File,
+    file: BufWriter<File>,
     path: PathBuf,
 }
 
@@ -21,7 +21,7 @@ impl ForcesOutput {
     /// if it already exists.
     pub fn new<P: AsRef<Path>>(filename: P) -> Result<ForcesOutput, io::Error> {
         Ok(ForcesOutput {
-            file: File::create(filename.as_ref())?,
+            file: BufWriter::new(File::create(filename.as_ref())?),
             path: filename.as_ref().to_owned(),
         })
     }
