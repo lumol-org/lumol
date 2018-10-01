@@ -240,7 +240,7 @@ pub trait DihedralPotential: Potential + BoxCloneDihedral {}
 impl_box_clone!(DihedralPotential, BoxCloneDihedral, box_clone_dihedral);
 
 mod functions;
-pub use self::functions::{BornMayerHuggins, Buckingham, Gaussian, MorsePotential, Torsion};
+pub use self::functions::{BornMayerHuggins, Buckingham, Gaussian, Morse, Torsion};
 pub use self::functions::{CosineHarmonic, Harmonic, LennardJones, NullPotential};
 pub use self::functions::Mie;
 

@@ -223,11 +223,16 @@ impl EwaldFactors {
 /// Ewald summation for coulombic interactions.
 ///
 /// The Ewald summation is based on a separation of the coulombic potential `U`
-/// in two parts, using the trivial identity: `U(x) = U(x) * (f(x) + 1) - U(x) *
-/// f(x)` where `f` is the `erf` function. This leads to a separation of the
+/// in two parts, using the trivial identity:
+///
+/// $$ U(x) = U(x) \times (f(x) + 1) - U(x) \times f(x) $$
+///
+/// where `f` is the `erf` function. This leads to a separation of the
 /// conditionally convergent coulombic sum into two absolutely convergent sums:
 /// one in real space, and the other in Fourier or k-space. For more information
 /// about this algorithm see [FS2002].
+///
+/// [FS2002] Frenkel, D. & Smith, B. Understanding molecular simulation. (Academic press, 2002).
 ///
 /// # Examples
 ///
@@ -258,8 +263,6 @@ impl EwaldFactors {
 ///
 /// println!("energy is {}", system.potential_energy());
 /// ```
-///
-/// [FS2002] Frenkel, D. & Smith, B. Understanding molecular simulation. (Academic press, 2002).
 pub struct Ewald {
     /// Various Ewald parameters
     parameters: EwaldParameters,
