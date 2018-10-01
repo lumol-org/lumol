@@ -219,8 +219,8 @@ impl ToChemfiles for System {
 /// ```no_run
 /// # use lumol_core::sys::TrajectoryBuilder;
 /// let mut trajectory = TrajectoryBuilder::new()
-///                                       .open("file.xyz")
-///                                       .unwrap();
+///     .open("file.xyz")
+///     .unwrap();
 ///
 /// let system = trajectory.read().unwrap();
 /// ```
@@ -244,9 +244,9 @@ pub enum OpenMode {
 /// ```no_run
 /// # use lumol_core::sys::{TrajectoryBuilder, OpenMode};
 /// let trajectory = TrajectoryBuilder::new()
-///                                    .mode(OpenMode::Read)
-///                                    .open("file.xyz")
-///                                    .unwrap();
+///     .mode(OpenMode::Read)
+///     .open("file.xyz")
+///     .unwrap();
 /// ```
 pub struct TrajectoryBuilder<'a> {
     mode: OpenMode,
@@ -259,10 +259,10 @@ impl<'a> TrajectoryBuilder<'a> {
     /// # Examples
     ///
     /// ```no_run
-    /// # use lumol_core::sys::{TrajectoryBuilder, OpenMode};
+    /// # use lumol_core::sys::TrajectoryBuilder;
     /// let trajectory = TrajectoryBuilder::new()
-    ///                                    .open("file.xyz")
-    ///                                    .unwrap();
+    ///     .open("file.xyz")
+    ///     .unwrap();
     /// ```
     pub fn new() -> TrajectoryBuilder<'a> {
         TrajectoryBuilder {
@@ -281,9 +281,9 @@ impl<'a> TrajectoryBuilder<'a> {
     /// ```no_run
     /// # use lumol_core::sys::TrajectoryBuilder;
     /// let trajectory = TrajectoryBuilder::new()
-    ///                                    .format("PDB")
-    ///                                    .open("file.mol")
-    ///                                    .unwrap();
+    ///     .format("PDB")
+    ///     .open("file.mol")
+    ///     .unwrap();
     /// ```
     pub fn format(self, format: &'a str) -> TrajectoryBuilder<'a> {
         TrajectoryBuilder {
@@ -299,9 +299,9 @@ impl<'a> TrajectoryBuilder<'a> {
     /// ```no_run
     /// # use lumol_core::sys::{TrajectoryBuilder, OpenMode};
     /// let trajectory = TrajectoryBuilder::new()
-    ///                                    .mode(OpenMode::Write)
-    ///                                    .open("file.nc")
-    ///                                    .unwrap();
+    ///     .mode(OpenMode::Write)
+    ///     .open("file.nc")
+    ///     .unwrap();
     /// ```
     pub fn mode(self, mode: OpenMode) -> TrajectoryBuilder<'a> {
         TrajectoryBuilder {
@@ -317,8 +317,8 @@ impl<'a> TrajectoryBuilder<'a> {
     /// ```no_run
     /// # use lumol_core::sys::TrajectoryBuilder;
     /// let trajectory = TrajectoryBuilder::new()
-    ///                                    .open("file.nc")
-    ///                                    .unwrap();
+    ///     .open("file.nc")
+    ///     .unwrap();
     /// ```
     pub fn open<P: AsRef<Path>>(self, path: P) -> Result<Trajectory, Error> {
         redirect_chemfiles_warnings();
@@ -340,8 +340,8 @@ impl Trajectory {
     /// ```no_run
     /// # use lumol_core::sys::TrajectoryBuilder;
     /// let mut trajectory = TrajectoryBuilder::new()
-    ///                                       .open("file.nc")
-    ///                                       .unwrap();
+    ///     .open("file.nc")
+    ///     .unwrap();
     ///
     /// let system = trajectory.read().unwrap();
     /// ```
@@ -359,8 +359,8 @@ impl Trajectory {
     /// ```no_run
     /// # use lumol_core::sys::TrajectoryBuilder;
     /// let mut trajectory = TrajectoryBuilder::new()
-    ///                                       .open("file.nc")
-    ///                                       .unwrap();
+    ///     .open("file.nc")
+    ///     .unwrap();
     ///
     /// let system = trajectory.read_guess_bonds().unwrap();
     /// ```
@@ -379,9 +379,9 @@ impl Trajectory {
     /// # use lumol_core::sys::{System, TrajectoryBuilder, OpenMode};
     /// # let system = System::new();
     /// let mut trajectory = TrajectoryBuilder::new()
-    ///                                       .mode(OpenMode::Write)
-    ///                                       .open("file.xyz")
-    ///                                       .unwrap();
+    ///     .mode(OpenMode::Write)
+    ///     .open("file.xyz")
+    ///     .unwrap();
     ///
     /// trajectory.write(&system).unwrap();
     /// ```
@@ -400,8 +400,8 @@ impl Trajectory {
     /// ```no_run
     /// # use lumol_core::sys::{TrajectoryBuilder, UnitCell};
     /// let mut trajectory = TrajectoryBuilder::new()
-    ///                                       .open("file.xyz")
-    ///                                       .unwrap();
+    ///     .open("file.xyz")
+    ///     .unwrap();
     ///
     /// trajectory.set_cell(&UnitCell::cubic(10.0)).unwrap();
     /// let system = trajectory.read().unwrap();
@@ -424,8 +424,8 @@ impl Trajectory {
     /// ```no_run
     /// # use lumol_core::sys::TrajectoryBuilder;
     /// let mut trajectory = TrajectoryBuilder::new()
-    ///                                       .open("file.xyz")
-    ///                                       .unwrap();
+    ///     .open("file.xyz")
+    ///     .unwrap();
     ///
     /// trajectory.set_topology_file("topology.pdb").unwrap();
     /// // The system will contain the topology from topology.pdb

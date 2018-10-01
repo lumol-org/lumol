@@ -22,7 +22,7 @@ impl Composition {
     /// # Examples
     ///
     /// ```
-    /// # use lumol_core::sys::{Composition, ParticleKind};
+    /// # use lumol_core::sys::Composition;
     /// let composition = Composition::new();
     ///
     /// // no particles

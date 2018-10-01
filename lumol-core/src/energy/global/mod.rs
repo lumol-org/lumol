@@ -125,7 +125,7 @@ impl_box_clone!(GlobalPotential, BoxCloneGlobal, box_clone_gobal);
 /// ```
 /// use lumol_core::energy::{GlobalPotential, GlobalCache};
 /// use lumol_core::types::{Vector3D, Matrix3};
-/// use lumol_core::sys::{Configuration, Particle};
+/// use lumol_core::sys::Configuration;
 ///
 /// /// Shift the energy of all the particles by a given delta.
 /// #[derive(Clone)]
@@ -143,11 +143,11 @@ impl_box_clone!(GlobalPotential, BoxCloneGlobal, box_clone_gobal);
 ///         self.delta * configuration.size() as f64
 ///     }
 ///
-///     fn forces(&self, configuration: &Configuration, forces: &mut [Vector3D]) {
+///     fn forces(&self, _: &Configuration, _: &mut [Vector3D]) {
 ///         // this potential does not changes the forces
 ///     }
 ///
-///     fn atomic_virial(&self, configuration: &Configuration) -> Matrix3 {
+///     fn atomic_virial(&self, _: &Configuration) -> Matrix3 {
 ///         // the virial is null as all the forces are null
 ///         Matrix3::zero()
 ///     }

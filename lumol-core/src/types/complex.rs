@@ -82,7 +82,6 @@ impl Complex {
     ///
     /// ```
     /// # use lumol_core::types::Complex;
-    /// # use std::f64;
     /// let z = Complex::zero();
     /// assert_eq!(z.norm(), 0.0);
     /// ```
