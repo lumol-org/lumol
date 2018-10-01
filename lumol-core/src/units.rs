@@ -27,7 +27,7 @@ use consts::{BOHR_RADIUS, AVOGADRO_NUMBER};
 const U_IN_KG: f64 = 1.660538782e-27;
 
 lazy_static!{
-    /// Conversion factors from various units to lumol internal units
+    /// A map of conversion factors from various units to lumol internal units
     pub static ref CONVERSION_FACTORS: BTreeMap<&'static str, f64> = {
         let mut map = BTreeMap::new();
         // Distances units.

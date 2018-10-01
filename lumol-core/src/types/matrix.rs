@@ -7,14 +7,16 @@ use std::ops::{Add, Div, Mul, Sub};
 use std::ops::{AddAssign, DivAssign, MulAssign, SubAssign};
 use std::ops::{Deref, DerefMut};
 
-use types::{One, Vector3D, Zero};
+use num::{One, Zero};
+
+use types::Vector3D;
 
 /// A 3x3 square matrix type.
 ///
 /// `Matrix3` implements all the usual arithmetic operations:
 ///
 /// ```
-/// use lumol_core::types::{Matrix3, Vector3D, One};
+/// use lumol_core::types::{Matrix3, Vector3D};
 ///
 /// let one = Matrix3::one();
 /// let a = Matrix3::new([
@@ -185,7 +187,7 @@ impl Matrix3 {
     /// # Examples
     ///
     /// ```
-    /// # use lumol_core::types::{Matrix3, One};
+    /// # use lumol_core::types::Matrix3;
     /// // A diagonal matrix is trivially invertible
     /// let matrix = Matrix3::new([
     ///     [4.0, 0.0, 0.0],

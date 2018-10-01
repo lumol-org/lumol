@@ -11,7 +11,7 @@ use lumol::{Particle, Molecule, System, UnitCell, Vector3D};
 use lumol::energy::{LennardJones, PairInteraction};
 use lumol::units;
 
-use lumol::sim::{EnergyOutput, TrajectoryOutput};
+use lumol::sim::output::{EnergyOutput, TrajectoryOutput};
 use lumol::sim::{MolecularDynamics, Simulation};
 use lumol::sim::{BoltzmannVelocities, InitVelocities};
 

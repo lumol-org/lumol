@@ -144,7 +144,7 @@ impl FormatArgs {
                                       index is {}, but we only have {} atoms",
                                       $index, system.size()
                                   );
-                                  return ::core::types::Zero::zero();
+                                  return ::num::Zero::zero();
                               })
                     );
                 }

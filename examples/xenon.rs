@@ -8,7 +8,7 @@ use lumol::energy::{LennardJones, PairInteraction};
 use lumol::{TrajectoryBuilder, UnitCell};
 use lumol::units;
 
-use lumol::sim::TrajectoryOutput;
+use lumol::sim::output::TrajectoryOutput;
 use lumol::sim::Simulation;
 use lumol::sim::mc::{MonteCarlo, Translate};
 

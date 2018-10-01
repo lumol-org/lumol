@@ -8,7 +8,7 @@ use std::result;
 
 // use chemfiles;
 
-use lumol::sim::CustomOutputError;
+use lumol::sim::output::CustomOutputError;
 use lumol::TrajectoryError;
 use lumol::units::ParseError;
 

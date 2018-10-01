@@ -3,9 +3,9 @@
 
 //! Multi-dimensional arrays based on ndarray
 use ndarray;
+use num::Zero;
 
 use std::ops::{Deref, DerefMut, Index, IndexMut};
-use types::Zero;
 
 /// Two dimensional tensors, based on ndarray.
 ///
