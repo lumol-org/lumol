@@ -15,9 +15,8 @@ use std::f64::consts::PI;
 /// # Examples
 ///
 /// ```
-/// use lumol_core::energy::Potential;
-/// use lumol_core::energy::NullPotential;
-///
+/// # use lumol_core::energy::Potential;
+/// # use lumol_core::energy::NullPotential;
 /// let potential = NullPotential;
 /// assert_eq!(potential.energy(0.1), 0.0);
 /// assert_eq!(potential.energy(100000.0), 0.0);
@@ -50,17 +49,18 @@ impl DihedralPotential for NullPotential {}
 
 /// Lennard-Jones potential.
 ///
-/// The following expression of Lennard-Jones potential is used: `V(r) = 4 *
-/// epsilon * ((sigma/r)^12 - (sigma/r)^6)` where `sigma` is the Lennard-Jones
-/// distance constant, and `epsilon` the Lennard-Jones energetic constant.
+/// $$ V(r) = 4 * \epsilon * \left[ \left(\frac \sigma r \right)^{12} -
+///    \left(\frac \sigma r \right)^6 \right] $$
+///
+/// where $\sigma$ is the Lennard-Jones distance constant, and $\epsilon$ the
+/// energetic constant.
 ///
 /// # Examples
 ///
 /// ```
-/// use lumol_core::energy::Potential;
-/// use lumol_core::energy::LennardJones;
-///
-/// let potential = LennardJones{sigma: 2.0, epsilon: 10.0};
+/// # use lumol_core::energy::Potential;
+/// # use lumol_core::energy::LennardJones;
+/// let potential = LennardJones { sigma: 2.0, epsilon: 10.0 };
 /// assert_eq!(potential.energy(2.0), 0.0);
 /// assert_eq!(potential.energy(3.0), -3.203365942785746);
 ///
@@ -106,16 +106,16 @@ impl PairPotential for LennardJones {
 
 /// Harmonic potential.
 ///
-/// The following energy expression is used: `V(x) = 1/2 * k * (x - x0)^2` where
-/// `x0` is the distance equilibrium, and `k` the elastic constant.
+/// $$ V(x) = \frac{1}{2} k (x - x_0)^2 $$
+///
+/// where $x_0$ is the distance equilibrium, and $k$ the elastic constant.
 ///
 /// # Examples
 ///
 /// ```
-/// use lumol_core::energy::Potential;
-/// use lumol_core::energy::Harmonic;
-///
-/// let potential = Harmonic{x0: 2.0, k: 100.0};
+/// # use lumol_core::energy::Potential;
+/// # use lumol_core::energy::Harmonic;
+/// let potential = Harmonic { x0: 2.0, k: 100.0 };
 /// assert_eq!(potential.energy(2.0), 0.0);
 /// assert_eq!(potential.energy(3.0), 50.0);
 ///
@@ -159,17 +159,16 @@ impl DihedralPotential for Harmonic {}
 
 /// Cosine harmonic potential.
 ///
-/// The following potential expression is used: `V(x) = 1/2 * k * (cos(x) -
-/// cos(x0))^2` where `x0` is the distance equilibrium, and `k` the elastic
-/// constant.
+/// $$ V(x) = \frac{1}{2} k \left[\cos(x) - \cos(x_0) \right]^2 $$
+///
+/// where $x_0$ is the equilibrium value, and $k$ the elastic constant.
 ///
 /// # Examples
 ///
 /// ```
-/// use lumol_core::energy::Potential;
-/// use lumol_core::energy::CosineHarmonic;
-///
-/// let potential = CosineHarmonic::new(/* k */ 100.0, /* x0 */ 2.0);
+/// # use lumol_core::energy::Potential;
+/// # use lumol_core::energy::CosineHarmonic;
+/// let potential = CosineHarmonic::new(/*k*/ 100.0, /*x0*/ 2.0);
 /// assert_eq!(potential.energy(2.0), 0.0);
 /// assert_eq!(potential.energy(3.0), 16.464942078100552);
 ///
@@ -213,18 +212,18 @@ impl DihedralPotential for CosineHarmonic {}
 /// This potential is intended for use with dihedral angles, using a custom
 /// periodicity and multiple minima.
 ///
-/// The following potential expression is used: `V(x) = k * (1 + cos(n * x -
-/// delta))` where `k` is the force constant, `n` the periodicity of the
-/// potential, and `delta` the equilibrium angle.
+/// $$ V(x) = k (1 + \cos(n x - \delta))$$
+///
+/// where $k$ is the force constant, $n$ the periodicity of the potential, and
+/// $\delta$ the equilibrium angle.
 ///
 /// # Examples
 ///
 /// ```
-/// use lumol_core::energy::Potential;
-/// use lumol_core::energy::Torsion;
-/// use std::f64::consts::PI;
-///
-/// let potential = Torsion{delta: PI / 2.0, k: 10.0, n: 3};
+/// # use lumol_core::energy::Potential;
+/// # use lumol_core::energy::Torsion;
+/// # use std::f64::consts::PI;
+/// let potential = Torsion { delta: PI / 2.0, k: 10.0, n: 3 };
 /// assert_eq!(potential.energy(PI / 2.0), 0.0);
 /// assert_eq!(potential.energy(PI / 3.0), 10.0);
 ///
@@ -258,17 +257,17 @@ impl DihedralPotential for Torsion {}
 
 /// Buckingham potential.
 ///
-/// The following potential expression is used: `V(x) = A * exp((sigma - r) /
-/// rho) - C/r^6`; where `A` and `C` are energetic constants, and `rho` is a
-/// length parameter.
+/// $$ V(x) = A \exp \left(\frac{\sigma - r}{\rho} \right) - \frac{C}{r^6} $$
+///
+/// where $A$ and $C$ are energetic constants, and $\rho$ and $\sigma$ are
+/// length parameters.
 ///
 /// # Examples
 ///
 /// ```
-/// use lumol_core::energy::Potential;
-/// use lumol_core::energy::Buckingham;
-///
-/// let potential = Buckingham{a: 2.0, c: 1.0, rho: 5.3};
+/// # use lumol_core::energy::Potential;
+/// # use lumol_core::energy::Buckingham;
+/// let potential = Buckingham { a: 2.0, c: 1.0, rho: 5.3 };
 /// assert_eq!(potential.energy(2.2), 1.3117360696239022);
 /// assert_eq!(potential.force(2.2), 0.2251072178835946);
 /// ```
@@ -320,17 +319,18 @@ impl PairPotential for Buckingham {
 
 /// Born-Mayer-Huggins potential.
 ///
-/// The following potential expression is used: `V(x) = A * exp((sigma - r) /
-/// rho) - C/r^6 + D/r^8`; where `A`, `C` and `D` are energetic constants;
-/// `sigma` and `rho` are length parameters.
+/// $$ V(x) = A \exp \left(\frac{\sigma - r}{\rho} \right) - \frac{C}{r^6} +
+///    \frac{D}{r^8} $$
+///
+/// where $A$, $C$ and $D$ are energetic constants; $\sigma$ and $\rho$ are
+/// length parameters.
 ///
 /// # Examples
 ///
 /// ```
-/// use lumol_core::energy::Potential;
-/// use lumol_core::energy::BornMayerHuggins;
-///
-/// let potential = BornMayerHuggins{a: 2.0, c: 1.0, d: 0.5, sigma: 1.5, rho: 5.3};
+/// # use lumol_core::energy::Potential;
+/// # use lumol_core::energy::BornMayerHuggins;
+/// let potential = BornMayerHuggins { a: 2.0, c: 1.0, d: 0.5, sigma: 1.5, rho: 5.3 };
 /// assert_eq!(potential.energy(2.2), 1.7446409593340713);
 /// assert_eq!(potential.force(2.2), 0.30992873382584607);
 /// ```
@@ -385,22 +385,22 @@ impl PairPotential for BornMayerHuggins {
 
 /// Morse potential
 ///
-/// The following potential expression is used: `V(r) = depth * (1 - exp(a (x0 -
-/// r))^2` ; where the paramaters are 'x0' for the equilibrium value, 'depth'
-/// for the well depth, and 'a' for the well width.
+/// $$ V(x) = \text{depth} * \left( 1 - \exp(a (x_0 - x))^2 \right)$$
+///
+/// where the parameters are $x_0$ for the equilibrium value, `depth` for the
+/// well depth, and $a$ for the well width.
 ///
 /// # Examples
 ///
 /// ```
-/// use lumol_core::energy::Potential;
-/// use lumol_core::energy::MorsePotential;
-///
-/// let potential = MorsePotential{a: 2.0, x0: 1.3, depth: 4.0};
+/// # use lumol_core::energy::Potential;
+/// # use lumol_core::energy::Morse;
+/// let potential = Morse { a: 2.0, x0: 1.3, depth: 4.0 };
 /// assert_eq!(potential.energy(1.0), 2.703517287822119);
 /// assert_eq!(potential.force(1.0), -37.12187076378477);
 /// ```
 #[derive(Clone, Copy)]
-pub struct MorsePotential {
+pub struct Morse {
     /// Exponential term width value
     pub a: f64,
     /// Equilibrium value
@@ -409,7 +409,7 @@ pub struct MorsePotential {
     pub depth: f64,
 }
 
-impl Potential for MorsePotential {
+impl Potential for Morse {
     fn energy(&self, r: f64) -> f64 {
         let rc = 1.0 - exp((self.x0 - r) * self.a);
         self.depth * rc * rc
@@ -421,7 +421,7 @@ impl Potential for MorsePotential {
     }
 }
 
-impl PairPotential for MorsePotential {
+impl PairPotential for Morse {
     fn tail_energy(&self, _: f64) -> f64 {
         0.0
     }
@@ -430,26 +430,25 @@ impl PairPotential for MorsePotential {
     }
 }
 
-impl BondPotential for MorsePotential {}
-impl AnglePotential for MorsePotential {}
-impl DihedralPotential for MorsePotential {}
+impl BondPotential for Morse {}
+impl AnglePotential for Morse {}
+impl DihedralPotential for Morse {}
 
 /// Gaussian potential.
 ///
-/// The following expression of the Gaussian potential is used:
-/// `V(r) = -a * exp(-b * r^2)`
-/// where `a` is the potential depth and `b` is the potential width.
+/// $$ V(x) = -a \exp(-b x^2) $$
 ///
-/// # Note
+/// where $a$ is the potential depth and $b$ is the potential width.
 ///
-/// `b` has to be positive
+/// # Restrictions
+///
+/// $b$ has to be positive
 ///
 /// # Examples
 ///
 /// ```
-/// use lumol_core::energy::Potential;
-/// use lumol_core::energy::Gaussian;
-///
+/// # use lumol_core::energy::Potential;
+/// # use lumol_core::energy::Gaussian;
 /// let potential = Gaussian::new(8.0, 0.5);
 /// assert_eq!(potential.energy(0.0), -8.0);
 /// assert_eq!(potential.force(0.0), 0.0);
@@ -496,26 +495,29 @@ impl PairPotential for Gaussian {
 
 /// Mie potential.
 ///
-/// The following expression of the Mie potential is used:
-/// `V(r) = p * ((sigma/r)^n - (sigma/r)^m)`
-/// where `p` is a prefactor computed as
-/// `k = n / (n - m) * (n / m)^(m / (n - m)) * epsilon`,
-/// `epsilon` is an energetic constant, `sigma` is a distance constant,
-/// and `n`, `m` are the repulsive and attractive exponents, respectively.
+/// This is a generalization of the Lennard-Jones potential with arbitrary
+/// (floating point) exponents.
 ///
-/// # Note
+/// $$ V(r) = \epsilon \frac{n}{n - m} \frac{n}{m}^\frac{m}{n - m}
+///    \left[\left(\frac \sigma r \right)^n - \left(\frac \sigma r \right)^m
+///    \right] $$
 ///
-/// `n` has to be larger than `m`
-/// For `m` smaller than 3.0, there is no analytic tail correction and the
+/// where $\epsilon$ is an energetic constant, $\sigma$ is a distance constant,
+/// and $n$, $m$ are the repulsive and attractive exponents, respectively.
+///
+/// # Restrictions
+///
+/// $n$ has to be larger than $m$
+///
+/// For $m$ smaller than 3.0, there is no analytic tail correction and the
 /// energy and force contributions will be set to zero.
 ///
 /// # Examples
 ///
 /// ```
-/// use lumol_core::energy::Potential;
-/// use lumol_core::energy::Mie;
-///
-/// let potential = Mie::new(2.0, 10.0, 12.0, 6.0);
+/// # use lumol_core::energy::Potential;
+/// # use lumol_core::energy::Mie;
+/// let potential = Mie::new(/*sigma*/ 2.0, /*epsilon*/ 10.0, /*n*/ 12.0, /*m*/ 6.0);
 /// assert_eq!(potential.energy(2.0), 0.0);
 /// assert!(f64::abs(potential.energy(3.0) + 3.203365942785746) < 1e-8);
 ///
@@ -735,7 +737,7 @@ mod tests {
 
     #[test]
     fn morse() {
-        let morse = MorsePotential {
+        let morse = Morse {
             a: 2.0,
             x0: 1.3,
             depth: 4.0,
@@ -802,7 +804,7 @@ mod tests {
         let mie = Mie::new(2.0, 0.8, 6.0, 12.0);
         assert_eq!(mie.energy(2.0), 0.0);
     }
-    
+
     #[test]
     fn test_mie_tail_divergence() {
         let mie = Mie::new(2.0, 0.8, 12.0, 2.0);

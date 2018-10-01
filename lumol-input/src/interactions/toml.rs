@@ -10,7 +10,7 @@ use FromTomlWithRefData;
 use error::{Error, Result};
 use extract;
 
-use lumol::energy::{BornMayerHuggins, Buckingham, Gaussian, MorsePotential, Torsion};
+use lumol::energy::{BornMayerHuggins, Buckingham, Gaussian, Morse, Torsion};
 use lumol::energy::{CosineHarmonic, Harmonic, LennardJones, NullPotential, Mie};
 use lumol::energy::{Ewald, Wolf};
 use lumol::energy::{PairPotential, TableComputation};
@@ -120,12 +120,12 @@ impl FromToml for BornMayerHuggins {
     }
 }
 
-impl FromToml for MorsePotential {
-    fn from_toml(table: &Table) -> Result<MorsePotential> {
+impl FromToml for Morse {
+    fn from_toml(table: &Table) -> Result<Morse> {
         let a = extract::str("A", table, "Morse potential")?;
         let depth = extract::str("depth", table, "Morse potential")?;
         let x0 = extract::str("x0", table, "Morse potential")?;
-        Ok(MorsePotential {
+        Ok(Morse {
             a: units::from_str(a)?,
             depth: units::from_str(depth)?,
             x0: units::from_str(x0)?,

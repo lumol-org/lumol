@@ -127,6 +127,8 @@ impl Compute for PotentialEnergy {
 }
 
 /// Compute the kinetic energy of the system
+///
+/// $$ K = \sum_i m_i \vec v_i \cdot \vec v_i $$
 pub struct KineticEnergy;
 impl Compute for KineticEnergy {
     type Output = f64;
@@ -152,13 +154,19 @@ impl Compute for TotalEnergy {
 }
 
 /// Compute the instantaneous temperature of the system
+///
+/// $$ T = \frac {2}{k_B N_f} \sum_i m_i \vec v_i \cdot \vec v_i $$
+///
+/// where $N_f$ is the number of degrees of freedom in the system, $k_B$ is the
+/// Boltzman constant, $m_i$ the mass of particle $i$ and $\vec v_i$ the
+/// velocity of particle $i$.
 pub struct Temperature;
 impl Compute for Temperature {
     type Output = f64;
     fn compute(&self, system: &System) -> f64 {
         let kinetic = KineticEnergy.compute(system);
         let dof = system.degrees_of_freedom() as f64;
-        return 1.0 / K_BOLTZMANN * 2.0 * kinetic / dof;
+        return 2.0 * kinetic / (dof * K_BOLTZMANN);
     }
 }
 
@@ -173,9 +181,16 @@ impl Compute for Volume {
 }
 
 
-/// Compute the atomic virial tensor of the system, defined by
-/// $$ W = \sum_i \sum_{j > i} \vec r_{ij} \otimes \vec f_{ij} $$, where `i`
-/// and `j` run over all the particles in the system.
+/// Compute the virial tensor of the system using the atomic definition.
+///
+/// $$ \underline{W} = \sum_i \vec r_i \otimes \vec f_i - \underline H
+///    \frac{\partial U}{\partial \underline H} $$
+///
+/// where $\underline{H}$ is the unit cell matrix, $\vec f_i$ the force acting
+/// on the atom $i$ and $\vec r_i$ the position of the atom $i$
+///
+/// If all the interactions are pair interactions, this definition reduces to
+/// $$ \underline{W} = \sum_i \sum_{j > i} \vec r_{ij} \otimes \vec f_{ij} $$
 pub struct AtomicVirial;
 impl Compute for AtomicVirial {
     type Output = Matrix3;
@@ -238,11 +253,27 @@ impl Compute for AtomicVirial {
     }
 }
 
-/// Compute the molecular virial tensor of the system, defined by
-/// $$ W = \sum_i \sum_{j > i} \sum_{a \in i} \sum_{b \in i} \frac{\vec r_{ab}
-/// \otimes \vec f_{ab}}{r_{ab}^2} \vec r_{ab} \cdot \vec r_{ij} $$, where `i`
-/// and `j` run over all the molecules in the system, while `a` and `b` run over
-/// all the particles in these molecules
+/// Compute the virial tensor of the system using the molecular definition
+///
+/// This differs from the [`AtomicVirial`](struct.AtomicVirial.html) when using
+/// rigid molecules, as it will contains the right contributions of the forces
+/// maintaining the molecules rigid without needing to compute them.
+///
+/// $$ \underline{W} = \sum_i \vec r_i \otimes \vec f_i - \underline H
+///    \frac{\partial U}{\partial \underline H} $$
+///
+/// where $\underline{H}$ is the unit cell matrix, $\vec f_i$ the force acting
+/// on the atom $i$ (comprising the force needed to keep the molecules rigid)
+/// and $\vec r_i$ the position of the atom $i$
+///
+/// If all the interactions are pair interaction, this definition reduces to
+///
+/// $$ \underline{W} = \sum_i \sum_{j > i} \sum_{a \in i} \sum_{b \in i}
+///    \frac{\vec r_{ab} \otimes \vec f_{ab}}{r_{ab}^2} \vec r_{ab} \cdot \vec
+///    r_{ij} $$
+///
+/// where $i$ and $j$ run over all the molecules in the system, while $a$ and
+/// $b$ run over all the particles in these molecules
 pub struct MolecularVirial;
 impl Compute for MolecularVirial {
     type Output = Matrix3;
@@ -341,9 +372,16 @@ impl Compute for Virial {
     }
 }
 
-/// Compute the pressure of the system from the virial equation, at the given
-/// temperature. This pressure is given by the following formula:
-/// $$ p = \frac{N k_B T}{V} + \frac{1}{3V} \sum_i \vec f_i \cdot \vec r_i $$
+/// Compute the pressure of the system using the virial definition, at a given
+/// temperature.
+///
+/// $$ p = \frac{N_f k_B T}{3 V} + \frac{Tr(\underline{W})}{3V} $$
+///
+/// where $N_f$ is the number of degrees of freedom in the system, $k_B$ is the
+/// Boltzman constant, $T$ the temperature, $V$ the simulation volume, $Tr$ is
+/// the matricial trace, and $\underline{W}$ the [`Virial`].
+///
+/// [`Virial`]: struct.Virial.html
 pub struct PressureAtTemperature {
     /// Temperature for the pressure computation
     pub temperature: f64,
@@ -361,11 +399,35 @@ impl Compute for PressureAtTemperature {
     }
 }
 
-/// Compute the stress tensor of the system from the virial equation, at the
-/// given temperature. The stress tensor is defined by
-/// $$ \sigma = \sigma = \frac{1}{V} (\sum_i m_i v_i \otimes v_i + \sum_i \sum_{j > i} \vec r_{ij} \otimes \vec f_{ij}) $$
-/// but here the kinetic energy term is replaced by it average at the given
-/// temperature.
+/// Compute the pressure of the system using the virial definition.
+///
+/// $$ p = \sum_i m_i \vec v_i \cdot \vec v_i + \frac{Tr(\underline{W})}{3V} $$
+///
+/// where $m_i$ is the mass of particle $i$, $\vec v_i$ the velocity of particle
+/// $i$, $V$ the simulation volume, $Tr$ is the matricial trace, and
+/// $\underline{W}$ the [`Virial`].
+///
+/// [`Virial`]: struct.Virial.html
+pub struct Pressure;
+impl Compute for Pressure {
+    type Output = f64;
+    fn compute(&self, system: &System) -> f64 {
+        let pressure = PressureAtTemperature {
+            temperature: system.temperature(),
+        };
+        return pressure.compute(system);
+    }
+}
+
+/// Compute the stress tensor of the system from the virial definition, at the
+/// given temperature.
+///
+/// $$ \underline{\sigma} = \frac{1}{V} \left(\frac{N_f}{3} k_B T \space
+///    \underline{1} + \underline{W} \right) $$
+///
+/// where $N_f$ is the number of degrees of freedom in the system, $k_B$ is the
+/// Boltzman constant, $T$ the temperature, $V$ the simulation volume, $Tr$ is
+/// the matricial trace, and $\underline{W}$ the [`Virial`].
 pub struct StressAtTemperature {
     /// Temperature for the stress tensor computation
     pub temperature: f64,
@@ -384,8 +446,14 @@ impl Compute for StressAtTemperature {
     }
 }
 
-/// Compute the stress tensor of the system, defined by:
-/// $$ \sigma = \frac{1}{V} (\sum_i m_i v_i \otimes v_i + \sum_i \sum_{j > i} \vec r_{ij} \otimes \vec f_{ij}) $$
+/// Compute the stress tensor of the system from the virial definition
+///
+/// $$ \underline{\sigma} = \frac{1}{V} \left( \sum_i m_i \vec v_i \otimes \vec v_i + \underline{W} \right) $$
+///
+/// where $N_f$ is the number of degrees of freedom in the system, $k_B$ is the
+/// Boltzman constant, $T$ the instantaneous system temperature, $V$ the
+/// simulation volume, $Tr$ is the matricial trace, and $\underline{W}$ the
+/// [`Virial`].
 pub struct Stress;
 impl Compute for Stress {
     type Output = Matrix3;
@@ -400,20 +468,6 @@ impl Compute for Stress {
         let volume = system.volume();
         let virial = system.virial();
         return (kinetic + virial) / volume;
-    }
-}
-
-/// Compute the virial pressure of the system. This pressure is given by the
-/// following formula:
-/// $$ p = \frac{N k_B T}{V} + \frac{1}{3V} \sum_i \vec f_i \cdot \vec r_i $$
-pub struct Pressure;
-impl Compute for Pressure {
-    type Output = f64;
-    fn compute(&self, system: &System) -> f64 {
-        let pressure = PressureAtTemperature {
-            temperature: system.temperature(),
-        };
-        return pressure.compute(system);
     }
 }
 

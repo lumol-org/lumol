@@ -6,7 +6,7 @@ use lumol::sys::System;
 use lumol::units;
 
 use lumol::energy::{BondPotential, PairInteraction, PairPotential};
-use lumol::energy::{BornMayerHuggins, Buckingham, Gaussian, MorsePotential};
+use lumol::energy::{BornMayerHuggins, Buckingham, Gaussian, Morse};
 use lumol::energy::{Harmonic, LennardJones, NullPotential, Mie};
 use lumol::energy::TableComputation;
 
@@ -219,7 +219,7 @@ fn read_pair_potential(pair: &Table) -> Result<Box<PairPotential>> {
             "lj" => Ok(Box::new(LennardJones::from_toml(table)?)),
             "buckingham" => Ok(Box::new(Buckingham::from_toml(table)?)),
             "born" => Ok(Box::new(BornMayerHuggins::from_toml(table)?)),
-            "morse" => Ok(Box::new(MorsePotential::from_toml(table)?)),
+            "morse" => Ok(Box::new(Morse::from_toml(table)?)),
             "gaussian" => Ok(Box::new(Gaussian::from_toml(table)?)),
             "mie" => Ok(Box::new(Mie::from_toml(table)?)),
             other => Err(Error::from(format!("Unknown potential type '{}'", other))),
@@ -248,7 +248,7 @@ fn read_bond_potential(pair: &Table) -> Result<Box<BondPotential>> {
         match key {
             "null" => Ok(Box::new(NullPotential::from_toml(table)?)),
             "harmonic" => Ok(Box::new(Harmonic::from_toml(table)?)),
-            "morse" => Ok(Box::new(MorsePotential::from_toml(table)?)),
+            "morse" => Ok(Box::new(Morse::from_toml(table)?)),
             other => Err(Error::from(format!("Unknown potential type '{}'", other))),
         }
     } else {

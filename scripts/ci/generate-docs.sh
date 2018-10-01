@@ -2,7 +2,7 @@
 # Build the docs and the user manual
 
 # Build the doc
-cargo doc --all --no-deps
+RUSTDOCFLAGS="--html-in-header doc/KaTeX.html" cargo doc --no-deps
 make -C doc html
 
 # Move it to the right place
