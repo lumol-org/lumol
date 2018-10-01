@@ -3,8 +3,8 @@
 
 //! Configuration and related types
 
-mod periodic;
-pub use self::periodic::{ElementData, PeriodicTable};
+mod mass;
+pub use self::mass::get_atomic_mass;
 
 mod particles;
 pub use self::particles::{Particle, ParticleKind};
