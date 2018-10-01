@@ -2,7 +2,7 @@
 // Copyright (C) Lumol's contributors — BSD license
 #![allow(dead_code)]
 
-use lumol::sim::Output;
+use lumol::sim::output::Output;
 use lumol::sys::System;
 
 use std::rc::Rc;

@@ -5,7 +5,7 @@
 use std::f64;
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign};
 
-use types::{One, Zero};
+use num::{One, Zero};
 
 #[derive(Debug, Clone, Copy, PartialEq, Default)]
 /// Complex number, with double precision real and imaginary parts.

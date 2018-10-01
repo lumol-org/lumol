@@ -1,7 +1,8 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) Lumol's contributors — BSD license
 
-//! Computing properties of a system
+//! Algorithm to compute physical properties of a System
+
 use std::f64::consts::PI;
 
 use rayon::prelude::*;
@@ -13,8 +14,8 @@ use sys::{System, DegreesOfFreedom};
 
 use utils::ThreadLocalVec;
 
-/// The compute trait allow to compute properties of a system, without
-/// modifying this system. The Output type is the type of the computed
+/// The `Compute` trait allow to compute properties of a system, without
+/// modifying this system. The `Output` type is the type of the computed
 /// property.
 pub trait Compute {
     /// The data type of the property

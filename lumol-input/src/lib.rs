@@ -1,49 +1,8 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) Lumol's contributors — BSD license
 
-//! This crate provide a way to build a Lumol simulation using input files.
-//!
-//! Instead of building the `System` object, the `Simulation` object by hand
-//! before being able to use them to run the simulation, this crate allow to
-//! describe the simulation and the system in a TOML input file, using a simple
-//! syntax.
-//!
-//! The main entry point of this crate is the `Input` struct, which allow to
-//! read a whole simulation configuration. The easiest way to run a simulation
-//! using Lumol is:
-//!
-//! ```no_run
-//! extern crate lumol_input;
-//! use lumol_input::Input;
-//!
-//! fn main() {
-//!     let input = Input::new("simulation.toml").unwrap();
-//!     let mut config = input.read().unwrap();
-//!
-//!     config.simulation.run(&mut config.system, config.nsteps);
-//! }
-//! ```
-//!
-//! This crate also provide an `InteractionsInput` for reading interactions
-//! from a TOML file. It can be used to set the interactions in a system:
-//!
-//! ```no_run
-//! extern crate lumol_core;
-//! extern crate lumol_input;
-//! use lumol_core::sys::System;
-//! use lumol_input::InteractionsInput;
-//!
-//! fn main() {
-//!     let mut system = System::new();
-//!
-//!     // ... Build the system by hand
-//!
-//!     // Read the interactions
-//!     let input = InteractionsInput::new("potentials.toml").unwrap();
-//!     input.read(&mut system).unwrap();
-//! }
-//! ```
-//!
+//! Input system for lumol using TOML as a language
+
 #![warn(missing_docs, trivial_casts, unused_import_braces, variant_size_differences)]
 #![warn(unused_qualifications, unused_results)]
 // Clippy configuration
@@ -58,16 +17,20 @@
 #![allow(use_self, redundant_field_names, or_fun_call, needless_return)]
 #![allow(missing_docs_in_private_items, should_implement_trait)]
 
-// extern crate chemfiles;
+extern crate lumol_core;
+extern crate lumol_sim;
+
 extern crate toml;
 
-pub extern crate lumol_core;
-pub extern crate lumol_sim;
-
-mod lumol {
-    pub use super::lumol_core as core;
-    pub use super::lumol_sim as sim;
-    pub use self::core::*;
+// mimic the lumol crate API
+pub(crate) mod lumol {
+    pub(crate) mod core {
+        pub use lumol_core::*;
+    }
+    pub(crate) mod sim {
+        pub use lumol_sim::*;
+    }
+    pub(crate) use self::core::*;
 }
 
 extern crate log4rs;

@@ -3,9 +3,9 @@
 use std::path::PathBuf;
 use toml::value::Table;
 
-use lumol::sim::Output;
-use lumol::sim::{TrajectoryOutput, PropertiesOutput, EnergyOutput, StressOutput};
-use lumol::sim::{ForcesOutput, CellOutput, CustomOutput};
+use lumol::sim::output::Output;
+use lumol::sim::output::{TrajectoryOutput, PropertiesOutput, EnergyOutput};
+use lumol::sim::output::{ForcesOutput, CellOutput, CustomOutput, StressOutput};
 
 use super::Input;
 use FromToml;

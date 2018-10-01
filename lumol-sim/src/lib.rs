@@ -1,20 +1,7 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) Lumol's contributors — BSD license
 
-//! Lumol is a classical molecular simulation engine that provides a solid
-//! base for developing new algorithms and methods.
-//!
-//! Using Lumol, you can customize the behavior of all the algorithms in a
-//! simulation (from force fields to barostats and Monte Carlo moves).
-//!
-//! Lumol goals are to be:
-//!
-//! - **Easy to extend**: the code is modular, object-oriented, well documented,
-//!   well tested, open-source and readable;
-//! - **Easy to use**: the user interface is nice, with human-oriented input
-//!   files;
-//! - **Stable**: it will never crash on a good input, and provides helpful
-//!   error messages.
+//! Simulation algorithms for lumol
 
 #![warn(missing_docs, trivial_casts, unused_import_braces, variant_size_differences)]
 #![warn(unused_qualifications, unused_results)]
@@ -34,12 +21,6 @@
 
 extern crate lumol_core as core;
 
-// #[macro_use]
-// extern crate bitflags;
-// #[macro_use]
-// extern crate itertools;
-// #[macro_use]
-// extern crate lazy_static;
 #[macro_use]
 extern crate log;
 #[macro_use]
@@ -53,11 +34,13 @@ extern crate approx;
 
 extern crate caldyn;
 extern crate rand;
+extern crate num_traits as num;
 
 mod propagator;
 pub use self::propagator::Propagator;
 pub use self::propagator::TemperatureStrategy;
 
+pub mod output;
 pub mod md;
 pub mod mc;
 pub mod min;
@@ -70,6 +53,3 @@ pub use self::simulations::Simulation;
 
 mod velocities;
 pub use self::velocities::{InitVelocities, BoltzmannVelocities, UniformVelocities};
-
-mod output;
-pub use self::output::*;

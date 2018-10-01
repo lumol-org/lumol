@@ -1,7 +1,7 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) Lumol's contributors — BSD license
 
-//! The `system` module provide a way to store data about a simulated system.
+//! Representations of a simulated system
 
 mod config;
 pub use self::config::*;

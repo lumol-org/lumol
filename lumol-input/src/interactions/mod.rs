@@ -18,7 +18,7 @@ mod pairs;
 mod angles;
 mod coulomb;
 
-/// An interaction input file for Lumol.
+/// Input file for reading interactions
 pub struct Input {
     /// The TOML configuration
     config: Table,

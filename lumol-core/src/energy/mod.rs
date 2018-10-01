@@ -108,7 +108,7 @@ pub trait Potential: Sync + Send {
 /// # Example
 ///
 /// ```
-/// # use lumol_core::types::{Zero, Matrix3};
+/// # use lumol_core::types::Matrix3;
 /// use lumol_core::energy::{Potential, PairPotential};
 ///
 /// // A no-op potential

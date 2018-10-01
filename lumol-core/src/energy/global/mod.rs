@@ -29,7 +29,7 @@ use types::{Matrix3, Vector3D};
 ///
 /// ```
 /// use lumol_core::energy::{GlobalPotential, GlobalCache};
-/// use lumol_core::types::{Vector3D, Matrix3, Zero};
+/// use lumol_core::types::{Vector3D, Matrix3};
 /// use lumol_core::sys::{System, Configuration, Particle, Molecule, UnitCell};
 ///
 /// /// Shift the energy of all the particles by a given delta.
@@ -124,7 +124,7 @@ impl_box_clone!(GlobalPotential, BoxCloneGlobal, box_clone_gobal);
 ///
 /// ```
 /// use lumol_core::energy::{GlobalPotential, GlobalCache};
-/// use lumol_core::types::{Vector3D, Matrix3, Zero};
+/// use lumol_core::types::{Vector3D, Matrix3};
 /// use lumol_core::sys::{Configuration, Particle};
 ///
 /// /// Shift the energy of all the particles by a given delta.

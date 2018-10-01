@@ -6,7 +6,9 @@ use std::ops::{Add, BitXor, Div, Mul, Neg, Sub};
 use std::ops::{AddAssign, DivAssign, MulAssign, SubAssign};
 use std::ops::{Deref, DerefMut};
 
-use types::{Matrix3, Zero};
+use num::Zero;
+
+use types::Matrix3;
 
 /// A 3-dimensional vector type
 ///
