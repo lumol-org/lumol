@@ -19,6 +19,10 @@
 #![allow(new_without_default, new_without_default_derive, should_implement_trait)]
 #![allow(needless_pass_by_value, unreadable_literal, redundant_field_names, range_plus_one)]
 
+// deny(warnings) in doc tests
+#![doc(test(attr(deny(warnings))))]
+#![doc(test(attr(allow(unused_variables))))]
+
 extern crate lumol_core as core;
 
 #[macro_use]

@@ -17,6 +17,10 @@
 #![allow(use_self, redundant_field_names, or_fun_call, needless_return)]
 #![allow(missing_docs_in_private_items, should_implement_trait)]
 
+// deny(warnings) in doc tests
+#![doc(test(attr(deny(warnings))))]
+#![doc(test(attr(allow(unused_variables))))]
+
 extern crate lumol_core;
 extern crate lumol_sim;
 
