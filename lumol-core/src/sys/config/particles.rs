@@ -1,6 +1,6 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) Lumol's contributors — BSD license
-use sys::PeriodicTable;
+use sys::get_atomic_mass;
 use types::Vector3D;
 
 use std::fmt;
@@ -55,7 +55,7 @@ impl Particle {
     /// table. The charge and velocity are set to 0.
     pub fn with_position<S: Into<String>>(name: S, position: Vector3D) -> Particle {
         let name = name.into();
-        let mass = PeriodicTable::mass(&name).unwrap_or(0.0);
+        let mass = get_atomic_mass(&name).unwrap_or(0.0);
         Particle {
             name: name,
             mass: mass,
