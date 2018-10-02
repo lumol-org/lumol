@@ -7,6 +7,10 @@ repository = "https://github.com/lumol-org/lumol"
 readme = "../README.md"
 license = "BSD-3-Clause"
 
+[lib]
+test = false
+bench = false
+
 [dependencies]
 lumol-core = {path = "../lumol-core"}
 lumol-sim = {path = "../lumol-sim"}
@@ -24,9 +28,6 @@ features = ["console_appender", "file_appender", "threshold_filter"]
 walkdir = "2"
 rustc-test = "0.3"
 env_logger = "0.5"
-
-[lib]
-test = false
 
 [[test]]
 name = "input"

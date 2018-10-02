@@ -5,3 +5,14 @@ publish = false
 
 [dependencies]
 lumol = {path = "../../"}
+
+[[bin]]
+name = "lumol_tutorial_potential"
+test = false
+doctest = false
+bench = false
+
+[lib]
+test = false
+doctest = false
+bench = false

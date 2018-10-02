@@ -6,7 +6,6 @@ documentation = "https://lumol-org.github.io/lumol"
 repository = "https://github.com/lumol-org/lumol"
 readme = "README.md"
 license = "BSD-3-Clause"
-build = "src/build.rs"
 
 [workspace]
 members = [
@@ -18,8 +17,15 @@ members = [
 
 [[bin]]
 name = "lumol"
-path = "src/bin/lumol.rs"
 doc = false
+test = false
+doctest = false
+bench = false
+
+[lib]
+test = false
+doctest = false
+bench = false
 
 [dependencies]
 lumol-core = {path = "lumol-core"}
