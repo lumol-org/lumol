@@ -11,6 +11,10 @@ addons:
     - libcurl4-openssl-dev
     - libelf-dev
     - libdw-dev
+    - texlive-latex-recommended
+    - texlive-latex-extra
+    - texlive-fonts-recommended
+    - latexmk
 rust:
     - stable
     - beta

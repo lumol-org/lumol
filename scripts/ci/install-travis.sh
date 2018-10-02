@@ -13,11 +13,3 @@ else
     make install
     cd $TRAVIS_BUILD_DIR
 fi
-
-cd $TRAVIS_BUILD_DIR
-
-if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
-    pip2 install --user -r doc/requirements.txt    
-else
-    pip install --user -r doc/requirements.txt
-fi
