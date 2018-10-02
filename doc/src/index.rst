@@ -13,7 +13,9 @@ your needs and use it as a platform to implement your own algorithms and
 customized potential functions in an *easy* way. You can use Lumol as a command
 line tool as well as a library in your own code.
 
-Excited? Then let's start with an overview of this book:
+.. only:: html
+
+    Excited? Then let's start with an overview of this book:
 
 .. toctree::
    :maxdepth: 1

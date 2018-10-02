@@ -12,9 +12,17 @@ You will need three input files for this simulation:
 - the simulation input ``water.toml``;
 - the force field (potential definitions) ``water-fSCP.toml``.
 
-You can download them :download:`here <../data/water.zip>`, and run the
-simulation with ``lumol water.toml``. The simulation should finish in a few
-minutes.
+.. only:: html
+
+    You can download them :download:`here <../data/water.zip>`.
+
+.. only:: latex
+
+    You can download these files at the following URL:
+    `<https://lumol.org/lumol/latest/book/_downloads/water.zip>`_.
+
+As usual, you can run the simulation with ``lumol water.toml``. The simulation
+should finish in a few minutes.
 
 The input files commented
 -------------------------
