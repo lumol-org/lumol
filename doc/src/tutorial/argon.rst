@@ -10,10 +10,18 @@ For this simulation, you will need the following files:
 * the initial configuration ``argon.xyz``
 * the input file ``argon.toml``
 
-You can download both files :download:`here <../data/argon.zip>`. After
-extracting the archive, you can run the simulation with ``lumol argon.toml``.
-The simulation should complete in a few seconds and produce two files:
-``energy.dat`` and ``trajectory.xyz``.
+.. only:: html
+
+    You can download both files :download:`here <../data/argon.zip>`.
+
+.. only:: latex
+
+    You can download both files at the following URL:
+    `<https://lumol.org/lumol/latest/book/_downloads/argon.zip>`_.
+
+After extracting the archive, you can run the simulation with ``lumol
+argon.toml``.  The simulation should complete in a few seconds and produce two
+files: ``energy.dat`` and ``trajectory.xyz``.
 
 Input file anatomy
 ------------------
@@ -70,4 +78,7 @@ As mentioned above, you can start the simulation using
 
 So now we know how to run a simulation of a Lennard-Jones fluid.
 How about we add electrostatic interactions in the next example?
-:doc:`nacl`!
+
+.. only:: html
+
+    :doc:`nacl`!

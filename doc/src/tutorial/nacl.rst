@@ -15,11 +15,18 @@ For this simulation, you will need the following files:
 * the initial configuration ``nacl.xyz```
 * the input file ``nacl.toml``
 
-You can download both files :download:`here <../data/nacl.zip>`. Again, you can
-run the simulation which should complete in a minute with ``lumol nacl.toml``.
+.. only:: html
 
-This will perform a molecular dynamics simulation of a NaCl crystal using
-electrostatic interactions between atomic charges.
+    You can download both files :download:`here <../data/nacl.zip>`.
+
+.. only:: latex
+
+    You can download both files at the following URL:
+    `<https://lumol.org/lumol/latest/book/_downloads/nacl.zip>`_.
+
+Again, you can run the simulation which should complete in a minute with ``lumol
+nacl.toml``. This will perform a molecular dynamics simulation of a NaCl crystal
+using electrostatic interactions between atomic charges.
 
 The input file commented
 ------------------------

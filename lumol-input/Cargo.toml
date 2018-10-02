@@ -1,6 +1,6 @@
 [package]
 name = "lumol-input"
-version = "0.1.0"
+version = "0.0.0"
 authors = ["Luthaf <luthaf@luthaf.fr>"]
 documentation = "https://lumol.org/"
 repository = "https://github.com/lumol-org/lumol"
