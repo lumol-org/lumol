@@ -2,230 +2,130 @@
 // Copyright (C) Lumol's contributors — BSD license
 
 #[macro_use]
-extern crate bencher;
-extern crate lumol;
-extern crate lumol_input;
+extern crate criterion;
 extern crate rand;
+extern crate lumol;
 
-#[macro_use]
+use criterion::Criterion;
+
+use lumol::sys::EnergyCache;
+use lumol::types::Vector3D;
+use lumol::energy::{Ewald, SharedEwald, Wolf};
+use lumol::energy::{GlobalPotential, CoulombicPotential, PairRestriction};
+
 mod utils;
 
-mod ewald {
-    use bencher::Bencher;
-    use rand::Rng;
-
-    use lumol::energy::{CoulombicPotential, Ewald, GlobalPotential, PairRestriction, SharedEwald};
-    use lumol::sys::EnergyCache;
-    use lumol::types::Vector3D;
-
-    use utils;
-
-    fn get_ewald() -> SharedEwald {
-        let mut ewald = SharedEwald::new(Ewald::new(8.0, 7, None));
-        ewald.set_restriction(PairRestriction::InterMolecular);
-        ewald
-    }
-
-
-    pub fn energy(bencher: &mut Bencher) {
-        let system = utils::get_system("water");
-        let ewald = get_ewald();
-        ewald.energy(&system);
-
-        bencher.iter(|| {
-            let _ = ewald.energy(&system);
-        })
-    }
-
-    pub fn forces(bencher: &mut Bencher) {
-        let system = utils::get_system("water");
-        let ewald = get_ewald();
-        let mut forces = vec![Vector3D::zero(); system.size()];
-        ewald.forces(&system, &mut forces);
-
-        bencher.iter(|| {
-            ewald.forces(&system, &mut forces);
-        })
-    }
-
-    pub fn atomic_virial(bencher: &mut Bencher) {
-        let system = utils::get_system("water");
-        let ewald = get_ewald();
-        ewald.atomic_virial(&system);
-
-        bencher.iter(|| {
-            let _ = ewald.atomic_virial(&system);
-        })
-    }
-
-    pub fn molecular_virial(bencher: &mut Bencher) {
-        let system = utils::get_system("water");
-        let ewald = get_ewald();
-        ewald.molecular_virial(&system);
-
-        bencher.iter(|| {
-            let _ = ewald.molecular_virial(&system);
-        })
-    }
-
-    pub fn cache_move_molecule(bencher: &mut Bencher) {
-        let mut system = utils::get_system("water");
-        system.set_coulomb_potential(Box::new(get_ewald()));
-
-        let mut cache = EnergyCache::new();
-        cache.init(&system);
-
-        let mut rng = utils::get_rng([
-            206, 1, 245, 36, 62, 147, 30, 213, 177, 131, 94, 148, 239, 154, 161, 1
-        ]);
-
-        let molid = rng.gen_range(0, system.molecules().count());
-        let molecule = system.molecule(molid);
-        let delta = Vector3D::new(rng.gen(), rng.gen(), rng.gen());
-        let mut new_positions = Vec::new();
-        for position in molecule.particles().position {
-            new_positions.push(position + delta);
-        }
-
-        cache.move_molecule_cost(&system, molid, &new_positions);
-        bencher.iter(|| cache.move_molecule_cost(&system, molid, &new_positions))
-    }
-
-    pub fn cache_move_all_molecules(bencher: &mut Bencher) {
-        let mut system = utils::get_system("water");
-        system.set_coulomb_potential(Box::new(get_ewald()));
-
-        let mut cache = EnergyCache::new();
-        cache.init(&system);
-
-        let mut rng = utils::get_rng([
-            79, 129, 118, 38, 44, 204, 227, 6, 233, 6, 7, 216, 192, 77, 33, 85
-        ]);
-
-        for mut molecule in system.molecules_mut() {
-            let delta = Vector3D::new(rng.gen(), rng.gen(), rng.gen());
-            for position in molecule.particles_mut().position {
-                *position += delta;
-            }
-        }
-
-        cache.move_all_molecules_cost(&system);
-
-        bencher.iter(|| cache.move_all_molecules_cost(&system))
-    }
+fn get_wolf() -> Wolf {
+    let mut wolf = Wolf::new(9.0);
+    wolf.set_restriction(PairRestriction::InterMolecular);
+    return wolf;
 }
 
-mod wolf {
-    use bencher::Bencher;
-    use rand::Rng;
-
-    use lumol::energy::{CoulombicPotential, GlobalPotential, PairRestriction, Wolf};
-    use lumol::sys::EnergyCache;
-    use lumol::types::Vector3D;
-
-    use utils;
-
-    fn get_wolf() -> Wolf {
-        let mut wolf = Wolf::new(9.0);
-        wolf.set_restriction(PairRestriction::InterMolecular);
-        wolf
-    }
-
-    pub fn energy(bencher: &mut Bencher) {
-        let system = utils::get_system("water");
-        let wolf = get_wolf();
-        wolf.energy(&system);
-
-        bencher.iter(|| {
-            let _ = wolf.energy(&system);
-        })
-    }
-
-    pub fn forces(bencher: &mut Bencher) {
-        let system = utils::get_system("water");
-        let wolf = get_wolf();
-        let mut forces = vec![Vector3D::zero(); system.size()];
-        wolf.forces(&system, &mut forces);
-
-        bencher.iter(|| {
-            wolf.forces(&system, &mut forces);
-        })
-    }
-
-    pub fn atomic_virial(bencher: &mut Bencher) {
-        let system = utils::get_system("water");
-        let wolf = get_wolf();
-        wolf.atomic_virial(&system);
-
-        bencher.iter(|| {
-            let _ = wolf.atomic_virial(&system);
-        })
-    }
-
-    pub fn molecular_virial(bencher: &mut Bencher) {
-        let system = utils::get_system("water");
-        let wolf = get_wolf();
-        wolf.molecular_virial(&system);
-
-        bencher.iter(|| {
-            let _ = wolf.molecular_virial(&system);
-        })
-    }
-
-    pub fn cache_move_molecule(bencher: &mut Bencher) {
-        let mut system = utils::get_system("water");
-        system.set_coulomb_potential(Box::new(get_wolf()));
-
-        let mut cache = EnergyCache::new();
-        cache.init(&system);
-
-        let mut rng = utils::get_rng([
-            215, 235, 194, 22, 205, 151, 210, 241, 188, 67, 241, 2, 204, 62, 11, 201
-        ]);
-
-        let molid = rng.gen_range(0, system.molecules().count());
-        let molecule = system.molecule(molid);
-        let delta = Vector3D::new(rng.gen(), rng.gen(), rng.gen());
-        let mut new_positions = Vec::new();
-        for position in molecule.particles().position {
-            new_positions.push(position + delta);
-        }
-
-        cache.move_molecule_cost(&system, molid, &new_positions);
-        bencher.iter(|| cache.move_molecule_cost(&system, molid, &new_positions))
-    }
-
-    pub fn cache_move_all_molecules(bencher: &mut Bencher) {
-        let mut system = utils::get_system("water");
-        system.set_coulomb_potential(Box::new(get_wolf()));
-
-        let mut cache = EnergyCache::new();
-        cache.init(&system);
-
-        let mut rng = utils::get_rng([
-            89, 208, 141, 72, 208, 131, 249, 179, 77, 243, 111, 32, 176, 194, 79, 44
-        ]);
-
-        for mut molecule in system.molecules_mut() {
-            let delta = Vector3D::new(rng.gen(), rng.gen(), rng.gen());
-            for position in molecule.particles_mut().position {
-                *position += delta;
-            }
-        }
-
-        cache.move_all_molecules_cost(&system);
-
-        bencher.iter(|| cache.move_all_molecules_cost(&system))
-    }
+fn get_ewald() -> SharedEwald {
+    let mut ewald = SharedEwald::new(Ewald::new(8.0, 7, None));
+    ewald.set_restriction(PairRestriction::InterMolecular);
+    return ewald;
 }
 
-benchmark_group!(ewald, ewald::energy, ewald::forces, ewald::atomic_virial, ewald::molecular_virial);
-benchmark_group!(wolf, wolf::energy, wolf::forces, wolf::atomic_virial, wolf::molecular_virial);
-benchmark_group!(monte_carlo_cache,
-    ewald::cache_move_molecule,
-    ewald::cache_move_all_molecules,
-    wolf::cache_move_molecule,
-    wolf::cache_move_all_molecules
-);
+fn ewald_energy_computation(c: &mut Criterion) {
+    let system = utils::get_system("water");
+    let ewald = get_ewald();
+    c.bench_function("water::ewald::energy", move |b| b.iter(|| {
+        let _ = ewald.energy(&system);
+    }));
 
-benchmark_main!(ewald, wolf, monte_carlo_cache);
+    let system = utils::get_system("water");
+    let ewald = get_ewald();
+    c.bench_function("water::ewald::force", move |b| b.iter_with_setup(
+        || vec![Vector3D::zero(); system.size()],
+        |mut forces| ewald.forces(&system, &mut forces)
+    ));
+
+    let system = utils::get_system("water");
+    let ewald = get_ewald();
+    c.bench_function("water::ewald::atomic_virial", move |b| b.iter(|| {
+        let _ = ewald.atomic_virial(&system);
+    }));
+
+    let system = utils::get_system("water");
+    let ewald = get_ewald();
+    c.bench_function("water::ewald::molecular_virial", move |b| b.iter(|| {
+        let _ = ewald.molecular_virial(&system);
+    }));
+}
+
+fn ewald_monte_carlo_cache(c: &mut Criterion) {
+    let mut system = utils::get_system("water");
+    system.set_coulomb_potential(Box::new(get_ewald()));
+    let mut cache = EnergyCache::new();
+    cache.init(&system);
+
+    c.bench_function("water::ewald::move_molecule_cost", move |b| b.iter_with_setup(
+        || utils::move_rigid_molecule(&system),
+        |(molid, positions)| cache.move_molecule_cost(&system, molid, &positions)
+    ));
+
+    let mut system = utils::get_system("water");
+    system.set_coulomb_potential(Box::new(get_ewald()));
+    let mut cache = EnergyCache::new();
+    cache.init(&system);
+
+    c.bench_function("water::ewald::move_all_molecules_cost", move |b| b.iter_with_setup(
+        || utils::move_all_rigid_molecule(&mut system),
+        |system| cache.move_all_molecules_cost(&system)
+    ));
+}
+
+fn wolf_energy_computation(c: &mut Criterion) {
+    let system = utils::get_system("water");
+    let wolf = get_wolf();
+    c.bench_function("water::wolf::energy", move |b| b.iter(|| {
+        let _ = wolf.energy(&system);
+    }));
+
+    let system = utils::get_system("water");
+    let wolf = get_wolf();
+    c.bench_function("water::wolf::force", move |b| b.iter_with_setup(
+        || vec![Vector3D::zero(); system.size()],
+        |mut forces| wolf.forces(&system, &mut forces)
+    ));
+
+    let system = utils::get_system("water");
+    let wolf = get_wolf();
+    c.bench_function("water::wolf::atomic_virial", move |b| b.iter(|| {
+        let _ = wolf.atomic_virial(&system);
+    }));
+
+    let system = utils::get_system("water");
+    let wolf = get_wolf();
+    c.bench_function("water::wolf::molecular_virial", move |b| b.iter(|| {
+        let _ = wolf.molecular_virial(&system);
+    }));
+}
+
+fn wolf_monte_carlo_cache(c: &mut Criterion) {
+    let mut system = utils::get_system("water");
+    system.set_coulomb_potential(Box::new(get_wolf()));
+    let mut cache = EnergyCache::new();
+    cache.init(&system);
+
+    c.bench_function("water::wolf::move_molecule_cost", move |b| b.iter_with_setup(
+        || utils::move_rigid_molecule(&system),
+        |(molid, positions)| cache.move_molecule_cost(&system, molid, &positions)
+    ));
+
+    let mut system = utils::get_system("water");
+    system.set_coulomb_potential(Box::new(get_wolf()));
+    let mut cache = EnergyCache::new();
+    cache.init(&system);
+
+    c.bench_function("water::wolf::move_all_molecules_cost", move |b| b.iter_with_setup(
+        || utils::move_all_rigid_molecule(&mut system),
+        |system| cache.move_all_molecules_cost(&system)
+    ));
+}
+
+criterion_group!(ewald, ewald_energy_computation, ewald_monte_carlo_cache);
+criterion_group!(wolf, wolf_energy_computation, wolf_monte_carlo_cache);
+
+criterion_main!(ewald, wolf);

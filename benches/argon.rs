@@ -1,60 +1,57 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) Lumol's contributors — BSD license
-
 #[macro_use]
-extern crate bencher;
-extern crate lumol;
-extern crate lumol_input;
+extern crate criterion;
 extern crate rand;
+extern crate lumol;
 
-use bencher::Bencher;
-use rand::Rng;
+use criterion::Criterion;
 
+use lumol::sys::compute::{MolecularVirial, AtomicVirial, PotentialEnergy, Forces, Compute};
 use lumol::sys::EnergyCache;
-use lumol::types::Vector3D;
-
-#[macro_use]
 mod utils;
 
-fn energy(bencher: &mut Bencher) {
+fn energy_computation(c: &mut Criterion) {
     let system = utils::get_system("argon");
-    bencher.iter(|| {
-        let _ = system.potential_energy();
-    })
+    c.bench_function("argon::energy", move |b| b.iter(|| {
+        let _ = PotentialEnergy.compute(&system);
+    }));
+
+    let system = utils::get_system("argon");
+    c.bench_function("argon::force", move |b| b.iter(|| {
+        let _ = Forces.compute(&system);
+    }));
+
+    let system = utils::get_system("argon");
+    c.bench_function("argon::atomic_virial", move |b| b.iter(|| {
+        let _ = AtomicVirial.compute(&system);
+    }));
+
+    let system = utils::get_system("argon");
+    c.bench_function("argon::molecular_virial", move |b| b.iter(|| {
+        let _ = MolecularVirial.compute(&system);
+    }));
 }
 
-fn forces(bencher: &mut Bencher) {
-    let system = utils::get_system("argon");
-    bencher.iter(|| {
-        let _ = system.forces();
-    })
-}
-
-fn virial(bencher: &mut Bencher) {
-    let system = utils::get_system("argon");
-    bencher.iter(|| {
-        let _ = system.virial();
-    })
-}
-
-fn cache_move_particle(bencher: &mut Bencher) {
+fn monte_carlo_cache(c: &mut Criterion) {
     let system = utils::get_system("argon");
     let mut cache = EnergyCache::new();
     cache.init(&system);
 
-    let mut rng = utils::get_rng([
-        1, 129, 243, 102, 31, 147, 250, 56, 212, 237, 170, 250, 161, 185, 59, 151
-    ]);
+    c.bench_function("argon::move_molecule_cost", move |b| b.iter_with_setup(
+        || utils::move_rigid_molecule(&system),
+        |(molid, positions)| cache.move_molecule_cost(&system, molid, &positions)
+    ));
 
-    let molid = rng.gen_range(0, system.size());
-    let mut new_position = system.particles().position[molid];
-    new_position += Vector3D::new(rng.gen(), rng.gen(), rng.gen());
+    let mut system = utils::get_system("argon");
+    let mut cache = EnergyCache::new();
+    cache.init(&system);
 
-    cache.move_molecule_cost(&system, molid, &[new_position]);
-    bencher.iter(|| cache.move_molecule_cost(&system, molid, &[new_position]))
+    c.bench_function("argon::move_all_molecules_cost", move |b| b.iter_with_setup(
+        || utils::move_all_rigid_molecule(&mut system),
+        |system| cache.move_all_molecules_cost(&system)
+    ));
 }
 
-benchmark_group!(energy_computation, energy, forces, virial);
-benchmark_group!(monte_carlo_cache, cache_move_particle);
-
-benchmark_main!(energy_computation, monte_carlo_cache);
+criterion_group!(argon, energy_computation, monte_carlo_cache);
+criterion_main!(argon);

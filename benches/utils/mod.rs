@@ -1,11 +1,13 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) Lumol's contributors — BSD license
+#![allow(dead_code)]
 
+use lumol::types::Vector3D;
 use lumol::sys::{System, TrajectoryBuilder};
-use lumol_input::InteractionsInput;
+use lumol::input::InteractionsInput;
 use std::path::Path;
 
-use rand::{SeedableRng, XorShiftRng};
+use rand::{SeedableRng, XorShiftRng, Rng};
 
 pub fn get_system(name: &str) -> System {
     let data = Path::new(file!()).parent().unwrap().join("..").join("data");
@@ -22,29 +24,33 @@ pub fn get_system(name: &str) -> System {
     return system;
 }
 
-pub fn get_rng(seed: [u8; 16]) -> XorShiftRng {
-    XorShiftRng::from_seed(seed)
+pub fn get_rng() -> XorShiftRng {
+    XorShiftRng::from_seed([145, 59, 58, 50, 238, 182, 97, 28, 107, 149, 227, 40, 90, 109, 196, 129])
 }
 
-macro_rules! benchmark_group {
-    ($group_name:ident, $($function:path),+) => {
-        pub fn $group_name() -> ::std::vec::Vec<bencher::TestDescAndFn> {
-            use bencher::{TestDescAndFn, TestFn, TestDesc};
-            use std::borrow::Cow;
-            use std::path::Path;
-            let mut benches = ::std::vec::Vec::new();
-            $(
-                let path = Path::new(file!());
-                let path = path.file_stem().unwrap().to_string_lossy();
-                benches.push(TestDescAndFn {
-                    desc: TestDesc {
-                        name: Cow::from(path + "::" + stringify!($function)),
-                        ignore: false,
-                    },
-                    testfn: TestFn::StaticBenchFn($function),
-                });
-            )+
-            benches
+pub fn move_rigid_molecule(system: &System) -> (usize, Vec<Vector3D>) {
+    let mut rng = get_rng();
+
+    let molid = rng.gen_range(0, system.molecules().count());
+    let molecule = system.molecule(molid);
+    let delta = Vector3D::new(rng.gen(), rng.gen(), rng.gen());
+    let mut positions = Vec::new();
+    for position in molecule.particles().position {
+        positions.push(position + delta);
+    }
+
+    return (molid, positions);
+}
+
+pub fn move_all_rigid_molecule(system: &mut System) -> System {
+    let mut rng = get_rng();
+
+    for mut molecule in system.molecules_mut() {
+        let delta = Vector3D::new(rng.gen(), rng.gen(), rng.gen());
+        for position in molecule.particles_mut().position {
+            *position += delta;
         }
     }
+
+    return system.clone();
 }

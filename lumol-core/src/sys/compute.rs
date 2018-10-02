@@ -329,10 +329,17 @@ impl Compute for MolecularVirial {
                 for potential in system.bond_potentials(i, j) {
                     let w = potential.virial(&r);
                     if w.norm() > 1e-30 {
+                        // Use the same sorting as interactions
+                        let name_i = &system.particles().name[i];
+                        let name_j = &system.particles().name[j];
+                        let (name_i, name_j) = if name_i < name_j {
+                            (name_i, name_j)
+                        } else {
+                            (name_j, name_i)
+                        };
                         warn_once!(
-                            "Ignoring bond potential between particles {} and {}
-                            during molecular Virial computation",
-                            system.particles().name[i], system.particles().name[j]
+                            "Ignoring non null bond potential ({}, {}) in molecular virial",
+                            name_i, name_j
                         )
                     }
                 }
