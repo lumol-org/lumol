@@ -30,7 +30,7 @@ clap = "2"
 chrono = "0.4"
 
 [dev-dependencies]
-bencher = "0.1"
+criterion = "0.2"
 rand = "0.5"
 env_logger = "0.5"
 

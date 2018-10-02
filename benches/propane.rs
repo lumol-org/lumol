@@ -2,83 +2,58 @@
 // Copyright (C) Lumol's contributors — BSD license
 
 #[macro_use]
-extern crate bencher;
-extern crate lumol;
-extern crate lumol_input;
+extern crate criterion;
 extern crate rand;
+extern crate lumol;
 
-use bencher::Bencher;
-use rand::Rng;
+use criterion::Criterion;
 
 use lumol::sys::EnergyCache;
-use lumol::types::Vector3D;
+use lumol::sys::compute::{MolecularVirial, AtomicVirial, PotentialEnergy, Forces, Compute};
 
-#[macro_use]
 mod utils;
 
-fn energy(bencher: &mut Bencher) {
+fn energy_computation(c: &mut Criterion) {
     let system = utils::get_system("propane");
-    bencher.iter(|| {
-        let _ = system.potential_energy();
-    })
+    c.bench_function("propane::energy", move |b| b.iter(|| {
+        let _ = PotentialEnergy.compute(&system);
+    }));
+
+    let system = utils::get_system("propane");
+    c.bench_function("propane::force", move |b| b.iter(|| {
+        let _ = Forces.compute(&system);
+    }));
+
+    let system = utils::get_system("propane");
+    c.bench_function("propane::atomic_virial", move |b| b.iter(|| {
+        let _ = AtomicVirial.compute(&system);
+    }));
+
+    let system = utils::get_system("propane");
+    c.bench_function("propane::molecular_virial", move |b| b.iter(|| {
+        let _ = MolecularVirial.compute(&system);
+    }));
 }
 
-fn forces(bencher: &mut Bencher) {
-    let system = utils::get_system("propane");
-    bencher.iter(|| {
-        let _ = system.forces();
-    })
-}
-
-fn virial(bencher: &mut Bencher) {
-    let system = utils::get_system("propane");
-    bencher.iter(|| {
-        let _ = system.virial();
-    })
-}
-
-fn cache_move_molecule(bencher: &mut Bencher) {
+fn monte_carlo_cache(c: &mut Criterion) {
     let system = utils::get_system("propane");
     let mut cache = EnergyCache::new();
     cache.init(&system);
 
-    let mut rng = utils::get_rng([
-        145, 59, 58, 50, 238, 182, 97, 28, 107, 149, 227, 40, 90, 109, 196, 129
-    ]);
+    c.bench_function("propane::move_molecule_cost", move |b| b.iter_with_setup(
+        || utils::move_rigid_molecule(&system),
+        |(molid, positions)| cache.move_molecule_cost(&system, molid, &positions)
+    ));
 
-    let molid = rng.gen_range(0, system.molecules().count());
-    let molecule = system.molecule(molid);
-    let delta = Vector3D::new(rng.gen(), rng.gen(), rng.gen());
-    let mut new_positions = Vec::new();
-    for position in molecule.particles().position {
-        new_positions.push(position + delta);
-    }
-
-    cache.move_molecule_cost(&system, molid, &new_positions);
-    bencher.iter(|| cache.move_molecule_cost(&system, molid, &new_positions))
-}
-
-fn cache_move_all_molecules(bencher: &mut Bencher) {
     let mut system = utils::get_system("propane");
     let mut cache = EnergyCache::new();
     cache.init(&system);
 
-    let mut rng = utils::get_rng([
-        106, 32, 216, 89, 97, 75, 51, 16, 90, 137, 27, 66, 167, 233, 109, 177
-    ]);
-
-    for mut molecule in system.molecules_mut() {
-        let delta = Vector3D::new(rng.gen(), rng.gen(), rng.gen());
-        for position in molecule.particles_mut().position {
-            *position += delta;
-        }
-    }
-
-    bencher.iter(|| cache.move_all_molecules_cost(&system))
+    c.bench_function("propane::move_all_molecules_cost", move |b| b.iter_with_setup(
+        || utils::move_all_rigid_molecule(&mut system),
+        |system| cache.move_all_molecules_cost(&system)
+    ));
 }
 
-
-benchmark_group!(energy_computation, energy, forces, virial);
-benchmark_group!(monte_carlo_cache, cache_move_molecule, cache_move_all_molecules);
-
-benchmark_main!(energy_computation, monte_carlo_cache);
+criterion_group!(propane, energy_computation, monte_carlo_cache);
+criterion_main!(propane);

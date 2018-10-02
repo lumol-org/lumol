@@ -202,11 +202,15 @@ impl System {
         let kind_j = self.particles().kind[j];
         let pairs = self.interactions.pairs((kind_i, kind_j));
         if pairs.is_empty() {
-            warn_once!(
-                "No potential defined for the pair ({}, {})",
-                self.particles().name[i],
-                self.particles().name[j]
-            );
+            // Use the same sorting as interactions
+            let name_i = &self.particles().name[i];
+            let name_j = &self.particles().name[j];
+            let (name_i, name_j) = if name_i < name_j {
+                (name_i, name_j)
+            } else {
+                (name_j, name_i)
+            };
+            warn_once!("No potential defined for the pair ({}, {})", name_i, name_j);
         }
         return pairs;
     }
@@ -223,11 +227,15 @@ impl System {
         let kind_j = self.particles().kind[j];
         let bonds = self.interactions.bonds((kind_i, kind_j));
         if bonds.is_empty() {
-            warn_once!(
-                "No potential defined for the bond ({}, {})",
-                self.particles().name[i],
-                self.particles().name[j]
-            );
+            // Use the same sorting as interactions
+            let name_i = &self.particles().name[i];
+            let name_j = &self.particles().name[j];
+            let (name_i, name_j) = if name_i < name_j {
+                (name_i, name_j)
+            } else {
+                (name_j, name_i)
+            };
+            warn_once!("No potential defined for the bond ({}, {})", name_i, name_j);
         }
         return bonds;
     }
@@ -240,12 +248,16 @@ impl System {
         let kind_k = self.particles().kind[k];
         let angles = self.interactions.angles((kind_i, kind_j, kind_k));
         if angles.is_empty() {
-            warn_once!(
-                "No potential defined for the angle ({}, {}, {})",
-                self.particles().name[i],
-                self.particles().name[j],
-                self.particles().name[k]
-            );
+            // Use the same sorting as interactions
+            let name_i = &self.particles().name[i];
+            let name_j = &self.particles().name[j];
+            let name_k = &self.particles().name[k];
+            let (name_i, name_j, name_k) = if name_i < name_k {
+                (name_i, name_j, name_k)
+            } else {
+                (name_k, name_j, name_i)
+            };
+            warn_once!("No potential defined for the angle ({}, {}, {})", name_i, name_j, name_k);
         }
         return angles;
     }
@@ -265,13 +277,25 @@ impl System {
         let kind_m = self.particles().kind[m];
         let dihedrals = self.interactions.dihedrals((kind_i, kind_j, kind_k, kind_m));
         if dihedrals.is_empty() {
-            warn_once!(
-                "No potential defined for the dihedral angle ({}, {}, {}, {})",
-                self.particles().name[i],
-                self.particles().name[j],
-                self.particles().name[k],
-                self.particles().name[m]
-            );
+            // Use the same sorting as interactions
+            let name_i = &self.particles().name[i];
+            let name_j = &self.particles().name[j];
+            let name_k = &self.particles().name[k];
+            let name_m = &self.particles().name[m];
+            let max_ij = ::std::cmp::max(name_i, name_j);
+            let max_km = ::std::cmp::max(name_k, name_m);
+            let (name_i, name_j, name_k, name_m) = if max_ij == max_km {
+                if ::std::cmp::min(name_i, name_j) < ::std::cmp::min(name_k, name_m) {
+                    (name_i, name_j, name_k, name_m)
+                } else {
+                    (name_m, name_k, name_j, name_i)
+                }
+            } else if max_ij < max_km {
+                (name_i, name_j, name_k, name_m)
+            } else {
+                (name_m, name_k, name_j, name_i)
+            };
+            warn_once!("No potential defined for the dihedral angle ({}, {}, {}, {})", name_i, name_j, name_k, name_m);
         }
         return dihedrals;
     }
