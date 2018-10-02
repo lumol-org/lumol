@@ -7,6 +7,9 @@ repository = "https://github.com/lumol-org/lumol"
 readme = "../README.md"
 license = "BSD-3-Clause"
 
+[lib]
+bench = false
+
 [dependencies]
 bitflags = "1"
 chemfiles = "0.8"
