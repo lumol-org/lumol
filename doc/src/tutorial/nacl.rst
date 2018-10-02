@@ -75,6 +75,6 @@ timestep of 1 fs for integration (this will produce a NVE ensemble).
 
 As before, run the simulation via
 
-.. code:: bash
+.. code-block:: bash
 
     lumol nacl.toml

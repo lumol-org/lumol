@@ -31,7 +31,7 @@ Let's start by having a look at the documentation for ``Potential``: open the
 ``Potential`` defines two functions, ``energy`` and ``force`` (we ignore the
 ``Sync + Send`` statement for now):
 
-.. code:: rust
+.. code-block:: bash
 
     pub trait Potential: Sync + Send {
         fn energy(&self, x: f64) -> f64;
