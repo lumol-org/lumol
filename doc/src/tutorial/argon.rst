@@ -64,7 +64,7 @@ Wrapping all this together, here is the complete input file:
 
 As mentioned above, you can start the simulation using
 
-.. code:: bash
+.. code-block:: bash
 
     lumol argon.toml
 

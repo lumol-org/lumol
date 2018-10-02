@@ -15,13 +15,13 @@ with gcc > 4.9). Be sure to pick the corresponding version of the Rust compiler.
 When all the dependencies are installed on you system, you can install the
 latest release of Lumol using:
 
-.. code:: bash
+.. code-block:: bash
 
     cargo install lumol
 
 and the latest development version with:
 
-.. code:: bash
+.. code-block:: bash
 
     cargo install --git https://github.com/lumol-org/lumol
 
