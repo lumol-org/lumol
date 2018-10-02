@@ -15,6 +15,9 @@ line tool as well as a library in your own code.
 
 .. only:: html
 
+    This user manual is also available as a `PDF <Lumol.pdf>`_ file, if you
+    prefer to have it available locally or printed.
+
     Excited? Then let's start with an overview of this book:
 
 .. toctree::
