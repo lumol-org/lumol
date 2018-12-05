@@ -1,17 +1,21 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) Lumol's contributors — BSD license
 extern crate lumol;
-extern crate lumol_input;
 
+extern crate backtrace;
 extern crate chrono;
 extern crate clap;
 #[macro_use]
 extern crate log;
 
+use std::fmt;
+
+use backtrace::Backtrace;
 use chrono::Duration;
 use chrono::offset::Local;
 use clap::{App, ArgMatches};
-use lumol_input::Input;
+
+use lumol::input::Input;
 
 fn parse_args<'a>() -> ArgMatches<'a> {
     App::new("lumol").version(lumol::VERSION)
@@ -21,23 +25,38 @@ fn parse_args<'a>() -> ArgMatches<'a> {
 }
 
 fn main() {
+    std::panic::set_hook(Box::new(|info| {
+        // Just in case no logger was created yet (very early panic), let's
+        // create one!
+        lumol_input::setup_default_logger();
+
+        let playload = info.payload();
+        let message = if let Some(message) = playload.downcast_ref::<&str>() {
+            message
+        } else if let Some(message) = playload.downcast_ref::<String>() {
+            &*message
+        } else {
+            "<no message>"
+        };
+
+        error!("fatal error: {}", message);
+        error!("{:?}", CleanedBacktrace::new());
+    }));
+
     let args = parse_args();
 
     let input = args.value_of("input.toml").unwrap();
     let input = match Input::new(input) {
         Ok(input) => input,
         Err(err) => {
-            lumol_input::setup_default_logger();
-            error!("invalid input file: {}", err);
-            std::process::exit(2)
+            panic!("invalid input file: {}", err);
         }
     };
 
     let mut config = match input.read() {
         Ok(config) => config,
         Err(err) => {
-            error!("bad input file: {}", err);
-            std::process::exit(2)
+            panic!("bad input file: {}", err);
         }
     };
 
@@ -83,5 +102,53 @@ fn format_elapsed(elapsed: Duration) -> String {
         let s = elapsed.num_seconds() % 60;
         let m = elapsed.num_minutes();
         format!("{}min {}s", m, s)
+    }
+}
+
+struct CleanedBacktrace {
+    inner: Backtrace
+}
+
+impl CleanedBacktrace {
+    fn new() -> CleanedBacktrace {
+        CleanedBacktrace {
+            inner: Backtrace::new()
+        }
+    }
+}
+
+impl fmt::Debug for CleanedBacktrace {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        write!(fmt, "stack backtrace:")?;
+
+        let mut skiped_backtrace_generation = false;
+        'outer: for frame in self.inner.frames() {
+            for symbol in frame.symbols() {
+                let name = if let Some(name) = symbol.name() {
+                    // Use Display to get demangled name
+                    format!("{}", name)
+                } else {
+                    format!("<unknown>")
+                };
+
+                if !skiped_backtrace_generation {
+                    if name.starts_with("std::panicking::begin_panic") {
+                        skiped_backtrace_generation = true;
+                    }
+                    continue 'outer;
+                }
+
+                if name.starts_with("std::rt::lang_start::") {
+                    break 'outer;
+                }
+
+                write!(fmt, "\n - {}", name)?;
+                if let (Some(file), Some(line)) = (symbol.filename(), symbol.lineno()) {
+                    write!(fmt, "\n    at {}:{}", file.display(), line)?;
+                }
+            }
+        }
+
+        Ok(())
     }
 }
