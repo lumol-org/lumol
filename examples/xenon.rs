@@ -10,7 +10,7 @@ use lumol::units;
 
 use lumol::sim::output::TrajectoryOutput;
 use lumol::sim::Simulation;
-use lumol::sim::mc::{MonteCarlo, Translate};
+use lumol::sim::mc::{MonteCarloBuilder, Translate};
 
 fn main() -> Result<(), Box<std::error::Error>> {
     let mut system = TrajectoryBuilder::new().open("data/xenon.xyz")?
@@ -23,10 +23,13 @@ fn main() -> Result<(), Box<std::error::Error>> {
     });
     system.add_pair_potential(("Xe", "Xe"), PairInteraction::new(lj, 12.0));
 
-    // Create a Monte Carlo propagator
-    let mut mc = MonteCarlo::new(units::from(500.0, "K")?);
+    // Create a Monte Carlo builder
+    let mut builder = MonteCarloBuilder::new(units::from(500.0, "K")?);
     // Add the `Translate` move with 0.5 A amplitude and 1.0 frequency
-    mc.add(Box::new(Translate::new(units::from(0.5, "A")?, None)), 1.0);
+    builder.add(Box::new(Translate::new(units::from(0.5, "A")?, None)), 1.0, None);
+
+    // Extract the Monte Carlo propagator
+    let mc = builder.finish();
     let mut simulation = Simulation::new(Box::new(mc));
 
     let trajectory_out = Box::new(TrajectoryOutput::new("trajectory.xyz")?);
