@@ -17,15 +17,9 @@ impl FromTomlWithData for MonteCarlo {
     fn from_toml(config: &Table, root: PathBuf) -> Result<MonteCarlo> {
         let temperature = extract::str("temperature", config, "Monte Carlo propagator")?;
         let temperature = units::from_str(temperature)?;
-
-        let mut mc = MonteCarlo::new(temperature);
-
         let has_update_frequency = config.get("update_frequency").is_some();
-        if has_update_frequency {
-            let update_frequency = extract::uint("update_frequency", config, "Monte Carlo propagator")?;
-            mc.set_amplitude_update_frequency(update_frequency);
-        }
 
+        let mut builder = MonteCarloBuilder::new(temperature);
         let moves = extract::slice("moves", config, "Monte Carlo propagator")?;
         for mc_move in moves {
             let mc_move = mc_move.as_table().ok_or(
@@ -55,20 +49,26 @@ impl FromTomlWithData for MonteCarlo {
                 Some(ta) => {
                     if !has_update_frequency {
                         return Err(Error::from(
-                            "No 'update_frequency' found. Please specify \
-                             'update_frequency' in combination with 'target_acceptance'",
+                            "No 'update_frequency' found. Please specify 'update_frequency' in combination with 'target_acceptance'",
                         ));
                     } else if ta < 0.0 || ta > 1.0 {
                         return Err(
                             Error::from("'target_acceptance' has to be between 0.0 and 1.0"),
                         );
                     } else {
-                        mc.add_move_with_acceptance(mc_move, frequency, ta)
+                        builder.add(mc_move, frequency, ta)
                     }
                 }
-                None => mc.add(mc_move, frequency),
+                None => builder.add(mc_move, frequency, None),
             }
         }
+
+        let mut mc = builder.finish();
+        if has_update_frequency {
+            let update_frequency = extract::uint("update_frequency", config, "Monte Carlo propagator")?;
+            mc.set_amplitude_update_frequency(update_frequency);
+        }
+
         return Ok(mc);
     }
 }

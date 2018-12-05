@@ -9,7 +9,7 @@ use lumol::read_molecule;
 use lumol::units;
 
 use lumol::sim::Simulation;
-use lumol::sim::mc::{MonteCarlo, Rotate, Translate};
+use lumol::sim::mc::{MonteCarloBuilder, Rotate, Translate};
 
 use lumol::input::InteractionsInput;
 
@@ -28,16 +28,15 @@ fn main() -> Result<(), Box<std::error::Error>> {
     molecule.add_particle_bonded_to(1, Particle::new("H"));
     let h2o = molecule.hash();
 
-    let mut mc = MonteCarlo::new(units::from(500.0, "K")?);
-
+    let mut builder = MonteCarloBuilder::new(units::from(500.0, "K")?);
     // Use the molecular types of CO2 and H2O to specify different probabilities
-    mc.add(Box::new(Translate::new(units::from(0.5, "A")?, co2)), 1.0);
-    mc.add(Box::new(Rotate::new(units::from(10.0, "deg")?, co2)), 1.0);
+    builder.add(Box::new(Translate::new(units::from(0.5, "A")?, co2)), 1.0, None);
+    builder.add(Box::new(Rotate::new(units::from(10.0, "deg")?, co2)), 1.0, None);
 
-    mc.add(Box::new(Translate::new(units::from(10.0, "A")?, h2o)), 2.0);
-    mc.add(Box::new(Rotate::new(units::from(20.0, "deg")?, h2o)), 2.0);
+    builder.add(Box::new(Translate::new(units::from(10.0, "A")?, h2o)), 2.0, None);
+    builder.add(Box::new(Rotate::new(units::from(20.0, "deg")?, h2o)), 2.0, None);
 
-    let mut simulation = Simulation::new(Box::new(mc));
+    let mut simulation = Simulation::new(Box::new(builder.finish()));
     simulation.run(&mut system, 200_000_000);
 
     Ok(())

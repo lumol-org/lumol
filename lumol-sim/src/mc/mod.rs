@@ -3,7 +3,7 @@
 
 //! Monte Carlo Metropolis algorithms
 mod monte_carlo;
-pub use self::monte_carlo::{MonteCarlo, MoveCounter};
+pub use self::monte_carlo::{MonteCarlo, MonteCarloBuilder};
 
 mod moves;
 pub use self::moves::{MCDegreeOfFreedom, MCMove};
