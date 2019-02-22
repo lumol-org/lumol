@@ -2,9 +2,9 @@
 // Copyright (C) Lumol's contributors — BSD license
 
 //! This module provides some ways to initialize the velocities in a `System`
-use rand::XorShiftRng;
+use rand_xorshift::XorShiftRng;
 use rand::SeedableRng;
-use rand::distributions::{Normal, Range, Distribution};
+use rand::distributions::{Normal, Uniform, Distribution};
 
 use core::consts::K_BOLTZMANN;
 use core::{System, Vector3D};
@@ -83,7 +83,7 @@ impl InitVelocities for BoltzmannVelocities {
 /// Initialize the velocities from an uniform distribution.
 pub struct UniformVelocities {
     temperature: f64,
-    dist: Range<f64>,
+    dist: Uniform<f64>,
     rng: XorShiftRng,
 }
 
@@ -93,7 +93,7 @@ impl UniformVelocities {
         let factor = f64::sqrt(3.0 * K_BOLTZMANN * temperature);
         UniformVelocities {
             temperature: temperature,
-            dist: Range::new(-factor, factor),
+            dist: Uniform::new(-factor, factor),
             rng: XorShiftRng::from_seed([
                 0xeb, 0xa8, 0xe4, 0x29, 0xca, 0x60, 0x44, 0xb0,
                 0xd3, 0x77, 0xc6, 0xa0, 0x21, 0x71, 0x37, 0xf7,

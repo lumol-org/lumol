@@ -2,12 +2,15 @@
 // Copyright (C) Lumol's contributors — BSD license
 #![allow(dead_code)]
 
+extern crate rand_xorshift;
+
 use lumol::types::Vector3D;
 use lumol::sys::{System, TrajectoryBuilder};
 use lumol::input::InteractionsInput;
 use std::path::Path;
 
-use rand::{SeedableRng, XorShiftRng, Rng};
+use rand::{SeedableRng, Rng};
+use self::rand_xorshift::XorShiftRng;
 
 pub fn get_system(name: &str) -> System {
     let data = Path::new(file!()).parent().unwrap().join("..").join("data");

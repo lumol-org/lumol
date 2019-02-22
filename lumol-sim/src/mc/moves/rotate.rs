@@ -1,7 +1,7 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) 2015-2016 G. Fraux — BSD license
 use rand::RngCore;
-use rand::distributions::{Normal, Range, Distribution};
+use rand::distributions::{Distribution, Uniform, UnitSphereSurface};
 
 use std::collections::BTreeSet;
 use std::f64;
@@ -21,11 +21,11 @@ pub struct Rotate {
     /// New positions of the atom in the rotated molecule
     newpos: Vec<Vector3D>,
     /// Normal distribution, for generation of the axis
-    axis_rng: Normal,
+    axis: UnitSphereSurface,
     /// Maximum values for the range of the range distribution of the angle
     theta: f64,
     /// Range distribution, for generation of the angle
-    range: Range<f64>,
+    range: Uniform<f64>,
 }
 
 impl Rotate {
@@ -38,9 +38,9 @@ impl Rotate {
             hash: hash.into(),
             molid: usize::MAX,
             newpos: Vec::new(),
-            axis_rng: Normal::new(0.0, 1.0),
+            axis: UnitSphereSurface::new(),
             theta: theta,
-            range: Range::new(-theta, theta),
+            range: Uniform::new(-theta, theta),
         }
     }
 }
@@ -71,13 +71,7 @@ impl MCMove for Rotate {
             return false;
         }
 
-        // Getting values from a 3D normal distribution gives an uniform
-        // distribution on the unit sphere.
-        let axis = Vector3D::new(
-            self.axis_rng.sample(rng),
-            self.axis_rng.sample(rng),
-            self.axis_rng.sample(rng),
-        ).normalized();
+        let axis = Vector3D::from(self.axis.sample(rng));
         let theta = self.range.sample(rng);
 
         // store positions of selected molecule
@@ -107,7 +101,7 @@ impl MCMove for Rotate {
         if let Some(s) = scaling_factor {
             if (s * self.theta).abs().to_degrees() <= 180.0 {
                 self.theta *= s;
-                self.range = Range::new(-self.theta, self.theta);
+                self.range = Uniform::new(-self.theta, self.theta);
             } else {
                 warn_once!(
                     "Tried to increase the maximum amplitude for rotations to more than 180°."

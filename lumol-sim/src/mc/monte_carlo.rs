@@ -152,7 +152,7 @@ pub struct MonteCarloBuilder {
 impl MonteCarloBuilder {
     /// Create a new Monte Carlo propagator at temperature `T`.
     pub fn new(temperature: f64) -> MonteCarloBuilder {
-        let rng = Box::new(rand::XorShiftRng::from_seed([
+        let rng = Box::new(rand_xorshift::XorShiftRng::from_seed([
             0xeb, 0xa8, 0xe4, 0x29, 0xca, 0x60, 0x44, 0xb0,
             0xd3, 0x77, 0xc6, 0xa0, 0x21, 0x71, 0x37, 0xf7,
         ]));

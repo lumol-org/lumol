@@ -13,7 +13,6 @@ pub struct Alternator<T> {
     inner: T,
 }
 
-
 impl<T> Alternator<T> {
     /// Wrap the algorithm `base` to call it only every `every` time.
     pub fn new(every: u64, inner: T) -> Alternator<T> {

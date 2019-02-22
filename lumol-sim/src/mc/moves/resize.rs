@@ -2,7 +2,7 @@
 // Copyright (C) 2015-2016 G. Fraux — BSD license
 
 use rand::RngCore;
-use rand::distributions::{Range, Distribution};
+use rand::distributions::{Uniform, Distribution};
 
 use std::f64;
 use std::mem;
@@ -16,7 +16,7 @@ pub struct Resize {
     /// Delta for translation of the box length
     delta: f64,
     /// Sampling range for volume scaling
-    range: Range<f64>,
+    range: Uniform<f64>,
     /// Configuration before applying changes to the simulation cell
     previous: Configuration,
     /// target pressure
@@ -32,7 +32,7 @@ impl Resize {
         assert!(delta > 0.0, "delta must be positive in Resize move");
         Resize {
             delta: delta,
-            range: Range::new(-delta, delta),
+            range: Uniform::new(-delta, delta),
             previous: Configuration::new(),
             pressure: pressure,
             maximum_cutoff: None,
@@ -123,7 +123,7 @@ impl MCMove for Resize {
     fn update_amplitude(&mut self, scaling_factor: Option<f64>) {
         if let Some(s) = scaling_factor {
             self.delta *= s;
-            self.range = Range::new(-self.delta, self.delta);
+            self.range = Uniform::new(-self.delta, self.delta);
         }
     }
 }

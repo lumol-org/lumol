@@ -12,15 +12,15 @@ bench = false
 
 [dependencies]
 bitflags = "1"
-chemfiles = "0.8"
+chemfiles = "0.9"
 lazy_static = "1"
 log = "0.4"
-log-once = "0.2"
+log-once = "0.3"
 ndarray = "0.12"
 num-traits = "0.2"
 rayon = "1"
-soa_derive = "0.7"
-special = "0.7"
+soa_derive = "0.8"
+special = "0.8"
 thread_local = "0.3"
 
 [dev-dependencies]
