@@ -8,7 +8,7 @@
 //! `VolumeResize` move.
 //!
 //! In all this module, beta refers to the Boltzmann factor 1/(kB T)
-use rand::{RngCore, Rng};
+use rand::{RngCore, Rng, seq::SliceRandom};
 use std::collections::BTreeSet;
 use core::{EnergyCache, System, MoleculeHash};
 
@@ -100,7 +100,7 @@ fn select_molecule(system: &System, hash: Option<MoleculeHash>, rng: &mut RngCor
             .filter(|(_, m)| m.hash() == hash)
             .map(|(i, _)| i)
             .collect::<Vec<_>>();
-        return rng.choose(&mols).cloned();
+        return mols.choose(rng).cloned();
     } else {
         let nmols = system.molecules().count();
         if nmols == 0 {

@@ -38,8 +38,9 @@ backtrace = "0.3"
 
 [dev-dependencies]
 criterion = "0.2"
-rand = "0.5"
-env_logger = "0.5"
+rand = "0.6"
+rand_xorshift = "0.1"
+env_logger = "0.6"
 
 [[bench]]
 name = "water"

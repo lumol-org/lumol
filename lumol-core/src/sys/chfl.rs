@@ -7,98 +7,63 @@ use chemfiles;
 use sys::{CellShape, Molecule, Particle, ParticleRef, System, UnitCell};
 use types::Vector3D;
 
-use std::error;
-use std::fmt;
 use std::path::Path;
 use std::sync::{Once, ONCE_INIT};
 
-/// Possible error when reading and writing to trajectories
-#[derive(Debug)]
-pub struct Error(chemfiles::Error);
-
-impl From<chemfiles::Error> for Error {
-    fn from(err: chemfiles::Error) -> Error {
-        Error(err)
-    }
-}
-
-impl fmt::Display for Error {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> Result<(), fmt::Error> {
-        self.0.fmt(fmt)
-    }
-}
-
-impl error::Error for Error {
-    fn description(&self) -> &str {
-        self.0.description()
-    }
-}
-
-/// Convert Chemfiles types to Lumol types
-pub trait ToLumol {
-    /// Output type
-    type Output;
-    /// Conversion function
-    fn to_lumol(self) -> Result<Self::Output, Error>;
-}
-
-impl ToLumol for chemfiles::Atom {
-    type Output = Particle;
-    fn to_lumol(self) -> Result<Self::Output, Error> {
-        let name = self.atomic_type()?;
+impl<'a> From<&'a chemfiles::Atom> for Particle {
+    fn from(atom: &'a chemfiles::Atom) -> Particle {
+        let name = atom.atomic_type();
         let mut particle = Particle::new(name);
-        particle.mass = self.mass()?;
-        Ok(particle)
+        particle.mass = atom.mass();
+        return particle;
     }
 }
 
-impl ToLumol for chemfiles::UnitCell {
-    type Output = UnitCell;
-    fn to_lumol(self) -> Result<Self::Output, Error> {
-        let cell_type = self.shape()?;
-        let cell = match cell_type {
+impl<'a> From<&'a chemfiles::UnitCell> for UnitCell {
+    fn from(cell: &'a chemfiles::UnitCell) -> UnitCell {
+        match cell.shape() {
             chemfiles::CellShape::Infinite => UnitCell::infinite(),
             chemfiles::CellShape::Orthorhombic => {
-                let lengths = self.lengths()?;
+                let lengths = cell.lengths();
                 UnitCell::ortho(lengths[0], lengths[1], lengths[2])
             }
             chemfiles::CellShape::Triclinic => {
-                let lengths = self.lengths()?;
-                let angles = self.angles()?;
+                let lengths = cell.lengths();
+                let angles = cell.angles();
                 UnitCell::triclinic(
                     lengths[0], lengths[1], lengths[2],
                     angles[0], angles[1], angles[2]
                 )
             }
-        };
-        Ok(cell)
+        }
     }
 }
 
-impl ToLumol for chemfiles::Frame {
-    type Output = System;
-    fn to_lumol(self) -> Result<Self::Output, Error> {
-        let cell = self.cell()?;
-        let cell = cell.to_lumol()?;
+impl From<chemfiles::Frame> for System {
+    fn from(frame: chemfiles::Frame) -> System {
+        let cell = UnitCell::from(&*frame.cell());
         let mut system = System::with_cell(cell);
-        let topology = self.topology()?;
-        let natoms = self.size()? as usize;
 
-        let positions = self.positions()?;
-        for i in 0..natoms {
-            let atom = topology.atom(i as u64)?;
-            let mut particle = atom.to_lumol()?;
-            particle.position = Vector3D::new(positions[i][0], positions[i][1], positions[i][2]);
+        for (i, position) in frame.positions().iter().enumerate() {
+            let mut particle = Particle::from(&*frame.atom(i as u64));
+            particle.position = Vector3D::from(*position);
 
             system.add_molecule(Molecule::new(particle));
         }
 
-        let mut bonds = topology.bonds()?;
+
+        if frame.has_velocities() {
+            for (i, velocity) in frame.velocities().iter().enumerate() {
+                system.particles_mut().velocity[i] = Vector3D::from(*velocity);
+            }
+        }
+
+        let mut bonds = frame.topology().bonds();
         while let Some(bond) = bonds.pop() {
             let permutations = system.add_bond(bond[0] as usize, bond[1] as usize);
             apply_particle_permutation(&mut bonds, &permutations);
         }
-        Ok(system)
+        return system;
     }
 }
 
@@ -126,86 +91,61 @@ fn apply_particle_permutation(bonds: &mut Vec<[u64; 2]>, permutations: &[(usize,
     }
 }
 
-/// Convert Lumol types to Chemfiles types
-pub trait ToChemfiles {
-    /// Output type
-    type Output;
-    /// Conversion function
-    fn to_chemfiles(&self) -> Result<Self::Output, Error>;
-}
-
-impl<'a> ToChemfiles for ParticleRef<'a> {
-    type Output = chemfiles::Atom;
-    fn to_chemfiles(&self) -> Result<Self::Output, Error> {
-        let mut atom = chemfiles::Atom::new(&**self.name)?;
-        atom.set_mass(*self.mass)?;
-        return Ok(atom);
+impl<'a> From<ParticleRef<'a>> for chemfiles::Atom {
+    fn from(particle: ParticleRef<'a>) -> chemfiles::Atom {
+        let mut atom = chemfiles::Atom::new(&**particle.name);
+        atom.set_mass(*particle.mass);
+        return atom;
     }
 }
 
-impl ToChemfiles for UnitCell {
-    type Output = chemfiles::UnitCell;
-    fn to_chemfiles(&self) -> Result<Self::Output, Error> {
-        let res = match self.shape() {
-            CellShape::Infinite => chemfiles::UnitCell::infinite()?,
+impl<'a> From<&'a UnitCell> for chemfiles::UnitCell {
+    fn from(cell: &'a UnitCell) -> chemfiles::UnitCell {
+        match cell.shape() {
+            CellShape::Infinite => chemfiles::UnitCell::infinite(),
             CellShape::Orthorhombic => {
-                let lengths = [self.a(), self.b(), self.c()];
-                chemfiles::UnitCell::new(lengths)?
+                let lengths = [cell.a(), cell.b(), cell.c()];
+                chemfiles::UnitCell::new(lengths)
             }
             CellShape::Triclinic => {
-                let lengths = [self.a(), self.b(), self.c()];
-                let angles = [self.alpha(), self.beta(), self.gamma()];
-                chemfiles::UnitCell::triclinic(lengths, angles)?
+                let lengths = [cell.a(), cell.b(), cell.c()];
+                let angles = [cell.alpha(), cell.beta(), cell.gamma()];
+                chemfiles::UnitCell::triclinic(lengths, angles)
             }
-        };
-        return Ok(res);
+        }
     }
 }
 
-impl ToChemfiles for System {
-    type Output = chemfiles::Frame;
-    fn to_chemfiles(&self) -> Result<Self::Output, Error> {
-        let mut frame = chemfiles::Frame::new()?;
-        frame.resize(self.size() as u64)?;
-        frame.set_step(self.step as u64)?;
+impl<'a> From<&'a System> for chemfiles::Frame {
+    fn from(system: &'a System) -> chemfiles::Frame {
+        let mut frame = chemfiles::Frame::new();
+        frame.resize(system.size() as u64);
+        frame.set_step(system.step as u64);
 
-        {
-            let chfl_positions = frame.positions_mut()?;
-            let positions = self.particles().position;
-            for (chfl_position, position) in zip!(chfl_positions, positions) {
-                chfl_position[0] = position[0];
-                chfl_position[1] = position[1];
-                chfl_position[2] = position[2];
-            }
+        for (position, chfl_position) in soa_zip!(system.particles(), [position], frame.positions_mut()) {
+            *chfl_position = **position;
         }
 
-        {
-            frame.add_velocities()?;
-            let chfl_velocities = frame.velocities_mut()?;
-            let velocities = self.particles().velocity;
-            for (chfl_velocity, velocity) in zip!(chfl_velocities, velocities) {
-                chfl_velocity[0] = velocity[0];
-                chfl_velocity[1] = velocity[1];
-                chfl_velocity[2] = velocity[2];
-            }
+        frame.add_velocities();
+        for (velocity, chfl_velocity) in soa_zip!(system.particles(), [position], frame.positions_mut()) {
+            *chfl_velocity = **velocity;
         }
 
-        let mut topology = chemfiles::Topology::new()?;
-        for particle in self.particles().iter() {
-            let atom = particle.to_chemfiles()?;
-            topology.add_atom(&atom)?;
+        let mut topology = chemfiles::Topology::new();
+        for particle in system.particles().iter() {
+            topology.add_atom(&particle.into());
         }
 
-        for molecule in self.molecules() {
+        for molecule in system.molecules() {
             for bond in molecule.bonds() {
-                topology.add_bond(bond.i() as u64, bond.j() as u64)?;
+                topology.add_bond(bond.i() as u64, bond.j() as u64);
             }
         }
 
-        frame.set_topology(&topology)?;
-        let cell = self.cell.to_chemfiles()?;
-        frame.set_cell(&cell)?;
-        Ok(frame)
+        frame.set_topology(&topology).expect("wrong topology size");
+        let cell = (&system.cell).into();
+        frame.set_cell(&cell);
+        return frame;
     }
 }
 
@@ -320,7 +260,7 @@ impl<'a> TrajectoryBuilder<'a> {
     ///     .open("file.nc")
     ///     .unwrap();
     /// ```
-    pub fn open<P: AsRef<Path>>(self, path: P) -> Result<Trajectory, Error> {
+    pub fn open<P: AsRef<Path>>(self, path: P) -> Result<Trajectory, chemfiles::Error> {
         redirect_chemfiles_warnings();
         let mode = match self.mode {
             OpenMode::Read => 'r',
@@ -345,10 +285,10 @@ impl Trajectory {
     ///
     /// let system = trajectory.read().unwrap();
     /// ```
-    pub fn read(&mut self) -> Result<System, Error> {
-        let mut frame = chemfiles::Frame::new()?;
+    pub fn read(&mut self) -> Result<System, chemfiles::Error> {
+        let mut frame = chemfiles::Frame::new();
         self.0.read(&mut frame)?;
-        return frame.to_lumol();
+        return Ok(frame.into());
     }
 
     /// Read the next step of the trajectory, and guess the bonds of the
@@ -364,11 +304,11 @@ impl Trajectory {
     ///
     /// let system = trajectory.read_guess_bonds().unwrap();
     /// ```
-    pub fn read_guess_bonds(&mut self) -> Result<System, Error> {
-        let mut frame = chemfiles::Frame::new()?;
+    pub fn read_guess_bonds(&mut self) -> Result<System, chemfiles::Error> {
+        let mut frame = chemfiles::Frame::new();
         self.0.read(&mut frame)?;
-        frame.guess_topology()?;
-        return frame.to_lumol();
+        frame.guess_bonds()?;
+        return Ok(frame.into());
     }
 
     /// Write the system to the trajectory.
@@ -385,10 +325,8 @@ impl Trajectory {
     ///
     /// trajectory.write(&system).unwrap();
     /// ```
-    pub fn write(&mut self, system: &System) -> Result<(), Error> {
-        let frame = system.to_chemfiles()?;
-        self.0.write(&frame)?;
-        Ok(())
+    pub fn write(&mut self, system: &System) -> Result<(), chemfiles::Error> {
+        self.0.write(&system.into())
     }
 
     /// Set the unit cell associated with a trajectory. This cell will be used
@@ -403,15 +341,13 @@ impl Trajectory {
     ///     .open("file.xyz")
     ///     .unwrap();
     ///
-    /// trajectory.set_cell(&UnitCell::cubic(10.0)).unwrap();
+    /// trajectory.set_cell(&UnitCell::cubic(10.0));
     /// let system = trajectory.read().unwrap();
     ///
     /// assert_eq!(system.cell, UnitCell::cubic(10.0));
     /// ```
-    pub fn set_cell(&mut self, cell: &UnitCell) -> Result<(), Error> {
-        let cell = cell.to_chemfiles()?;
-        self.0.set_cell(&cell)?;
-        Ok(())
+    pub fn set_cell(&mut self, cell: &UnitCell) {
+        self.0.set_cell(&cell.into())
     }
 
     /// Set the topology associated with this trajectory by reading the first
@@ -431,7 +367,7 @@ impl Trajectory {
     /// // The system will contain the topology from topology.pdb
     /// let system = trajectory.read().unwrap();
     /// ```
-    pub fn set_topology_file(&mut self, path: &str) -> Result<(), Error> {
+    pub fn set_topology_file(&mut self, path: &str) -> Result<(), chemfiles::Error> {
         self.0.set_topology_file(path)?;
         Ok(())
     }
@@ -439,18 +375,17 @@ impl Trajectory {
 
 /// Read a the first molecule from the file at `path`. If no bond information
 /// exists in the file, bonds are guessed.
-pub fn read_molecule<P: AsRef<Path>>(path: P) -> Result<Molecule, Error> {
+pub fn read_molecule<P: AsRef<Path>>(path: P) -> Result<Molecule, chemfiles::Error> {
     let mut trajectory = chemfiles::Trajectory::open(&path, 'r')?;
-    let mut frame = chemfiles::Frame::new()?;
+    let mut frame = chemfiles::Frame::new();
     trajectory.read(&mut frame)?;
 
     // Only guess the topology when we have no bond information
-    let topology = frame.topology()?;
-    if topology.bonds_count()? == 0 {
-        frame.guess_topology()?;
+    if frame.topology().bonds_count() == 0 {
+        frame.guess_bonds()?;
     }
-    let system = frame.to_lumol()?;
 
+    let system: System = frame.into();
     assert!(!system.is_empty(), "No molecule in the file at {}", path.as_ref().display());
 
     return Ok(system.molecule(0).to_owned());
@@ -464,7 +399,7 @@ fn redirect_chemfiles_warnings() {
     }
 
     REDIRECT_CHEMFILES_WARNING.call_once(|| {
-        chemfiles::set_warning_callback(warning_callback).expect("could not redirect chemfiles warning");
+        chemfiles::set_warning_callback(warning_callback);
     });
 }
 

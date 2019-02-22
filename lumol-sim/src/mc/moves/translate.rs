@@ -2,7 +2,7 @@
 // Copyright (C) 2015-2016 G. Fraux — BSD license
 
 use rand::RngCore;
-use rand::distributions::{Range, Distribution};
+use rand::distributions::{Uniform, Distribution};
 
 use std::collections::BTreeSet;
 use std::f64;
@@ -26,7 +26,7 @@ pub struct Translate {
     /// The maximum value must not exceed this value, if set
     maximum_cutoff: Option<f64>,
     /// Translation range for random number generation
-    range: Range<f64>,
+    range: Uniform<f64>,
 }
 
 impl Translate {
@@ -42,7 +42,7 @@ impl Translate {
             newpos: Vec::new(),
             delta: delta,
             maximum_cutoff: None,
-            range: Range::new(-delta, delta),
+            range: Uniform::new(-delta, delta),
         }
     }
 }
@@ -137,7 +137,7 @@ impl MCMove for Translate {
             }
 
             self.delta *= s;
-            self.range = Range::new(-self.delta, self.delta);
+            self.range = Uniform::new(-self.delta, self.delta);
         };
     }
 }

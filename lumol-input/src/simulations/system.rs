@@ -21,7 +21,7 @@ impl Input {
         let mut trajectory = TrajectoryBuilder::new().open(file)?;
 
         let with_cell = if let Some(cell) = self.read_cell()? {
-            trajectory.set_cell(&cell)?;
+            trajectory.set_cell(&cell);
             true
         } else {
             false

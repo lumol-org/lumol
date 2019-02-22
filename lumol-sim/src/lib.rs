@@ -38,6 +38,7 @@ extern crate approx;
 
 extern crate caldyn;
 extern crate rand;
+extern crate rand_xorshift;
 extern crate num_traits as num;
 
 mod propagator;

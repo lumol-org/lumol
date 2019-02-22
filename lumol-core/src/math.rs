@@ -17,11 +17,19 @@ macro_rules! make_math_fn {
 
 make_math_fn!(sqrt);
 make_math_fn!(exp);
-make_math_fn!(erf);
-make_math_fn!(erfc);
 make_math_fn!(abs);
 make_math_fn!(cos);
 make_math_fn!(sin);
 make_math_fn!(acos);
 make_math_fn!(floor);
 make_math_fn!(round);
+
+#[inline(always)]
+pub fn erf(value: f64) -> f64 {
+    f64::error(value)
+}
+
+#[inline(always)]
+pub fn erfc(value: f64) -> f64 {
+    f64::compl_error(value)
+}

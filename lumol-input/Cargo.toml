@@ -27,7 +27,7 @@ features = ["console_appender", "file_appender", "threshold_filter"]
 [dev-dependencies]
 walkdir = "2"
 rustc-test = "0.3"
-env_logger = "0.5"
+env_logger = "0.6"
 
 [[test]]
 name = "input"
