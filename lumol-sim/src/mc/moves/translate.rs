@@ -8,10 +8,15 @@ use std::collections::BTreeSet;
 use std::f64;
 use std::usize;
 
+use log::warn;
+use log_once::warn_once;
+
+use soa_derive::soa_zip;
+
 use super::{MCDegreeOfFreedom, MCMove};
 use super::select_molecule;
 
-use core::{EnergyCache, System, MoleculeHash, Vector3D};
+use lumol_core::{EnergyCache, System, MoleculeHash, Vector3D};
 
 /// Monte Carlo move for translating a molecule
 pub struct Translate {
@@ -77,7 +82,7 @@ impl MCMove for Translate {
         }
     }
 
-    fn prepare(&mut self, system: &mut System, rng: &mut RngCore) -> bool {
+    fn prepare(&mut self, system: &mut System, rng: &mut dyn RngCore) -> bool {
         if let Some(id) = select_molecule(system, self.hash, rng) {
             self.molid = id;
         } else {

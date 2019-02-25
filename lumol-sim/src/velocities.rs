@@ -6,10 +6,10 @@ use rand_xorshift::XorShiftRng;
 use rand::SeedableRng;
 use rand::distributions::{Normal, Uniform, Distribution};
 
-use core::consts::K_BOLTZMANN;
-use core::{System, Vector3D};
+use lumol_core::consts::K_BOLTZMANN;
+use lumol_core::{System, Vector3D};
 
-use md::{Control, RemoveRotation, RemoveTranslation};
+use crate::md::{Control, RemoveRotation, RemoveTranslation};
 
 /// Scale all velocities in the `System` such that the `system` temperature
 /// is `temperature`.
@@ -137,7 +137,10 @@ impl InitVelocities for UniformVelocities {
 mod test {
     use super::*;
     use rand::random;
-    use core::{Molecule, Particle, System, Vector3D, UnitCell};
+    use lumol_core::{Molecule, Particle, System, Vector3D, UnitCell};
+
+    use approx::assert_ulps_eq;
+    use soa_derive::soa_zip;
 
     fn testing_system() -> System {
         let mut system = System::new();

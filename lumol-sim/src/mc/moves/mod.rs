@@ -10,7 +10,7 @@
 //! In all this module, beta refers to the Boltzmann factor 1/(kB T)
 use rand::{RngCore, Rng, seq::SliceRandom};
 use std::collections::BTreeSet;
-use core::{EnergyCache, System, MoleculeHash};
+use lumol_core::{EnergyCache, System, MoleculeHash};
 
 /// Possible degrees of freedom simulated by a given Monte Carlo move
 #[derive(Clone, PartialEq, Debug)]
@@ -59,7 +59,7 @@ pub trait MCMove {
     ///
     /// This function should return true is we can perform the move, and false
     /// otherwise.
-    fn prepare(&mut self, system: &mut System, rng: &mut RngCore) -> bool;
+    fn prepare(&mut self, system: &mut System, rng: &mut dyn RngCore) -> bool;
 
     /// Get the cost of performing this move on `system`. For example in
     /// simple NVT simulations, this cost is the energetic difference between
@@ -92,7 +92,7 @@ pub trait MCMove {
 /// This function returns `None` if no matching molecule was found, and
 /// `Some(molid)` with `molid` the index of the molecule if a molecule was
 /// selected.
-fn select_molecule(system: &System, hash: Option<MoleculeHash>, rng: &mut RngCore) -> Option<usize> {
+fn select_molecule(system: &System, hash: Option<MoleculeHash>, rng: &mut dyn RngCore) -> Option<usize> {
     if let Some(hash) = hash {
         // Pick a random molecule with matching moltype
         let mols = system.molecules()

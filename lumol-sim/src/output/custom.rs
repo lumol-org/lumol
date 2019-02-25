@@ -11,9 +11,11 @@ use std::path::{Path, PathBuf};
 use caldyn::{Context, Expr};
 use caldyn::Error as CaldynError;
 
+use log::error;
+use log_once::{warn_once, error_once};
+
 use super::Output;
-use core::{units, System};
-// use types::Zero;
+use lumol_core::{units, System};
 
 /// Possible causes of error when using a custom output
 #[derive(Debug)]
@@ -45,7 +47,7 @@ impl From<String> for CustomOutputError {
 }
 
 impl fmt::Display for CustomOutputError {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> Result<(), fmt::Error> {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
         match *self {
             CustomOutputError::Io(ref err) => write!(fmt, "{}", err)?,
             CustomOutputError::Expr(ref err) => write!(fmt, "{}", err)?,
@@ -64,7 +66,7 @@ impl error::Error for CustomOutputError {
         }
     }
 
-    fn cause(&self) -> Option<&error::Error> {
+    fn cause(&self) -> Option<&dyn error::Error> {
         match *self {
             CustomOutputError::Io(ref err) => Some(err),
             CustomOutputError::Expr(ref err) => Some(err),
@@ -144,7 +146,7 @@ impl FormatArgs {
                                       index is {}, but we only have {} atoms",
                                       $index, system.size()
                                   );
-                                  return ::num::Zero::zero();
+                                  return num_traits::Zero::zero();
                               })
                     );
                 }

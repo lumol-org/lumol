@@ -4,7 +4,7 @@
 //! Utilities to test the output algorithms
 
 #![cfg(test)]
-extern crate tempfile;
+use tempfile;
 use self::tempfile::NamedTempFile;
 
 use std::fs::File;
@@ -12,13 +12,13 @@ use std::io::prelude::*;
 use std::path::Path;
 
 use super::Output;
-use core::energy::{Harmonic, PairInteraction};
-use core::{System, Molecule, Particle, UnitCell};
-use core::units;
+use lumol_core::energy::{Harmonic, PairInteraction};
+use lumol_core::{System, Molecule, Particle, UnitCell};
+use lumol_core::units;
 
 pub fn test_output<F>(function: F, expected: &str)
 where
-    F: Fn(&Path) -> Box<Output>,
+    F: Fn(&Path) -> Box<dyn Output>,
 {
     let tempfile = NamedTempFile::new().unwrap();
     let system = testing_system();

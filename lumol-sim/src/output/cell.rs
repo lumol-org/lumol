@@ -6,8 +6,10 @@ use std::io::{self, BufWriter};
 use std::io::prelude::*;
 use std::path::{Path, PathBuf};
 
+use log::error;
+
 use super::Output;
-use core::System;
+use lumol_core::System;
 
 /// The `CellOutput` writes all the components of a cell to a file . The columns
 /// in the file contain the following values: `step A B C α β γ`.

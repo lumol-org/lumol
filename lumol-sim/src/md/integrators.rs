@@ -1,6 +1,8 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) Lumol's contributors — BSD license
-use core::{System, Matrix3, Vector3D};
+use soa_derive::soa_zip;
+
+use lumol_core::{System, Matrix3, Vector3D};
 
 /// The `Integrator` trait define integrator interface for molecular dynamics.
 /// An integrator is an algorithm responsible for propagating the equations of

@@ -6,9 +6,11 @@ use std::io::{self, BufWriter};
 use std::io::prelude::*;
 use std::path::{Path, PathBuf};
 
+use log::error;
+
 use super::Output;
-use core::System;
-use core::units;
+use lumol_core::System;
+use lumol_core::units;
 
 /// The `StressOutput` writes the stress of the system to a text file, organized
 /// as: `step stress.xx stress.yy stress.zz stress.xy stress.xz stress.yz`.

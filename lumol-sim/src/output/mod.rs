@@ -3,7 +3,7 @@
 
 //! Saving properties of a system during a simulation
 
-use core::System;
+use lumol_core::System;
 
 /// The `Output` trait defines the interface for all the quantities outputted by
 /// the simulation during the run. An Output can be a text or a binary data

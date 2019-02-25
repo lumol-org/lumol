@@ -2,7 +2,7 @@
 // Copyright (C) Lumol's contributors — BSD license
 
 //! A propagator is responsible for updating the system during a simulation
-use core::{System, DegreesOfFreedom};
+use lumol_core::{System, DegreesOfFreedom};
 
 /// Possible temperature computation strategies. Different propagators needs
 /// different ways to compute the temperature: Monte Carlo temperature is a
