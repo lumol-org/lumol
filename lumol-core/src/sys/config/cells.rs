@@ -7,8 +7,8 @@
 use std::f64;
 use std::f64::consts::PI;
 
-use math::*;
-use types::{Matrix3, Vector3D};
+use crate::math::*;
+use crate::{Matrix3, Vector3D};
 
 /// The shape of a cell determine how we will be able to compute the periodic
 /// boundaries condition.
@@ -424,7 +424,9 @@ mod tests {
     use super::*;
     use std::f64;
     use std::f64::consts::PI;
-    use types::Matrix3;
+    use crate::Matrix3;
+
+    use approx::{assert_ulps_eq, assert_relative_eq};
 
     #[test]
     #[should_panic]

@@ -1,9 +1,9 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) Lumol's contributors — BSD license
 
-use energy::{AnglePotential, BondPotential, DihedralPotential, PairPotential};
-use energy::Potential;
-use math::*;
+use crate::{AnglePotential, BondPotential, DihedralPotential, PairPotential};
+use crate::Potential;
+use crate::math::*;
 use std::f64::consts::PI;
 
 /// No-op potential.
@@ -596,8 +596,10 @@ impl PairPotential for Mie {
 
 #[cfg(test)]
 mod tests {
-    use energy::{PairPotential, Potential};
     use super::*;
+    use crate::{PairPotential, Potential};
+    use approx::{assert_ulps_eq, assert_relative_eq};
+
     const EPS: f64 = 1e-9;
 
     #[test]

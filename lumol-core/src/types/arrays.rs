@@ -2,8 +2,7 @@
 // Copyright (C) Lumol's contributors — BSD license
 
 //! Multi-dimensional arrays based on ndarray
-use ndarray;
-use num::Zero;
+use num_traits::Zero;
 
 use std::ops::{Deref, DerefMut, Index, IndexMut};
 

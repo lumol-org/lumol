@@ -9,12 +9,12 @@
 //! energy components, by storing them and providing update callbacks.
 use std::mem;
 
-use sys::System;
-use types::{Array2, Vector3D};
+use crate::System;
+use crate::{Array2, Vector3D};
 
 /// Callback for updating a cache. It also take an `&mut System` argument for
 /// updating the cache inside the global potentials.
-type UpdateCallback = Box<Fn(&mut EnergyCache, &mut System) + Send + Sync>;
+type UpdateCallback = Box<dyn Fn(&mut EnergyCache, &mut System) + Send + Sync>;
 
 /// This is a cache for energy computation.
 ///
@@ -299,12 +299,14 @@ impl EnergyCache {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use energy::{Harmonic, LennardJones, NullPotential, Wolf};
-    use energy::PairInteraction;
-    use sys::System;
-    use types::Vector3D;
-    use utils::system_from_xyz;
-    use units;
+    use crate::{Harmonic, LennardJones, NullPotential, Wolf};
+    use crate::PairInteraction;
+    use crate::System;
+    use crate::Vector3D;
+    use crate::utils::system_from_xyz;
+    use crate::units;
+
+    use approx::{assert_ulps_eq, assert_relative_eq};
 
     fn testing_system() -> System {
         let mut system = system_from_xyz(

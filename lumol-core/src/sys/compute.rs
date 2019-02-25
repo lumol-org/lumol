@@ -6,13 +6,14 @@
 use std::f64::consts::PI;
 
 use rayon::prelude::*;
+use soa_derive::soa_zip;
+use log_once::warn_once;
 
-use consts::K_BOLTZMANN;
-use types::{Matrix3, Vector3D};
+use crate::consts::K_BOLTZMANN;
+use crate::{Matrix3, Vector3D};
+use crate::{System, DegreesOfFreedom};
 
-use sys::{System, DegreesOfFreedom};
-
-use utils::ThreadLocalVec;
+use crate::utils::ThreadLocalVec;
 
 /// The `Compute` trait allow to compute properties of a system, without
 /// modifying this system. The `Output` type is the type of the computed
@@ -481,11 +482,13 @@ impl Compute for Stress {
 #[cfg(test)]
 mod test {
     use super::*;
-    use consts::K_BOLTZMANN;
-    use energy::{Harmonic, NullPotential, PairInteraction};
-    use sys::System;
-    use utils::system_from_xyz;
-    use units;
+    use crate::System;
+    use crate::consts::K_BOLTZMANN;
+    use crate::{Harmonic, NullPotential, PairInteraction};
+    use crate::utils::system_from_xyz;
+    use crate::units;
+
+    use approx::assert_ulps_eq;
 
     fn test_pairs_system() -> System {
         let mut system = system_from_xyz(

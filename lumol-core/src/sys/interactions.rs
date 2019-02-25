@@ -8,14 +8,14 @@ use std::cmp::{max, min};
 use std::collections::BTreeMap;
 use std::f64;
 
-use energy::{AnglePotential, BondPotential, DihedralPotential, PairInteraction};
-use energy::{CoulombicPotential, GlobalPotential};
-use sys::ParticleKind as Kind;
+use crate::{AnglePotential, BondPotential, DihedralPotential, PairInteraction};
+use crate::{CoulombicPotential, GlobalPotential};
+use crate::ParticleKind;
 
-pub type PairKind = (Kind, Kind);
-pub type BondKind = (Kind, Kind);
-pub type AngleKind = (Kind, Kind, Kind);
-pub type DihedralKind = (Kind, Kind, Kind, Kind);
+pub type PairKind = (ParticleKind, ParticleKind);
+pub type BondKind = (ParticleKind, ParticleKind);
+pub type AngleKind = (ParticleKind, ParticleKind, ParticleKind);
+pub type DihedralKind = (ParticleKind, ParticleKind, ParticleKind, ParticleKind);
 
 /// Normalize pair indexes to get a canonical representation
 #[inline]
@@ -63,15 +63,15 @@ pub struct Interactions {
     /// Pair potentials
     pairs: BTreeMap<PairKind, Vec<PairInteraction>>,
     /// Bond potentials
-    bonds: BTreeMap<BondKind, Vec<Box<BondPotential>>>,
+    bonds: BTreeMap<BondKind, Vec<Box<dyn BondPotential>>>,
     /// Angle potentials
-    angles: BTreeMap<AngleKind, Vec<Box<AnglePotential>>>,
+    angles: BTreeMap<AngleKind, Vec<Box<dyn AnglePotential>>>,
     /// Dihedral angles potentials
-    dihedrals: BTreeMap<DihedralKind, Vec<Box<DihedralPotential>>>,
+    dihedrals: BTreeMap<DihedralKind, Vec<Box<dyn DihedralPotential>>>,
     /// Coulombic potential solver
-    pub coulomb: Option<Box<CoulombicPotential>>,
+    pub coulomb: Option<Box<dyn CoulombicPotential>>,
     /// Global potentials
-    pub globals: Vec<Box<GlobalPotential>>,
+    pub globals: Vec<Box<dyn GlobalPotential>>,
 }
 
 impl Interactions {
@@ -95,14 +95,14 @@ impl Interactions {
     }
 
     /// Add the `potential` bonded interaction for the given `bond`
-    pub fn add_bond(&mut self, bond: BondKind, potential: Box<BondPotential>) {
+    pub fn add_bond(&mut self, bond: BondKind, potential: Box<dyn BondPotential>) {
         let kind = normalize_pair(bond);
         let bonds = self.bonds.entry(kind).or_insert(Vec::new());
         bonds.push(potential);
     }
 
     /// Add the `potential` angle interaction for the given `angle`
-    pub fn add_angle(&mut self, angle: AngleKind, potential: Box<AnglePotential>) {
+    pub fn add_angle(&mut self, angle: AngleKind, potential: Box<dyn AnglePotential>) {
         let kind = normalize_angle(angle);
         let angles = self.angles.entry(kind).or_insert(Vec::new());
         angles.push(potential);
@@ -110,7 +110,7 @@ impl Interactions {
 
     /// Add the `potential` dihedral interaction for the dihedral angle `(i, j,
     /// k, m)`
-    pub fn add_dihedral(&mut self, dihedral: DihedralKind, potential: Box<DihedralPotential>) {
+    pub fn add_dihedral(&mut self, dihedral: DihedralKind, potential: Box<dyn DihedralPotential>) {
         let kind = normalize_dihedral(dihedral);
         let dihedrals = self.dihedrals.entry(kind).or_insert(Vec::new());
         dihedrals.push(potential);
@@ -125,19 +125,19 @@ impl Interactions {
     }
 
     /// Get all bonded interactions corresponding to the `bond`
-    pub fn bonds(&self, bond: BondKind) -> &[Box<BondPotential>] {
+    pub fn bonds(&self, bond: BondKind) -> &[Box<dyn BondPotential>] {
         let kind = normalize_pair(bond);
         self.bonds.get(&kind).map_or(&[], |bonds| &**bonds)
     }
 
     /// Get all angle interactions corresponding to the `angle`
-    pub fn angles(&self, angle: AngleKind) -> &[Box<AnglePotential>] {
+    pub fn angles(&self, angle: AngleKind) -> &[Box<dyn AnglePotential>] {
         let kind = normalize_angle(angle);
         self.angles.get(&kind).map_or(&[], |angles| &**angles)
     }
 
     /// Get all dihedral interactions corresponding to the `dihedral`
-    pub fn dihedrals(&self, dihedral: DihedralKind) -> &[Box<DihedralPotential>] {
+    pub fn dihedrals(&self, dihedral: DihedralKind) -> &[Box<dyn DihedralPotential>] {
         let kind = normalize_dihedral(dihedral);
         self.dihedrals.get(&kind).map_or(&[], |dihedrals| &**dihedrals)
     }
@@ -181,8 +181,8 @@ impl Interactions {
 mod test {
     use super::*;
 
-    use energy::{NullPotential, PairInteraction, Wolf};
-    use sys::ParticleKind as Kind;
+    use crate::{NullPotential, PairInteraction, Wolf};
+    use crate::ParticleKind as Kind;
 
     #[test]
     fn normalizing_pairs() {

@@ -7,9 +7,9 @@ use std::ops::{Add, Div, Mul, Sub};
 use std::ops::{AddAssign, DivAssign, MulAssign, SubAssign};
 use std::ops::{Deref, DerefMut};
 
-use num::{One, Zero};
+use num_traits::{One, Zero};
 
-use types::Vector3D;
+use crate::Vector3D;
 
 /// A 3x3 square matrix type.
 ///
@@ -516,9 +516,9 @@ impl From<[[f64; 3]; 3]> for Matrix3 {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use types::Vector3D;
+    use crate::Vector3D;
 
-    use approx::{AbsDiffEq, RelativeEq, UlpsEq};
+    use approx::{AbsDiffEq, RelativeEq, UlpsEq, assert_ulps_eq};
 
     impl AbsDiffEq for Matrix3 {
         type Epsilon = <f64 as AbsDiffEq>::Epsilon;

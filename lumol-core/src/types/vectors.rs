@@ -6,9 +6,9 @@ use std::ops::{Add, BitXor, Div, Mul, Neg, Sub};
 use std::ops::{AddAssign, DivAssign, MulAssign, SubAssign};
 use std::ops::{Deref, DerefMut};
 
-use num::Zero;
+use num_traits::Zero;
 
-use types::Matrix3;
+use crate::Matrix3;
 
 /// A 3-dimensional vector type
 ///
@@ -344,7 +344,7 @@ impl Default for Vector3D {
 
 #[cfg(test)]
 mod tests {
-    use types::{Matrix3, Vector3D};
+    use crate::{Matrix3, Vector3D};
     use std::f64;
 
     use approx::{AbsDiffEq, RelativeEq, UlpsEq};

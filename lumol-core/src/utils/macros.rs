@@ -1,6 +1,22 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) Lumol's contributors — BSD license
 
+macro_rules! zip {
+    (@map $pattern:pat => $tuple:expr) => {
+        |$pattern| $tuple
+    };
+    (@map $pattern:pat => ( $($tuple:tt)* ) , $_iter:expr $(, $tail:expr )*) => {
+        zip!(@map ($pattern, b) => ( $($tuple)*, b ) $( , $tail )*)
+    };
+    ($first:expr $( , $rest:expr )* $(,)*) => {
+        ::std::iter::IntoIterator::into_iter($first)
+            $(.zip($rest))*
+            .map(
+                zip!(@map a => (a) $( , $rest )*)
+            )
+    };
+}
+
 /// A simple macro to implement Clone for Box<Trait>, without requiring that
 /// Trait is Clone. This works by creating a new trait (`BoxCloneTrait`) and
 /// making the first Trait inherit the `BoxCloneTrait`. `BoxCloneTrait` is
@@ -19,17 +35,17 @@ macro_rules! impl_box_clone {
         /// This is an internal implementation detail for cloning `Box<Trait>`
         pub trait $BoxClone {
             /// Get a cloned of self as a boxed trait.
-            fn $box_clone(&self) -> Box<$Trait>;
+            fn $box_clone(&self) -> Box<dyn $Trait>;
         }
 
         impl<T: Clone + $Trait + 'static> $BoxClone for T {
-            fn $box_clone(&self) -> Box<$Trait> {
+            fn $box_clone(&self) -> Box<dyn $Trait> {
                 Box::new(self.clone())
             }
         }
 
-        impl Clone for Box<$Trait> {
-            fn clone(&self) -> Box<$Trait> {
+        impl Clone for Box<dyn $Trait> {
+            fn clone(&self) -> Box<dyn $Trait> {
                 self.$box_clone()
             }
         }

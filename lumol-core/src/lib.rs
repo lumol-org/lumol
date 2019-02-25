@@ -23,44 +23,6 @@
 #![doc(test(attr(deny(warnings))))]
 #![doc(test(attr(allow(unused_variables))))]
 
-#[macro_use]
-extern crate bitflags;
-#[macro_use]
-extern crate lazy_static;
-#[macro_use]
-extern crate log;
-#[macro_use]
-extern crate log_once;
-#[macro_use]
-extern crate soa_derive;
-
-#[cfg(test)]
-#[macro_use]
-extern crate approx;
-
-extern crate chemfiles;
-extern crate ndarray;
-extern crate num_traits as num;
-extern crate rayon;
-extern crate special;
-extern crate thread_local;
-
-macro_rules! zip {
-    (@map $pattern:pat => $tuple:expr) => {
-        |$pattern| $tuple
-    };
-    (@map $pattern:pat => ( $($tuple:tt)* ) , $_iter:expr $(, $tail:expr )*) => {
-        zip!(@map ($pattern, b) => ( $($tuple)*, b ) $( , $tail )*)
-    };
-    ($first:expr $( , $rest:expr )* $(,)*) => {
-        ::std::iter::IntoIterator::into_iter($first)
-            $(.zip($rest))*
-            .map(
-                zip!(@map a => (a) $( , $rest )*)
-            )
-    };
-}
-
 // Helper modules
 #[macro_use]
 mod utils;

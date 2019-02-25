@@ -29,7 +29,7 @@ impl<T: Send + Default + Clone> ThreadLocalVec<T> {
 
     /// Mutably borrow the thread local vector if it already exists, or create
     /// it and then borrow it.
-    pub fn borrow_mut(&self) -> RefMut<Vec<T>> {
+    pub fn borrow_mut(&self) -> RefMut<'_, Vec<T>> {
         self.inner
             .get_or(|| Box::new(RefCell::new(vec![T::default(); self.size])))
             .borrow_mut()

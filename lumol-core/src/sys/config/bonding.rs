@@ -5,8 +5,8 @@ use std::collections::HashSet;
 use std::hash::{Hash, Hasher};
 use std::ops::Range;
 
-use sys::{Angle, Bond, BondDistances, Dihedral};
-use types::Array2;
+use crate::{Angle, Bond, BondDistances, Dihedral};
+use crate::Array2;
 
 
 /// The basic building block for a topology. A `Bonding` contains data about
@@ -288,7 +288,7 @@ impl Bonding {
 #[cfg(test)]
 mod test {
     use super::*;
-    use sys::{Angle, Bond, BondDistances, Dihedral};
+    use crate::{Angle, Bond, BondDistances, Dihedral};
 
     #[test]
     fn translate_by() {

@@ -9,12 +9,15 @@ use std::f64;
 
 use rayon::prelude::*;
 
-use math::*;
-use sys::{Configuration, UnitCell, CellShape};
-use types::{Matrix3, Vector3D, Array3, Complex};
-use consts::FOUR_PI_EPSILON_0;
-use energy::{PairRestriction, RestrictionInfo};
-use utils::ThreadLocalVec;
+use log::{warn, info};
+use log_once::warn_once;
+
+use crate::math::{exp, erf, erfc, sqrt};
+use crate::{Configuration, UnitCell, CellShape};
+use crate::{Matrix3, Vector3D, Array3, Complex};
+use crate::consts::FOUR_PI_EPSILON_0;
+use crate::{PairRestriction, RestrictionInfo};
+use crate::utils::ThreadLocalVec;
 
 use super::{GlobalPotential, CoulombicPotential, GlobalCache};
 
@@ -284,7 +287,7 @@ pub struct Ewald {
     /// Guard for cache invalidation of `self.factors`
     previous_cell: Option<UnitCell>,
     /// Update the cached quantities
-    updater: Option<Box<Fn(&mut Ewald) + Sync + Send>>,
+    updater: Option<Box<dyn Fn(&mut Ewald) + Sync + Send>>,
 }
 
 impl Clone for Ewald {
@@ -899,14 +902,14 @@ impl SharedEwald {
     }
 
     /// Get read access to the underlying Ewald solver
-    fn read(&self) -> RwLockReadGuard<Ewald> {
+    fn read(&self) -> RwLockReadGuard<'_, Ewald> {
         // The lock should never be poisonned, because any panic will unwind
         // and finish the simulation.
         self.0.read().expect("Ewald lock is poisonned")
     }
 
     /// Get write access to the underlying Ewald solver
-    fn write(&self) -> RwLockWriteGuard<Ewald> {
+    fn write(&self) -> RwLockWriteGuard<'_, Ewald> {
         // The lock should never be poisonned, because any panic will unwind
         // and finish the simulation.
         self.0.write().expect("Ewald lock is poisonned")
@@ -997,8 +1000,8 @@ impl GlobalCache for SharedEwald {
 #[cfg(test)]
 mod tests {
     pub use super::*;
-    use sys::System;
-    use utils::system_from_xyz;
+    use crate::System;
+    use crate::utils::system_from_xyz;
 
     pub fn nacl_pair() -> System {
         let mut system = system_from_xyz("2
@@ -1041,8 +1044,8 @@ mod tests {
 
     mod errors {
         use super::*;
-        use energy::GlobalPotential;
-        use sys::UnitCell;
+        use crate::GlobalPotential;
+        use crate::UnitCell;
 
         #[test]
         #[should_panic]
@@ -1074,7 +1077,8 @@ mod tests {
 
     mod pairs {
         use super::*;
-        use energy::GlobalPotential;
+        use crate::GlobalPotential;
+        use approx::{assert_ulps_eq, assert_relative_eq};
 
         #[test]
         fn energy() {
@@ -1153,8 +1157,10 @@ mod tests {
 
     mod molecules {
         use super::*;
-        use types::Vector3D;
-        use energy::{GlobalPotential, PairRestriction, CoulombicPotential};
+        use crate::Vector3D;
+        use crate::{GlobalPotential, PairRestriction, CoulombicPotential};
+
+        use approx::{assert_ulps_eq, assert_relative_eq};
 
         #[test]
         fn energy() {
@@ -1229,8 +1235,10 @@ mod tests {
 
     mod atomic_virial {
         use super::*;
-        use types::Matrix3;
-        use energy::PairRestriction;
+        use crate::Matrix3;
+        use crate::PairRestriction;
+
+        use approx::assert_relative_eq;
 
         fn scale(system: &mut System, i: usize, j: usize, eps: f64) {
             let mut scaling = Matrix3::one();
@@ -1314,6 +1322,8 @@ mod tests {
             assert_relative_eq!(virial, finite_diff, epsilon = 1e-6);
         }
     }
+
+    use approx::assert_relative_eq;
 
     #[test]
     fn move_molecule() {
@@ -1490,8 +1500,8 @@ mod tests {
 
         mod cutoff_9 {
             use super::*;
-            use consts::K_BOLTZMANN;
-            use units;
+            use crate::consts::K_BOLTZMANN;
+            use crate::units;
             const CUTOFF: f64 = 9.0;
 
             #[test]
@@ -1709,8 +1719,8 @@ mod tests {
 
         mod cutoff_10 {
             use super::*;
-            use consts::K_BOLTZMANN;
-            use units;
+            use crate::consts::K_BOLTZMANN;
+            use crate::units;
             const CUTOFF: f64 = 10.0;
 
             #[test]

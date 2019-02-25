@@ -2,13 +2,14 @@
 // Copyright (C) Lumol's contributors — BSD license
 
 //! [Chemfiles](https://chemfiles.org/) conversion for Lumol.
-
-use chemfiles;
-use sys::{CellShape, Molecule, Particle, ParticleRef, System, UnitCell};
-use types::Vector3D;
-
 use std::path::Path;
 use std::sync::{Once, ONCE_INIT};
+
+use soa_derive::soa_zip;
+use log::warn;
+
+use crate::{Molecule, Particle, ParticleRef, System, UnitCell, CellShape};
+use crate::Vector3D;
 
 impl<'a> From<&'a chemfiles::Atom> for Particle {
     fn from(atom: &'a chemfiles::Atom) -> Particle {
@@ -406,11 +407,9 @@ fn redirect_chemfiles_warnings() {
 
 #[cfg(test)]
 mod tests {
-    extern crate tempfile;
-
     use super::*;
+    use crate::{Angle, Bond, MoleculeHash};
     use std::io::prelude::*;
-    use sys::{Angle, Bond, MoleculeHash};
 
     static WATER: &'static str = "3
 

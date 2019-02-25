@@ -1,8 +1,10 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) Lumol's contributors — BSD license
 
-use energy::{PairPotential, Potential};
-use math::*;
+use log_once::warn_once;
+
+use crate::{PairPotential, Potential};
+use crate::math::*;
 
 /// Alternative energy and forces computation.
 ///
@@ -77,7 +79,7 @@ pub struct TableComputation {
     /// Tabulated compute_force
     force_table: Vec<f64>,
     /// Initial potential, kept around for tail corrections
-    potential: Box<PairPotential>,
+    potential: Box<dyn PairPotential>,
 }
 
 
@@ -98,7 +100,7 @@ impl TableComputation {
     /// assert_eq!(table.energy(1.0), 0.525);
     /// assert_eq!(table.energy(3.0), 0.0);
     /// ```
-    pub fn new(potential: Box<PairPotential>, size: usize, max: f64) -> TableComputation {
+    pub fn new(potential: Box<dyn PairPotential>, size: usize, max: f64) -> TableComputation {
         let delta = max / (size as f64);
         let mut energy_table = Vec::with_capacity(size);
         let mut force_table = Vec::with_capacity(size);
@@ -175,8 +177,8 @@ impl PairPotential for TableComputation {
 #[cfg(test)]
 mod test {
     use super::*;
-    use energy::{Harmonic, LennardJones};
-    use energy::PairPotential;
+    use crate::{Harmonic, LennardJones};
+    use crate::PairPotential;
 
     #[test]
     fn table() {
