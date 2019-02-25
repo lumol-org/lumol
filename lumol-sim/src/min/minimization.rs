@@ -2,11 +2,13 @@
 // Copyright (C) Lumol's contributors — BSD license
 
 //! Energy minimization algorithms
-use core::{System, DegreesOfFreedom};
-
-use propagator::{Propagator, TemperatureStrategy};
-
 use std::f64;
+
+use log::info;
+
+use lumol_core::{System, DegreesOfFreedom};
+
+use crate::propagator::{Propagator, TemperatureStrategy};
 
 /// Tolerance criteria used for energy minimization
 pub struct Tolerance {
@@ -41,7 +43,7 @@ pub trait Minimizer {
 /// the current step is lower than the energy criterion, or when the maximal
 /// squared norm of the atomic force is lower than the force criterion.
 pub struct Minimization {
-    minimizer: Box<Minimizer>,
+    minimizer: Box<dyn Minimizer>,
     is_converged: bool,
     last_energy: f64,
     tolerance: Tolerance,
@@ -50,7 +52,7 @@ pub struct Minimization {
 impl Minimization {
     /// Create a new `Minimization` using the given `minimizer` and specific
     /// energy and force `tolerance`.
-    pub fn new(minimizer: Box<Minimizer>, tolerance: Tolerance) -> Minimization {
+    pub fn new(minimizer: Box<dyn Minimizer>, tolerance: Tolerance) -> Minimization {
         Minimization {
             minimizer: minimizer,
             is_converged: false,

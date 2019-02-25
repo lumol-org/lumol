@@ -6,10 +6,12 @@ use std::ops::{Deref, DerefMut};
 
 use rand::{self, Rng, SeedableRng};
 
-use core::consts::K_BOLTZMANN;
-use core::{DegreesOfFreedom, EnergyCache, System};
+use log::{warn, info, trace};
 
-use propagator::{Propagator, TemperatureStrategy};
+use lumol_core::consts::K_BOLTZMANN;
+use lumol_core::{DegreesOfFreedom, EnergyCache, System};
+
+use crate::propagator::{Propagator, TemperatureStrategy};
 use super::{MCDegreeOfFreedom, MCMove};
 
 /// This struct keeps a move and some statistics on the move (number of times
@@ -19,7 +21,7 @@ use super::{MCDegreeOfFreedom, MCMove};
 /// efficiency of a move.
 struct Move {
     /// The actual move implementation
-    mcmove: Box<MCMove>,
+    mcmove: Box<dyn MCMove>,
     /// Count the total number of times the move was called.
     total_attempted: u64,
     /// Count the total number of times the move was accepted.
@@ -35,7 +37,7 @@ struct Move {
 impl Move {
     /// Create a move, initializing all counts to zero and setting the
     /// `target_acceptance`.
-    pub fn new(mcmove: Box<MCMove>, target_acceptance: Option<f64>) -> Move {
+    pub fn new(mcmove: Box<dyn MCMove>, target_acceptance: Option<f64>) -> Move {
         let mut counter = Move {
             mcmove: mcmove,
             total_attempted: 0,
@@ -111,7 +113,7 @@ impl Move {
 }
 
 impl Deref for Move {
-    type Target = Box<MCMove>;
+    type Target = Box<dyn MCMove>;
     fn deref(&self) -> &Self::Target {
         &self.mcmove
     }
@@ -127,7 +129,7 @@ impl DerefMut for Move {
 pub struct MonteCarlo {
     /// Random number generator for the simulation. All random state will be
     /// taken from this.
-    rng: Box<rand::RngCore>,
+    rng: Box<dyn rand::RngCore>,
     /// Boltzmann factor: beta = 1/(kB * T)
     beta: f64,
     /// List of possible Monte Carlo moves
@@ -143,7 +145,7 @@ pub struct MonteCarlo {
 
 /// Builder for `MonteCarlo` struct
 pub struct MonteCarloBuilder {
-    rng: Box<rand::RngCore>,
+    rng: Box<dyn rand::RngCore>,
     beta: f64,
     moves: Vec<Move>,
     frequencies: Vec<f64>,
@@ -161,7 +163,7 @@ impl MonteCarloBuilder {
 
     /// Create a Monte Carlo propagator at temperature `T`, using the `rng`
     /// random number generator.
-    pub fn from_rng(temperature: f64, rng: Box<rand::RngCore>) -> MonteCarloBuilder {
+    pub fn from_rng(temperature: f64, rng: Box<dyn rand::RngCore>) -> MonteCarloBuilder {
         assert!(temperature >= 0.0, "Monte Carlo temperature must be positive");
         MonteCarloBuilder {
             beta: 1.0 / (K_BOLTZMANN * temperature),
@@ -176,7 +178,7 @@ impl MonteCarloBuilder {
     /// `target_acceptance` is the desired acceptance ratio of the move.
     pub fn add(
         &mut self,
-        mcmove: Box<MCMove>,
+        mcmove: Box<dyn MCMove>,
         frequency: f64,
         target_acceptance: impl Into<Option<f64>>,
     ) {
@@ -344,9 +346,9 @@ impl Propagator for MonteCarlo {
 mod tests {
     use super::*;
     use rand::RngCore;
-    use propagator::Propagator;
-    use mc::{MCDegreeOfFreedom, MCMove};
-    use core::{EnergyCache, System};
+    use crate::propagator::Propagator;
+    use crate::mc::{MCDegreeOfFreedom, MCMove};
+    use lumol_core::{EnergyCache, System};
 
     struct DummyMove;
     impl MCMove for DummyMove {
@@ -357,7 +359,7 @@ mod tests {
             MCDegreeOfFreedom::Particles
         }
         fn setup(&mut self, _: &System) {}
-        fn prepare(&mut self, _: &mut System, _: &mut RngCore) -> bool {
+        fn prepare(&mut self, _: &mut System, _: &mut dyn RngCore) -> bool {
             true
         }
         fn cost(&self, _: &System, _: f64, _: &mut EnergyCache) -> f64 {

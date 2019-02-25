@@ -1,11 +1,11 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) Lumol's contributors — BSD license
 
-use core::{units, System, DegreesOfFreedom};
-
-use super::{Minimizer, Tolerance};
-
 use std::f64;
+use soa_derive::soa_zip;
+
+use lumol_core::{units, System, DegreesOfFreedom};
+use super::{Minimizer, Tolerance};
 
 /// Steepest descent minimization algorithm.
 ///
@@ -69,10 +69,13 @@ impl Minimizer for SteepestDescent {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use core::energy::{Harmonic, PairInteraction};
-    use core::{System, UnitCell, Molecule, Particle};
-    use min::Minimization;
-    use propagator::Propagator;
+    use lumol_core::{Harmonic, PairInteraction};
+    use lumol_core::{System, UnitCell, Molecule, Particle};
+
+    use crate::min::Minimization;
+    use crate::propagator::Propagator;
+
+    use approx::assert_relative_eq;
 
     fn testing_system() -> System {
         let mut system = System::with_cell(UnitCell::cubic(20.0));

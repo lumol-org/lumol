@@ -1,8 +1,8 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) Lumol's contributors — BSD license
 
-use propagator::{Propagator, TemperatureStrategy};
-use core::{System, DegreesOfFreedom};
+use crate::propagator::{Propagator, TemperatureStrategy};
+use lumol_core::{System, DegreesOfFreedom};
 
 use super::{Control, Integrator, Thermostat};
 use super::VelocityVerlet;
@@ -10,11 +10,11 @@ use super::VelocityVerlet;
 /// Molecular Dynamics propagator for the simulation.
 pub struct MolecularDynamics {
     /// The integrator we should use to propagate the equations of motion.
-    integrator: Box<Integrator>,
+    integrator: Box<dyn Integrator>,
     /// Optional thermostat algorithm
-    thermostat: Option<Box<Thermostat>>,
+    thermostat: Option<Box<dyn Thermostat>>,
     /// Control algorithms in the simulation.
-    controls: Vec<Box<Control>>,
+    controls: Vec<Box<dyn Control>>,
 }
 
 impl MolecularDynamics {
@@ -26,7 +26,7 @@ impl MolecularDynamics {
 
     /// Create a new `MolecularDynamics` propagator using the specified
     /// `integrator`.
-    pub fn from_integrator(integrator: Box<Integrator>) -> MolecularDynamics {
+    pub fn from_integrator(integrator: Box<dyn Integrator>) -> MolecularDynamics {
         MolecularDynamics {
             integrator: integrator,
             thermostat: None,
@@ -35,12 +35,12 @@ impl MolecularDynamics {
     }
 
     /// Add a control algorithm to the internal list of controls.
-    pub fn add_control(&mut self, control: Box<Control>) {
+    pub fn add_control(&mut self, control: Box<dyn Control>) {
         self.controls.push(control);
     }
 
     /// Set the thermostat to use with this simulation
-    pub fn set_thermostat(&mut self, thermostat: Box<Thermostat>) {
+    pub fn set_thermostat(&mut self, thermostat: Box<dyn Thermostat>) {
         self.thermostat = Some(thermostat);
     }
 }

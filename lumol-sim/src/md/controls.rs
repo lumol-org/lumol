@@ -4,10 +4,12 @@
 //! While running a simulation, we often want to have control over some
 //! simulation parameters: the temperature, the pressure, etc. This is the goal
 //! of the control algorithms, all implementing of the `Control` trait.
-use core::System;
-use core::{Matrix3, Vector3D};
+use soa_derive::soa_zip;
 
-use velocities;
+use lumol_core::System;
+use lumol_core::{Matrix3, Vector3D};
+
+use crate::velocities;
 
 /// Trait for controlling some parameters in a system during a simulation.
 pub trait Control {
@@ -195,8 +197,10 @@ impl Control for Rewrap {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use core::{Particle, Molecule, System, UnitCell};
-    use velocities::{BoltzmannVelocities, InitVelocities};
+    use lumol_core::{Particle, Molecule, System, UnitCell};
+    use crate::velocities::{BoltzmannVelocities, InitVelocities};
+
+    use approx::assert_ulps_eq;
 
     fn testing_system() -> System {
         let mut system = System::with_cell(UnitCell::cubic(20.0));

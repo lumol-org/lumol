@@ -1,29 +1,30 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) Lumol's contributors — BSD license
+use log::{info, warn};
 
-use core::{System, DegreesOfFreedom, Vector3D};
+use lumol_core::{System, DegreesOfFreedom, Vector3D};
 
-use output::Output;
-use propagator::{Propagator, TemperatureStrategy};
+use crate::output::Output;
+use crate::propagator::{Propagator, TemperatureStrategy};
 
 /// Writing an output at a given frequency
 struct OutputFrequency {
     /// The output to use
-    output: Box<Output>,
+    output: Box<dyn Output>,
     /// The frequency. `output` will be used every time the system step matches
     /// this frequency.
     frequency: u64,
 }
 
 impl OutputFrequency {
-    pub fn new(output: Box<Output>) -> OutputFrequency {
+    pub fn new(output: Box<dyn Output>) -> OutputFrequency {
         OutputFrequency {
             frequency: 1,
             output: output,
         }
     }
 
-    pub fn with_frequency(output: Box<Output>, frequency: u64) -> OutputFrequency {
+    pub fn with_frequency(output: Box<dyn Output>, frequency: u64) -> OutputFrequency {
         OutputFrequency {
             frequency: frequency,
             output: output,
@@ -51,13 +52,13 @@ impl Output for OutputFrequency {
 /// simulation. It should be use together with a `System` to perform the
 /// simulation.
 pub struct Simulation {
-    propagator: Box<Propagator>,
+    propagator: Box<dyn Propagator>,
     outputs: Vec<OutputFrequency>,
 }
 
 impl Simulation {
     /// Create a new Simulation from a Propagator.
-    pub fn new(propagator: Box<Propagator>) -> Simulation {
+    pub fn new(propagator: Box<dyn Propagator>) -> Simulation {
         Simulation {
             propagator: propagator,
             outputs: Vec::new(),
@@ -97,14 +98,14 @@ impl Simulation {
     }
 
     /// Add a new `Output` algorithm in the outputs list
-    pub fn add_output(&mut self, output: Box<Output>) {
+    pub fn add_output(&mut self, output: Box<dyn Output>) {
         self.outputs.push(OutputFrequency::new(output));
     }
 
     /// Add a new `Output` algorithm in the outputs list, which will be used
     /// at the given frequency. The output will be used every time the system
     /// step matches this frequency.
-    pub fn add_output_with_frequency(&mut self, output: Box<Output>, frequency: u64) {
+    pub fn add_output_with_frequency(&mut self, output: Box<dyn Output>, frequency: u64) {
         self.outputs.push(OutputFrequency::with_frequency(output, frequency));
     }
 

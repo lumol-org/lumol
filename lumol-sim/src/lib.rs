@@ -23,24 +23,6 @@
 #![doc(test(attr(deny(warnings))))]
 #![doc(test(attr(allow(unused_variables))))]
 
-extern crate lumol_core as core;
-
-#[macro_use]
-extern crate log;
-#[macro_use]
-extern crate log_once;
-#[macro_use]
-extern crate soa_derive;
-
-#[cfg(test)]
-#[macro_use]
-extern crate approx;
-
-extern crate caldyn;
-extern crate rand;
-extern crate rand_xorshift;
-extern crate num_traits as num;
-
 mod propagator;
 pub use self::propagator::Propagator;
 pub use self::propagator::TemperatureStrategy;

@@ -9,7 +9,7 @@ use std::mem;
 
 use super::{MCDegreeOfFreedom, MCMove};
 
-use core::{Configuration, EnergyCache, System, Matrix3};
+use lumol_core::{Configuration, EnergyCache, System, Matrix3};
 
 /// Monte Carlo move that changes the size of the simulation cell
 pub struct Resize {
@@ -60,7 +60,7 @@ impl MCMove for Resize {
         self.maximum_cutoff = system.maximum_cutoff()
     }
 
-    fn prepare(&mut self, system: &mut System, rng: &mut RngCore) -> bool {
+    fn prepare(&mut self, system: &mut System, rng: &mut dyn RngCore) -> bool {
         let delta = self.range.sample(rng);
 
         // Store the previous configuration

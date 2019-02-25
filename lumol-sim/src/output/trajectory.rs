@@ -5,8 +5,8 @@ use std::path::Path;
 
 use super::Output;
 
-use core::{OpenMode, Trajectory, TrajectoryBuilder, TrajectoryError};
-use core::System;
+use lumol_core::{OpenMode, Trajectory, TrajectoryBuilder, TrajectoryError};
+use lumol_core::System;
 
 /// The `TrajectoryOutput` allows to write the trajectory of the system to a
 /// file, using any format supported by the [Chemfiles][chemfiles] library.
