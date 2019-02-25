@@ -8,6 +8,7 @@ use std::sync::{Once, ONCE_INIT};
 use soa_derive::soa_zip;
 use log::warn;
 
+use crate::sys::Permutation;
 use crate::{Molecule, Particle, ParticleRef, System, UnitCell, CellShape};
 use crate::Vector3D;
 
@@ -68,7 +69,7 @@ impl From<chemfiles::Frame> for System {
     }
 }
 
-fn apply_particle_permutation(bonds: &mut Vec<[u64; 2]>, permutations: &[(usize, usize)]) {
+fn apply_particle_permutation(bonds: &mut Vec<[u64; 2]>, permutations: &[Permutation]) {
     for bond in bonds {
         // Search for a permutation applying to the first atom of the bond. We
         // need to stop just after the first permutations is found, because we
@@ -76,16 +77,16 @@ fn apply_particle_permutation(bonds: &mut Vec<[u64; 2]>, permutations: &[(usize,
         // If we do not stop after the first match, then all indexes in 1-3
         // range will become 4.
         for permutation in permutations {
-            if bond[0] == permutation.0 as u64 {
-                bond[0] = permutation.1 as u64;
+            if bond[0] == permutation.old as u64 {
+                bond[0] = permutation.new as u64;
                 break;
             }
         }
 
         // Now we look for permutations applying to the second atom of the bond
         for permutation in permutations {
-            if bond[1] == permutation.0 as u64 {
-                bond[1] = permutation.1 as u64;
+            if bond[1] == permutation.old as u64 {
+                bond[1] = permutation.new as u64;
                 break;
             }
         }

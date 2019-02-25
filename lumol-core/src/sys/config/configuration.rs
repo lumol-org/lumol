@@ -13,8 +13,25 @@ use crate::{ParticleSlice, ParticleSliceMut, ParticleVec, ParticlePtr, ParticleP
 use crate::{Molecule, MoleculeRef, MoleculeRefMut};
 use crate::BondPath;
 
-/// Particles permutations. Indexes are stored as `(old, new)`.
-pub type Permutations = Vec<(usize, usize)>;
+/// The `Permutation` struct contains the old and new particle index in a
+/// `Configuration` after the particles where moved due to a new bond being
+/// added
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+pub struct Permutation {
+    /// The old particle index
+    pub old: usize,
+    /// The new particle index
+    pub new: usize,
+}
+
+impl Permutation {
+    fn new(old: usize, new: usize) -> Permutation {
+        Permutation {
+            old: old,
+            new: new,
+        }
+    }
+}
 
 /// The `Configuration` contains the physical data of the system:
 ///
@@ -158,7 +175,7 @@ impl Configuration {
     ///
     /// This function will return the list of atomic permutations that where
     /// applied in order to ensure that molecules are contiguous in memory.
-    pub fn add_bond(&mut self, mut particle_i: usize, mut particle_j: usize) -> Permutations {
+    pub fn add_bond(&mut self, mut particle_i: usize, mut particle_j: usize) -> Vec<Permutation> {
         assert!(particle_i <= self.particles.len());
         assert!(particle_j <= self.particles.len());
         assert_ne!(particle_i, particle_j);
@@ -182,7 +199,7 @@ impl Configuration {
         // Effective merge
         let delta = self.merge_molecules(molid_i, molid_j);
 
-        let mut permutations = Permutations::new();
+        let mut permutations = Vec::new();
         // If new_mol.last() + 1 == old_mol.first(), no one moved. Else,
         // we generate the permutations
         if !already_in_same_molecule && new_mol.end() != old_mol.start() {
@@ -191,14 +208,14 @@ impl Configuration {
             let second = new_mol.end();
             // Add permutation for the molecule we just moved around
             for i in 0..size {
-                permutations.push((first + i, second + i));
+                permutations.push(Permutation::new(first + i, second + i));
             }
 
             // Add permutations for molecules that where shifted to make
             // space for the just moved molecule.
             for connectivity in &self.bondings[new_molid + 1..old_molid] {
                 for i in connectivity.indexes() {
-                    permutations.push((i - size, i));
+                    permutations.push(Permutation::new(i - size, i));
                 }
             }
         }
@@ -766,12 +783,12 @@ mod tests {
         configuration.add_molecule(Molecule::new(particle("H")));
         configuration.add_molecule(Molecule::new(particle("H")));
 
-        assert_eq!(configuration.add_bond(0, 3), vec![(3, 1), (1, 2), (2, 3)]);
-        assert_eq!(configuration.add_bond(0, 3), vec![(3, 2), (2, 3)]);
+        assert_eq!(configuration.add_bond(0, 3), vec![Permutation::new(3, 1), Permutation::new(1, 2), Permutation::new(2, 3)]);
+        assert_eq!(configuration.add_bond(0, 3), vec![Permutation::new(3, 2), Permutation::new(2, 3)]);
         assert_eq!(configuration.add_bond(0, 3), vec![]);
 
         assert_eq!(configuration.add_bond(4, 5), vec![]);
-        assert_eq!(configuration.add_bond(4, 7), vec![(7, 6), (6, 7)]);
+        assert_eq!(configuration.add_bond(4, 7), vec![Permutation::new(7, 6), Permutation::new(6, 7)]);
         assert_eq!(configuration.add_bond(4, 7), vec![]);
 
         // This is a regression test for issue #76
@@ -780,7 +797,7 @@ mod tests {
         configuration.add_molecule(Molecule::new(particle("H")));
         configuration.add_molecule(Molecule::new(particle("O")));
 
-        assert_eq!(configuration.add_bond(0, 2), vec![(2, 1), (1, 2)]);
+        assert_eq!(configuration.add_bond(0, 2), vec![Permutation::new(2, 1), Permutation::new(1, 2)]);
         assert_eq!(configuration.add_bond(2, 1), vec![]);
         assert_eq!(configuration.molecules().count(), 1);
     }
