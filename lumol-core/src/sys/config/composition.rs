@@ -4,7 +4,7 @@
 use std::collections::BTreeMap;
 use std::collections::btree_map::Entry;
 
-use sys::{ParticleKind, MoleculeHash};
+use crate::{ParticleKind, MoleculeHash};
 
 /// The system composition contains the number of particles of each kind
 /// in the system, as well as the number of molecules of each molecule type.

@@ -5,7 +5,7 @@
 use std::f64;
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign};
 
-use num::{One, Zero};
+use num_traits::{One, Zero};
 
 #[derive(Debug, Clone, Copy, PartialEq, Default)]
 /// Complex number, with double precision real and imaginary parts.
@@ -330,6 +330,7 @@ impl One for Complex {
 mod tests {
     use super::*;
     use std::f64::consts;
+    use approx::assert_ulps_eq;
 
     #[test]
     fn norm() {

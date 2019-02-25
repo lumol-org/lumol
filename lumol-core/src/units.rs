@@ -21,7 +21,9 @@ use std::num;
 use std::collections::BTreeMap;
 use std::f64::consts::PI;
 
-use consts::{BOHR_RADIUS, AVOGADRO_NUMBER};
+use lazy_static::lazy_static;
+
+use crate::consts::{BOHR_RADIUS, AVOGADRO_NUMBER};
 
 // Atomic mass unit in kg
 const U_IN_KG: f64 = 1.660538782e-27;
@@ -112,7 +114,7 @@ impl From<num::ParseFloatError> for ParseError {
 }
 
 impl fmt::Display for ParseError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match *self {
             ParseError::Power(ref err) => err.fmt(f),
             ParseError::Value(ref err) => err.fmt(f),
@@ -412,6 +414,7 @@ mod test {
     use super::*;
     use super::{Token, UnitExpr};
     use super::{shunting_yard, tokenize};
+    use approx::assert_ulps_eq;
 
     #[test]
     fn tokens() {

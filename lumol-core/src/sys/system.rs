@@ -4,13 +4,14 @@
 use std::collections::BTreeMap;
 use std::ops::{Deref, DerefMut};
 
-use types::{Matrix3, Vector3D};
+use soa_derive::soa_zip;
+use log_once::warn_once;
 
-use energy::{AnglePotential, BondPotential, DihedralPotential, PairInteraction};
-use energy::{CoulombicPotential, GlobalPotential};
-
-use sys::{Composition, EnergyEvaluator, Interactions};
-use sys::{Configuration, Molecule, ParticleKind, UnitCell};
+use crate::{Matrix3, Vector3D};
+use crate::{AnglePotential, BondPotential, DihedralPotential, PairInteraction};
+use crate::{CoulombicPotential, GlobalPotential};
+use crate::{Composition, EnergyEvaluator, Interactions};
+use crate::{Configuration, Molecule, ParticleKind, UnitCell};
 
 /// The number of degrees of freedom simulated in a given system
 #[derive(Clone, PartialEq, Debug)]
@@ -125,7 +126,7 @@ impl System {
 /// Functions related to interactions
 impl System {
     /// Get an helper struct to evaluate the energy of this system.
-    pub fn energy_evaluator(&self) -> EnergyEvaluator {
+    pub fn energy_evaluator(&self) -> EnergyEvaluator<'_> {
         EnergyEvaluator::new(self)
     }
 
@@ -144,7 +145,7 @@ impl System {
     }
 
     /// Add the `potential` bonded interaction for atoms with types `i` and `j`
-    pub fn add_bond_potential(&mut self, (i, j): (&str, &str), potential: Box<BondPotential>) {
+    pub fn add_bond_potential(&mut self, (i, j): (&str, &str), potential: Box<dyn BondPotential>) {
         let kind_i = self.get_kind(i);
         let kind_j = self.get_kind(j);
         self.interactions.add_bond((kind_i, kind_j), potential)
@@ -154,7 +155,7 @@ impl System {
     pub fn add_angle_potential(
         &mut self,
         (i, j, k): (&str, &str, &str),
-        potential: Box<AnglePotential>,
+        potential: Box<dyn AnglePotential>,
     ) {
         let kind_i = self.get_kind(i);
         let kind_j = self.get_kind(j);
@@ -167,7 +168,7 @@ impl System {
     pub fn add_dihedral_potential(
         &mut self,
         (i, j, k, m): (&str, &str, &str, &str),
-        potential: Box<DihedralPotential>,
+        potential: Box<dyn DihedralPotential>,
     ) {
         let kind_i = self.get_kind(i);
         let kind_j = self.get_kind(j);
@@ -177,7 +178,7 @@ impl System {
     }
 
     /// Set the coulombic interaction for all pairs to `potential`
-    pub fn set_coulomb_potential(&mut self, potential: Box<CoulombicPotential>) {
+    pub fn set_coulomb_potential(&mut self, potential: Box<dyn CoulombicPotential>) {
         if let Some(cutoff) = potential.cutoff() {
             if self.cell.lengths().iter().any(|&d| 0.5 * d < cutoff) {
                 panic!(
@@ -191,7 +192,7 @@ impl System {
     }
 
     /// Add the `potential` global interaction
-    pub fn add_global_potential(&mut self, potential: Box<GlobalPotential>) {
+    pub fn add_global_potential(&mut self, potential: Box<dyn GlobalPotential>) {
         self.interactions.globals.push(potential);
     }
 
@@ -222,7 +223,7 @@ impl System {
 
     /// Get the list of bonded potential acting between the particles at indexes
     /// `i` and `j`.
-    pub fn bond_potentials(&self, i: usize, j: usize) -> &[Box<BondPotential>] {
+    pub fn bond_potentials(&self, i: usize, j: usize) -> &[Box<dyn BondPotential>] {
         let kind_i = self.particles().kind[i];
         let kind_j = self.particles().kind[j];
         let bonds = self.interactions.bonds((kind_i, kind_j));
@@ -242,7 +243,7 @@ impl System {
 
     /// Get the list of angle interaction acting between the particles at
     /// indexes `i`, `j` and `k`.
-    pub fn angle_potentials(&self, i: usize, j: usize, k: usize) -> &[Box<AnglePotential>] {
+    pub fn angle_potentials(&self, i: usize, j: usize, k: usize) -> &[Box<dyn AnglePotential>] {
         let kind_i = self.particles().kind[i];
         let kind_j = self.particles().kind[j];
         let kind_k = self.particles().kind[k];
@@ -270,7 +271,7 @@ impl System {
         j: usize,
         k: usize,
         m: usize,
-    ) -> &[Box<DihedralPotential>] {
+    ) -> &[Box<dyn DihedralPotential>] {
         let kind_i = self.particles().kind[i];
         let kind_j = self.particles().kind[j];
         let kind_k = self.particles().kind[k];
@@ -301,12 +302,12 @@ impl System {
     }
 
     /// Get the coulombic interaction for the system
-    pub fn coulomb_potential(&self) -> Option<&CoulombicPotential> {
+    pub fn coulomb_potential(&self) -> Option<&dyn CoulombicPotential> {
         self.interactions.coulomb.as_ref().map(|coulomb| &**coulomb)
     }
 
     /// Get all global interactions for the system
-    pub fn global_potentials(&self) -> &[Box<GlobalPotential>] {
+    pub fn global_potentials(&self) -> &[Box<dyn GlobalPotential>] {
         &self.interactions.globals
     }
 
@@ -316,13 +317,13 @@ impl System {
     }
 }
 
-use sys::compute::{KineticEnergy, PotentialEnergy, TotalEnergy};
-use sys::compute::{Pressure, Stress, Virial};
-use sys::compute::{PressureAtTemperature, StressAtTemperature};
-use sys::compute::Compute;
-use sys::compute::Forces;
-use sys::compute::Temperature;
-use sys::compute::Volume;
+use crate::compute::{KineticEnergy, PotentialEnergy, TotalEnergy};
+use crate::compute::{Pressure, Stress, Virial};
+use crate::compute::{PressureAtTemperature, StressAtTemperature};
+use crate::compute::Compute;
+use crate::compute::Forces;
+use crate::compute::Temperature;
+use crate::compute::Volume;
 
 /// Functions to get physical properties of a system.
 impl System {
@@ -415,8 +416,7 @@ impl DerefMut for System {
 
 #[cfg(test)]
 mod tests {
-    use super::System;
-    use sys::{Molecule, Particle, ParticleKind};
+    use crate::{System, Molecule, Particle, ParticleKind};
 
     #[test]
     #[should_panic]

@@ -59,7 +59,7 @@
 //! [DihedralPotential]: trait.DihedralPotential.html
 //! [GlobalPotential]: trait.GlobalPotential.html
 //! [CoulombicPotential]: trait.CoulombicPotential.html
-use types::{Matrix3, Vector3D};
+use crate::{Matrix3, Vector3D};
 
 /// A potential for force and energy computations.
 ///

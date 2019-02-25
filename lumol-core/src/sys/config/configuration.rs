@@ -1,21 +1,19 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) 2015-2016 Lumol's contributors — BSD license
 
-//! The Configuration type definition
-
 use std::cmp::{max, min};
 use std::marker::PhantomData;
-// use std::iter::DoubleEndedIterator
 
-use types::Vector3D;
+use log::trace;
+use log_once::warn_once;
 
-use energy::BondPath;
+use crate::Vector3D;
+use crate::{BondDistances, Bonding, ParticleKind, UnitCell};
+use crate::{ParticleSlice, ParticleSliceMut, ParticleVec, ParticlePtr, ParticlePtrMut};
+use crate::{Molecule, MoleculeRef, MoleculeRefMut};
+use crate::BondPath;
 
-use sys::{BondDistances, Bonding, ParticleKind, UnitCell};
-use sys::{ParticleSlice, ParticleSliceMut, ParticleVec, ParticlePtr, ParticlePtrMut};
-use sys::{Molecule, MoleculeRef, MoleculeRefMut};
-
-/// Particles permutations:. Indexes are given in the `(old, new)` form.
+/// Particles permutations. Indexes are stored as `(old, new)`.
 pub type Permutations = Vec<(usize, usize)>;
 
 /// The `Configuration` contains the physical data of the system:
@@ -56,7 +54,7 @@ impl Configuration {
     }
 
     /// Get an iterator over the molecules in the configuration.
-    pub fn molecules(&self) -> MoleculeIter {
+    pub fn molecules(&self) -> MoleculeIter<'_> {
         let ptr = self.particles.as_ptr();
         let end = unsafe {
             ptr.add(self.particles.len())
@@ -70,7 +68,7 @@ impl Configuration {
     }
 
     /// Get an iterator over the molecules in the configuration.
-    pub fn molecules_mut(&mut self) -> MoleculeIterMut {
+    pub fn molecules_mut(&mut self) -> MoleculeIterMut<'_> {
         let ptr = self.particles.as_mut_ptr();
         let end = unsafe {
             ptr.add(self.particles.len())
@@ -84,14 +82,14 @@ impl Configuration {
     }
 
     /// Get the molecule at index `id`
-    pub fn molecule(&self, id: usize) -> MoleculeRef {
+    pub fn molecule(&self, id: usize) -> MoleculeRef<'_> {
         let bonding = &self.bondings[id];
         let particles = self.particles.slice(bonding.indexes());
         MoleculeRef::new(bonding, particles)
     }
 
     /// Get the molecule at index `id`
-    pub fn molecule_mut(&mut self, id: usize) -> MoleculeRefMut {
+    pub fn molecule_mut(&mut self, id: usize) -> MoleculeRefMut<'_> {
         let bonding = &mut self.bondings[id];
         let particles = self.particles.slice_mut(bonding.indexes());
         MoleculeRefMut::new(bonding, particles)
@@ -263,13 +261,13 @@ impl Configuration {
     }
 
     /// Get the list of particles in this configuration, as a `ParticleSlice`.
-    pub fn particles(&self) -> ParticleSlice {
+    pub fn particles(&self) -> ParticleSlice<'_> {
         self.particles.as_slice()
     }
 
     /// Get the list of particles in this configuration, as a mutable
     /// `ParticleSliceMut`.
-    pub fn particles_mut(&mut self) -> ParticleSliceMut {
+    pub fn particles_mut(&mut self) -> ParticleSliceMut<'_> {
         self.particles.as_mut_slice()
     }
 
@@ -563,9 +561,11 @@ impl<'a> DoubleEndedIterator for MoleculeIterMut<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use sys::{Angle, Bond, Dihedral, Particle, Molecule};
-    use energy::BondPath;
-    use types::Vector3D;
+    use crate::Vector3D;
+    use crate::{Angle, Bond, Dihedral, Particle, Molecule};
+    use crate::BondPath;
+
+    use lazy_static::lazy_static;
 
     /// Create particles with intialized kind for the tests
     fn particle(name: &str) -> Particle {
@@ -617,7 +617,7 @@ mod tests {
     mod iterators {
         use super::super::*;
         use super::particle;
-        use sys::Molecule;
+        use crate::Molecule;
 
         #[test]
         fn count() {

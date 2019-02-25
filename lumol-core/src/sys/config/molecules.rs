@@ -5,9 +5,11 @@ use std::ops::Deref;
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 
-use sys::{Particle, ParticleVec, ParticleSlice, ParticleSliceMut};
-use sys::{Bonding, UnitCell};
-use types::Vector3D;
+use soa_derive::soa_zip;
+
+use crate::{Particle, ParticleVec, ParticleSlice, ParticleSliceMut};
+use crate::{Bonding, UnitCell};
+use crate::Vector3D;
 
 /// A molecule hash allow to identify a molecule from its atoms and bonds, and
 /// to know wether two molecules are the same without checking each atom and
@@ -81,7 +83,7 @@ impl Molecule {
     }
 
     /// Borrow `self` as a `MoleculeRef`.
-    pub fn as_ref(&self) -> MoleculeRef {
+    pub fn as_ref(&self) -> MoleculeRef<'_> {
         MoleculeRef {
             bonding: &self.bonding,
             particles: self.particles.as_slice(),
@@ -89,7 +91,7 @@ impl Molecule {
     }
 
     /// Mutablely borrow `self` as a `MoleculeRefMut`.
-    pub fn as_mut(&mut self) -> MoleculeRefMut {
+    pub fn as_mut(&mut self) -> MoleculeRefMut<'_> {
         MoleculeRefMut {
             bonding: &self.bonding,
             particles: self.particles.as_mut_slice(),
@@ -97,12 +99,12 @@ impl Molecule {
     }
 
     /// Get access to the particles in this molecule
-    pub fn particles(&self) -> ParticleSlice {
+    pub fn particles(&self) -> ParticleSlice<'_> {
         self.particles.as_slice()
     }
 
     /// Get mutable access to the particles in this molecule
-    pub fn particles_mut(&mut self) -> ParticleSliceMut {
+    pub fn particles_mut(&mut self) -> ParticleSliceMut<'_> {
         self.particles.as_mut_slice()
     }
 
@@ -151,7 +153,7 @@ impl<'a> MoleculeRef<'a> {
     }
 
     /// Get access to the particles in this molecule
-    pub fn particles(&self) -> ParticleSlice {
+    pub fn particles(&self) -> ParticleSlice<'_> {
         self.particles
     }
 
@@ -189,7 +191,7 @@ impl<'a> MoleculeRefMut<'a> {
     }
 
     /// Borrow `self` as a `MoleculeRef`.
-    pub fn as_ref(&self) -> MoleculeRef {
+    pub fn as_ref(&self) -> MoleculeRef<'_> {
         MoleculeRef {
             bonding: &self.bonding,
             particles: self.particles.as_ref(),
@@ -197,12 +199,12 @@ impl<'a> MoleculeRefMut<'a> {
     }
 
     /// Get access to the particles in this molecule
-    pub fn particles(&self) -> ParticleSlice {
+    pub fn particles(&self) -> ParticleSlice<'_> {
         self.particles.as_ref()
     }
 
     /// Get mutable access to the particles in this molecule
-    pub fn particles_mut(&mut self) -> ParticleSliceMut {
+    pub fn particles_mut(&mut self) -> ParticleSliceMut<'_> {
         // Explicity re-borrow all the fiels, as ParticleSliceMut can not be
         // copied
         ParticleSliceMut {
@@ -297,7 +299,9 @@ impl_on!(Molecule, MoleculeRefMut<'a>, => {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use sys::ParticleKind;
+    use crate::ParticleKind;
+
+    use lazy_static::lazy_static;
 
     /// Create particles with intialized kind for the tests
     fn particle(name: &str) -> Particle {

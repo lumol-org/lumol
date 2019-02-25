@@ -4,6 +4,8 @@
 //! Data about bonds and angles in the system.
 use std::cmp::{max, min};
 
+use bitflags::bitflags;
+
 /// A `Bond` between the particles at indexes `i` and `j`
 ///
 /// This structure ensure an unique representation of a `Bond` by enforcing

@@ -11,7 +11,7 @@ pub use self::system::System;
 pub use self::system::DegreesOfFreedom;
 
 mod interactions;
-use self::interactions::Interactions;
+pub use self::interactions::Interactions;
 
 mod energy;
 pub use self::energy::EnergyEvaluator;

@@ -5,9 +5,9 @@
 //!
 //! They can be coulombic potentials, or external provided potential function
 //! for example.
-use energy::PairRestriction;
-use sys::Configuration;
-use types::{Matrix3, Vector3D};
+use crate::PairRestriction;
+use crate::Configuration;
+use crate::{Matrix3, Vector3D};
 
 /// A potential acting on the whole [System][System] at once.
 ///

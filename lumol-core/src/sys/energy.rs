@@ -10,8 +10,8 @@ use std::f64::consts::PI;
 
 use rayon::prelude::*;
 
-use energy::BondPath;
-use sys::System;
+use crate::BondPath;
+use crate::System;
 
 /// An helper struct to evaluate energy components of a system.
 pub struct EnergyEvaluator<'a> {
@@ -170,10 +170,12 @@ impl<'a> EnergyEvaluator<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use energy::{Harmonic, LennardJones, NullPotential, PairInteraction};
-    use sys::{System, UnitCell};
-    use utils::system_from_xyz;
-    use units;
+    use crate::{Harmonic, LennardJones, NullPotential, PairInteraction};
+    use crate::{System, UnitCell};
+    use crate::utils::system_from_xyz;
+    use crate::units;
+
+    use approx::assert_ulps_eq;
 
     fn testing_system() -> System {
         let mut system = system_from_xyz(

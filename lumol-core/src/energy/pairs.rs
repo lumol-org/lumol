@@ -1,8 +1,8 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) Lumol's contributors — BSD license
 
-use energy::{PairPotential, PairRestriction};
-use types::{Matrix3, Vector3D};
+use crate::{PairPotential, PairRestriction};
+use crate::{Matrix3, Vector3D};
 
 /// The different way to compute non-bonded pair interactions
 #[derive(Clone, Copy, Debug)]
@@ -26,7 +26,7 @@ enum PairComputation {
 #[derive(Clone)]
 pub struct PairInteraction {
     /// The potential of this interaction
-    potential: Box<PairPotential>,
+    potential: Box<dyn PairPotential>,
     /// The associated pair restrictions
     restriction: PairRestriction,
     /// The cutoff distance
@@ -54,7 +54,7 @@ impl PairInteraction {
     /// // energy at and after the cutoff is zero
     /// assert_eq!(interaction.energy(2.0), 0.0);
     /// ```
-    pub fn new(potential: Box<PairPotential>, cutoff: f64) -> PairInteraction {
+    pub fn new(potential: Box<dyn PairPotential>, cutoff: f64) -> PairInteraction {
         PairInteraction {
             potential: potential,
             cutoff: cutoff,
@@ -83,7 +83,7 @@ impl PairInteraction {
     /// // energy after the cutoff is zero
     /// assert_eq!(interaction.energy(2.0), 0.0);
     /// ```
-    pub fn shifted(potential: Box<PairPotential>, cutoff: f64) -> PairInteraction {
+    pub fn shifted(potential: Box<dyn PairPotential>, cutoff: f64) -> PairInteraction {
         let shift = potential.energy(cutoff);
         PairInteraction {
             potential: potential,
@@ -299,8 +299,10 @@ impl PairInteraction {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use energy::{LennardJones, NullPotential, PairRestriction};
-    use energy::Potential;
+    use crate::{LennardJones, NullPotential, PairRestriction};
+    use crate::Potential;
+
+    use approx::assert_ulps_eq;
 
     #[test]
     fn restriction() {

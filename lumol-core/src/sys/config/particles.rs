@@ -1,9 +1,10 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) Lumol's contributors — BSD license
-use sys::get_atomic_mass;
-use types::Vector3D;
-
 use std::fmt;
+use soa_derive::StructOfArray;
+
+use crate::sys::get_atomic_mass;
+use crate::Vector3D;
 
 /// A particle kind. Particles with the same name will have the same kind. This
 /// is used for faster potential lookup.
@@ -18,7 +19,7 @@ impl ParticleKind {
 }
 
 impl fmt::Display for ParticleKind {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.0)
     }
 }
@@ -70,7 +71,7 @@ impl Particle {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use types::Vector3D;
+    use crate::Vector3D;
 
     #[test]
     fn mass_initialization() {

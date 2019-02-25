@@ -4,7 +4,7 @@
 //! Read static string using the XYZ file format, and create the corresponding
 //! system.
 
-use sys::{Molecule, Particle, System, UnitCell};
+use crate::{Molecule, Particle, System, UnitCell};
 
 /// Read the `content` string, assuming XYZ format, and create the corresponding
 /// system. This function is intended for testing purposes only, and will
@@ -46,7 +46,7 @@ pub fn system_from_xyz(content: &str) -> System {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use types::Vector3D;
+    use crate::Vector3D;
 
     #[test]
     fn cell() {

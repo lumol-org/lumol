@@ -4,12 +4,12 @@ use std::f64::consts::{PI, FRAC_2_SQRT_PI};
 
 use rayon::prelude::*;
 
-use consts::FOUR_PI_EPSILON_0;
-use energy::PairRestriction;
-use math::*;
-use utils::ThreadLocalVec;
-use sys::Configuration;
-use types::{Matrix3, Vector3D};
+use crate::math::{exp, erfc};
+use crate::consts::FOUR_PI_EPSILON_0;
+use crate::PairRestriction;
+use crate::utils::ThreadLocalVec;
+use crate::Configuration;
+use crate::{Matrix3, Vector3D};
 
 use super::{CoulombicPotential, GlobalCache, GlobalPotential};
 
@@ -333,12 +333,11 @@ impl CoulombicPotential for Wolf {
 #[cfg(test)]
 mod tests {
     pub use super::*;
-    use energy::GlobalPotential;
-    use sys::System;
-    use types::Matrix3;
-    use utils::system_from_xyz;
+    use crate::{System, Matrix3};
+    use crate::GlobalPotential;
+    use crate::utils::system_from_xyz;
 
-    const E_BRUTE_FORCE: f64 = -0.09262397663346732;
+    use approx::{assert_ulps_eq, assert_relative_eq};
 
     pub fn testing_system() -> System {
         let mut system = system_from_xyz(
@@ -355,6 +354,8 @@ mod tests {
 
     #[test]
     fn energy() {
+        const E_BRUTE_FORCE: f64 = -0.09262397663346732;
+
         let system = testing_system();
         let wolf = Wolf::new(8.0);
 
@@ -438,10 +439,10 @@ mod tests {
 
     mod cache {
         use super::*;
-        use energy::{CoulombicPotential, GlobalCache, GlobalPotential, PairRestriction};
-        use sys::System;
-        use types::Vector3D;
-        use utils::system_from_xyz;
+        use crate::{CoulombicPotential, GlobalCache, GlobalPotential, PairRestriction};
+        use crate::System;
+        use crate::Vector3D;
+        use crate::utils::system_from_xyz;
 
         pub fn testing_system() -> System {
             let mut system = system_from_xyz(
