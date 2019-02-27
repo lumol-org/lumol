@@ -3,8 +3,6 @@
 
 //! Example of a run using input files for the simulation and the system
 //! This is the exact same simulation as the one in `binary.rs`
-extern crate lumol;
-
 fn main() {
     let input = lumol::input::Input::new("data/simulation.toml").unwrap();
     match input.read() {

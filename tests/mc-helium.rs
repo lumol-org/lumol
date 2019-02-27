@@ -3,14 +3,10 @@
 
 //! Testing physical properties of a Lennard-Jones gaz of Helium using
 //! Monte Carlo simulation
-extern crate env_logger;
-extern crate lumol;
-extern crate lumol_input as input;
-
 use lumol::consts::K_BOLTZMANN;
 use lumol::units;
 
-use input::Input;
+use lumol::input::Input;
 
 use std::path::Path;
 use std::sync::{Once, ONCE_INIT};

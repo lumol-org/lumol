@@ -7,8 +7,6 @@
 //!
 //! Additionaly, forces are compared on these configuration with LAMMPS
 //! calculations.
-extern crate lumol;
-
 use lumol::consts::K_BOLTZMANN;
 use lumol::energy::{CoulombicPotential, Ewald, PairRestriction, SharedEwald};
 use lumol::energy::{LennardJones, NullPotential, PairInteraction};

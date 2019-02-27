@@ -2,8 +2,6 @@
 // Copyright (C) Lumol's contributors — BSD license
 
 //! Using a custom potential in simulations
-extern crate lumol;
-
 use lumol::energy::{PairInteraction, PairPotential, Potential};
 use lumol::{Particle, Molecule, System, Vector3D};
 use lumol::units;
@@ -49,7 +47,7 @@ impl PairPotential for LJ {
     }
 }
 
-fn main() -> Result<(), Box<std::error::Error>> {
+fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut system = System::new();
     system.add_molecule(Molecule::new(Particle::with_position("F", Vector3D::new(0.0, 0.0, 0.0))));
     system.add_molecule(Molecule::new(Particle::with_position("F", Vector3D::new(1.5, 0.0, 0.0))));

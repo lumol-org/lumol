@@ -1,19 +1,12 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) Lumol's contributors — BSD license
-extern crate lumol;
-
-extern crate backtrace;
-extern crate chrono;
-extern crate clap;
-#[macro_use]
-extern crate log;
-
 use std::fmt;
 
 use backtrace::Backtrace;
 use chrono::Duration;
 use chrono::offset::Local;
 use clap::{App, ArgMatches};
+use log::{info, error};
 
 use lumol::input::Input;
 
@@ -118,7 +111,7 @@ impl CleanedBacktrace {
 }
 
 impl fmt::Debug for CleanedBacktrace {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(fmt, "stack backtrace:")?;
 
         let mut skiped_backtrace_generation = false;

@@ -2,8 +2,6 @@
 // Copyright (C) Lumol's contributors — BSD license
 
 //! Monte Carlo simulation of a Xenon crystal melt.
-extern crate lumol;
-
 use lumol::energy::{LennardJones, PairInteraction};
 use lumol::{TrajectoryBuilder, UnitCell};
 use lumol::units;
@@ -12,7 +10,7 @@ use lumol::sim::output::TrajectoryOutput;
 use lumol::sim::Simulation;
 use lumol::sim::mc::{MonteCarloBuilder, Translate};
 
-fn main() -> Result<(), Box<std::error::Error>> {
+fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut system = TrajectoryBuilder::new().open("data/xenon.xyz")?
                                              .read()?;
     system.cell = UnitCell::cubic(units::from(21.65, "A")?);

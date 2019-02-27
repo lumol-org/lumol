@@ -5,13 +5,9 @@
 //! https://www.nist.gov/mml/csd/chemical-informatics-research-group/lennard-jones-fluid-reference-calculations
 
 #![allow(unknown_lints, float_cmp, needless_pass_by_value)]
-
-extern crate env_logger;
-extern crate lumol;
-extern crate lumol_input as input;
-
-use input::Input;
+use lumol::input::Input;
 use lumol::sys::System;
+
 use std::path::Path;
 use std::sync::{Once, ONCE_INIT};
 
