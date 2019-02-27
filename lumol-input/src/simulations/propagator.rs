@@ -2,14 +2,13 @@
 // Copyright (C) Lumol's contributors — BSD license
 use lumol_sim::{Minimization, MolecularDynamics, MonteCarlo, Propagator};
 
-use super::Input;
-use crate::{FromToml, FromTomlWithData};
-use crate::error::{Error, Result};
+use crate::Input;
+use crate::{FromToml, FromTomlWithData, Error};
 use crate::extract;
 
 impl Input {
     /// Get the the simulation propagator.
-    pub(crate) fn read_propagator(&self) -> Result<Box<dyn Propagator>> {
+    pub(crate) fn read_propagator(&self) -> Result<Box<dyn Propagator>, Error> {
         let config = self.simulation_table()?;
         let propagator = extract::table("propagator", config, "simulation")?;
         match extract::typ(propagator, "propagator")? {

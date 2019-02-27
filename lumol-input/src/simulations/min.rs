@@ -5,12 +5,11 @@ use toml::value::Table;
 use lumol_sim::min::*;
 use lumol_core::units;
 
-use crate::FromToml;
-use crate::error::{Error, Result};
+use crate::{FromToml, Error};
 use crate::extract;
 
 impl FromToml for Minimization {
-    fn from_toml(config: &Table) -> Result<Minimization> {
+    fn from_toml(config: &Table) -> Result<Minimization, Error> {
         let minimizer = extract::table("minimizer", config, "minimization propagator")?;
 
         let minimizer: Box<dyn Minimizer> = match extract::typ(minimizer, "minimizer")? {
@@ -34,7 +33,7 @@ impl FromToml for Minimization {
 }
 
 impl FromToml for Tolerance {
-    fn from_toml(config: &Table) -> Result<Tolerance> {
+    fn from_toml(config: &Table) -> Result<Tolerance, Error> {
         let energy = extract::str("energy", config, "minimization tolerance")?;
         let force2 = extract::str("force2", config, "minimization tolerance")?;
 
@@ -47,7 +46,7 @@ impl FromToml for Tolerance {
 
 
 impl FromToml for SteepestDescent {
-    fn from_toml(_: &Table) -> Result<SteepestDescent> {
+    fn from_toml(_: &Table) -> Result<SteepestDescent, Error> {
         Ok(SteepestDescent::new())
     }
 }

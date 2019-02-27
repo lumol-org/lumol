@@ -2,11 +2,11 @@
 // Copyright (C) Lumol's contributors — BSD license
 use toml::value::{Table, Value};
 
-use crate::error::{Error, Result};
+use crate::error::Error;
 
 /// Extract the table at the given `key`, from the `config` TOML table
 /// interpreted as a `context`.
-pub fn table<'a>(key: &str, config: &'a Table, context: &str) -> Result<&'a Table> {
+pub fn table<'a>(key: &str, config: &'a Table, context: &str) -> Result<&'a Table, Error> {
     let table = config.get(key).ok_or(
         Error::from(format!("Missing '{}' key in {}", key, context))
     )?;
@@ -17,7 +17,7 @@ pub fn table<'a>(key: &str, config: &'a Table, context: &str) -> Result<&'a Tabl
 
 /// Extract the string at the given `key`, from the `config` TOML table
 /// interpreted as a `context`
-pub fn str<'a>(key: &str, config: &'a Table, context: &str) -> Result<&'a str> {
+pub fn str<'a>(key: &str, config: &'a Table, context: &str) -> Result<&'a str, Error> {
     let string = config.get(key).ok_or(
         Error::from(format!("Missing '{}' key in {}", key, context))
     )?;
@@ -28,7 +28,7 @@ pub fn str<'a>(key: &str, config: &'a Table, context: &str) -> Result<&'a str> {
 
 /// Extract a number (integer or float) at the given `key`, from the `config`
 /// TOML table interpreted as a `context`
-pub fn number(key: &str, config: &Table, context: &str) -> Result<f64> {
+pub fn number(key: &str, config: &Table, context: &str) -> Result<f64, Error> {
     let number = config.get(key).ok_or(
         Error::from(format!("Missing '{}' key in {}", key, context))
     )?;
@@ -41,7 +41,7 @@ pub fn number(key: &str, config: &Table, context: &str) -> Result<f64> {
 
 /// Extract a unsigned integer at the given `key`, from the `config`
 /// TOML table interpreted as a `context`
-pub fn uint(key: &str, config: &Table, context: &str) -> Result<u64> {
+pub fn uint(key: &str, config: &Table, context: &str) -> Result<u64, Error> {
     let number = config.get(key).ok_or(
         Error::from(format!("Missing '{}' key in {}", key, context))
     )?;
@@ -59,7 +59,7 @@ pub fn uint(key: &str, config: &Table, context: &str) -> Result<u64> {
 
 /// Extract an array at the given `key`, from the `config` TOML table
 /// interpreted as a `context`
-pub fn slice<'a>(key: &str, config: &'a Table, context: &str) -> Result<&'a [Value]> {
+pub fn slice<'a>(key: &str, config: &'a Table, context: &str) -> Result<&'a [Value], Error> {
     let array = config.get(key).ok_or(
         Error::from(format!("Missing '{}' key in {}", key, context))
     )?;
@@ -70,7 +70,7 @@ pub fn slice<'a>(key: &str, config: &'a Table, context: &str) -> Result<&'a [Val
 }
 
 /// Extract the string 'type' key in a TOML table
-pub fn typ<'a>(config: &'a Table, context: &str) -> Result<&'a str> {
+pub fn typ<'a>(config: &'a Table, context: &str) -> Result<&'a str, Error> {
     let typ = config.get("type").ok_or(
         Error::from(format!("Missing 'type' key in {}", context))
     )?;

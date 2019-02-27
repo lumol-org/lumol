@@ -8,14 +8,13 @@ use lumol_core::units;
 
 use log::warn;
 
-use crate::{Input, InteractionsInput};
-use crate::error::{Error, Result};
+use crate::{Input, InteractionsInput, Error};
 use crate::extract;
 use crate::simulations::get_input_path;
 
 impl Input {
     /// Get the the simulated system.
-    pub fn read_system(&self) -> Result<System> {
+    pub fn read_system(&self) -> Result<System, Error> {
         let config = self.system_table()?;
 
         let file = extract::str("file", config, "system")?;
@@ -62,7 +61,7 @@ impl Input {
         Ok(system)
     }
 
-    fn system_table(&self) -> Result<&Table> {
+    fn system_table(&self) -> Result<&Table, Error> {
         let systems = extract::slice("systems", &self.config, "input file")?;
 
         if systems.is_empty() {
@@ -80,7 +79,7 @@ impl Input {
         return Ok(system);
     }
 
-    fn read_cell(&self) -> Result<Option<UnitCell>> {
+    fn read_cell(&self) -> Result<Option<UnitCell>, Error> {
         let config = self.system_table()?;
         if let Some(cell) = config.get("cell") {
             match *cell {
@@ -118,7 +117,7 @@ impl Input {
         }
     }
 
-    fn init_velocities(&self, system: &mut System) -> Result<()> {
+    fn init_velocities(&self, system: &mut System) -> Result<(), Error> {
         let config = self.system_table()?;
 
         if let Some(velocities) = config.get("velocities") {
@@ -139,7 +138,7 @@ impl Input {
         Ok(())
     }
 
-    fn read_potentials(&self, system: &mut System) -> Result<()> {
+    fn read_potentials(&self, system: &mut System) -> Result<(), Error> {
         let config = self.system_table()?;
         if let Some(potentials) = config.get("potentials") {
             if let Some(potentials) = potentials.as_str() {
@@ -147,7 +146,7 @@ impl Input {
                 let input = InteractionsInput::new(path)?;
                 input.read(system)?;
             } else if let Some(potentials) = potentials.as_table() {
-                let input = InteractionsInput::from_toml(potentials.clone())?;
+                let input = InteractionsInput::from_toml(potentials.clone());
                 input.read(system)?;
             } else {
                 return Err(Error::from("'potentials' must be a string or a table in system"));
@@ -159,7 +158,7 @@ impl Input {
     }
 }
 
-fn get_cell_number(value: &Value) -> Result<f64> {
+fn get_cell_number(value: &Value) -> Result<f64, Error> {
     if let Some(value) = value.as_integer() {
         Ok(value as f64)
     } else if let Some(value) = value.as_float() {

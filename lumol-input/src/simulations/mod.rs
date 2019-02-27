@@ -10,7 +10,7 @@ use std::path::{Path, PathBuf};
 use lumol_sim::Simulation;
 use lumol_core::System;
 
-use crate::error::{Error, Result};
+use crate::Error;
 use crate::validate;
 
 mod logging;
@@ -47,7 +47,7 @@ pub struct Input {
 
 impl Input {
     /// Read the file at `Path` and create a new `Input` from it.
-    pub fn new<P: Into<PathBuf>>(path: P) -> Result<Input> {
+    pub fn new<P: Into<PathBuf>>(path: P) -> Result<Input, Error> {
         let path = path.into();
         let mut file = try_io!(File::open(&path), path);
         let mut buffer = String::new();
@@ -56,7 +56,7 @@ impl Input {
     }
 
     /// Read the `Input` from a TOML formatted string.
-    pub fn from_str(path: PathBuf, string: &str) -> Result<Input> {
+    pub fn from_str(path: PathBuf, string: &str) -> Result<Input, Error> {
         let config = parse_toml(string).map_err(|err| { Error::TOML(Box::new(err)) })?;
         validate(&config)?;
         Ok(Input {
@@ -66,7 +66,7 @@ impl Input {
     }
 
     /// Read input file and get the corresponding `Config`
-    pub fn read(&self) -> Result<Config> {
+    pub fn read(&self) -> Result<Config, Error> {
         self.setup_logging()?;
         let system = self.read_system()?;
         let simulation = self.read_simulation()?;

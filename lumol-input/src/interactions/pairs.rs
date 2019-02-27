@@ -10,10 +10,8 @@ use lumol_core::energy::{BornMayerHuggins, Buckingham, Gaussian, Morse};
 use lumol_core::energy::{Harmonic, LennardJones, NullPotential, Mie};
 use lumol_core::energy::TableComputation;
 
-use super::Input;
 use super::read_restriction;
-use crate::{FromToml, FromTomlWithData};
-use crate::error::{Error, Result};
+use crate::{Error, InteractionsInput, FromToml, FromTomlWithData};
 use crate::extract;
 
 /// Global settings for the pair interactions
@@ -22,8 +20,8 @@ struct GlobalInformation<'a> {
     tail: Option<bool>,
 }
 
-impl<'a> GlobalInformation<'a> {
-    fn read(config: &Table) -> Result<GlobalInformation<'_>> {
+impl GlobalInformation<'_> {
+    fn read(config: &Table) -> Result<GlobalInformation<'_>, Error> {
         match config.get("global") {
             Some(global) => {
                 let global = global.as_table().ok_or(
@@ -54,9 +52,9 @@ impl<'a> GlobalInformation<'a> {
     }
 }
 
-impl Input {
+impl InteractionsInput {
     /// Read the "pairs" section from the potential configuration.
-    pub(crate) fn read_pairs(&self, system: &mut System) -> Result<()> {
+    pub(crate) fn read_pairs(&self, system: &mut System) -> Result<(), Error> {
         let pairs = match self.config.get("pairs") {
             Some(pairs) => pairs,
             None => return Ok(()),
@@ -149,7 +147,7 @@ impl Input {
     }
 
     /// Read the "bonds" section from the potential configuration.
-    pub(crate) fn read_bonds(&self, system: &mut System) -> Result<()> {
+    pub(crate) fn read_bonds(&self, system: &mut System) -> Result<(), Error> {
         let bonds = match self.config.get("bonds") {
             Some(bonds) => bonds,
             None => return Ok(()),
@@ -187,7 +185,7 @@ impl Input {
     }
 }
 
-fn read_pair_potential(pair: &Table) -> Result<Box<dyn PairPotential>> {
+fn read_pair_potential(pair: &Table) -> Result<Box<dyn PairPotential>, Error> {
     const KEYWORDS: &[&str] = &[
         "restriction",
         "computation",
@@ -229,7 +227,7 @@ fn read_pair_potential(pair: &Table) -> Result<Box<dyn PairPotential>> {
     }
 }
 
-fn read_bond_potential(pair: &Table) -> Result<Box<dyn BondPotential>> {
+fn read_bond_potential(pair: &Table) -> Result<Box<dyn BondPotential>, Error> {
     let potentials = pair.keys().cloned().filter(|k| k != "atoms").collect::<Vec<_>>();
 
     if potentials.is_empty() {
@@ -256,12 +254,7 @@ fn read_bond_potential(pair: &Table) -> Result<Box<dyn BondPotential>> {
     }
 }
 
-/// ***************************************************************************
-
-fn read_pair_computation(
-    computation: &Table,
-    potential: Box<dyn PairPotential>,
-) -> Result<Box<dyn PairPotential>> {
+fn read_pair_computation(computation: &Table, potential: Box<dyn PairPotential>) -> Result<Box<dyn PairPotential>, Error> {
     if computation.keys().len() != 1 {
         return Err(Error::from("Missing computation type in computation table"));
     }
