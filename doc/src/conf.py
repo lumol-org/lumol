@@ -9,7 +9,7 @@ import sphinx_bootstrap_theme
 ROOT = os.path.join(os.path.dirname(__file__), "..")
 
 # If your documentation needs a minimal Sphinx version, state it here.
-needs_sphinx = '1.6'
+needs_sphinx = '1.8'
 
 extensions = [
     'sphinx.ext.todo',

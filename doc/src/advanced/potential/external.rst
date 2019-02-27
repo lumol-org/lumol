@@ -16,15 +16,7 @@ Open ``Cargo.toml`` and add the lines
     lumol = {git = "https://github.com/lumol-org/lumol"}
 
 to add the ``lumol`` crate as a dependency to the package. To test if everything
-works, open the ``lib.rs`` file in ``src`` and add
-
-.. literalinclude:: ../../../../tutorials/potential/src/lib.rs
-    :language: rust
-    :lines: 1
-
-in the first line.
-
-Run ``cargo build`` or ``cargo test`` to check if errors occur.
+works, run ``cargo build`` and check if an error occurs.
 
 Defining the struct
 -------------------
@@ -51,7 +43,7 @@ to ``lib.rs``:
 
 .. literalinclude:: ../../../../tutorials/potential/src/lib.rs
     :language: rust
-    :lines: 1-14
+    :lines: 1-13
 
 In the first two lines we define our imports from ``Lumol``, following with our
 ``Mie`` structure. Notice that we don't store the ``epsilon`` value, instead we
@@ -69,7 +61,7 @@ In Rust we typically use ``new`` for the constructors' name.
 
 .. literalinclude:: ../../../../tutorials/potential/src/lib.rs
     :language: rust
-    :lines: 16-29
+    :lines: 15-28
 
 Our function takes the parameter set as input, computes the prefactor and
 returns a ``Mie`` struct. Notice that it panics, for ``n`` smaller than or equal
@@ -82,7 +74,7 @@ Add the following lines below the structs implementation.
 
 .. literalinclude:: ../../../../tutorials/potential/src/lib.rs
     :language: rust
-    :lines: 31-45
+    :lines: 30-44
 
 ``energy`` is the implementation of the Mie potential equation shown above.
 ``force`` is the negative derivative of the energy with respect to the distance,
@@ -98,9 +90,9 @@ Implementing ``PairPotential``
 
 Let's inspect the `documentation <PairPotential_>`_  for ``PairPotential``.
 
-.. _PairPotential: http://lumol.org/lumol/latest/lumol_core/energy/trait.PairPotential.html
+.. _PairPotential: http://lumol.org/lumol/latest/lumol/energy/trait.PairPotential.html
 
-.. code-block:: bash
+.. code-block:: rust
 
     pub trait PairPotential: Potential + BoxClonePair {
         fn tail_energy(&self, cutoff: f64) -> f64;
@@ -144,7 +136,7 @@ The implementation looks like so
 
 .. literalinclude:: ../../../../tutorials/potential/src/lib.rs
     :language: rust
-    :lines: 47-71
+    :lines: 46-70
 
 Note that we cannot correct every kind of energy function. In fact, the
 potential has to be a *short ranged* potential. For our Mie potential, both the
