@@ -5,8 +5,6 @@
 //!
 //! In this example, we do everything by hand, from the system setup to the
 //! simulation run.
-extern crate lumol;
-
 use lumol::{Particle, Molecule, System, UnitCell, Vector3D};
 use lumol::energy::{LennardJones, PairInteraction};
 use lumol::units;
@@ -15,7 +13,7 @@ use lumol::sim::output::{EnergyOutput, TrajectoryOutput};
 use lumol::sim::{MolecularDynamics, Simulation};
 use lumol::sim::{BoltzmannVelocities, InitVelocities};
 
-fn main() -> Result<(), Box<std::error::Error>> {
+fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut system = System::with_cell(UnitCell::cubic(17.0));
 
     // Create a cubic crystal of Argon by hand.

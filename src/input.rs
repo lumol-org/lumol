@@ -12,7 +12,6 @@
 //! is then:
 //!
 //! ```no_run
-//! extern crate lumol;
 //! use lumol::input::Input;
 //!
 //! fn main() {
@@ -27,7 +26,6 @@
 //! from a TOML file. It can be used to set the interactions in a system:
 //!
 //! ```no_run
-//! extern crate lumol;
 //! use lumol::System;
 //! use lumol::input::InteractionsInput;
 //!

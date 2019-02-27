@@ -1,10 +1,6 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) Lumol's contributors — BSD license
-extern crate env_logger;
-extern crate lumol;
-extern crate lumol_input as input;
-
-use input::Input;
+use lumol::input::Input;
 use lumol::units;
 
 use std::path::Path;

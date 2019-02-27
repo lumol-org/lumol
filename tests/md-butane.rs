@@ -2,10 +2,7 @@
 // Copyright (C) Lumol's contributors — BSD license
 
 //! Testing molecular dynamics of butane
-extern crate env_logger;
-extern crate lumol_input as input;
-
-use input::Input;
+use lumol::input::Input;
 
 use std::path::Path;
 use std::sync::{Once, ONCE_INIT};

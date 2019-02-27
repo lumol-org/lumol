@@ -3,11 +3,7 @@
 
 //! Testing physical properties of a Lennard-Jones gas of Helium using Molecular
 //! dynamics
-extern crate env_logger;
-extern crate lumol;
-extern crate lumol_input as input;
-
-use input::Input;
+use lumol::input::Input;
 use lumol::consts::K_BOLTZMANN;
 use lumol::units;
 
@@ -106,11 +102,11 @@ fn berendsen_barostat() {
     config.simulation.run(&mut config.system, config.nsteps);
 
     let expected = units::from(5000.0, "bar").unwrap();
-    let pressure = ::utils::mean(pressures.clone());
+    let pressure = crate::utils::mean(pressures.clone());
     assert!(f64::abs(pressure - expected) / expected < 5e-2);
 
     let expected = units::from(273.0, "K").unwrap();
-    let temperature = ::utils::mean(temperatures.clone());
+    let temperature = crate::utils::mean(temperatures.clone());
     assert!(f64::abs(temperature - expected) / expected < 1e-2);
 }
 

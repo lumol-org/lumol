@@ -3,7 +3,7 @@
 #![allow(dead_code)]
 
 use lumol::sim::output::Output;
-use lumol::sys::System;
+use lumol::System;
 
 use std::rc::Rc;
 use std::sync::RwLock;

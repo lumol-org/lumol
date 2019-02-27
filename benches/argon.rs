@@ -1,14 +1,9 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) Lumol's contributors — BSD license
-#[macro_use]
-extern crate criterion;
-extern crate rand;
-extern crate lumol;
+use criterion::{Criterion, criterion_group, criterion_main};
 
-use criterion::Criterion;
-
-use lumol::sys::compute::{MolecularVirial, AtomicVirial, PotentialEnergy, Forces, Compute};
-use lumol::sys::EnergyCache;
+use lumol::compute::{MolecularVirial, AtomicVirial, PotentialEnergy, Forces, Compute};
+use lumol::EnergyCache;
 mod utils;
 
 fn energy_computation(c: &mut Criterion) {

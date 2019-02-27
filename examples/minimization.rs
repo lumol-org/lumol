@@ -2,8 +2,6 @@
 // Copyright (C) Lumol's contributors — BSD license
 
 //! Geometry minization of a molecule of water
-extern crate lumol;
-
 use lumol::energy::Harmonic;
 use lumol::{Particle, Molecule, System, Vector3D};
 use lumol::units;
@@ -11,7 +9,7 @@ use lumol::units;
 use lumol::sim::{Minimization, Simulation};
 use lumol::sim::min::{SteepestDescent, Tolerance};
 
-fn main() -> Result<(), Box<std::error::Error>> {
+fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut system = System::new();
 
     let alpha = units::from(50.0, "deg")?;

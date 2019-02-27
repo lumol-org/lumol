@@ -3,8 +3,6 @@
 
 //! Molecular dynamics simulation of a crystal of sodium chloride, reading system and
 //! potentials from files.
-extern crate lumol;
-
 use lumol::{TrajectoryBuilder, UnitCell};
 use lumol::units;
 
@@ -14,7 +12,7 @@ use lumol::sim::{BoltzmannVelocities, InitVelocities};
 
 use lumol::input::InteractionsInput;
 
-fn main() -> Result<(), Box<std::error::Error>> {
+fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Read the system fromt the `data/nacl.xyz` file
     let mut system = TrajectoryBuilder::new().open("data/nacl.xyz")?
                                              .read()?;

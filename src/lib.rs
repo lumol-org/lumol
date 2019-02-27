@@ -16,10 +16,6 @@
 //! - **Stable**: it will never crash on a good input, and provides helpful
 //!   error messages.
 
-extern crate lumol_core;
-extern crate lumol_input;
-extern crate lumol_sim;
-
 /// The full version of the crate, containing git state if available
 pub static VERSION: &'static str = env!("LUMOL_FULL_GIT_VERSION");
 

@@ -2,18 +2,14 @@
 // Copyright (C) Lumol's contributors — BSD license
 
 //! Testing physical properties of a sodium chloride crystal
-extern crate env_logger;
-extern crate lumol;
-extern crate lumol_input as input;
-
 use std::sync::{Once, ONCE_INIT};
 pub static START: Once = ONCE_INIT;
 
 mod utils;
 
 mod wolf {
-    use START;
-    use input::Input;
+    use crate::START;
+    use lumol::input::Input;
     use lumol::units;
     use std::path::Path;
 
@@ -44,7 +40,7 @@ mod wolf {
                                      .join("npt-wolf-small.toml");
         let mut config = Input::new(path).unwrap().read().unwrap();
 
-        let collecter = ::utils::Collecter::starting_at(9000);
+        let collecter = crate::utils::Collecter::starting_at(9000);
         let temperatures = collecter.temperatures();
         let pressures = collecter.pressures();
 
@@ -52,18 +48,18 @@ mod wolf {
         config.simulation.run(&mut config.system, config.nsteps);
 
         let expected = units::from(50000.0, "bar").unwrap();
-        let pressure = ::utils::mean(pressures.clone());
+        let pressure = crate::utils::mean(pressures.clone());
         assert!(f64::abs(pressure - expected) / expected < 2e-3);
 
         let expected = units::from(273.0, "K").unwrap();
-        let temperature = ::utils::mean(temperatures.clone());
+        let temperature = crate::utils::mean(temperatures.clone());
         assert!(f64::abs(temperature - expected) / expected < 1e-2);
     }
 }
 
 mod ewald {
-    use START;
-    use input::Input;
+    use crate::START;
+    use lumol::input::Input;
     use std::path::Path;
 
     #[test]

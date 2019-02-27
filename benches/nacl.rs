@@ -1,16 +1,9 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) Lumol's contributors — BSD license
+use criterion::{Criterion, criterion_group, criterion_main};
 
-#[macro_use]
-extern crate criterion;
-extern crate rand;
-extern crate lumol;
-
-use criterion::Criterion;
-
-use lumol::sys::EnergyCache;
-use lumol::types::Vector3D;
-use lumol::energy::{GlobalPotential, Ewald, SharedEwald, Wolf};
+use lumol::{EnergyCache, Vector3D};
+use lumol::{GlobalPotential, Ewald, SharedEwald, Wolf};
 
 mod utils;
 
