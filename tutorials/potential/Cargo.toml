@@ -2,6 +2,7 @@
 name = "lumol_tutorial_potential"
 version = "0.0.0"
 publish = false
+edition = "2018"
 
 [dependencies]
 lumol = {path = "../../"}
