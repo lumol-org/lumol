@@ -3,18 +3,18 @@
 use std::path::PathBuf;
 use toml::value::Table;
 
-use lumol::sim::output::Output;
-use lumol::sim::output::{TrajectoryOutput, PropertiesOutput, EnergyOutput};
-use lumol::sim::output::{ForcesOutput, CellOutput, CustomOutput, StressOutput};
+use lumol_sim::output::Output;
+use lumol_sim::output::{TrajectoryOutput, PropertiesOutput, EnergyOutput};
+use lumol_sim::output::{ForcesOutput, CellOutput, CustomOutput, StressOutput};
 
 use super::Input;
-use FromToml;
-use error::{Error, Result};
-use extract;
+use crate::FromToml;
+use crate::error::{Error, Result};
+use crate::extract;
 
 impl Input {
     /// Get the the simulation outputs.
-    pub(crate) fn read_outputs(&self) -> Result<Vec<(Box<Output>, u64)>> {
+    pub(crate) fn read_outputs(&self) -> Result<Vec<(Box<dyn Output>, u64)>> {
         let config = self.simulation_table()?;
         if let Some(outputs) = config.get("outputs") {
             let outputs = outputs.as_array().ok_or(
@@ -37,7 +37,7 @@ impl Input {
                 };
 
                 let typ = extract::typ(output, "output")?;
-                let output: Box<Output> = match &*typ.to_lowercase() {
+                let output: Box<dyn Output> = match &*typ.to_lowercase() {
                     "trajectory" => Box::new(TrajectoryOutput::from_toml(output)?),
                     "properties" => Box::new(PropertiesOutput::from_toml(output)?),
                     "energy" => Box::new(EnergyOutput::from_toml(output)?),

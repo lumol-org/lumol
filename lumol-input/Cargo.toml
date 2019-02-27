@@ -6,6 +6,7 @@ documentation = "https://lumol.org/"
 repository = "https://github.com/lumol-org/lumol"
 readme = "../README.md"
 license = "BSD-3-Clause"
+edition = "2018"
 
 [lib]
 test = false

@@ -1,8 +1,8 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) Lumol's contributors — BSD license
 
-use lumol::sim::md::Control;
-use lumol::System;
+use lumol_sim::md::Control;
+use lumol_core::System;
 
 /// Helper struct that can wrap an algorithm to make it run only a fraction of
 /// the times it is called.

@@ -1,12 +1,8 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) Lumol's contributors — BSD license
-use Input;
-use error::Error;
-use extract;
-
 use toml::value::Table;
 
-use log::{self, Record};
+use log::{self, Record, info};
 
 use log4rs;
 use log4rs::append::Append;
@@ -17,14 +13,18 @@ use log4rs::config::{Appender, Config, Root};
 use log4rs::encode::{Color, Encode, Style, Write};
 use log4rs::filter::threshold::ThresholdFilter;
 
-type LogError = Box<::std::error::Error + Sync + Send>;
+use crate::Input;
+use crate::error::Error;
+use crate::extract;
+
+type LogError = Box<dyn ::std::error::Error + Sync + Send>;
 
 /// An encoder to configure the output style of logging messages
 #[derive(Debug)]
 struct LogEncoder;
 
 impl Encode for LogEncoder {
-    fn encode(&self, out: &mut Write, record: &Record) -> Result<(), LogError> {
+    fn encode(&self, out: &mut dyn Write, record: &Record<'_>) -> Result<(), LogError> {
         match record.level() {
             log::Level::Trace => write!(out, "[trace] ")?,
             log::Level::Debug => write!(out, "[debug] ")?,
@@ -173,7 +173,7 @@ fn read_appender(config: &Table, name: &str) -> Result<Appender, Error> {
     };
 
     let target = extract::str("target", config, "log target")?;
-    let appender: Box<Append> = match target {
+    let appender: Box<dyn Append> = match target {
         "<stdout>" => {
             Box::new(
                 ConsoleAppender::builder()

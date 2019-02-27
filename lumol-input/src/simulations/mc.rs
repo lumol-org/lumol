@@ -3,14 +3,14 @@
 use std::path::PathBuf;
 use toml::value::Table;
 
-use lumol::sim::mc::*;
-use lumol::sys::read_molecule;
-use lumol::units;
+use lumol_sim::mc::*;
+use lumol_core::read_molecule;
+use lumol_core::units;
 
-use FromTomlWithData;
-use error::{Error, Result};
-use extract;
-use simulations::get_input_path;
+use crate::FromTomlWithData;
+use crate::error::{Error, Result};
+use crate::extract;
+use crate::simulations::get_input_path;
 
 impl FromTomlWithData for MonteCarlo {
     type Data = PathBuf;
@@ -38,7 +38,7 @@ impl FromTomlWithData for MonteCarlo {
                 None
             };
 
-            let mc_move: Box<MCMove> = match extract::typ(mc_move, "Monte Carlo move")? {
+            let mc_move: Box<dyn MCMove> = match extract::typ(mc_move, "Monte Carlo move")? {
                 "Translate" => Box::new(Translate::from_toml(mc_move, root.clone())?),
                 "Rotate" => Box::new(Rotate::from_toml(mc_move, root.clone())?),
                 "Resize" => Box::new(Resize::from_toml(mc_move, root.clone())?),

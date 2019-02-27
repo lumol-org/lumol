@@ -2,14 +2,14 @@
 // Copyright (C) Lumol's contributors — BSD license
 use toml::value::{Table, Value};
 
-use lumol::energy::{AnglePotential, DihedralPotential};
-use lumol::energy::{CosineHarmonic, Harmonic, Morse, NullPotential, Torsion};
-use lumol::sys::System;
+use lumol_core::energy::{AnglePotential, DihedralPotential};
+use lumol_core::energy::{CosineHarmonic, Harmonic, Morse, NullPotential, Torsion};
+use lumol_core::System;
 
 use super::Input;
-use FromToml;
-use error::{Error, Result};
-use extract;
+use crate::FromToml;
+use crate::error::{Error, Result};
+use crate::extract;
 
 impl Input {
     /// Read the "angles" section from the potential configuration.
@@ -92,7 +92,7 @@ impl Input {
     }
 }
 
-fn read_angle_potential(angle: &Table) -> Result<Box<AnglePotential>> {
+fn read_angle_potential(angle: &Table) -> Result<Box<dyn AnglePotential>> {
     let potentials = angle.keys().cloned().filter(|key| key != "atoms").collect::<Vec<_>>();
 
     if potentials.is_empty() {
@@ -120,7 +120,7 @@ fn read_angle_potential(angle: &Table) -> Result<Box<AnglePotential>> {
     }
 }
 
-fn read_dihedral_potential(dihedral: &Table) -> Result<Box<DihedralPotential>> {
+fn read_dihedral_potential(dihedral: &Table) -> Result<Box<dyn DihedralPotential>> {
     let potentials = dihedral.keys().cloned().filter(|key| key != "atoms").collect::<Vec<_>>();
 
     if potentials.is_empty() {

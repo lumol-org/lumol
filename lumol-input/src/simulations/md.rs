@@ -2,13 +2,13 @@
 // Copyright (C) Lumol's contributors — BSD license
 use toml::value::Table;
 
-use alternator::Alternator;
-use lumol::sim::md::*;
-use lumol::units;
+use lumol_sim::md::*;
+use lumol_core::units;
 
-use {FromToml, FromTomlWithData};
-use error::{Error, Result};
-use extract;
+use crate::alternator::Alternator;
+use crate::{FromToml, FromTomlWithData};
+use crate::error::{Error, Result};
+use crate::extract;
 
 impl FromToml for MolecularDynamics {
     fn from_toml(config: &Table) -> Result<MolecularDynamics> {
@@ -22,7 +22,7 @@ impl FromToml for MolecularDynamics {
                 Error::from("'integrator' must be a table in molecular dynamics")
             )?;
 
-            let integrator: Box<Integrator> = match extract::typ(integrator, "integrator")? {
+            let integrator: Box<dyn Integrator> = match extract::typ(integrator, "integrator")? {
                 "BerendsenBarostat" => {
                     Box::new(BerendsenBarostat::from_toml(integrator, timestep)?)
                 }
@@ -45,7 +45,7 @@ impl FromToml for MolecularDynamics {
                 Error::from("'thermostat' must be a table in molecular dynamics")
             )?;
 
-            let thermostat: Box<Thermostat> = match extract::typ(thermostat, "thermostat")? {
+            let thermostat: Box<dyn Thermostat> = match extract::typ(thermostat, "thermostat")? {
                 "Berendsen" => Box::new(BerendsenThermostat::from_toml(thermostat)?),
                 "Rescale" => Box::new(RescaleThermostat::from_toml(thermostat)?),
                 other => return Err(Error::from(format!("Unknown thermostat type '{}'", other))),
@@ -63,7 +63,7 @@ impl FromToml for MolecularDynamics {
                     Error::from("'controls' must be an array of tables in molecular dynamics")
                 )?;
 
-                let control: Box<Control> = match extract::typ(control, "control")? {
+                let control: Box<dyn Control> = match extract::typ(control, "control")? {
                     "RemoveTranslation" => {
                         Box::new(Alternator::<RemoveTranslation>::from_toml(control)?)
                     }

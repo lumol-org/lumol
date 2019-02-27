@@ -2,22 +2,18 @@
 // Copyright (C) Lumol's contributors — BSD license
 
 //! Convert TOML values to Lumol types.
-
-
-use FromToml;
-use FromTomlWithData;
-use FromTomlWithRefData;
-use error::{Error, Result};
-use extract;
-
-use lumol::energy::{BornMayerHuggins, Buckingham, Gaussian, Morse, Torsion};
-use lumol::energy::{CosineHarmonic, Harmonic, LennardJones, NullPotential, Mie};
-use lumol::energy::{Ewald, Wolf};
-use lumol::energy::{PairPotential, TableComputation};
-use lumol::units;
-use lumol::sys::Configuration;
-
 use toml::value::Table;
+use log::warn;
+
+use lumol_core::units;
+use lumol_core::energy::*;
+use lumol_core::Configuration;
+
+use crate::FromToml;
+use crate::FromTomlWithData;
+use crate::FromTomlWithRefData;
+use crate::error::{Error, Result};
+use crate::extract;
 
 impl FromToml for NullPotential {
     fn from_toml(_: &Table) -> Result<NullPotential> {
@@ -147,9 +143,9 @@ impl FromToml for Gaussian {
 }
 
 impl FromTomlWithData for TableComputation {
-    type Data = Box<PairPotential>;
+    type Data = Box<dyn PairPotential>;
 
-    fn from_toml(table: &Table, potential: Box<PairPotential>) -> Result<TableComputation> {
+    fn from_toml(table: &Table, potential: Box<dyn PairPotential>) -> Result<TableComputation> {
         let table = table["table"].as_table().ok_or(
             Error::from("'table' key in computation must be a TOML table")
         )?;
