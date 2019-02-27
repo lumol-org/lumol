@@ -1,8 +1,8 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) Lumol's contributors — BSD license
-use error::{Error, Result};
 use toml::value::{Table, Value};
 
+use crate::error::{Error, Result};
 
 /// Extract the table at the given `key`, from the `config` TOML table
 /// interpreted as a `context`.

@@ -2,19 +2,19 @@
 // Copyright (C) Lumol's contributors — BSD license
 use toml::value::{Table, Value};
 
-use lumol::sys::System;
-use lumol::units;
+use lumol_core::System;
+use lumol_core::units;
 
-use lumol::energy::{BondPotential, PairInteraction, PairPotential};
-use lumol::energy::{BornMayerHuggins, Buckingham, Gaussian, Morse};
-use lumol::energy::{Harmonic, LennardJones, NullPotential, Mie};
-use lumol::energy::TableComputation;
+use lumol_core::energy::{BondPotential, PairInteraction, PairPotential};
+use lumol_core::energy::{BornMayerHuggins, Buckingham, Gaussian, Morse};
+use lumol_core::energy::{Harmonic, LennardJones, NullPotential, Mie};
+use lumol_core::energy::TableComputation;
 
 use super::Input;
 use super::read_restriction;
-use {FromToml, FromTomlWithData};
-use error::{Error, Result};
-use extract;
+use crate::{FromToml, FromTomlWithData};
+use crate::error::{Error, Result};
+use crate::extract;
 
 /// Global settings for the pair interactions
 struct GlobalInformation<'a> {
@@ -23,7 +23,7 @@ struct GlobalInformation<'a> {
 }
 
 impl<'a> GlobalInformation<'a> {
-    fn read(config: &Table) -> Result<GlobalInformation> {
+    fn read(config: &Table) -> Result<GlobalInformation<'_>> {
         match config.get("global") {
             Some(global) => {
                 let global = global.as_table().ok_or(
@@ -187,7 +187,7 @@ impl Input {
     }
 }
 
-fn read_pair_potential(pair: &Table) -> Result<Box<PairPotential>> {
+fn read_pair_potential(pair: &Table) -> Result<Box<dyn PairPotential>> {
     const KEYWORDS: &[&str] = &[
         "restriction",
         "computation",
@@ -229,7 +229,7 @@ fn read_pair_potential(pair: &Table) -> Result<Box<PairPotential>> {
     }
 }
 
-fn read_bond_potential(pair: &Table) -> Result<Box<BondPotential>> {
+fn read_bond_potential(pair: &Table) -> Result<Box<dyn BondPotential>> {
     let potentials = pair.keys().cloned().filter(|k| k != "atoms").collect::<Vec<_>>();
 
     if potentials.is_empty() {
@@ -260,8 +260,8 @@ fn read_bond_potential(pair: &Table) -> Result<Box<BondPotential>> {
 
 fn read_pair_computation(
     computation: &Table,
-    potential: Box<PairPotential>,
-) -> Result<Box<PairPotential>> {
+    potential: Box<dyn PairPotential>,
+) -> Result<Box<dyn PairPotential>> {
     if computation.keys().len() != 1 {
         return Err(Error::from("Missing computation type in computation table"));
     }

@@ -1,15 +1,15 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) Lumol's contributors — BSD license
-use lumol::sim::{Minimization, MolecularDynamics, MonteCarlo, Propagator};
+use lumol_sim::{Minimization, MolecularDynamics, MonteCarlo, Propagator};
 
 use super::Input;
-use {FromToml, FromTomlWithData};
-use error::{Error, Result};
-use extract;
+use crate::{FromToml, FromTomlWithData};
+use crate::error::{Error, Result};
+use crate::extract;
 
 impl Input {
     /// Get the the simulation propagator.
-    pub(crate) fn read_propagator(&self) -> Result<Box<Propagator>> {
+    pub(crate) fn read_propagator(&self) -> Result<Box<dyn Propagator>> {
         let config = self.simulation_table()?;
         let propagator = extract::table("propagator", config, "simulation")?;
         match extract::typ(propagator, "propagator")? {

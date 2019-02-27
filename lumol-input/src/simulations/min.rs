@@ -2,18 +2,18 @@
 // Copyright (C) Lumol's contributors — BSD license
 use toml::value::Table;
 
-use lumol::sim::min::*;
-use lumol::units;
+use lumol_sim::min::*;
+use lumol_core::units;
 
-use FromToml;
-use error::{Error, Result};
-use extract;
+use crate::FromToml;
+use crate::error::{Error, Result};
+use crate::extract;
 
 impl FromToml for Minimization {
     fn from_toml(config: &Table) -> Result<Minimization> {
         let minimizer = extract::table("minimizer", config, "minimization propagator")?;
 
-        let minimizer: Box<Minimizer> = match extract::typ(minimizer, "minimizer")? {
+        let minimizer: Box<dyn Minimizer> = match extract::typ(minimizer, "minimizer")? {
             "SteepestDescent" => Box::new(SteepestDescent::from_toml(minimizer)?),
             other => return Err(Error::from(format!("Unknown minimizer '{}'", other))),
         };

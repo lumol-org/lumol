@@ -1,12 +1,5 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) Lumol's contributors — BSD license
-extern crate env_logger;
-extern crate rustc_test;
-extern crate walkdir;
-
-extern crate lumol_core;
-extern crate lumol_input;
-
 use std::{env, fs, io};
 use std::fs::File;
 use std::io::prelude::*;
@@ -17,7 +10,7 @@ use walkdir::WalkDir;
 use rustc_test::{DynTestFn, DynTestName, TestDesc, TestDescAndFn};
 use rustc_test::ShouldPanic::No;
 
-use lumol_core::sys::System;
+use lumol_core::System;
 use lumol_input::{Error, Input, InteractionsInput};
 
 fn main() {
@@ -102,7 +95,7 @@ fn all_tests() -> Vec<TestDescAndFn> {
 /// `root`.
 fn generate_tests<F>(root: &str, callback: F) -> Result<Vec<TestDescAndFn>, io::Error>
 where
-    F: Fn(PathBuf, String) -> Box<FnMut() + Send>,
+    F: Fn(PathBuf, String) -> Box<dyn FnMut() + Send>,
 {
     let mut tests = Vec::new();
 

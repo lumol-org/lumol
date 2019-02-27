@@ -6,11 +6,9 @@ use std::io;
 use std::path::PathBuf;
 use std::result;
 
-// use chemfiles;
-
-use lumol::sim::output::CustomOutputError;
-use lumol::TrajectoryError;
-use lumol::units::ParseError;
+use lumol_sim::output::CustomOutputError;
+use lumol_core::TrajectoryError;
+use lumol_core::units::ParseError;
 
 /// Custom `Result` type for input files
 pub type Result<T> = result::Result<T, Error>;
@@ -19,7 +17,7 @@ pub type Result<T> = result::Result<T, Error>;
 #[derive(Debug)]
 pub enum Error {
     /// Error in the TOML input file
-    TOML(Box<error::Error>),
+    TOML(Box<dyn error::Error>),
     /// IO error, and associated file path
     Io(io::Error, PathBuf),
     /// Error while reading a trajectory file
@@ -78,7 +76,7 @@ impl From<(CustomOutputError, PathBuf)> for Error {
 }
 
 impl fmt::Display for Error {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> result::Result<(), fmt::Error> {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> result::Result<(), fmt::Error> {
         use std::error::Error as StdError;
         match *self {
             Error::Io(ref err, ref path) => {
@@ -115,7 +113,7 @@ impl error::Error for Error {
         }
     }
 
-    fn cause(&self) -> Option<&error::Error> {
+    fn cause(&self) -> Option<&dyn error::Error> {
         match *self {
             Error::TOML(..) | Error::Config(..) => None,
             Error::Io(ref err, _) => Some(err),

@@ -2,14 +2,16 @@
 // Copyright (C) Lumol's contributors — BSD license
 use toml::Value;
 
-use lumol::energy::{CoulombicPotential, Ewald, SharedEwald, Wolf};
-use lumol::sys::System;
+use lumol_core::energy::{CoulombicPotential, Ewald, SharedEwald, Wolf};
+use lumol_core::System;
+
+use log::{info, warn};
 
 use super::Input;
 use super::read_restriction;
-use FromToml;
-use FromTomlWithRefData;
-use error::{Error, Result};
+use crate::FromToml;
+use crate::FromTomlWithRefData;
+use crate::error::{Error, Result};
 
 impl Input {
     /// Read the "coulomb" section from the potential configuration.
@@ -31,7 +33,7 @@ impl Input {
 
         let key = &*solvers[0];
         if let Value::Table(ref table) = coulomb[key] {
-            let mut potential: Box<CoulombicPotential> = match key {
+            let mut potential: Box<dyn CoulombicPotential> = match key {
                 "wolf" => Box::new(Wolf::from_toml(table)?),
                 "ewald" => {
                     let ewald = Ewald::from_toml(table, &system)?;

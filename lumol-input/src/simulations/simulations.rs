@@ -1,11 +1,11 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) Lumol's contributors — BSD license
-use lumol::sim::Simulation;
+use lumol_sim::Simulation;
 use toml::value::Table;
 
 use super::Input;
-use error::{Error, Result};
-use extract;
+use crate::error::{Error, Result};
+use crate::extract;
 
 impl Input {
     /// Get the the simulation.

@@ -21,26 +21,6 @@
 #![doc(test(attr(deny(warnings))))]
 #![doc(test(attr(allow(unused_variables))))]
 
-extern crate lumol_core;
-extern crate lumol_sim;
-
-extern crate toml;
-
-// mimic the lumol crate API
-pub(crate) mod lumol {
-    pub(crate) mod core {
-        pub use lumol_core::*;
-    }
-    pub(crate) mod sim {
-        pub use lumol_sim::*;
-    }
-    pub(crate) use self::core::*;
-}
-
-extern crate log4rs;
-#[macro_use]
-extern crate log;
-
 use toml::value::Table;
 
 macro_rules! try_io {

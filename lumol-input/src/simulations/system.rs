@@ -2,14 +2,16 @@
 // Copyright (C) Lumol's contributors — BSD license
 use toml::value::{Table, Value};
 
-use lumol::sys::*;
-use lumol::sim::{BoltzmannVelocities, InitVelocities};
-use lumol::units;
+use lumol_core::{System, UnitCell, TrajectoryBuilder};
+use lumol_sim::{BoltzmannVelocities, InitVelocities};
+use lumol_core::units;
 
-use {Input, InteractionsInput};
-use error::{Error, Result};
-use extract;
-use simulations::get_input_path;
+use log::warn;
+
+use crate::{Input, InteractionsInput};
+use crate::error::{Error, Result};
+use crate::extract;
+use crate::simulations::get_input_path;
 
 impl Input {
     /// Get the the simulated system.

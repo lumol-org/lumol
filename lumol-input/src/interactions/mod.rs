@@ -7,13 +7,13 @@ use std::fs::File;
 use std::io::prelude::*;
 use std::path::PathBuf;
 
-use lumol::energy::PairRestriction;
-use lumol::sys::System;
+use lumol_core::energy::PairRestriction;
+use lumol_core::System;
 
-use {Error, Result};
-use validate;
+use crate::{Error, Result};
+use crate::validate;
 
-mod toml;
+mod from_toml;
 mod pairs;
 mod angles;
 mod coulomb;
