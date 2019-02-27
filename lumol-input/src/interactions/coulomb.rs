@@ -7,15 +7,12 @@ use lumol_core::System;
 
 use log::{info, warn};
 
-use super::Input;
 use super::read_restriction;
-use crate::FromToml;
-use crate::FromTomlWithRefData;
-use crate::error::{Error, Result};
+use crate::{InteractionsInput, Error, FromToml, FromTomlWithRefData};
 
-impl Input {
+impl InteractionsInput {
     /// Read the "coulomb" section from the potential configuration.
-    pub(crate) fn read_coulomb(&self, system: &mut System) -> Result<()> {
+    pub(crate) fn read_coulomb(&self, system: &mut System) -> Result<(), Error> {
         let coulomb = match self.config.get("coulomb") {
             Some(coulomb) => coulomb,
             None => return Ok(()),
@@ -54,7 +51,7 @@ impl Input {
     }
 
     /// Read the "charges" from the potential configuration.
-    pub(crate) fn read_charges(&self, system: &mut System) -> Result<()> {
+    pub(crate) fn read_charges(&self, system: &mut System) -> Result<(), Error> {
         let charges = match self.config.get("charges") {
             Some(charges) => charges,
             None => return Ok(()),

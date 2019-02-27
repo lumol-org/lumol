@@ -7,14 +7,13 @@ use lumol_sim::mc::*;
 use lumol_core::read_molecule;
 use lumol_core::units;
 
-use crate::FromTomlWithData;
-use crate::error::{Error, Result};
+use crate::{Error, FromTomlWithData};
 use crate::extract;
 use crate::simulations::get_input_path;
 
 impl FromTomlWithData for MonteCarlo {
     type Data = PathBuf;
-    fn from_toml(config: &Table, root: PathBuf) -> Result<MonteCarlo> {
+    fn from_toml(config: &Table, root: PathBuf) -> Result<MonteCarlo, Error> {
         let temperature = extract::str("temperature", config, "Monte Carlo propagator")?;
         let temperature = units::from_str(temperature)?;
         let has_update_frequency = config.get("update_frequency").is_some();
@@ -75,7 +74,7 @@ impl FromTomlWithData for MonteCarlo {
 
 impl FromTomlWithData for Translate {
     type Data = PathBuf;
-    fn from_toml(config: &Table, root: PathBuf) -> Result<Translate> {
+    fn from_toml(config: &Table, root: PathBuf) -> Result<Translate, Error> {
         let delta = extract::str("delta", config, "Translate move")?;
         let delta = units::from_str(delta)?;
 
@@ -92,7 +91,7 @@ impl FromTomlWithData for Translate {
 
 impl FromTomlWithData for Rotate {
     type Data = PathBuf;
-    fn from_toml(config: &Table, root: PathBuf) -> Result<Rotate> {
+    fn from_toml(config: &Table, root: PathBuf) -> Result<Rotate, Error> {
         let delta = extract::str("delta", config, "Rotate move")?;
         let delta = units::from_str(delta)?;
 
@@ -109,7 +108,7 @@ impl FromTomlWithData for Rotate {
 
 impl FromTomlWithData for Resize {
     type Data = PathBuf;
-    fn from_toml(config: &Table, _: PathBuf) -> Result<Resize> {
+    fn from_toml(config: &Table, _: PathBuf) -> Result<Resize, Error> {
         let pressure = extract::str("pressure", config, "Resize move")?;
         let pressure = units::from_str(pressure)?;
 

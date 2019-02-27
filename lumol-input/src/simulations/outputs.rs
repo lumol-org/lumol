@@ -7,14 +7,12 @@ use lumol_sim::output::Output;
 use lumol_sim::output::{TrajectoryOutput, PropertiesOutput, EnergyOutput};
 use lumol_sim::output::{ForcesOutput, CellOutput, CustomOutput, StressOutput};
 
-use super::Input;
-use crate::FromToml;
-use crate::error::{Error, Result};
+use crate::{Input, FromToml, Error};
 use crate::extract;
 
 impl Input {
     /// Get the the simulation outputs.
-    pub(crate) fn read_outputs(&self) -> Result<Vec<(Box<dyn Output>, u64)>> {
+    pub(crate) fn read_outputs(&self) -> Result<Vec<(Box<dyn Output>, u64)>, Error> {
         let config = self.simulation_table()?;
         if let Some(outputs) = config.get("outputs") {
             let outputs = outputs.as_array().ok_or(
@@ -57,7 +55,7 @@ impl Input {
     }
 }
 
-fn get_file(config: &Table) -> Result<&str> {
+fn get_file(config: &Table) -> Result<&str, Error> {
     let file = config.get("file").ok_or(
         Error::from("Missing 'file' key in output")
     )?;
@@ -66,7 +64,7 @@ fn get_file(config: &Table) -> Result<&str> {
 }
 
 impl FromToml for TrajectoryOutput {
-    fn from_toml(config: &Table) -> Result<TrajectoryOutput> {
+    fn from_toml(config: &Table) -> Result<TrajectoryOutput, Error> {
         let path = get_file(config)?;
         let output = TrajectoryOutput::new(path)?;
         Ok(output)
@@ -74,7 +72,7 @@ impl FromToml for TrajectoryOutput {
 }
 
 impl FromToml for CellOutput {
-    fn from_toml(config: &Table) -> Result<CellOutput> {
+    fn from_toml(config: &Table) -> Result<CellOutput, Error> {
         let path = get_file(config)?;
         let output = try_io!(CellOutput::new(path), PathBuf::from(path));
         Ok(output)
@@ -82,7 +80,7 @@ impl FromToml for CellOutput {
 }
 
 impl FromToml for EnergyOutput {
-    fn from_toml(config: &Table) -> Result<EnergyOutput> {
+    fn from_toml(config: &Table) -> Result<EnergyOutput, Error> {
         let path = get_file(config)?;
         let output = try_io!(EnergyOutput::new(path), PathBuf::from(path));
         Ok(output)
@@ -90,7 +88,7 @@ impl FromToml for EnergyOutput {
 }
 
 impl FromToml for PropertiesOutput {
-    fn from_toml(config: &Table) -> Result<PropertiesOutput> {
+    fn from_toml(config: &Table) -> Result<PropertiesOutput, Error> {
         let path = get_file(config)?;
         let output = try_io!(PropertiesOutput::new(path), PathBuf::from(path));
         Ok(output)
@@ -98,7 +96,7 @@ impl FromToml for PropertiesOutput {
 }
 
 impl FromToml for StressOutput {
-    fn from_toml(config: &Table) -> Result<StressOutput> {
+    fn from_toml(config: &Table) -> Result<StressOutput, Error> {
         let path = get_file(config)?;
         let output = try_io!(StressOutput::new(path), PathBuf::from(path));
         Ok(output)
@@ -106,7 +104,7 @@ impl FromToml for StressOutput {
 }
 
 impl FromToml for ForcesOutput {
-    fn from_toml(config: &Table) -> Result<ForcesOutput> {
+    fn from_toml(config: &Table) -> Result<ForcesOutput, Error> {
         let path = get_file(config)?;
         let output = try_io!(ForcesOutput::new(path), PathBuf::from(path));
         Ok(output)
@@ -114,7 +112,7 @@ impl FromToml for ForcesOutput {
 }
 
 impl FromToml for CustomOutput {
-    fn from_toml(config: &Table) -> Result<CustomOutput> {
+    fn from_toml(config: &Table) -> Result<CustomOutput, Error> {
         let path = get_file(config)?;
         let template = extract::str("template", config, "custom output")?;
         let output = try_io!(CustomOutput::new(path, template), PathBuf::from(path));

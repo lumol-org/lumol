@@ -3,13 +3,12 @@
 use lumol_sim::Simulation;
 use toml::value::Table;
 
-use super::Input;
-use crate::error::{Error, Result};
+use crate::{Input, Error};
 use crate::extract;
 
 impl Input {
     /// Get the the simulation.
-    pub fn read_simulation(&self) -> Result<Simulation> {
+    pub fn read_simulation(&self) -> Result<Simulation, Error> {
         let propagator = self.read_propagator()?;
         let mut simulation = Simulation::new(propagator);
         for (output, frequency) in self.read_outputs()? {
@@ -20,7 +19,7 @@ impl Input {
     }
 
     /// Get the number of steps in the simulation.
-    pub(crate) fn read_nsteps(&self) -> Result<usize> {
+    pub(crate) fn read_nsteps(&self) -> Result<usize, Error> {
         let simulation = self.simulation_table()?;
         let nsteps = simulation.get("nsteps").ok_or(
             Error::from("Missing 'nsteps' key in simulation")
@@ -34,7 +33,7 @@ impl Input {
     }
 
     /// Get the simulation TOML table.
-    pub(crate) fn simulation_table(&self) -> Result<&Table> {
+    pub(crate) fn simulation_table(&self) -> Result<&Table, Error> {
         let simulations = extract::slice("simulations", &self.config, "input file")?;
         if simulations.len() != 1 {
             return Err(Error::from("Only one simulation is supported in the input"));

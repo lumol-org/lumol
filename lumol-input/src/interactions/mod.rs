@@ -10,44 +10,46 @@ use std::path::PathBuf;
 use lumol_core::energy::PairRestriction;
 use lumol_core::System;
 
-use crate::{Error, Result};
+use crate::Error;
 use crate::validate;
 
-mod from_toml;
+mod potentials;
 mod pairs;
 mod angles;
 mod coulomb;
 
 /// Input file for reading interactions
-pub struct Input {
+pub struct InteractionsInput {
     /// The TOML configuration
     config: Table,
 }
 
-impl Input {
+impl InteractionsInput {
     /// Read interactions from the TOML formatted file at `path`.
-    pub fn new<P: Into<PathBuf>>(path: P) -> Result<Input> {
+    pub fn new<P: Into<PathBuf>>(path: P) -> Result<InteractionsInput, Error> {
         let path = path.into();
         let mut file = try_io!(File::open(&path), path);
         let mut buffer = String::new();
         let _ = try_io!(file.read_to_string(&mut buffer), path);
-        return Input::from_str(&buffer);
+        return InteractionsInput::from_str(&buffer);
     }
 
     /// Read the interactions from a TOML formatted string.
-    pub fn from_str(string: &str) -> Result<Input> {
+    pub fn from_str(string: &str) -> Result<InteractionsInput, Error> {
         let config = parse(string).map_err(|err| Error::TOML(Box::new(err)))?;
         validate(&config)?;
-        return Input::from_toml(config.clone());
+        return Ok(InteractionsInput::from_toml(config.clone()));
     }
 
     /// Read the interactions from a TOML table.
-    pub(crate) fn from_toml(config: Table) -> Result<Input> {
-        Ok(Input { config: config })
+    pub(crate) fn from_toml(config: Table) -> InteractionsInput {
+        InteractionsInput {
+            config: config
+        }
     }
 
     /// Read the interactions from this input into the `system`.
-    pub fn read(&self, system: &mut System) -> Result<()> {
+    pub fn read(&self, system: &mut System) -> Result<(), Error> {
         self.read_pairs(system)?;
         self.read_bonds(system)?;
         self.read_angles(system)?;
@@ -59,7 +61,7 @@ impl Input {
     }
 }
 
-fn read_restriction(config: &Table) -> Result<Option<PairRestriction>> {
+fn read_restriction(config: &Table) -> Result<Option<PairRestriction>, Error> {
     let restriction = config.get("restriction");
     if restriction.is_none() {
         // No restriction found

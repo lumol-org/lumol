@@ -40,15 +40,15 @@ mod interactions;
 mod simulations;
 mod alternator;
 
-pub use self::error::{Error, Result};
-pub use self::interactions::Input as InteractionsInput;
+pub use self::error::Error;
+pub use self::interactions::InteractionsInput;
 pub use self::simulations::{Config, Input};
 pub use self::simulations::setup_default_logger;
 
 /// Convert a TOML table to a Rust type.
 pub trait FromToml: Sized {
     /// Do the conversion from `table` to Self.
-    fn from_toml(table: &Table) -> Result<Self>;
+    fn from_toml(table: &Table) -> Result<Self, Error>;
 }
 
 /// Convert a TOML table and some additional owned data to a Rust type.
@@ -56,7 +56,7 @@ pub trait FromTomlWithData: Sized {
     /// The type of the additional data needed.
     type Data;
     /// Do the conversion from `table` and `data` to Self.
-    fn from_toml(table: &Table, data: Self::Data) -> Result<Self>;
+    fn from_toml(table: &Table, data: Self::Data) -> Result<Self, Error>;
 }
 
 /// Convert a TOML table to a Rust type using information from an additional reference.
@@ -64,10 +64,10 @@ pub trait FromTomlWithRefData: Sized {
     /// The type of the additional data needed.
     type Data;
     /// Do the conversion from `table` and `data` to Self.
-    fn from_toml(table: &Table, data: &Self::Data) -> Result<Self>;
+    fn from_toml(table: &Table, data: &Self::Data) -> Result<Self, Error>;
 }
 
-fn validate(config: &Table) -> Result<()> {
+fn validate(config: &Table) -> Result<(), Error> {
     let input = config.get("input").ok_or(
         Error::from("Missing 'input' table")
     )?;

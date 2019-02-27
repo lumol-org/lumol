@@ -1,23 +1,18 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) Lumol's contributors — BSD license
-use std::error;
 use std::fmt;
 use std::io;
 use std::path::PathBuf;
-use std::result;
 
 use lumol_sim::output::CustomOutputError;
 use lumol_core::TrajectoryError;
 use lumol_core::units::ParseError;
 
-/// Custom `Result` type for input files
-pub type Result<T> = result::Result<T, Error>;
-
 /// Possible causes of error when reading input files
 #[derive(Debug)]
 pub enum Error {
     /// Error in the TOML input file
-    TOML(Box<dyn error::Error>),
+    TOML(Box<dyn std::error::Error>),
     /// IO error, and associated file path
     Io(io::Error, PathBuf),
     /// Error while reading a trajectory file
@@ -76,7 +71,7 @@ impl From<(CustomOutputError, PathBuf)> for Error {
 }
 
 impl fmt::Display for Error {
-    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> result::Result<(), fmt::Error> {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
         use std::error::Error as StdError;
         match *self {
             Error::Io(ref err, ref path) => {
@@ -101,7 +96,7 @@ impl fmt::Display for Error {
     }
 }
 
-impl error::Error for Error {
+impl std::error::Error for Error {
     fn description(&self) -> &str {
         match *self {
             Error::Config(ref err) => err,
@@ -113,7 +108,7 @@ impl error::Error for Error {
         }
     }
 
-    fn cause(&self) -> Option<&dyn error::Error> {
+    fn cause(&self) -> Option<&dyn std::error::Error> {
         match *self {
             Error::TOML(..) | Error::Config(..) => None,
             Error::Io(ref err, _) => Some(err),

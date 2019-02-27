@@ -9,20 +9,17 @@ use lumol_core::units;
 use lumol_core::energy::*;
 use lumol_core::Configuration;
 
-use crate::FromToml;
-use crate::FromTomlWithData;
-use crate::FromTomlWithRefData;
-use crate::error::{Error, Result};
+use crate::{Error, FromToml, FromTomlWithData, FromTomlWithRefData};
 use crate::extract;
 
 impl FromToml for NullPotential {
-    fn from_toml(_: &Table) -> Result<NullPotential> {
+    fn from_toml(_: &Table) -> Result<NullPotential, Error> {
         Ok(NullPotential)
     }
 }
 
 impl FromToml for Harmonic {
-    fn from_toml(table: &Table) -> Result<Harmonic> {
+    fn from_toml(table: &Table) -> Result<Harmonic, Error> {
         let k = extract::str("k", table, "harmonic potential")?;
         let x0 = extract::str("x0", table, "harmonic potential")?;
         Ok(Harmonic {
@@ -33,7 +30,7 @@ impl FromToml for Harmonic {
 }
 
 impl FromToml for LennardJones {
-    fn from_toml(table: &Table) -> Result<LennardJones> {
+    fn from_toml(table: &Table) -> Result<LennardJones, Error> {
         let sigma = extract::str("sigma", table, "Lennard-Jones potential")?;
         let epsilon = extract::str("epsilon", table, "Lennard-Jones potential")?;
         Ok(LennardJones {
@@ -44,7 +41,7 @@ impl FromToml for LennardJones {
 }
 
 impl FromToml for Mie {
-    fn from_toml(table: &Table) -> Result<Mie> {
+    fn from_toml(table: &Table) -> Result<Mie, Error> {
         let sigma = extract::str("sigma", table, "Mie potential")?;
         let epsilon = extract::str("epsilon", table, "Mie potential")?;
         let m = extract::number("m", table, "Mie potential")?;
@@ -64,7 +61,7 @@ impl FromToml for Mie {
 }
 
 impl FromToml for CosineHarmonic {
-    fn from_toml(table: &Table) -> Result<CosineHarmonic> {
+    fn from_toml(table: &Table) -> Result<CosineHarmonic, Error> {
         let k = extract::str("k", table, "cosine harmonic potential")?;
         let x0 = extract::str("x0", table, "cosine harmonic potential")?;
         Ok(CosineHarmonic::new(units::from_str(k)?, units::from_str(x0)?))
@@ -72,7 +69,7 @@ impl FromToml for CosineHarmonic {
 }
 
 impl FromToml for Torsion {
-    fn from_toml(table: &Table) -> Result<Torsion> {
+    fn from_toml(table: &Table) -> Result<Torsion, Error> {
         let n = extract::uint("n", table, "torsion potential")?;
         let k = extract::str("k", table, "torsion potential")?;
         let delta = extract::str("delta", table, "torsion potential")?;
@@ -85,7 +82,7 @@ impl FromToml for Torsion {
 }
 
 impl FromToml for Buckingham {
-    fn from_toml(table: &Table) -> Result<Buckingham> {
+    fn from_toml(table: &Table) -> Result<Buckingham, Error> {
         let a = extract::str("A", table, "Buckingham potential")?;
         let c = extract::str("C", table, "Buckingham potential")?;
         let rho = extract::str("rho", table, "Buckingham potential")?;
@@ -99,7 +96,7 @@ impl FromToml for Buckingham {
 }
 
 impl FromToml for BornMayerHuggins {
-    fn from_toml(table: &Table) -> Result<BornMayerHuggins> {
+    fn from_toml(table: &Table) -> Result<BornMayerHuggins, Error> {
         let a = extract::str("A", table, "Born-Mayer-Huggins potential")?;
         let c = extract::str("C", table, "Born-Mayer-Huggins potential")?;
         let d = extract::str("D", table, "Born-Mayer-Huggins potential")?;
@@ -117,7 +114,7 @@ impl FromToml for BornMayerHuggins {
 }
 
 impl FromToml for Morse {
-    fn from_toml(table: &Table) -> Result<Morse> {
+    fn from_toml(table: &Table) -> Result<Morse, Error> {
         let a = extract::str("A", table, "Morse potential")?;
         let depth = extract::str("depth", table, "Morse potential")?;
         let x0 = extract::str("x0", table, "Morse potential")?;
@@ -130,7 +127,7 @@ impl FromToml for Morse {
 }
 
 impl FromToml for Gaussian {
-    fn from_toml(table: &Table) -> Result<Gaussian> {
+    fn from_toml(table: &Table) -> Result<Gaussian, Error> {
         let a = units::from_str(extract::str("A", table, "Gaussian potential")?)?;
         let b = units::from_str(extract::str("B", table, "Gaussian potential")?)?;
 
@@ -145,7 +142,7 @@ impl FromToml for Gaussian {
 impl FromTomlWithData for TableComputation {
     type Data = Box<dyn PairPotential>;
 
-    fn from_toml(table: &Table, potential: Box<dyn PairPotential>) -> Result<TableComputation> {
+    fn from_toml(table: &Table, potential: Box<dyn PairPotential>) -> Result<TableComputation, Error> {
         let table = table["table"].as_table().ok_or(
             Error::from("'table' key in computation must be a TOML table")
         )?;
@@ -157,7 +154,7 @@ impl FromTomlWithData for TableComputation {
 }
 
 impl FromToml for Wolf {
-    fn from_toml(table: &Table) -> Result<Wolf> {
+    fn from_toml(table: &Table) -> Result<Wolf, Error> {
         let cutoff = extract::str("cutoff", table, "Wolf coulombic potential")?;
         Ok(Wolf::new(units::from_str(cutoff)?))
     }
@@ -166,7 +163,7 @@ impl FromToml for Wolf {
 impl FromTomlWithRefData for Ewald {
     type Data = Configuration;
 
-    fn from_toml(table: &Table, configuration: &Configuration) -> Result<Ewald> {
+    fn from_toml(table: &Table, configuration: &Configuration) -> Result<Ewald, Error> {
         let cutoff = extract::str("cutoff", table, "Ewald coulombic potential")?;
         let cutoff = units::from_str(cutoff)?;
 

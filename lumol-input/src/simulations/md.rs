@@ -6,12 +6,11 @@ use lumol_sim::md::*;
 use lumol_core::units;
 
 use crate::alternator::Alternator;
-use crate::{FromToml, FromTomlWithData};
-use crate::error::{Error, Result};
+use crate::{Error, FromToml, FromTomlWithData};
 use crate::extract;
 
 impl FromToml for MolecularDynamics {
-    fn from_toml(config: &Table) -> Result<MolecularDynamics> {
+    fn from_toml(config: &Table) -> Result<MolecularDynamics, Error> {
         // Get the timestep of the simulation
         let timestep = extract::str("timestep", config, "molecular dynamics propagator")?;
         let timestep = units::from_str(timestep)?;
@@ -83,28 +82,28 @@ impl FromToml for MolecularDynamics {
 
 impl FromTomlWithData for Verlet {
     type Data = f64;
-    fn from_toml(_: &Table, timestep: f64) -> Result<Verlet> {
+    fn from_toml(_: &Table, timestep: f64) -> Result<Verlet, Error> {
         Ok(Verlet::new(timestep))
     }
 }
 
 impl FromTomlWithData for VelocityVerlet {
     type Data = f64;
-    fn from_toml(_: &Table, timestep: f64) -> Result<VelocityVerlet> {
+    fn from_toml(_: &Table, timestep: f64) -> Result<VelocityVerlet, Error> {
         Ok(VelocityVerlet::new(timestep))
     }
 }
 
 impl FromTomlWithData for LeapFrog {
     type Data = f64;
-    fn from_toml(_: &Table, timestep: f64) -> Result<LeapFrog> {
+    fn from_toml(_: &Table, timestep: f64) -> Result<LeapFrog, Error> {
         Ok(LeapFrog::new(timestep))
     }
 }
 
 impl FromTomlWithData for BerendsenBarostat {
     type Data = f64;
-    fn from_toml(config: &Table, timestep: f64) -> Result<BerendsenBarostat> {
+    fn from_toml(config: &Table, timestep: f64) -> Result<BerendsenBarostat, Error> {
         let pressure = extract::str("pressure", config, "Berendsen barostat")?;
         let pressure = units::from_str(pressure)?;
         let tau = extract::number("timestep", config, "Berendsen barostat")?;
@@ -114,7 +113,7 @@ impl FromTomlWithData for BerendsenBarostat {
 
 impl FromTomlWithData for AnisoBerendsenBarostat {
     type Data = f64;
-    fn from_toml(config: &Table, timestep: f64) -> Result<AnisoBerendsenBarostat> {
+    fn from_toml(config: &Table, timestep: f64) -> Result<AnisoBerendsenBarostat, Error> {
         let pressure = extract::str("pressure", config, "anisotropic Berendsen barostat")?;
         let pressure = units::from_str(pressure)?;
         let tau = extract::number("timestep", config, "anisotropic Berendsen barostat")?;
@@ -123,7 +122,7 @@ impl FromTomlWithData for AnisoBerendsenBarostat {
 }
 
 impl FromToml for BerendsenThermostat {
-    fn from_toml(config: &Table) -> Result<BerendsenThermostat> {
+    fn from_toml(config: &Table) -> Result<BerendsenThermostat, Error> {
         let temperature = extract::str("temperature", config, "Berendsen thermostat")?;
         let temperature = units::from_str(temperature)?;
         let tau = extract::number("timestep", config, "Berendsen thermostat")?;
@@ -132,7 +131,7 @@ impl FromToml for BerendsenThermostat {
 }
 
 impl FromToml for RescaleThermostat {
-    fn from_toml(config: &Table) -> Result<RescaleThermostat> {
+    fn from_toml(config: &Table) -> Result<RescaleThermostat, Error> {
         let temperature = extract::str("temperature", config, "Berendsen thermostat")?;
         let temperature = units::from_str(temperature)?;
 
@@ -150,7 +149,7 @@ impl FromToml for RescaleThermostat {
 }
 
 impl FromToml for Alternator<RemoveTranslation> {
-    fn from_toml(config: &Table) -> Result<Alternator<RemoveTranslation>> {
+    fn from_toml(config: &Table) -> Result<Alternator<RemoveTranslation>, Error> {
         let every = if config.contains_key("every") {
             extract::uint("every", config, "RemoveTranslation control")?
         } else {
@@ -161,7 +160,7 @@ impl FromToml for Alternator<RemoveTranslation> {
 }
 
 impl FromToml for Alternator<RemoveRotation> {
-    fn from_toml(config: &Table) -> Result<Alternator<RemoveRotation>> {
+    fn from_toml(config: &Table) -> Result<Alternator<RemoveRotation>, Error> {
         let every = if config.contains_key("every") {
             extract::uint("every", config, "RemoveRotation control")?
         } else {
@@ -172,7 +171,7 @@ impl FromToml for Alternator<RemoveRotation> {
 }
 
 impl FromToml for Alternator<Rewrap> {
-    fn from_toml(config: &Table) -> Result<Alternator<Rewrap>> {
+    fn from_toml(config: &Table) -> Result<Alternator<Rewrap>, Error> {
         let every = if config.contains_key("every") {
             extract::uint("every", config, "Rewrap control")?
         } else {

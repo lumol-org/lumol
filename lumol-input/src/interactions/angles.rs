@@ -6,14 +6,12 @@ use lumol_core::energy::{AnglePotential, DihedralPotential};
 use lumol_core::energy::{CosineHarmonic, Harmonic, Morse, NullPotential, Torsion};
 use lumol_core::System;
 
-use super::Input;
-use crate::FromToml;
-use crate::error::{Error, Result};
+use crate::{InteractionsInput, FromToml, Error};
 use crate::extract;
 
-impl Input {
+impl InteractionsInput {
     /// Read the "angles" section from the potential configuration.
-    pub(crate) fn read_angles(&self, system: &mut System) -> Result<()> {
+    pub(crate) fn read_angles(&self, system: &mut System) -> Result<(), Error> {
         let angles = match self.config.get("angles") {
             Some(angles) => angles,
             None => return Ok(()),
@@ -49,7 +47,7 @@ impl Input {
     }
 
     /// Read the "dihedrals" section from the potential configuration.
-    pub(crate) fn read_dihedrals(&self, system: &mut System) -> Result<()> {
+    pub(crate) fn read_dihedrals(&self, system: &mut System) -> Result<(), Error> {
         let dihedrals = match self.config.get("dihedrals") {
             Some(dihedrals) => dihedrals,
             None => return Ok(()),
@@ -92,7 +90,7 @@ impl Input {
     }
 }
 
-fn read_angle_potential(angle: &Table) -> Result<Box<dyn AnglePotential>> {
+fn read_angle_potential(angle: &Table) -> Result<Box<dyn AnglePotential>, Error> {
     let potentials = angle.keys().cloned().filter(|key| key != "atoms").collect::<Vec<_>>();
 
     if potentials.is_empty() {
@@ -120,7 +118,7 @@ fn read_angle_potential(angle: &Table) -> Result<Box<dyn AnglePotential>> {
     }
 }
 
-fn read_dihedral_potential(dihedral: &Table) -> Result<Box<dyn DihedralPotential>> {
+fn read_dihedral_potential(dihedral: &Table) -> Result<Box<dyn DihedralPotential>, Error> {
     let potentials = dihedral.keys().cloned().filter(|key| key != "atoms").collect::<Vec<_>>();
 
     if potentials.is_empty() {
