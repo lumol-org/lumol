@@ -503,8 +503,7 @@ impl<'a> DoubleEndedIterator for MoleculeIter<'a> {
             let len = bonding.size();
             let slice = unsafe {
                 self.end = self.end.sub(len);
-                let slice = ParticleSlice::from_raw_parts(self.end, len);
-                slice
+                ParticleSlice::from_raw_parts(self.end, len)
             };
             debug_assert!(self.ptr.name <= self.end.name);
             return Some(MoleculeRef::new(bonding, slice));
@@ -563,8 +562,7 @@ impl<'a> DoubleEndedIterator for MoleculeIterMut<'a> {
             let len = bonding.size();
             let slice = unsafe {
                 self.end = self.end.sub(len);
-                let slice = ParticleSliceMut::from_raw_parts_mut(self.end, len);
-                slice
+                ParticleSliceMut::from_raw_parts_mut(self.end, len)
             };
             debug_assert!(self.ptr.name <= self.end.name);
             return Some(MoleculeRefMut::new(bonding, slice));

@@ -186,28 +186,24 @@ impl Vector3D {
     }
 }
 
-#[cfg_attr(rustfmt, rustfmt_skip)]
 impl_arithmetic!(
     Vector3D, Vector3D, Add, add, Vector3D,
     self, other,
     Vector3D::new(self[0] + other[0], self[1] + other[1], self[2] + other[2])
 );
 
-#[cfg_attr(rustfmt, rustfmt_skip)]
 impl_inplace_arithmetic!(
     Vector3D, Vector3D, AddAssign, add_assign,
     self, other,
     {self[0] += other[0]; self[1] += other[1]; self[2] += other[2]}
 );
 
-#[cfg_attr(rustfmt, rustfmt_skip)]
 impl_arithmetic!(
     Vector3D, Vector3D, Sub, sub, Vector3D,
     self, other,
     Vector3D::new(self[0] - other[0], self[1] - other[1], self[2] - other[2])
 );
 
-#[cfg_attr(rustfmt, rustfmt_skip)]
 impl_inplace_arithmetic!(
     Vector3D, Vector3D, SubAssign, sub_assign,
     self, other,
@@ -215,7 +211,6 @@ impl_inplace_arithmetic!(
 );
 
 // Dot product
-#[cfg_attr(rustfmt, rustfmt_skip)]
 impl_arithmetic!(
     Vector3D, Vector3D, Mul, mul, f64,
     self, other,
@@ -223,7 +218,6 @@ impl_arithmetic!(
 );
 
 // Cross product
-#[cfg_attr(rustfmt, rustfmt_skip)]
 impl_arithmetic!(
     Vector3D, Vector3D, BitXor, bitxor, Vector3D,
     self, other,
@@ -233,26 +227,23 @@ impl_arithmetic!(
     Vector3D::new(x, y, z)}
 );
 
-#[cfg_attr(rustfmt, rustfmt_skip)]
 lsh_scal_arithmetic!(
     Vector3D, Mul, mul, Vector3D,
     self, other,
     Vector3D::new(self[0] * other, self[1] * other, self[2] * other)
 );
 
-#[cfg_attr(rustfmt, rustfmt_skip)]
 rhs_scal_arithmetic!(
     Vector3D, Mul, mul, Vector3D,
     self, other,
     Vector3D::new(self * other[0], self * other[1], self * other[2])
 );
 
-#[cfg_attr(rustfmt, rustfmt_skip)]
 impl_inplace_arithmetic!(
     Vector3D, f64, MulAssign, mul_assign,
     self, other,
     {
-        #[allow(clone_on_copy)]
+        #[allow(clippy::clone_on_copy)]
         let other = other.clone();
         self[0] *= other;
         self[1] *= other;
@@ -260,19 +251,17 @@ impl_inplace_arithmetic!(
     }
 );
 
-#[cfg_attr(rustfmt, rustfmt_skip)]
 lsh_scal_arithmetic!(
     Vector3D, Div, div, Vector3D,
     self, other,
     Vector3D::new(self[0] / other, self[1] / other, self[2] / other)
 );
 
-#[cfg_attr(rustfmt, rustfmt_skip)]
 impl_inplace_arithmetic!(
     Vector3D, f64, DivAssign, div_assign,
     self, other,
     {
-        #[allow(clone_on_copy)]
+        #[allow(clippy::clone_on_copy)]
         let other = other.clone();
         self[0] /= other;
         self[1] /= other;

@@ -121,7 +121,7 @@ impl fmt::Debug for CleanedBacktrace {
                     // Use Display to get demangled name
                     format!("{}", name)
                 } else {
-                    format!("<unknown>")
+                    "<unknown>".to_string()
                 };
 
                 if !skiped_backtrace_generation {

@@ -29,10 +29,8 @@ impl MCDegreeOfFreedom {
     pub fn combine(self, other: MCDegreeOfFreedom) -> MCDegreeOfFreedom {
         use super::MCDegreeOfFreedom as DOF;
         match (self, other) {
-            (DOF::Particles, _) => DOF::Particles,
-            (_, DOF::Particles) => DOF::Particles,
-            (DOF::AllMolecules, _) => DOF::AllMolecules,
-            (_, DOF::AllMolecules) => DOF::AllMolecules,
+            (DOF::Particles, _) | (_, DOF::Particles) => DOF::Particles,
+            (DOF::AllMolecules, _) | (_, DOF::AllMolecules) => DOF::AllMolecules,
             (DOF::Molecules(mut all), DOF::Molecules(others)) => {
                 all.extend(others);
                 DOF::Molecules(all)

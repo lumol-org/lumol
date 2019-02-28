@@ -3,6 +3,7 @@
 
 //! Access usual math function directly, without having to use a `f64::` prefix,
 //! or to resort to method style call.
+#![allow(clippy::inline_always)]
 
 use special::Error;
 

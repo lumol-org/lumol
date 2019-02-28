@@ -43,7 +43,7 @@ impl Translate {
         let delta = delta / f64::sqrt(3.0);
         Translate {
             hash: hash.into(),
-            molid: usize::MAX,
+            molid: usize::max_value(),
             newpos: Vec::new(),
             delta: delta,
             maximum_cutoff: None,

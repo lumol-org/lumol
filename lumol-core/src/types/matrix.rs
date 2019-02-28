@@ -242,7 +242,6 @@ impl Matrix3 {
     ///
     /// assert_eq!(matrix.determinant(), 4.0 * 1.5 * 7.0);
     /// ```
-    #[cfg_attr(rustfmt, rustfmt_skip)]
     pub fn determinant(&self) -> f64 {
         ( self[0][0] * (self[1][1] * self[2][2] - self[2][1] * self[1][2])
         - self[0][1] * (self[1][0] * self[2][2] - self[1][2] * self[2][0])
@@ -300,7 +299,6 @@ impl Matrix3 {
     }
 }
 
-#[cfg_attr(rustfmt, rustfmt_skip)]
 impl_arithmetic!(
     Matrix3, Matrix3, Add, add, Matrix3,
     self, other,
@@ -311,7 +309,6 @@ impl_arithmetic!(
     ])
 );
 
-#[cfg_attr(rustfmt, rustfmt_skip)]
 impl_inplace_arithmetic!(
     Matrix3, Matrix3, AddAssign, add_assign,
     self, other,
@@ -322,7 +319,6 @@ impl_inplace_arithmetic!(
     }
 );
 
-#[cfg_attr(rustfmt, rustfmt_skip)]
 impl_arithmetic!(
     Matrix3, Matrix3, Sub, sub, Matrix3,
     self, other,
@@ -333,7 +329,6 @@ impl_arithmetic!(
     ])
 );
 
-#[cfg_attr(rustfmt, rustfmt_skip)]
 impl_inplace_arithmetic!(
     Matrix3, Matrix3, SubAssign, sub_assign,
     self, other,
@@ -344,7 +339,6 @@ impl_inplace_arithmetic!(
     }
 );
 
-#[cfg_attr(rustfmt, rustfmt_skip)]
 impl_arithmetic!(
     Matrix3, Matrix3, Mul, mul, Matrix3,
     self, other,
@@ -369,7 +363,6 @@ impl_arithmetic!(
     }
 );
 
-#[cfg_attr(rustfmt, rustfmt_skip)]
 impl_inplace_arithmetic!(
     Matrix3, Matrix3, MulAssign, mul_assign,
     self, other,
@@ -394,7 +387,6 @@ impl_inplace_arithmetic!(
     }
 );
 
-#[cfg_attr(rustfmt, rustfmt_skip)]
 impl_arithmetic!(
     Matrix3, Vector3D, Mul, mul, Vector3D,
     self, other,
@@ -406,7 +398,6 @@ impl_arithmetic!(
     }
 );
 
-#[cfg_attr(rustfmt, rustfmt_skip)]
 lsh_scal_arithmetic!(
     Matrix3, Mul, mul, Matrix3,
     self, other,
@@ -417,7 +408,6 @@ lsh_scal_arithmetic!(
     ])
 );
 
-#[cfg_attr(rustfmt, rustfmt_skip)]
 rhs_scal_arithmetic!(
     Matrix3, Mul, mul, Matrix3,
     self, other,
@@ -428,12 +418,11 @@ rhs_scal_arithmetic!(
     ])
 );
 
-#[cfg_attr(rustfmt, rustfmt_skip)]
 impl_inplace_arithmetic!(
     Matrix3, f64, MulAssign, mul_assign,
     self, other,
     {
-        #[allow(clone_on_copy)]
+        #[allow(clippy::clone_on_copy)]
         let other = other.clone();
         self[0][0] *= other; self[0][1] *= other; self[0][2] *= other;
         self[1][0] *= other; self[1][1] *= other; self[1][2] *= other;
@@ -441,7 +430,6 @@ impl_inplace_arithmetic!(
     }
 );
 
-#[cfg_attr(rustfmt, rustfmt_skip)]
 lsh_scal_arithmetic!(
     Matrix3, Div, div, Matrix3,
     self, other,
@@ -452,12 +440,11 @@ lsh_scal_arithmetic!(
     ])
 );
 
-#[cfg_attr(rustfmt, rustfmt_skip)]
 impl_inplace_arithmetic!(
     Matrix3, f64, DivAssign, div_assign,
     self, other,
     {
-        #[allow(clone_on_copy)]
+        #[allow(clippy::clone_on_copy)]
         let other = other.clone();
         self[0][0] /= other; self[0][1] /= other; self[0][2] /= other;
         self[1][0] /= other; self[1][1] /= other; self[1][2] /= other;
@@ -512,7 +499,6 @@ impl From<[[f64; 3]; 3]> for Matrix3 {
     }
 }
 
-#[cfg_attr(rustfmt, rustfmt_skip)]
 #[cfg(test)]
 mod tests {
     use super::*;
