@@ -1,7 +1,5 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) Lumol's contributors — BSD license
-#![cfg_attr(rustfmt, rustfmt_skip)]
-
 use std::ops::{Index, IndexMut, Deref, Range};
 use std::sync::{RwLock, RwLockReadGuard, RwLockWriteGuard};
 use std::f64::consts::{PI, FRAC_2_SQRT_PI};
@@ -424,7 +422,7 @@ You can manually set alpha to a slighty higher value (current alpha is {})",
 impl Ewald {
     /// Get the real-space energy for one pair at distance `r` with charges `qi`
     /// and `qj` ; and with restriction information for this pair in `info`.
-    #[allow(float_cmp)]  // checking info.scaling
+    #[allow(clippy::float_cmp)]  // checking info.scaling
     #[inline]
     fn real_space_energy_pair(&self, info: RestrictionInfo, qiqj: f64, r: f64) -> f64 {
         assert_eq!(info.scaling, 1.0, "Scaling restriction scheme using Ewald are not implemented");
@@ -433,19 +431,19 @@ impl Ewald {
             return 0.0;
         }
 
-        if !info.excluded {
-            qiqj / FOUR_PI_EPSILON_0 * erfc(self.alpha * r) / r
-        } else {
+        if info.excluded {
             // use a correction for excluded interaction, removing the energy
             // from kspace
             - qiqj / FOUR_PI_EPSILON_0 * erf(self.alpha * r) / r
+        } else {
+            qiqj / FOUR_PI_EPSILON_0 * erfc(self.alpha * r) / r
         }
     }
 
     /// Get the real-space force for one pair at distance `r` with charges
     /// `qi` and `qj` ; and with restriction information for this pair in
     /// `info`.
-    #[allow(float_cmp)]  // checking info.scaling
+    #[allow(clippy::float_cmp)]  // checking info.scaling
     #[inline]
     fn real_space_force_pair(&self, info: RestrictionInfo, qiqj: f64, r: f64) -> f64 {
         assert_eq!(info.scaling, 1.0, "Scaling restriction scheme using Ewald are not implemented");
@@ -454,17 +452,17 @@ impl Ewald {
             return 0.0;
         }
 
-        if !info.excluded {
-            qiqj / (FOUR_PI_EPSILON_0 * r * r) * (
-                self.alpha * FRAC_2_SQRT_PI * exp(-self.alpha * self.alpha * r * r)
-                + erfc(self.alpha * r) / r
-            )
-        } else {
+        if info.excluded {
             // use a correction for excluded interaction, removing the force
             // from kspace
             qiqj / (FOUR_PI_EPSILON_0 * r * r) * (
                 self.alpha * FRAC_2_SQRT_PI * exp(-self.alpha * self.alpha * r * r)
                 - erf(self.alpha * r) / r
+            )
+        } else {
+            qiqj / (FOUR_PI_EPSILON_0 * r * r) * (
+                self.alpha * FRAC_2_SQRT_PI * exp(-self.alpha * self.alpha * r * r)
+                + erfc(self.alpha * r) / r
             )
         }
     }

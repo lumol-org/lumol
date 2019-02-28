@@ -41,7 +41,7 @@ impl Rotate {
         assert!(theta > 0.0, "theta must be positive in Rotate move");
         Rotate {
             hash: hash.into(),
-            molid: usize::MAX,
+            molid: usize::max_value(),
             newpos: Vec::new(),
             axis: UnitSphereSurface::new(),
             theta: theta,

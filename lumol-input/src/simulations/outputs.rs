@@ -10,9 +10,11 @@ use lumol_sim::output::{ForcesOutput, CellOutput, CustomOutput, StressOutput};
 use crate::{Input, FromToml, Error};
 use crate::extract;
 
+pub type OutputFrequency = (Box<dyn Output>, u64);
+
 impl Input {
     /// Get the the simulation outputs.
-    pub(crate) fn read_outputs(&self) -> Result<Vec<(Box<dyn Output>, u64)>, Error> {
+    pub(crate) fn read_outputs(&self) -> Result<Vec<OutputFrequency>, Error> {
         let config = self.simulation_table()?;
         if let Some(outputs) = config.get("outputs") {
             let outputs = outputs.as_array().ok_or(

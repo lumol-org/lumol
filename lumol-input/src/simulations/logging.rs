@@ -101,7 +101,7 @@ impl Input {
                 )?;
 
                 let mut appenders = Vec::new();
-                for (i, target) in targets.into_iter().enumerate() {
+                for (i, target) in targets.iter().enumerate() {
                     let target = target.as_table().ok_or(
                         Error::from("'targets' must be an array of tables in 'log' section")
                     )?;
