@@ -29,14 +29,15 @@ install:
     - find target/debug/deps/ ! -name "lib*" -type f -delete
 script:
     - cd $TRAVIS_BUILD_DIR
-    # Run all tests in release mode
-    - cargo test --all --release -- --test-threads=2
     # Run unit tests and doc tests in debug mode
     - cargo test --all --lib -- --test-threads=2
     - cargo test --all --doc -- --test-threads=2
+    # lumol-input also has integration tests
     - cargo test -p lumol-input --tests -- --test-threads=2
-    # Check that benchmarks still compile
-    - cargo bench --no-run
+    # Run all tests in release mode
+    - cargo test --all --release -- --test-threads=2
+    # Check thet benchmarks compile and run
+    - cargo bench -- --test
     # Check if tutorials compile
     - |
       for tutorial in tutorials/*/
