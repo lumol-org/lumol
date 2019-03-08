@@ -1,6 +1,6 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) Lumol's contributors — BSD license
-#![allow(dead_code)]
+#![allow(dead_code, clippy::needless_return)]
 
 use lumol::{System, TrajectoryBuilder, Vector3D};
 use lumol::input::InteractionsInput;
@@ -42,7 +42,7 @@ pub fn move_rigid_molecule(system: &System) -> (usize, Vec<Vector3D>) {
     return (molid, positions);
 }
 
-pub fn move_all_rigid_molecule(system: &mut System) -> System {
+pub fn move_all_rigid_molecule(mut system: System) -> System {
     let mut rng = get_rng();
 
     for mut molecule in system.molecules_mut() {
@@ -52,5 +52,5 @@ pub fn move_all_rigid_molecule(system: &mut System) -> System {
         }
     }
 
-    return system.clone();
+    return system;
 }
