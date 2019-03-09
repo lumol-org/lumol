@@ -8,11 +8,11 @@ use lumol::{GlobalPotential, Ewald, SharedEwald, Wolf};
 mod utils;
 
 fn get_wolf() -> Wolf {
-    return Wolf::new(12.0);
+    Wolf::new(12.0)
 }
 
 fn get_ewald() -> SharedEwald {
-    return SharedEwald::new(Ewald::new(9.5, 7, None));
+    SharedEwald::new(Ewald::new(9.5, 7, None))
 }
 
 fn ewald_energy_computation(c: &mut Criterion) {

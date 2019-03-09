@@ -30,6 +30,7 @@ impl CellOutput {
 }
 
 impl Output for CellOutput {
+    #[allow(clippy::non_ascii_literal)]
     fn setup(&mut self, _: &System) {
         writeln_or_log!(self, "# Unit cell of the simulation");
         writeln_or_log!(self, "# Step A/Å B/Å C/Å α/deg β/deg γ/deg");

@@ -22,7 +22,7 @@ pub enum CellShape {
     Triclinic,
 }
 
-/// An UnitCell defines the system physical boundaries.
+/// An `UnitCell` defines the system physical boundaries.
 ///
 /// The shape of the cell can be any of the [`CellShape`][CellShape], and will
 /// influence how periodic boundary conditions are applied.

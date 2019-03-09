@@ -1,5 +1,7 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) Lumol's contributors — BSD license
+#![allow(clippy::needless_return)]
+
 use std::{env, fs, io};
 use std::fs::File;
 use std::io::prelude::*;

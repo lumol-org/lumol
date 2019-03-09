@@ -4,7 +4,7 @@
 //! Testing energy of a Lennard-Jones fluid using data from
 //! https://www.nist.gov/mml/csd/chemical-informatics-research-group/lennard-jones-fluid-reference-calculations
 
-#![allow(unknown_lints, float_cmp, needless_pass_by_value)]
+#![allow(clippy::float_cmp, clippy::needless_return)]
 use lumol::input::Input;
 use lumol::sys::System;
 

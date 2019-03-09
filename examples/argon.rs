@@ -1,5 +1,6 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) Lumol's contributors — BSD license
+#![allow(clippy::cast_lossless)]
 
 //! Molecular dynamics simulation of an Argon crystal melt.
 //!
@@ -54,5 +55,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     simulation.run(&mut system, 5000);
 
     println!("All done!");
-    return Ok(());
+
+    Ok(())
 }

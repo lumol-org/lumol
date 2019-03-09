@@ -10,13 +10,13 @@ mod utils;
 fn get_wolf() -> Wolf {
     let mut wolf = Wolf::new(9.0);
     wolf.set_restriction(PairRestriction::InterMolecular);
-    return wolf;
+    wolf
 }
 
 fn get_ewald() -> SharedEwald {
     let mut ewald = SharedEwald::new(Ewald::new(8.0, 7, None));
     ewald.set_restriction(PairRestriction::InterMolecular);
-    return ewald;
+    ewald
 }
 
 fn ewald_energy_computation(c: &mut Criterion) {

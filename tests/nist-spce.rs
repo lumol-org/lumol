@@ -1,6 +1,8 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) Lumol's contributors — BSD license
 
+#![allow(clippy::unreadable_literal, clippy::needless_return)]
+
 //! Testing energy computation for SPC/E water using data from
 //! https://www.nist.gov/mml/csd/chemical-informatics-research-group/spce-water-reference-calculations-9å-cutoff
 //! https://www.nist.gov/mml/csd/chemical-informatics-research-group/spce-water-reference-calculations-10å-cutoff

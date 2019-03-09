@@ -4,7 +4,7 @@
 //! Input system for lumol using TOML as a language
 
 #![warn(missing_docs, trivial_casts, unused_import_braces, variant_size_differences)]
-#![warn(unused_qualifications, unused_results)]
+#![warn(unused_qualifications, unused_results, rust_2018_idioms)]
 // Clippy configuration
 #![warn(clippy::all, clippy::pedantic)]
 // Not embed software, integer and float arithmeric are allowed
@@ -16,11 +16,8 @@
 #![allow(clippy::shadow_reuse, clippy::shadow_same, clippy::shadow_unrelated)]
 #![allow(clippy::use_self, clippy::redundant_field_names, clippy::or_fun_call)]
 #![allow(clippy::needless_return, clippy::needless_range_loop, clippy::doc_markdown)]
-#![allow(clippy::missing_docs_in_private_items, clippy::non_ascii_literal)]
-#![allow(clippy::new_without_default, clippy::new_without_default_derive)]
-#![allow(clippy::should_implement_trait, clippy::needless_pass_by_value)]
-#![allow(clippy::unreadable_literal, clippy::redundant_field_names)]
-#![allow(clippy::range_plus_one, clippy::filter_map, clippy::stutter)]
+#![allow(clippy::missing_docs_in_private_items, clippy::module_name_repetitions)]
+#![allow(clippy::new_without_default, clippy::range_plus_one, clippy::filter_map)]
 
 // deny(warnings) in doc tests
 #![doc(test(attr(deny(warnings))))]
