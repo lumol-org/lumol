@@ -35,6 +35,7 @@ impl InteractionsInput {
     }
 
     /// Read the interactions from a TOML formatted string.
+    #[allow(clippy::should_implement_trait)]
     pub fn from_str(string: &str) -> Result<InteractionsInput, Error> {
         let config = parse(string).map_err(|err| Error::TOML(Box::new(err)))?;
         validate(&config)?;

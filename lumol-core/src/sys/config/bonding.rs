@@ -159,18 +159,18 @@ impl Bonding {
     pub fn merge_with(&mut self, other: Bonding) {
         assert_eq!(self.range.end, other.range.start);
         self.range.end = other.range.end;
-        for bond in other.bonds() {
-            let _ = self.bonds.insert(*bond);
+        for bond in other.bonds {
+            let _ = self.bonds.insert(bond);
         }
 
         // Get angles and dihedrals from the other molecule, there is no need to
         // rebuild these.
-        for angle in other.angles() {
-            let _ = self.angles.insert(*angle);
+        for angle in other.angles {
+            let _ = self.angles.insert(angle);
         }
 
-        for dihedral in other.dihedrals() {
-            let _ = self.dihedrals.insert(*dihedral);
+        for dihedral in other.dihedrals {
+            let _ = self.dihedrals.insert(dihedral);
         }
 
         self.rebuild_connections();

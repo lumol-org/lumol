@@ -43,5 +43,5 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut simulation = Simulation::new(Box::new(minimization));
     simulation.run(&mut system, 500);
 
-    return Ok(());
+    Ok(())
 }

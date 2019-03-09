@@ -32,5 +32,5 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut simulation = Simulation::new(Box::new(md));
     simulation.run(&mut system, 1000);
 
-    return Ok(());
+    Ok(())
 }

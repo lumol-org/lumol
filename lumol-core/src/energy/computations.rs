@@ -206,7 +206,7 @@ mod test {
             epsilon: 50.0,
             sigma: 2.0,
         };
-        let table = TableComputation::new(Box::new(lj.clone()), 1000, 4.0);
+        let table = TableComputation::new(Box::new(lj), 1000, 4.0);
         assert_eq!(table.tail_energy(5.0), lj.tail_energy(5.0));
         assert_eq!(table.tail_virial(5.0), lj.tail_virial(5.0));
     }

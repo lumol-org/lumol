@@ -373,7 +373,7 @@ impl Configuration {
     }
 }
 
-/// Check that molecule_ids is sorted and only contains successive values
+/// Check that `molecule_ids` is sorted and only contains successive values
 fn check_molid_sorted(molecule_ids: &[usize]) -> bool {
     let mut previous = 0;
     for &i in molecule_ids {

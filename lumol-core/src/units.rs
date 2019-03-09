@@ -14,6 +14,7 @@
 //!
 //! Other units are derived from these primitives units. For examples, the
 //! internal unit for energy is 1e-4 kJ/mol.
+#![allow(clippy::unreadable_literal)]
 
 use std::error::Error;
 use std::fmt;
@@ -214,10 +215,9 @@ fn tokenize(unit: &str) -> Vec<Token> {
 static MISSING_OPERATOR: &'static str = "Oops, sorry explorator, but you felt \
                                          in a space-time hole. We are missing an operator here";
 
-/// Create the AST for unit expression using the Shunting-Yard algorithm.
+/// Create the AST for unit expression using the [Shunting-Yard] algorithm.
 ///
-/// See /// https://en.wikipedia.org/wiki/Shunting-yard_algorithm for a
-/// description of the algorithm.
+/// [Shunting-Yard]: https://en.wikipedia.org/wiki/Shunting-yard_algorithm
 #[allow(trivial_casts)]
 fn shunting_yard(tokens: Vec<Token>) -> Result<Vec<Token>, ParseError> {
     let mut operators = Vec::new();
@@ -462,8 +462,8 @@ mod test {
         assert_eq!(UnitExpr::parse("nm").unwrap(), UnitExpr::Val(10.0));
 
         assert_eq!(UnitExpr::parse("bohr/fs").unwrap().eval(), 0.52917720859);
-        assert_eq!(UnitExpr::parse("(Ry / rad^-3   )").unwrap().eval(), 0.13127498789124938);
-        assert_eq!(UnitExpr::parse("bar/(m * fs^2)").unwrap().eval(), 6.0221417942167636e-19);
+        assert_eq!(UnitExpr::parse("(Ry / rad^-3   )").unwrap().eval(), 0.1312749878912494);
+        assert_eq!(UnitExpr::parse("bar/(m * fs^2)").unwrap().eval(), 6.022141794216763e-19);
         assert_eq!(UnitExpr::parse("kJ/mol/deg^2").unwrap().eval(), 0.3282806352310398);
         assert_eq!(UnitExpr::parse("(kcal/mol/A)^2").unwrap().eval(), 1.7505856024515547e-7);
 

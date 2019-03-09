@@ -109,7 +109,7 @@ impl MCMove for Rotate {
                 self.range = Uniform::new(-self.theta, self.theta);
             } else {
                 warn_once!(
-                    "Tried to increase the maximum amplitude for rotations to more than 180°."
+                    "Tried to increase the maximum amplitude for rotations to more than 180 degrees."
                 );
             }
         }

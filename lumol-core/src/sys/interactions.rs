@@ -189,8 +189,8 @@ mod test {
         assert_eq!(normalize_pair((Kind(0), Kind(1))), normalize_pair((Kind(1), Kind(0))));
         assert_eq!(normalize_pair((Kind(125), Kind(0))), normalize_pair((Kind(0), Kind(125))));
 
-        assert_eq!(normalize_pair((Kind(0), Kind(1))), ((Kind(0), Kind(1))));
-        assert_eq!(normalize_pair((Kind(125), Kind(0))), ((Kind(0), Kind(125))));
+        assert_eq!(normalize_pair((Kind(0), Kind(1))), (Kind(0), Kind(1)));
+        assert_eq!(normalize_pair((Kind(125), Kind(0))), (Kind(0), Kind(125)));
     }
 
     #[test]

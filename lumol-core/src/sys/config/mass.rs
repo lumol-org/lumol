@@ -3,6 +3,7 @@
 
 //! Atomic masses for all elements
 
+#[allow(clippy::unreadable_literal)]
 static ATOMIC_MASSES: &'static [(&'static str, f64)] = &[
     ("H", 1.008),
     ("He", 4.002602),

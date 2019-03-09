@@ -1241,7 +1241,7 @@ mod tests {
         fn scale(system: &mut System, i: usize, j: usize, eps: f64) {
             let mut scaling = Matrix3::one();
             scaling[i][j] += eps;
-            let old_cell = system.cell.clone();
+            let old_cell = system.cell;
             let new_cell = system.cell.scale(scaling);
 
             for position in system.particles_mut().position {
@@ -1324,6 +1324,7 @@ mod tests {
     use approx::assert_relative_eq;
 
     #[test]
+    #[allow(clippy::items_after_statements)]
     fn move_molecule() {
         let mut system = system_from_xyz("6
         cell: 20.0

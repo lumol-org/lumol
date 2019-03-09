@@ -404,7 +404,7 @@ mod tests {
         fn scale(system: &mut System, i: usize, j: usize, eps: f64) {
             let mut scaling = Matrix3::one();
             scaling[i][j] += eps;
-            let old_cell = system.cell.clone();
+            let old_cell = system.cell;
             let new_cell = system.cell.scale(scaling);
 
             for position in system.particles_mut().position {
@@ -484,8 +484,8 @@ mod tests {
 
             let new_positions = &[
                 Vector3D::new(4.0, 0.0, -2.0),
-                Vector3D::new(3.0100101914949688, 0.19045656166589708, -2.11664352187198654),
-                Vector3D::new(4.07610780627224825, -0.8995901989882638, -2.07032123227505443),
+                Vector3D::new(3.010010191494968, 0.19045656166589708, -2.1166435218719863),
+                Vector3D::new(4.0761078062722484, -0.8995901989882638, -2.0703212322750546),
             ];
             let cost = wolf.move_molecule_cost(&system, 0, new_positions);
 
