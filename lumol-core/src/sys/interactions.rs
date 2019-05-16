@@ -8,6 +8,8 @@ use std::cmp::{max, min};
 use std::collections::BTreeMap;
 use std::f64;
 
+use log::warn;
+
 use crate::{AnglePotential, BondPotential, DihedralPotential, PairInteraction};
 use crate::{CoulombicPotential, GlobalPotential};
 use crate::ParticleKind;
@@ -60,86 +62,106 @@ fn normalize_dihedral((i, j, k, m): DihedralKind) -> DihedralKind {
 /// Its main role is to store and provide access
 #[derive(Clone)]
 pub struct Interactions {
-    /// Pair potentials
-    pairs: BTreeMap<PairKind, Vec<PairInteraction>>,
-    /// Bond potentials
-    bonds: BTreeMap<BondKind, Vec<Box<dyn BondPotential>>>,
-    /// Angle potentials
-    angles: BTreeMap<AngleKind, Vec<Box<dyn AnglePotential>>>,
-    /// Dihedral angles potentials
-    dihedrals: BTreeMap<DihedralKind, Vec<Box<dyn DihedralPotential>>>,
     /// Coulombic potential solver
     pub coulomb: Option<Box<dyn CoulombicPotential>>,
     /// Global potentials
     pub globals: Vec<Box<dyn GlobalPotential>>,
+    /// Pair potentials
+    pairs: BTreeMap<PairKind, PairInteraction>,
+    /// Bond potentials
+    bonds: BTreeMap<BondKind, Box<dyn BondPotential>>,
+    /// Angle potentials
+    angles: BTreeMap<AngleKind, Box<dyn AnglePotential>>,
+    /// Dihedral angles potentials
+    dihedrals: BTreeMap<DihedralKind, Box<dyn DihedralPotential>>,
+    /// Association particles names to particle kinds
+    kinds: BTreeMap<String, ParticleKind>,
 }
 
 impl Interactions {
     /// Create a new empty `Interactions`
     pub fn new() -> Interactions {
         Interactions {
+            coulomb: None,
+            globals: Vec::new(),
             pairs: BTreeMap::new(),
             bonds: BTreeMap::new(),
             angles: BTreeMap::new(),
             dihedrals: BTreeMap::new(),
-            coulomb: None,
-            globals: Vec::new(),
+            kinds: BTreeMap::new(),
         }
     }
 
-    /// Add the `potential` pair interaction for the given `pair`
-    pub fn add_pair(&mut self, pair: PairKind, potential: PairInteraction) {
-        let kind = normalize_pair(pair);
-        let pairs = self.pairs.entry(kind).or_insert(Vec::new());
-        pairs.push(potential);
+    /// Get the existing kind associated with `name` or create a new one
+    pub(crate) fn get_kind(&mut self, name: &str) -> ParticleKind {
+        if let Some(&kind) = self.kinds.get(name) {
+            return kind;
+        } else {
+            let kind = ParticleKind(self.kinds.len() as u32);
+            let _ = self.kinds.insert(String::from(name), kind);
+            kind
+        }
     }
 
-    /// Add the `potential` bonded interaction for the given `bond`
-    pub fn add_bond(&mut self, bond: BondKind, potential: Box<dyn BondPotential>) {
-        let kind = normalize_pair(bond);
-        let bonds = self.bonds.entry(kind).or_insert(Vec::new());
-        bonds.push(potential);
+    /// Set the pair interaction `potential` for atoms with types `i` and `j`
+    pub fn set_pair(&mut self, (i, j): (&str, &str), potential: PairInteraction) {
+        let kind = normalize_pair((self.get_kind(i), self.get_kind(j)));
+        if self.pairs.insert(kind, potential).is_some() {
+            warn!("replaced pair potential for ({}, {})", i, j);
+        }
     }
 
-    /// Add the `potential` angle interaction for the given `angle`
-    pub fn add_angle(&mut self, angle: AngleKind, potential: Box<dyn AnglePotential>) {
-        let kind = normalize_angle(angle);
-        let angles = self.angles.entry(kind).or_insert(Vec::new());
-        angles.push(potential);
+    /// Set the bond interaction `potential` for atoms with types `i` and `j`
+    pub fn set_bond(&mut self, (i, j): (&str, &str), potential: Box<dyn BondPotential>) {
+        let kind = normalize_pair((self.get_kind(i), self.get_kind(j)));
+        if self.bonds.insert(kind, potential).is_some() {
+            warn!("replaced bond potential for ({}, {})", i, j);
+        }
     }
 
-    /// Add the `potential` dihedral interaction for the dihedral angle `(i, j,
-    /// k, m)`
-    pub fn add_dihedral(&mut self, dihedral: DihedralKind, potential: Box<dyn DihedralPotential>) {
-        let kind = normalize_dihedral(dihedral);
-        let dihedrals = self.dihedrals.entry(kind).or_insert(Vec::new());
-        dihedrals.push(potential);
+    /// Set the angle interaction `potential` for atoms with types `i`, `j`, and `k`
+    pub fn set_angle(&mut self, (i, j, k): (&str, &str, &str), potential: Box<dyn AnglePotential>) {
+        let kind = normalize_angle((self.get_kind(i), self.get_kind(j), self.get_kind(k)));
+        if self.angles.insert(kind, potential).is_some() {
+            warn!("replaced angle potential for ({}, {}, {})", i, j, k);
+        }
+    }
+
+    /// Set the dihedral angle interaction `potential` for atoms with types
+    /// `i`, `j`, `k`, and `m`.
+    pub fn set_dihedral(&mut self, (i, j, k, m): (&str, &str, &str, &str), potential: Box<dyn DihedralPotential>) {
+        let kind = (self.get_kind(i), self.get_kind(j), self.get_kind(k), self.get_kind(m));
+        let kind = normalize_dihedral(kind);
+        if self.dihedrals.insert(kind, potential).is_some() {
+            warn!("replaced dihedral angle potential for ({}, {}, {}, {})", i, j, k, m);
+        }
     }
 }
 
+
 impl Interactions {
-    /// Get all pair interactions corresponding to the `pair`
-    pub fn pairs(&self, pair: PairKind) -> &[PairInteraction] {
+    /// Get the pair interactions corresponding to the `pair`, if any exists.
+    pub fn pair(&self, pair: PairKind) -> Option<&PairInteraction> {
         let kind = normalize_pair(pair);
-        self.pairs.get(&kind).map_or(&[], |pairs| &**pairs)
+        self.pairs.get(&kind)
     }
 
-    /// Get all bonded interactions corresponding to the `bond`
-    pub fn bonds(&self, bond: BondKind) -> &[Box<dyn BondPotential>] {
+    /// Get the bond interactions corresponding to the `bond`, if any exists.
+    pub fn bond(&self, bond: BondKind) -> Option<&dyn BondPotential> {
         let kind = normalize_pair(bond);
-        self.bonds.get(&kind).map_or(&[], |bonds| &**bonds)
+        self.bonds.get(&kind).map(|potential| &**potential)
     }
 
-    /// Get all angle interactions corresponding to the `angle`
-    pub fn angles(&self, angle: AngleKind) -> &[Box<dyn AnglePotential>] {
+    /// Get the angle interactions corresponding to the `angle`, if any exists.
+    pub fn angle(&self, angle: AngleKind) -> Option<&dyn AnglePotential> {
         let kind = normalize_angle(angle);
-        self.angles.get(&kind).map_or(&[], |angles| &**angles)
+        self.angles.get(&kind).map(|potential| &**potential)
     }
 
-    /// Get all dihedral interactions corresponding to the `dihedral`
-    pub fn dihedrals(&self, dihedral: DihedralKind) -> &[Box<dyn DihedralPotential>] {
+    /// Get the dihedral interactions corresponding to the `dihedral`, if any exists.
+    pub fn dihedral(&self, dihedral: DihedralKind) -> Option<&dyn DihedralPotential> {
         let kind = normalize_dihedral(dihedral);
-        self.dihedrals.get(&kind).map_or(&[], |dihedrals| &**dihedrals)
+        self.dihedrals.get(&kind).map(|potential| &**potential)
     }
 
     /// Get maximum cutoff from `coulomb`, `pairs` and `global` interactons.
@@ -165,7 +187,7 @@ impl Interactions {
 
         // Pair interactions, return maximum cutoff
         let pairs_cutoff = self.pairs.values()
-                               .flat_map(|i| i.iter().map(|pair| pair.cutoff()))
+                               .map(|pair| pair.cutoff())
                                .fold(f64::NAN, f64::max);
 
         maximum_cutoff = f64::max(maximum_cutoff, pairs_cutoff);
@@ -311,77 +333,79 @@ mod test {
     fn pairs() {
         let mut interactions = Interactions::new();
         let pair = PairInteraction::new(Box::new(NullPotential), 0.0);
-        interactions.add_pair((Kind(0), Kind(1)), pair.clone());
-        assert_eq!(interactions.pairs((Kind(0), Kind(1))).len(), 1);
-        assert_eq!(interactions.pairs((Kind(1), Kind(0))).len(), 1);
+        interactions.set_pair(("A", "B"), pair.clone());
+        assert!(interactions.pair((Kind(0), Kind(1))).is_some());
+        assert!(interactions.pair((Kind(1), Kind(0))).is_some());
 
-        assert_eq!(interactions.pairs((Kind(0), Kind(0))).len(), 0);
-        interactions.add_pair((Kind(0), Kind(0)), pair.clone());
-        assert_eq!(interactions.pairs((Kind(0), Kind(0))).len(), 1);
+        assert!(interactions.pair((Kind(0), Kind(0))).is_none());
+        interactions.set_pair(("A", "A"), pair.clone());
+        assert!(interactions.pair((Kind(0), Kind(0))).is_some());
 
         // 'out of bounds' kinds
-        assert_eq!(interactions.pairs((Kind(55), Kind(55))).len(), 0);
+        assert!(interactions.pair((Kind(55), Kind(55))).is_none());
     }
 
     #[test]
     fn bonds() {
         let mut interactions = Interactions::new();
 
-        interactions.add_bond((Kind(0), Kind(1)), Box::new(NullPotential));
-        assert_eq!(interactions.bonds((Kind(0), Kind(1))).len(), 1);
-        assert_eq!(interactions.bonds((Kind(1), Kind(0))).len(), 1);
+        interactions.set_bond(("A", "B"), Box::new(NullPotential));
+        assert!(interactions.bond((Kind(0), Kind(1))).is_some());
+        assert!(interactions.bond((Kind(1), Kind(0))).is_some());
 
-        assert_eq!(interactions.bonds((Kind(0), Kind(0))).len(), 0);
-        interactions.add_bond((Kind(0), Kind(0)), Box::new(NullPotential));
-        assert_eq!(interactions.bonds((Kind(0), Kind(0))).len(), 1);
+        assert!(interactions.bond((Kind(0), Kind(0))).is_none());
+        interactions.set_bond(("A", "A"), Box::new(NullPotential));
+        assert!(interactions.bond((Kind(0), Kind(0))).is_some());
 
 
         // 'out of bounds' kinds
-        assert_eq!(interactions.bonds((Kind(55), Kind(55))).len(), 0);
+        assert!(interactions.bond((Kind(55), Kind(55))).is_none());
     }
 
     #[test]
     fn angles() {
         let mut interactions = Interactions::new();
 
-        interactions.add_angle((Kind(0), Kind(1), Kind(2)), Box::new(NullPotential));
-        assert_eq!(interactions.angles((Kind(0), Kind(1), Kind(2))).len(), 1);
-        assert_eq!(interactions.angles((Kind(2), Kind(1), Kind(0))).len(), 1);
+        interactions.set_angle(("A", "B", "C"), Box::new(NullPotential));
+        assert!(interactions.angle((Kind(0), Kind(1), Kind(2))).is_some());
+        assert!(interactions.angle((Kind(2), Kind(1), Kind(0))).is_some());
 
-        assert_eq!(interactions.angles((Kind(2), Kind(2), Kind(1))).len(), 0);
-        interactions.add_angle((Kind(2), Kind(2), Kind(1)), Box::new(NullPotential));
-        assert_eq!(interactions.angles((Kind(2), Kind(2), Kind(1))).len(), 1);
-        assert_eq!(interactions.angles((Kind(1), Kind(2), Kind(2))).len(), 1);
+        assert!(interactions.angle((Kind(2), Kind(2), Kind(1))).is_none());
+        interactions.set_angle(("C", "C", "B"), Box::new(NullPotential));
+        assert!(interactions.angle((Kind(2), Kind(2), Kind(1))).is_some());
+        assert!(interactions.angle((Kind(1), Kind(2), Kind(2))).is_some());
 
-        interactions.add_angle((Kind(3), Kind(3), Kind(3)), Box::new(NullPotential));
-        assert_eq!(interactions.angles((Kind(3), Kind(3), Kind(3))).len(), 1);
+        assert!(interactions.angle((Kind(3), Kind(3), Kind(3))).is_none());
+        interactions.set_angle(("D", "D", "D"), Box::new(NullPotential));
+        assert!(interactions.angle((Kind(3), Kind(3), Kind(3))).is_some());
 
         // 'out of bounds' kinds
-        assert_eq!(interactions.angles((Kind(55), Kind(55), Kind(55))).len(), 0);
+        assert!(interactions.angle((Kind(55), Kind(55), Kind(55))).is_none());
     }
 
     #[test]
     fn dihedrals() {
         let mut interactions = Interactions::new();
 
-        interactions.add_dihedral((Kind(0), Kind(1), Kind(2), Kind(3)), Box::new(NullPotential));
-        assert_eq!(interactions.dihedrals((Kind(0), Kind(1), Kind(2), Kind(3))).len(), 1);
-        assert_eq!(interactions.dihedrals((Kind(3), Kind(2), Kind(1), Kind(0))).len(), 1);
+        interactions.set_dihedral(("A", "B", "C", "D"), Box::new(NullPotential));
+        assert!(interactions.dihedral((Kind(0), Kind(1), Kind(2), Kind(3))).is_some());
+        assert!(interactions.dihedral((Kind(3), Kind(2), Kind(1), Kind(0))).is_some());
 
-        assert_eq!(interactions.dihedrals((Kind(0), Kind(0), Kind(1), Kind(2))).len(), 0);
-        interactions.add_dihedral((Kind(0), Kind(0), Kind(1), Kind(2)), Box::new(NullPotential));
-        assert_eq!(interactions.dihedrals((Kind(0), Kind(0), Kind(1), Kind(2))).len(), 1);
-        assert_eq!(interactions.dihedrals((Kind(2), Kind(1), Kind(0), Kind(0))).len(), 1);
+        assert!(interactions.dihedral((Kind(0), Kind(0), Kind(1), Kind(2))).is_none());
+        interactions.set_dihedral(("A", "A", "B", "C"), Box::new(NullPotential));
+        assert!(interactions.dihedral((Kind(0), Kind(0), Kind(1), Kind(2))).is_some());
+        assert!(interactions.dihedral((Kind(2), Kind(1), Kind(0), Kind(0))).is_some());
 
-        interactions.add_dihedral((Kind(0), Kind(0), Kind(1), Kind(0)), Box::new(NullPotential));
-        assert_eq!(interactions.dihedrals((Kind(0), Kind(0), Kind(1), Kind(0))).len(), 1);
-        assert_eq!(interactions.dihedrals((Kind(0), Kind(1), Kind(0), Kind(0))).len(), 1);
+        interactions.set_dihedral(("A", "A", "B", "A"), Box::new(NullPotential));
+        assert!(interactions.dihedral((Kind(0), Kind(0), Kind(1), Kind(0))).is_some());
+        assert!(interactions.dihedral((Kind(0), Kind(1), Kind(0), Kind(0))).is_some());
 
-        interactions.add_dihedral((Kind(4), Kind(4), Kind(4), Kind(4)), Box::new(NullPotential));
-        assert_eq!(interactions.dihedrals((Kind(4), Kind(4), Kind(4), Kind(4))).len(), 1);
+        assert!(interactions.dihedral((Kind(4), Kind(4), Kind(4), Kind(4))).is_none());
+        interactions.set_dihedral(("E", "E", "E", "E"), Box::new(NullPotential));
+        assert!(interactions.dihedral((Kind(4), Kind(4), Kind(4), Kind(4))).is_some());
 
         // 'out of bounds' kinds
-        assert_eq!(interactions.dihedrals((Kind(55), Kind(55), Kind(55), Kind(55))).len(), 0);
+        assert!(interactions.dihedral((Kind(55), Kind(55), Kind(55), Kind(55))).is_none());
     }
 
     #[test]
@@ -392,7 +416,7 @@ mod test {
 
         // Only pairs
         let pair = PairInteraction::new(Box::new(NullPotential), 10.0);
-        interactions.add_pair((Kind(0), Kind(1)), pair.clone());
+        interactions.set_pair(("A", "B"), pair.clone());
         assert_eq!(interactions.maximum_cutoff(), Some(10.0));
 
         // Only globals
@@ -409,7 +433,7 @@ mod test {
         assert_eq!(interactions.maximum_cutoff(), Some(1.0));
 
         // All potentials
-        interactions.add_pair((Kind(0), Kind(1)), pair.clone());
+        interactions.set_pair(("A", "B"), pair.clone());
         assert_eq!(interactions.maximum_cutoff(), Some(10.0));
         interactions.globals.push(Box::new(Wolf::new(15.0)));
         assert_eq!(interactions.maximum_cutoff(), Some(15.0));

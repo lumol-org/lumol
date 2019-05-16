@@ -1,7 +1,6 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) 2015-2016 Lumol's contributors — BSD license
 
-use std::collections::BTreeMap;
 use std::ops::{Deref, DerefMut};
 
 use soa_derive::soa_zip;
@@ -11,7 +10,7 @@ use crate::{Matrix3, Vector3D};
 use crate::{AnglePotential, BondPotential, DihedralPotential, PairInteraction};
 use crate::{CoulombicPotential, GlobalPotential};
 use crate::{Composition, EnergyEvaluator, Interactions};
-use crate::{Configuration, Molecule, ParticleKind, UnitCell};
+use crate::{Configuration, Molecule, UnitCell};
 
 /// The number of degrees of freedom simulated in a given system
 #[derive(Clone, PartialEq, Debug)]
@@ -43,8 +42,6 @@ pub struct System {
     configuration: Configuration,
     /// All the interactions in this system
     interactions: Interactions,
-    /// Association particles names to particle kinds
-    kinds: BTreeMap<String, ParticleKind>,
     /// Externally managed temperature for the system
     external_temperature: Option<f64>,
     /// Number of degrees of freedom simulated in the system. This default to
@@ -71,7 +68,6 @@ impl System {
     fn with_configuration(configuration: Configuration) -> System {
         System {
             configuration: configuration,
-            kinds: BTreeMap::new(),
             interactions: Interactions::new(),
             step: 0,
             external_temperature: None,
@@ -79,20 +75,10 @@ impl System {
         }
     }
 
-    fn get_kind(&mut self, name: &str) -> ParticleKind {
-        if let Some(&kind) = self.kinds.get(name) {
-            return kind;
-        } else {
-            let kind = ParticleKind(self.kinds.len() as u32);
-            let _ = self.kinds.insert(String::from(name), kind);
-            kind
-        }
-    }
-
     /// Add a molecule to the system
     pub fn add_molecule(&mut self, mut molecule: Molecule) {
         for (kind, name) in soa_zip!(molecule.particles_mut(), [mut kind, name]) {
-            *kind = self.get_kind(name);
+            *kind = self.interactions.get_kind(name);
         }
         self.configuration.add_molecule(molecule);
     }
@@ -130,8 +116,8 @@ impl System {
         EnergyEvaluator::new(self)
     }
 
-    /// Add the `potential` pair interaction for atoms with types `i` and `j`
-    pub fn add_pair_potential(&mut self, (i, j): (&str, &str), potential: PairInteraction) {
+    /// Set the pair interaction `potential` for atoms with types `i` and `j`
+    pub fn set_pair_potential(&mut self, (i, j): (&str, &str), potential: PairInteraction) {
         if self.cell.lengths().iter().any(|&d| 0.5 * d < potential.cutoff()) {
             panic!(
                 "Can not add a potential with a cutoff bigger than half of the \
@@ -139,42 +125,31 @@ impl System {
                 the cutoff."
             );
         }
-        let kind_i = self.get_kind(i);
-        let kind_j = self.get_kind(j);
-        self.interactions.add_pair((kind_i, kind_j), potential)
+        self.interactions.set_pair((i, j), potential)
     }
 
-    /// Add the `potential` bonded interaction for atoms with types `i` and `j`
-    pub fn add_bond_potential(&mut self, (i, j): (&str, &str), potential: Box<dyn BondPotential>) {
-        let kind_i = self.get_kind(i);
-        let kind_j = self.get_kind(j);
-        self.interactions.add_bond((kind_i, kind_j), potential)
+    /// Set the bond interaction `potential` for atoms with types `i` and `j`
+    pub fn set_bond_potential(&mut self, (i, j): (&str, &str), potential: Box<dyn BondPotential>) {
+        self.interactions.set_bond((i, j), potential)
     }
 
-    /// Add the `potential` angle interaction for the angle `(i, j, k)`
-    pub fn add_angle_potential(
+    /// Set the angle interaction `potential` for atoms with types `i`, `j`, and `k`
+    pub fn set_angle_potential(
         &mut self,
         (i, j, k): (&str, &str, &str),
         potential: Box<dyn AnglePotential>,
     ) {
-        let kind_i = self.get_kind(i);
-        let kind_j = self.get_kind(j);
-        let kind_k = self.get_kind(k);
-        self.interactions.add_angle((kind_i, kind_j, kind_k), potential)
+        self.interactions.set_angle((i, j, k), potential)
     }
 
-    /// Add the `potential` dihedral interaction for the dihedral angle `(i, j,
-    /// k, m)`
-    pub fn add_dihedral_potential(
+    /// Set the dihedral angle interaction `potential` for atoms with types
+    /// `i`, `j`, `k`, and `m`.
+    pub fn set_dihedral_potential(
         &mut self,
         (i, j, k, m): (&str, &str, &str, &str),
         potential: Box<dyn DihedralPotential>,
     ) {
-        let kind_i = self.get_kind(i);
-        let kind_j = self.get_kind(j);
-        let kind_k = self.get_kind(k);
-        let kind_m = self.get_kind(m);
-        self.interactions.add_dihedral((kind_i, kind_j, kind_k, kind_m), potential)
+        self.interactions.set_dihedral((i, j, k, m), potential)
     }
 
     /// Set the coulombic interaction for all pairs to `potential`
@@ -196,24 +171,11 @@ impl System {
         self.interactions.globals.push(potential);
     }
 
-    /// Get the list of pair potential acting between the particles at indexes
-    /// `i` and `j`.
-    pub fn pair_potentials(&self, i: usize, j: usize) -> &[PairInteraction] {
+    /// Get the pair potential acting between the particles at indexes `i` and `j`.
+    pub fn pair_potential(&self, i: usize, j: usize) -> Option<&PairInteraction> {
         let kind_i = self.particles().kind[i];
         let kind_j = self.particles().kind[j];
-        let pairs = self.interactions.pairs((kind_i, kind_j));
-        if pairs.is_empty() {
-            // Use the same sorting as interactions
-            let name_i = &self.particles().name[i];
-            let name_j = &self.particles().name[j];
-            let (name_i, name_j) = if name_i < name_j {
-                (name_i, name_j)
-            } else {
-                (name_j, name_i)
-            };
-            warn_once!("No potential defined for the pair ({}, {})", name_i, name_j);
-        }
-        return pairs;
+        return self.interactions.pair((kind_i, kind_j));
     }
 
     /// Get read-only access to the interactions for this system
@@ -221,84 +183,37 @@ impl System {
         &self.interactions
     }
 
-    /// Get the list of bonded potential acting between the particles at indexes
-    /// `i` and `j`.
-    pub fn bond_potentials(&self, i: usize, j: usize) -> &[Box<dyn BondPotential>] {
+    /// Get the bond potential acting between the particles at indexes `i` and
+    /// `j`.
+    pub fn bond_potential(&self, i: usize, j: usize) -> Option<&dyn BondPotential> {
         let kind_i = self.particles().kind[i];
         let kind_j = self.particles().kind[j];
-        let bonds = self.interactions.bonds((kind_i, kind_j));
-        if bonds.is_empty() {
-            // Use the same sorting as interactions
-            let name_i = &self.particles().name[i];
-            let name_j = &self.particles().name[j];
-            let (name_i, name_j) = if name_i < name_j {
-                (name_i, name_j)
-            } else {
-                (name_j, name_i)
-            };
-            warn_once!("No potential defined for the bond ({}, {})", name_i, name_j);
-        }
-        return bonds;
+        return self.interactions.bond((kind_i, kind_j));
     }
 
-    /// Get the list of angle interaction acting between the particles at
-    /// indexes `i`, `j` and `k`.
-    pub fn angle_potentials(&self, i: usize, j: usize, k: usize) -> &[Box<dyn AnglePotential>] {
+    /// Get the angle potential acting between the particles at indexes `i`, `j`
+    /// and `k`.
+    pub fn angle_potential(&self, i: usize, j: usize, k: usize) -> Option<&dyn AnglePotential> {
         let kind_i = self.particles().kind[i];
         let kind_j = self.particles().kind[j];
         let kind_k = self.particles().kind[k];
-        let angles = self.interactions.angles((kind_i, kind_j, kind_k));
-        if angles.is_empty() {
-            // Use the same sorting as interactions
-            let name_i = &self.particles().name[i];
-            let name_j = &self.particles().name[j];
-            let name_k = &self.particles().name[k];
-            let (name_i, name_j, name_k) = if name_i < name_k {
-                (name_i, name_j, name_k)
-            } else {
-                (name_k, name_j, name_i)
-            };
-            warn_once!("No potential defined for the angle ({}, {}, {})", name_i, name_j, name_k);
-        }
-        return angles;
+        return self.interactions.angle((kind_i, kind_j, kind_k));
     }
 
-    /// Get the list of dihedral angles interaction acting between the particles
-    /// at indexes `i`, `j`, `k` and `m`.
-    pub fn dihedral_potentials(
+    /// Get the dihedral angles potential acting between the particles at
+    /// indexes `i`, `j`, `k` and `m`.
+    pub fn dihedral_potential(
         &self,
         i: usize,
         j: usize,
         k: usize,
         m: usize,
-    ) -> &[Box<dyn DihedralPotential>] {
+    ) -> Option<&dyn DihedralPotential> {
         let kind_i = self.particles().kind[i];
         let kind_j = self.particles().kind[j];
         let kind_k = self.particles().kind[k];
         let kind_m = self.particles().kind[m];
-        let dihedrals = self.interactions.dihedrals((kind_i, kind_j, kind_k, kind_m));
-        if dihedrals.is_empty() {
-            // Use the same sorting as interactions
-            let name_i = &self.particles().name[i];
-            let name_j = &self.particles().name[j];
-            let name_k = &self.particles().name[k];
-            let name_m = &self.particles().name[m];
-            let max_ij = ::std::cmp::max(name_i, name_j);
-            let max_km = ::std::cmp::max(name_k, name_m);
-            let (name_i, name_j, name_k, name_m) = if max_ij == max_km {
-                if ::std::cmp::min(name_i, name_j) < ::std::cmp::min(name_k, name_m) {
-                    (name_i, name_j, name_k, name_m)
-                } else {
-                    (name_m, name_k, name_j, name_i)
-                }
-            } else if max_ij < max_km {
-                (name_i, name_j, name_k, name_m)
-            } else {
-                (name_m, name_k, name_j, name_i)
-            };
-            warn_once!("No potential defined for the dihedral angle ({}, {}, {}, {})", name_i, name_j, name_k, name_m);
-        }
-        return dihedrals;
+        return self.interactions.dihedral((kind_i, kind_j, kind_k, kind_m));
     }
 
     /// Get the coulombic interaction for the system
@@ -400,6 +315,121 @@ impl System {
     }
 }
 
+impl System {
+    /// Check the system before running a simulation
+    pub fn check(&self) {
+        self.check_potentials()
+    }
+
+    fn check_potentials(&self) {
+        // Check pairs
+        for i in 0..self.size() {
+            let kind_i = self.particles().kind[i];
+            for j in (i + 1)..self.size() {
+                let kind_j = self.particles().kind[j];
+                if self.interactions.pair((kind_i, kind_j)).is_none() {
+                    warn_once!(
+                        "no potential defined for the pair {:?}",
+                        self.sorted_names_pair(i, j)
+                    );
+                }
+            }
+        }
+
+        // check molecular potentials
+        for molecule in self.molecules() {
+            for bond in molecule.bonds() {
+                let kind_i = self.particles().kind[bond.i()];
+                let kind_j = self.particles().kind[bond.j()];
+                if self.interactions.bond((kind_i, kind_j)).is_none() {
+                    warn_once!(
+                        "no potential defined for the bond {:?}",
+                        self.sorted_names_pair(bond.i(), bond.j())
+                    );
+                }
+            }
+
+            for angle in molecule.angles() {
+                let kind_i = self.particles().kind[angle.i()];
+                let kind_j = self.particles().kind[angle.j()];
+                let kind_k = self.particles().kind[angle.k()];
+                if self.interactions.angle((kind_i, kind_j, kind_k)).is_none() {
+                    warn_once!(
+                        "no potential defined for the angle {:?}",
+                        self.sorted_names_angle(angle.i(), angle.j(), angle.k())
+                    );
+                }
+            }
+
+            for dihedral in molecule.dihedrals() {
+                let kind_i = self.particles().kind[dihedral.i()];
+                let kind_j = self.particles().kind[dihedral.j()];
+                let kind_k = self.particles().kind[dihedral.k()];
+                let kind_m = self.particles().kind[dihedral.m()];
+                if self.interactions.dihedral((kind_i, kind_j, kind_k, kind_m)).is_none() {
+                    warn_once!(
+                        "no potential defined for the dihedral angle {:?}",
+                        self.sorted_names_dihedral(
+                            dihedral.i(), dihedral.j(), dihedral.k(), dihedral.m()
+                        )
+                    );
+                }
+            }
+        }
+
+        // check the need for a coulombic potential
+        let charge2 = self.particles().charge.iter().map(|q| q * q).sum::<f64>();
+        if charge2 > 1e-3 && self.interactions.coulomb.is_none() {
+            warn_once!("no coulombic potential solver defined, but the system is charged");
+        }
+    }
+
+    fn sorted_names_pair(&self, i: usize, j: usize) -> (&str, &str) {
+        // Use the same sorting as interactions
+        let name_i = &self.particles().name[i];
+        let name_j = &self.particles().name[j];
+        if name_i < name_j {
+            (name_i, name_j)
+        } else {
+            (name_j, name_i)
+        }
+    }
+
+    fn sorted_names_angle(&self, i: usize, j: usize, k: usize) -> (&str, &str, &str) {
+        // Use the same sorting as interactions
+        let name_i = &self.particles().name[i];
+        let name_j = &self.particles().name[j];
+        let name_k = &self.particles().name[k];
+        if name_i < name_k {
+            (name_i, name_j, name_k)
+        } else {
+            (name_k, name_j, name_i)
+        }
+    }
+
+    fn sorted_names_dihedral(&self, i: usize, j: usize, k: usize, m: usize) -> (&str, &str, &str, &str) {
+        // Use the same sorting as interactions
+        let name_i = &self.particles().name[i];
+        let name_j = &self.particles().name[j];
+        let name_k = &self.particles().name[k];
+        let name_m = &self.particles().name[m];
+        let max_ij = std::cmp::max(name_i, name_j);
+        let max_km = std::cmp::max(name_k, name_m);
+
+        if max_ij == max_km {
+            if std::cmp::min(name_i, name_j) < std::cmp::min(name_k, name_m) {
+                (name_i, name_j, name_k, name_m)
+            } else {
+                (name_m, name_k, name_j, name_i)
+            }
+        } else if max_ij < max_km {
+            (name_i, name_j, name_k, name_m)
+        } else {
+            (name_m, name_k, name_j, name_i)
+        }
+    }
+}
+
 impl Deref for System {
     type Target = Configuration;
 
@@ -478,9 +508,66 @@ mod tests {
         system.add_molecule(Molecule::new(Particle::new("He")));
         system.add_molecule(Molecule::new(Particle::new("He")));
         system.add_molecule(Molecule::new(Particle::new("He")));
-        assert_eq!(system.pair_potentials(0, 0).len(), 0);
-        assert_eq!(system.bond_potentials(0, 0).len(), 0);
-        assert_eq!(system.angle_potentials(0, 0, 0).len(), 0);
-        assert_eq!(system.dihedral_potentials(0, 0, 0, 0).len(), 0);
+        assert!(system.pair_potential(0, 0).is_none());
+        assert!(system.bond_potential(0, 0).is_none());
+        assert!(system.angle_potential(0, 0, 0).is_none());
+        assert!(system.dihedral_potential(0, 0, 0, 0).is_none());
+    }
+
+    #[test]
+    fn check_potentials() {
+        use std::sync::{Arc, Mutex};
+        use std::fmt::Write;
+        struct TestLogger {
+            message: Arc<Mutex<String>>,
+        }
+
+        impl log::Log for TestLogger {
+            fn enabled(&self, _: &log::Metadata<'_>) -> bool {true}
+
+            fn log(&self, record: &log::Record<'_>) {
+                if record.level() == log::Level::Warn {
+                    let mut message = self.message.lock().unwrap();
+                    write!(&mut *message, "{}\n", record.args()).unwrap();
+                }
+            }
+
+            fn flush(&self) {}
+        }
+
+        let message = Arc::new(Mutex::new(String::from("\n")));
+        let logger = TestLogger {message: message.clone()};
+        log::set_boxed_logger(Box::new(logger)).unwrap();
+        log::set_max_level(log::LevelFilter::Info);
+
+
+        let mut system = System::new();
+        system.add_molecule(Molecule::new(Particle::new("He")));
+        system.add_molecule(Molecule::new(Particle::new("He")));
+        system.add_molecule(Molecule::new(Particle::new("Ar")));
+        system.add_molecule(Molecule::new(Particle::new("Ar")));
+        let _ = system.add_bond(0, 1);
+        let _ = system.add_bond(1, 2);
+        let _ = system.add_bond(2, 3);
+
+        system.check();
+
+        static EXPECTED_WARNINGS: &'static str = r#"
+no potential defined for the pair ("He", "He")
+no potential defined for the pair ("Ar", "He")
+no potential defined for the pair ("Ar", "Ar")
+no potential defined for the bond ("He", "He")
+no potential defined for the bond ("Ar", "Ar")
+no potential defined for the bond ("Ar", "He")
+no potential defined for the angle ("Ar", "Ar", "He")
+no potential defined for the angle ("Ar", "He", "He")
+no potential defined for the dihedral angle ("Ar", "Ar", "He", "He")
+"#;
+
+        let messages = message.lock().unwrap();
+        assert_eq!(EXPECTED_WARNINGS.lines().count(), messages.lines().count());
+        for line in messages.lines() {
+            assert!(EXPECTED_WARNINGS.contains(line));
+        }
     }
 }

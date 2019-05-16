@@ -42,7 +42,7 @@ impl Compute for Forces {
                 let d = system.nearest_image(i, j);
                 let dn = d.normalized();
                 let r = d.norm();
-                for potential in system.pair_potentials(i, j) {
+                if let Some(potential) = system.pair_potential(i, j) {
                     let info = potential.restriction().information(path);
                     if !info.excluded {
                         let force = info.scaling * potential.force(r) * dn;
@@ -65,7 +65,7 @@ impl Compute for Forces {
                 let d = system.nearest_image(i, j);
                 let dn = d.normalized();
                 let r = d.norm();
-                for potential in system.bond_potentials(i, j) {
+                if let Some(potential) = system.bond_potential(i, j) {
                     let force = potential.force(r) * dn;
                     forces[i] += force;
                     forces[j] -= force;
@@ -75,7 +75,7 @@ impl Compute for Forces {
             for angle in molecule.angles() {
                 let (i, j, k) = (angle.i(), angle.j(), angle.k());
                 let (theta, d1, d2, d3) = system.angle_and_derivatives(i, j, k);
-                for potential in system.angle_potentials(i, j, k) {
+                if let Some(potential) = system.angle_potential(i, j, k) {
                     let force = potential.force(theta);
                     forces[i] += force * d1;
                     forces[j] += force * d2;
@@ -86,7 +86,7 @@ impl Compute for Forces {
             for dihedral in molecule.dihedrals() {
                 let (i, j, k, m) = (dihedral.i(), dihedral.j(), dihedral.k(), dihedral.m());
                 let (phi, d1, d2, d3, d4) = system.dihedral_and_derivatives(i, j, k, m);
-                for potential in system.dihedral_potentials(i, j, k, m) {
+                if let Some(potential) = system.dihedral_potential(i, j, k, m) {
                     let force = potential.force(phi);
                     forces[i] += force * d1;
                     forces[j] += force * d2;
@@ -203,7 +203,7 @@ impl Compute for AtomicVirial {
             let mut local_virial = Matrix3::zero();
             for j in (i + 1)..system.size() {
                 let path = system.bond_path(i, j);
-                for potential in system.pair_potentials(i, j) {
+                if let Some(potential) = system.pair_potential(i, j) {
                     let info = potential.restriction().information(path);
                     if !info.excluded {
                         let d = system.nearest_image(i, j);
@@ -221,7 +221,7 @@ impl Compute for AtomicVirial {
         for (i, ni) in composition.all_particles() {
             for (j, nj) in composition.all_particles() {
                 let two_pi_density = 2.0 * PI * (ni as f64) * (nj as f64) / volume;
-                for potential in system.interactions().pairs((i, j)) {
+                if let Some(potential) = system.interactions().pair((i, j)) {
                     virial += two_pi_density * potential.tail_virial();
                 }
             }
@@ -232,7 +232,7 @@ impl Compute for AtomicVirial {
             for bond in molecule.bonds() {
                 let (i, j) = (bond.i(), bond.j());
                 let r = system.nearest_image(i, j);
-                for potential in system.bond_potentials(i, j) {
+                if let Some(potential) = system.bond_potential(i, j) {
                     virial += potential.virial(&r);
                 }
             }
@@ -296,7 +296,7 @@ impl Compute for MolecularVirial {
                     for part_b in molecule_j.indexes() {
                         let path = system.bond_path(part_a, part_b);
                         let r_ab = system.nearest_image(part_a, part_b);
-                        for potential in system.pair_potentials(part_a, part_b) {
+                        if let Some(potential) = system.pair_potential(part_a, part_b) {
                             let info = potential.restriction().information(path);
                             if !info.excluded {
                                 let w_ab = info.scaling * potential.virial(&r_ab);
@@ -316,7 +316,7 @@ impl Compute for MolecularVirial {
         for (i, ni) in composition.all_particles() {
             for (j, nj) in composition.all_particles() {
                 let two_pi_density = 2.0 * PI * (ni as f64) * (nj as f64) / volume;
-                for potential in system.interactions().pairs((i, j)) {
+                if let Some(potential) = system.interactions().pair((i, j)) {
                     virial += two_pi_density * potential.tail_virial();
                 }
             }
@@ -327,7 +327,7 @@ impl Compute for MolecularVirial {
             for bond in molecule.bonds() {
                 let (i, j) = (bond.i(), bond.j());
                 let r = system.nearest_image(i, j);
-                for potential in system.bond_potentials(i, j) {
+                if let Some(potential) = system.bond_potential(i, j) {
                     let w = potential.virial(&r);
                     if w.norm() > 1e-30 {
                         // Use the same sorting as interactions
@@ -507,10 +507,10 @@ mod test {
             5.0,
         );
         interaction.enable_tail_corrections();
-        system.add_pair_potential(("F", "F"), interaction);
+        system.set_pair_potential(("F", "F"), interaction);
 
         // unused interaction to check that we do handle this right
-        system.add_pair_potential(("H", "O"), PairInteraction::new(Box::new(NullPotential), 0.0));
+        system.set_pair_potential(("H", "O"), PairInteraction::new(Box::new(NullPotential), 0.0));
 
 
         return system;
@@ -532,9 +532,9 @@ mod test {
         assert_eq!(system.molecules().count(), 1);
         assert_eq!(system.molecule(0).bonds().len(), 3);
 
-        system.add_pair_potential(("F", "F"), PairInteraction::new(Box::new(NullPotential), 0.0));
+        system.set_pair_potential(("F", "F"), PairInteraction::new(Box::new(NullPotential), 0.0));
 
-        system.add_bond_potential(
+        system.set_bond_potential(
             ("F", "F"),
             Box::new(Harmonic {
                 k: units::from(100.0, "kJ/mol/A^2").unwrap(),
@@ -542,7 +542,7 @@ mod test {
             }),
         );
 
-        system.add_angle_potential(
+        system.set_angle_potential(
             ("F", "F", "F"),
             Box::new(Harmonic {
                 k: units::from(100.0, "kJ/mol/deg^2").unwrap(),
@@ -550,7 +550,7 @@ mod test {
             }),
         );
 
-        system.add_dihedral_potential(
+        system.set_dihedral_potential(
             ("F", "F", "F", "F"),
             Box::new(Harmonic {
                 k: units::from(100.0, "kJ/mol/deg^2").unwrap(),
@@ -559,7 +559,7 @@ mod test {
         );
 
         // unused interaction to check that we do handle this right
-        system.add_pair_potential(("H", "O"), PairInteraction::new(Box::new(NullPotential), 0.0));
+        system.set_pair_potential(("H", "O"), PairInteraction::new(Box::new(NullPotential), 0.0));
 
         return system;
     }

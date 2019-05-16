@@ -57,7 +57,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         a: units::from(675.5, "kJ/mol/A^12")?,
         b: units::from(40.26, "kJ/mol/A^6")?,
     });
-    system.add_pair_potential(("F", "F"), PairInteraction::new(lj, 10.0));
+    system.set_pair_potential(("F", "F"), PairInteraction::new(lj, 10.0));
 
     let md = MolecularDynamics::new(units::from(1.0, "fs")?);
     let mut simulation = Simulation::new(Box::new(md));

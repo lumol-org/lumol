@@ -30,14 +30,17 @@ impl<'a> EnergyEvaluator<'a> {
     /// distance `r`
     #[inline]
     pub fn pair(&self, path: BondPath, r: f64, i: usize, j: usize) -> f64 {
-        let mut energy = 0.0;
-        for potential in self.system.pair_potentials(i, j) {
-            let info = potential.restriction().information(path);
-            if !info.excluded {
-                energy += info.scaling * potential.energy(r);
+        match self.system.pair_potential(i, j) {
+            Some(potential) => {
+                let info = potential.restriction().information(path);
+                if !info.excluded {
+                    info.scaling * potential.energy(r)
+                } else {
+                    0.0
+                }
             }
+            None => 0.0
         }
-        return energy;
     }
 
     /// Compute the energy of all the pairs in the system
@@ -67,7 +70,7 @@ impl<'a> EnergyEvaluator<'a> {
         for (i, ni) in composition.all_particles() {
             for (j, nj) in composition.all_particles() {
                 let two_pi_density = 2.0 * PI * (ni as f64) * (nj as f64) / volume;
-                for potential in self.system.interactions().pairs((i, j)) {
+                if let Some(potential) = self.system.interactions().pair((i, j)) {
                     energy += two_pi_density * potential.tail_energy();
                 }
             }
@@ -79,11 +82,8 @@ impl<'a> EnergyEvaluator<'a> {
     /// distance `r`
     #[inline]
     pub fn bond(&self, r: f64, i: usize, j: usize) -> f64 {
-        let mut energy = 0.0;
-        for potential in self.system.bond_potentials(i, j) {
-            energy += potential.energy(r);
-        }
-        return energy;
+        self.system.bond_potential(i, j)
+                   .map_or(0.0, |potential| potential.energy(r))
     }
 
     /// Compute the energy of all the bonds in the system
@@ -102,11 +102,8 @@ impl<'a> EnergyEvaluator<'a> {
     /// Compute the energy associated with the angle `i, j, k` at angle `theta`
     #[inline]
     pub fn angle(&self, theta: f64, i: usize, j: usize, k: usize) -> f64 {
-        let mut energy = 0.0;
-        for potential in self.system.angle_potentials(i, j, k) {
-            energy += potential.energy(theta);
-        }
-        return energy;
+        self.system.angle_potential(i, j, k)
+                   .map_or(0.0, |potential| potential.energy(theta))
     }
 
     /// Compute the energy of all the angles in the system
@@ -126,11 +123,8 @@ impl<'a> EnergyEvaluator<'a> {
     /// angle `phi`
     #[inline]
     pub fn dihedral(&self, phi: f64, i: usize, j: usize, k: usize, m: usize) -> f64 {
-        let mut energy = 0.0;
-        for potential in self.system.dihedral_potentials(i, j, k, m) {
-            energy += potential.energy(phi);
-        }
-        return energy;
+        self.system.dihedral_potential(i, j, k, m)
+                   .map_or(0.0, |potential| potential.energy(phi))
     }
 
     /// Compute the energy of all the dihedral angles in the system
@@ -200,9 +194,9 @@ mod tests {
         );
         pair.enable_tail_corrections();
 
-        system.add_pair_potential(("F", "F"), pair);
+        system.set_pair_potential(("F", "F"), pair);
 
-        system.add_bond_potential(
+        system.set_bond_potential(
             ("F", "F"),
             Box::new(Harmonic {
                 k: units::from(100.0, "kJ/mol/A^2").unwrap(),
@@ -210,7 +204,7 @@ mod tests {
             }),
         );
 
-        system.add_angle_potential(
+        system.set_angle_potential(
             ("F", "F", "F"),
             Box::new(Harmonic {
                 k: units::from(100.0, "kJ/mol/deg^2").unwrap(),
@@ -218,7 +212,7 @@ mod tests {
             }),
         );
 
-        system.add_dihedral_potential(
+        system.set_dihedral_potential(
             ("F", "F", "F", "F"),
             Box::new(Harmonic {
                 k: units::from(100.0, "kJ/mol/deg^2").unwrap(),
@@ -227,7 +221,7 @@ mod tests {
         );
 
         // unused interaction to check that we do handle this right
-        system.add_pair_potential(("H", "O"), PairInteraction::new(Box::new(NullPotential), 0.0));
+        system.set_pair_potential(("H", "O"), PairInteraction::new(Box::new(NullPotential), 0.0));
 
         return system;
     }

@@ -82,6 +82,7 @@ impl Simulation {
             DegreesOfFreedom::Frozen(n) => info!("{} degrees of freedom are frozen", n),
         }
 
+        system.check();
         self.setup(system);
         for i in 0..nsteps {
             self.propagator.propagate(system);
