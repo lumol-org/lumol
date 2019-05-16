@@ -1,7 +1,7 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) 2015-2016 G. Fraux — BSD license
 use rand::RngCore;
-use rand::distributions::{Distribution, Uniform, UnitSphereSurface};
+use rand_distr::{Distribution, Uniform, UnitSphere};
 
 use std::collections::BTreeSet;
 use std::f64;
@@ -25,8 +25,6 @@ pub struct Rotate {
     molid: usize,
     /// New positions of the atom in the rotated molecule
     newpos: Vec<Vector3D>,
-    /// Normal distribution, for generation of the axis
-    axis: UnitSphereSurface,
     /// Maximum values for the range of the range distribution of the angle
     theta: f64,
     /// Range distribution, for generation of the angle
@@ -43,7 +41,6 @@ impl Rotate {
             hash: hash.into(),
             molid: usize::max_value(),
             newpos: Vec::new(),
-            axis: UnitSphereSurface::new(),
             theta: theta,
             range: Uniform::new(-theta, theta),
         }
@@ -76,7 +73,7 @@ impl MCMove for Rotate {
             return false;
         }
 
-        let axis = Vector3D::from(self.axis.sample(rng));
+        let axis = Vector3D::from(UnitSphere.sample(rng));
         let theta = self.range.sample(rng);
 
         // store positions of selected molecule
