@@ -330,7 +330,7 @@ mod tests {
         assert!(system.add_bond(5, 7).is_empty());
         assert!(system.molecules().count() == 2);
 
-        system.add_pair_potential(
+        system.set_pair_potential(
             ("H", "H"),
             PairInteraction::new(
                 Box::new(LennardJones {
@@ -341,9 +341,9 @@ mod tests {
             ),
         );
 
-        system.add_pair_potential(("O", "O"), PairInteraction::new(Box::new(NullPotential), 3.0));
+        system.set_pair_potential(("O", "O"), PairInteraction::new(Box::new(NullPotential), 3.0));
 
-        system.add_pair_potential(
+        system.set_pair_potential(
             ("O", "H"),
             PairInteraction::new(
                 Box::new(LennardJones {
@@ -354,7 +354,7 @@ mod tests {
             ),
         );
 
-        system.add_bond_potential(
+        system.set_bond_potential(
             ("O", "O"),
             Box::new(Harmonic {
                 x0: 2.4,
@@ -362,7 +362,7 @@ mod tests {
             }),
         );
 
-        system.add_bond_potential(
+        system.set_bond_potential(
             ("O", "H"),
             Box::new(Harmonic {
                 x0: 1.4,
@@ -370,7 +370,7 @@ mod tests {
             }),
         );
 
-        system.add_angle_potential(
+        system.set_angle_potential(
             ("O", "O", "H"),
             Box::new(Harmonic {
                 x0: f64::to_radians(120.0),
@@ -378,7 +378,7 @@ mod tests {
             }),
         );
 
-        system.add_dihedral_potential(
+        system.set_dihedral_potential(
             ("H", "O", "O", "H"),
             Box::new(Harmonic {
                 x0: f64::to_radians(180.0),

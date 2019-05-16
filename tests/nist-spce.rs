@@ -73,9 +73,9 @@ pub fn set_nist_interactions(system: &mut System, cutoff: f64) {
         cutoff,
     );
     lj.enable_tail_corrections();
-    system.add_pair_potential(("O", "O"), lj);
-    system.add_pair_potential(("O", "H"), PairInteraction::new(Box::new(NullPotential), cutoff));
-    system.add_pair_potential(("H", "H"), PairInteraction::new(Box::new(NullPotential), cutoff));
+    system.set_pair_potential(("O", "O"), lj);
+    system.set_pair_potential(("O", "H"), PairInteraction::new(Box::new(NullPotential), cutoff));
+    system.set_pair_potential(("H", "H"), PairInteraction::new(Box::new(NullPotential), cutoff));
 
     let alpha = 5.6 / f64::min(f64::min(system.cell.a(), system.cell.b()), system.cell.c());
     let mut ewald = SharedEwald::new(Ewald::new(cutoff, 5, alpha));
@@ -94,9 +94,9 @@ pub fn set_lammps_interactions(system: &mut System, cutoff: f64, kmax: usize, al
         }),
         cutoff,
     );
-    system.add_pair_potential(("O", "O"), lj);
-    system.add_pair_potential(("O", "H"), PairInteraction::new(Box::new(NullPotential), cutoff));
-    system.add_pair_potential(("H", "H"), PairInteraction::new(Box::new(NullPotential), cutoff));
+    system.set_pair_potential(("O", "O"), lj);
+    system.set_pair_potential(("O", "H"), PairInteraction::new(Box::new(NullPotential), cutoff));
+    system.set_pair_potential(("H", "H"), PairInteraction::new(Box::new(NullPotential), cutoff));
 
     let mut ewald = SharedEwald::new(Ewald::new(cutoff, kmax, alpha));
     ewald.set_restriction(PairRestriction::InterMolecular);

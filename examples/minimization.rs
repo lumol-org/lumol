@@ -20,14 +20,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     molecule.add_particle_bonded_to(0, Particle::with_position("H", Vector3D::new(a_cos, -a_sin, 0.0)));
     system.add_molecule(molecule);
 
-    system.add_bond_potential(
+    system.set_bond_potential(
         ("O", "H"),
         Box::new(Harmonic {
             x0: units::from(1.1, "A")?,
             k: units::from(100.0, "kJ/mol/A^2")?,
         }),
     );
-    system.add_angle_potential(
+    system.set_angle_potential(
         ("H", "O", "H"),
         Box::new(Harmonic {
             x0: units::from(109.0, "deg")?,

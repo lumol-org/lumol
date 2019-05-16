@@ -18,8 +18,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                                              .read()?;
     // Set the unit cell, as there is no unit cell data in XYZ files
     system.cell = UnitCell::cubic(units::from(22.5608, "A")?);
-    // Read the interactions from the `data/NaCl.toml` TOML file
-    let input = InteractionsInput::new("data/NaCl.toml")?;
+    // Read the interactions from the `data/nacl.toml` TOML file
+    let input = InteractionsInput::new("data/nacl.toml")?;
     input.read(&mut system)?;
 
     let mut velocities = BoltzmannVelocities::new(units::from(300.0, "K")?);

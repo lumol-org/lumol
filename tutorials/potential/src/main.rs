@@ -17,21 +17,21 @@ fn main() {
                        12.0,
                        6.0);
     // use the potential with a cut off radius of 3 * sigma
-    let mut pairs = PairInteraction::new(Box::new(mie), units::from(3.0 * 3.405, "A").unwrap());
+    let mut interaction = PairInteraction::new(Box::new(mie), units::from(3.0 * 3.405, "A").unwrap());
     // use tail corrections to account for our truncation
-    pairs.enable_tail_corrections();
-    // finally add this interaction to the system for Argon atoms
-    system.add_pair_potential(("Ar", "Ar"), pairs);
+    interaction.enable_tail_corrections();
+    // finally use this interaction for Argon atoms
+    system.set_pair_potential(("Ar", "Ar"), interaction);
 
     // report the initial system energy
-    let ener_init = units::to(system.total_energy(), "kJ/mol").unwrap();
-    println!("initial energy     : {}", ener_init);
+    let initial_energy = units::to(system.total_energy(), "kJ/mol").unwrap();
+    println!("initial energy     : {}", initial_energy);
 
     // run the simulation
     simulation.run(&mut system, config.nsteps);
 
     // print some final information
-    println!("final energy       : {}",
-             units::to(system.total_energy(), "kJ/mol").unwrap());
+    let final_energy = units::to(system.total_energy(), "kJ/mol").unwrap();
+    println!("final energy       : {}", final_energy);
     println!("It worked. Hooray!")
 }

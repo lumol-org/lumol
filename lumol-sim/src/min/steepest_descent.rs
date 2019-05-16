@@ -83,7 +83,7 @@ mod tests {
         system.add_molecule(Molecule::new(Particle::with_position("Cl", [0.0, 0.0, 2.0].into())));
 
         let pair = PairInteraction::new(Box::new(Harmonic { x0: 2.3, k: 0.1 }), 10.0);
-        system.add_pair_potential(("Cl", "Cl"), pair);
+        system.set_pair_potential(("Cl", "Cl"), pair);
         return system;
     }
 

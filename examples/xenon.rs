@@ -19,7 +19,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         sigma: units::from(4.57, "A")?,
         epsilon: units::from(1.87, "kJ/mol")?,
     });
-    system.add_pair_potential(("Xe", "Xe"), PairInteraction::new(lj, 12.0));
+    system.set_pair_potential(("Xe", "Xe"), PairInteraction::new(lj, 12.0));
 
     // Create a Monte Carlo builder
     let mut builder = MonteCarloBuilder::new(units::from(500.0, "K")?);

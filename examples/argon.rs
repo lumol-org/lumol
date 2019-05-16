@@ -32,7 +32,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         sigma: units::from(3.4, "A")?,
         epsilon: units::from(1.0, "kJ/mol")?,
     });
-    system.add_pair_potential(
+    system.set_pair_potential(
         ("Ar", "Ar"),
         PairInteraction::new(lj, units::from(8.5, "A")?),
     );

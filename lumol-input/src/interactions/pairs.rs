@@ -141,7 +141,7 @@ impl InteractionsInput {
                 interaction.set_restriction(restriction);
             }
 
-            system.add_pair_potential((a, b), interaction);
+            system.set_pair_potential((a, b), interaction);
         }
         Ok(())
     }
@@ -179,7 +179,7 @@ impl InteractionsInput {
             )?;
 
             let potential = read_bond_potential(bond)?;
-            system.add_bond_potential((a, b), potential);
+            system.set_bond_potential((a, b), potential);
         }
         Ok(())
     }
