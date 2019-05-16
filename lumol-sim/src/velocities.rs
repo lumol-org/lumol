@@ -4,7 +4,7 @@
 //! This module provides some ways to initialize the velocities in a `System`
 use rand_xorshift::XorShiftRng;
 use rand::SeedableRng;
-use rand::distributions::{Normal, Uniform, Distribution};
+use rand_distr::{Normal, Uniform, Distribution};
 
 use lumol_core::consts::K_BOLTZMANN;
 use lumol_core::{System, Vector3D};
@@ -32,16 +32,18 @@ pub trait InitVelocities {
 /// Initialize the velocities from a Boltzmann distribution.
 pub struct BoltzmannVelocities {
     temperature: f64,
-    dist: Normal,
+    dist: Normal<f64>,
     rng: XorShiftRng,
 }
 
 impl BoltzmannVelocities {
     /// Create a new `BoltzmannVelocities` at the given `temperature`.
     pub fn new(temperature: f64) -> BoltzmannVelocities {
+        let dist = Normal::new(0.0, f64::sqrt(K_BOLTZMANN * temperature))
+                          .expect("bad normal distribution");
         BoltzmannVelocities {
             temperature: temperature,
-            dist: Normal::new(0.0, f64::sqrt(K_BOLTZMANN * temperature)),
+            dist: dist,
             rng: XorShiftRng::from_seed([
                 0xeb, 0xa8, 0xe4, 0x29, 0xca, 0x60, 0x44, 0xb0,
                 0xd3, 0x77, 0xc6, 0xa0, 0x21, 0x71, 0x37, 0xf7,

@@ -55,6 +55,6 @@ fn check_file_content(mut file: File, content: &str) {
     let _ = file.read_to_string(&mut buffer).unwrap();
 
     for (l1, l2) in buffer.lines().zip(content.lines()) {
-        assert_eq!(l1, l2.trim_left());
+        assert_eq!(l1, l2.trim_start());
     }
 }

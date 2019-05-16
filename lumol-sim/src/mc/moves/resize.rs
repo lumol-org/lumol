@@ -2,7 +2,7 @@
 // Copyright (C) 2015-2016 G. Fraux — BSD license
 
 use rand::RngCore;
-use rand::distributions::{Uniform, Distribution};
+use rand_distr::{Uniform, Distribution};
 
 use std::f64;
 use std::mem;

@@ -15,7 +15,7 @@ bench = false
 [dependencies]
 lumol-core = {path = "../lumol-core"}
 lumol-sim = {path = "../lumol-sim"}
-toml = "0.4"
+toml = "0.5"
 log = "0.4"
 
 [dependencies.log4rs]
