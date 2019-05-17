@@ -12,7 +12,6 @@ ROOT = os.path.join(os.path.dirname(__file__), "..")
 needs_sphinx = '1.8'
 
 extensions = [
-    'sphinx.ext.todo',
     'sphinx.ext.mathjax',
     'sphinx.ext.ifconfig',
 ]
@@ -21,7 +20,7 @@ templates_path = [os.path.join(ROOT, "templates")]
 source_suffix = '.rst'
 master_doc = 'index'
 
-copyright = '2017, the lumol developers'
+copyright = '2019, the lumol developers'
 author = 'The lumol developers'
 project = 'Lumol'
 
@@ -39,8 +38,12 @@ language = None
 
 exclude_patterns = []
 
-pygments_style = 'sphinx'
+pygments_style = 'default'
 highlight_language = 'toml'
+
+
+def setup(app):
+    app.add_stylesheet("lumol.css")
 
 
 # -- Options for HTML output ----------------------------------------------
@@ -55,8 +58,6 @@ html_theme_options = {
     'bootswatch_theme': "sandstone",
     'bootstrap_version': "3",
 }
-
-html_static_path = []
 
 html_sidebars = {
     '**': ['sidebar-toc.html', 'searchbox.html']

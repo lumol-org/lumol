@@ -1,6 +1,5 @@
-***************************
-The ``[[systems]]`` section
-***************************
+``[[systems]]`` section
+***********************
 
 Let's talk about how you can set up your system. The system contains information
 about:
@@ -16,4 +15,3 @@ All these details are listed after the ``[[systems]]`` keyword.
    :maxdepth: 2
 
    configuration
-   interactions/index

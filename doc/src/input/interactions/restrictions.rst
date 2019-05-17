@@ -6,16 +6,14 @@ should interact together and which ones should not. For example, sometimes
 bonded particles should not interact through electrostatic potential, or some
 interactions should only be taken in account for particles not in the same
 molecule. The way to specify this is to use restrictions. Restrictions can be
-used in two places: in the ``[[pairs]]`` section, and in the ``[coulomb]``
+used in two places: in the ``[pairs]`` section, and in the ``[coulomb]``
 section. In both cases, they are specified with the ``restriction`` keyword, and
 one of the possible values.
 
 .. code::
 
-    [[pairs]]
-    atoms = ["O", "O"]
-    lj = {sigma = "3 A", epsilon = "123 kJ/mol"}
-    restriction = {scale14 = 0.5}
+    [pairs]
+    O-O = {type = "lj", sigma = "3 A", epsilon = "123 kJ/mol", restriction = {scale14 = 0.5}}
 
     [coulomb]
     ewald = {cutoff = "8 A", kmax = 6}

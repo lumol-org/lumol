@@ -3,15 +3,26 @@ Available potentials
 
 This section is a list of all the available potentials in Lumol, with the
 associated parameters. All potentials have to provide additional parameters in
-there definition, as a TOML table. Using inline tables is the easiest way to do
-so:
+there definition, as a TOML table.
+
+Using inline tables is the easiest way to do so:
 
 .. code::
 
-    [[pairs]]
-    atoms = ["A", "B"]
     # Additional parameters here are 'sigma' and 'epsilon'.
-    lj = {sigma = "3 A", epsilon = "123 kJ/mol"}
+    [pairs]
+    A-B = {type = "lj", sigma = "3 A", epsilon = "123 kJ/mol"}
+
+
+Another option is to use a separated TOML table, for example when there are too
+many parameters to fit on a line
+
+.. code::
+
+    [pairs.A-B]
+    type = "lj"
+    sigma = "3 A"
+    epsilon = "123 kJ/mol"
 
 The same potential can be used for either pairs (at distance :math:`r`); or for
 angles (at angle :math:`\phi`). In all the formulas, the :math:`x` parameter
@@ -29,9 +40,8 @@ This potential can be used by specifying the ``null`` key with an empty table
 
 .. code::
 
-    [[pairs]]
-    atoms = ["O", "O"]
-    null = {}
+    [pairs]
+    O-O = {type = "null", }
 
 Lennard-Jones potential
 -----------------------
@@ -50,9 +60,8 @@ provided as strings.
 
 .. code::
 
-    [[pairs]]
-    atoms = ["O", "O"]
-    lj = {sigma = "3.16 A", epsilon = "0.155 kcal/mol"}
+    [pairs]
+    O-O = {type = "lj", sigma = "3.16 A", epsilon = "0.155 kcal/mol"}
 
 Buckingham potential
 --------------------
@@ -69,9 +78,8 @@ The potential type keyword is ``buckingham``, and the parameters ``A``, ``rho``
 
 .. code::
 
-    [[pairs]]
-    atoms = ["A", "B"]
-    buckingham = {A = "40 kJ/mol", C = "120e-6 kJ/mol/A^6", rho = "3.0 A"}
+    [pairs]
+    C-C = {type = "buckingham", A = "40 kJ/mol", C = "120e-6 kJ/mol/A^6", rho = "3.0 A"}
 
 Born-Mayer-Huggins potential
 ----------------------------
@@ -90,9 +98,8 @@ strings.
 
 .. code::
 
-    [[pairs]]
-    atoms = ["A", "B"]
-    [pairs.born]
+    [pairs.Li-Li]
+    type = "born"
     A = "40 kJ/mol"
     C = "120e-6 kJ/mol/A^6"
     D = "23e-6 kJ/mol/A^8"
@@ -112,13 +119,11 @@ The potential type keyword is ``harmonic``, and the parameters are ``k`` and
 
 .. code::
 
-    [[bonds]]
-    atoms = ["O", "H"]
-    harmonic = {k = "1054.2 kcal/mol/A^2", x0 = "1.0 A"}
+    [bonds]
+    O-H = {type = "harmonic", k = "1054.2 kcal/mol/A^2", x0 = "1.0 A"}
 
-    [[angles]]
-    atoms = ["H", "O", "H"]
-    harmonic = {k = "75.9 kcal/mol/rad^2", x0 = "109.5 deg"}
+    [angles]
+    H-O-H = {type = "harmonic", k = "75.9 kcal/mol/rad^2", x0 = "109.5 deg"}
 
 Cosine-Harmonic potential
 -------------------------
@@ -136,9 +141,8 @@ The potential type keyword is ``cosine-harmonic``, and the parameters ``k`` and
 
 .. code::
 
-    [[angles]]
-    atoms = ["H", "C", "H"]
-    cosine-harmonic = {k = "67 kJ/mol", x0 = "120 deg"}
+    [angles]
+    H-C-H = {type = "cosine-harmonic", k = "67 kJ/mol", x0 = "120 deg"}
 
 Torsion potential
 -----------------
@@ -153,9 +157,8 @@ provided as an integer.
 
 .. code::
 
-    [[dihedrals]]
-    atoms = ["C", "C", "C", "C"]
-    torsion = {k = "40 kJ/mol", delta = "120 deg", n: 4}
+    [dihedrals]
+    C-C-C-C = {type = "torsion", k = "40 kJ/mol", delta = "120 deg", n: 4}
 
 Morse potential
 ---------------
@@ -173,18 +176,16 @@ The potential type keyword is ``morse``, and the parameters ``A``, ``x0`` and
 
 .. code::
 
-    [[pairs]]
-    atoms = ["A", "B"]
-    morse = {depth = "40 kJ/mol", A = "2.0 A^-1", x0 = "1.3 A"}
+    [pairs]
+    A-B = {type = "morse", depth = "40 kJ/mol", A = "2.0 A^-1", x0 = "1.3 A"}
 
 For angles and dihedral angles, ``x0`` and ``A`` should be provided in angle
 units:
 
 .. code::
 
-    [[pairs]]
-    atoms = ["A", "B"]
-    morse = {depth = "40 kJ/mol", A = "2.0 rad^-1", x0 = "109.7 deg"}
+    [pairs]
+    A-B = {type = "morse", depth = "40 kJ/mol", A = "2.0 rad^-1", x0 = "109.7 deg"}
 
 
 Gaussian potential
@@ -202,9 +203,8 @@ positive.
 
 .. code::
 
-    [[pairs]]
-    atoms = ["A", "B"]
-    gaussian = {A = "8.0 kJ/mol", B = "0.2 A^-2"}
+    [pairs]
+    A-B = {type = "gaussian", A = "8.0 kJ/mol", B = "0.2 A^-2"}
 
 Mie potential
 -------------
@@ -226,6 +226,5 @@ exponent ``m``.
 
 .. code::
 
-    [[pairs]]
-    atoms = ["A", "B"]
-    mie = {sigma = "3 A", epsilon = "5.9 kJ/mol", n = 12.0, m = 6.0}
+    [pairs]
+    A-B = {type = "mie", sigma = "3 A", epsilon = "5.9 kJ/mol", n = 12.0, m = 6.0}

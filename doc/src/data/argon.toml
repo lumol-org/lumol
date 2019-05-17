@@ -5,10 +5,8 @@ version = 1
 file = "argon.xyz"
 cell = 21.65
 
-[[systems.potentials.pairs]]
-atoms = ["Ar", "Ar"]
-cutoff = "10 A"
-lj = {sigma = "3.4 A", epsilon = "1.0 kJ/mol"}
+[systems.potentials.pairs]
+Ar-Ar = {type = "lj", sigma = "3.4 A", epsilon = "1.0 kJ/mol", cutoff = "10 A"}
 
 [[simulations]]
 nsteps = 100000

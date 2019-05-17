@@ -45,7 +45,7 @@ Next, we define our potential. This section is way bigger than the one
 for our previous Lennard-Jones example:
 
 .. literalinclude:: ../data/nacl.toml
-    :lines: 8-28
+    :lines: 8-21
 
 Let's break it down. First, we define some global values for the interactions:
 setting ``systems.potentials.global.cutoff`` will use the given cutoff for all
@@ -59,7 +59,7 @@ Then, we need to define the pair interactions for all possible pair combinations
 in the system, *i.e.* (Na, Na), (Cl, Cl), and (Na, Cl).
 
 .. literalinclude:: ../data/nacl.toml
-    :lines: 15-25
+    :lines: 15-18
 
 Because our system contains charges, we need to use an electrostatic potential
 solver. Here we are going for the ``Wolf`` solver, with a cutoff of 8 A.
@@ -67,21 +67,23 @@ Note that if we'd chose a cutoff different from the global one defined above,
 we would overwrite the global one *for the coulombic interactions*.
 
 .. literalinclude:: ../data/nacl.toml
-    :lines: 27-28
+    :lines: 20-21
 
 We can now define the simulation and the outputs for this simulation.
-
-.. literalinclude:: ../data/nacl.toml
-    :lines: 30-34
-
 We are using a molecular dynamics simulation of the NaCl crystal with a
 timestep of 1 fs for integration (this will produce a NVE ensemble).
 
 .. literalinclude:: ../data/nacl.toml
-    :lines: 36-38
+    :lines: 23-31
 
 As before, run the simulation via
 
 .. code-block:: bash
 
     lumol nacl.toml
+
+Until now, the force field we used for the system was defined in the same input
+file (in the ``system.potential`` section) as rest of the simulation settings.
+It can sometimes be interesting to separate the force field from the rest of the
+input, in particular when using the same force-field for multiple simulations.
+In the :doc:`next example <water>`, we will do exactly this.

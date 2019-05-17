@@ -1,6 +1,5 @@
-*******************************
-The ``[[simulations]]`` section
-*******************************
+``[[simulations]]`` section
+***************************
 
 The way to propagate the system is defined in the ``[[simulations]]`` section of
 the input file. This section always contains at least two keys: ``nsteps``
