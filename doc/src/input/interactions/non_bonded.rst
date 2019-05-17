@@ -9,9 +9,9 @@ uses a cutoff radius :math:`r_c`. This means that the force and energy
 associated with any pair at a distance bigger than :math:`r_c` will be zero. We
 can use two different cutoff schemes, presented in the following section.
 
-In the potentials input file, the cutoff should be specified for all the
-``[[pairs]]`` sections. It can be specified once for all the pairs in the
-``global`` section, and then overridden for specific interactions:
+In the potentials input file, the cutoff should be specified for all the pairs.
+It can be specified once for all the pairs in the ``global`` section, and then
+overridden for specific interactions:
 
 .. code::
 
@@ -19,18 +19,15 @@ In the potentials input file, the cutoff should be specified for all the
     [global]
     cutoff = "10 A"
 
-    [[pairs]]
-    atoms = ["A", "A"]
-    lj = {sigma = "3 A", epsilon = "123 kJ/mol"}
-
-    [[pairs]]
-    atoms = ["B", "B"]
-    lj = {sigma = "3 A", epsilon = "123 kJ/mol"}
+    [pairs]
+    A-A = {type = "lj", sigma = "3 A", epsilon = "123 kJ/mol"}
+    B-B = {type = "lj", sigma = "3 A", epsilon = "123 kJ/mol"}
 
     # Except for this one, use a shifted cutoff with a radius of 8 A
-    [[pairs]]
-    atoms = ["A", "B"]
-    lj = {sigma = "3 A", epsilon = "123 kJ/mol"}
+    [pairs.A-B]
+    type = "lj"
+    sigma = "3 A"
+    epsilon = "123 kJ/mol"
     cutoff = {shifted = "8 A"}
 
 Simple cutoff (potential truncation)
@@ -54,10 +51,8 @@ distance as the ``cutoff`` value.
     [global]
     cutoff = "10 A"
 
-    [[pairs]]
-    atoms = ["O", "O"]
-    lj = {x0 = "3 A", k = "5.9 kJ/mol/A^2"}
-    cutoff = "8 A"
+    [pairs]
+    O-O = {type = "lj", x0 = "3 A", k = "5.9 kJ/mol/A^2", cutoff = "8 A"}
 
 Truncation with energy shift
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -81,10 +76,8 @@ string containing the cutoff radius.
     [global]
     cutoff = {shifted = "8 A"}
 
-    [[pairs]]
-    atoms = ["O", "O"]
-    lj = {x0 = "3 A", k = "5.9 kJ/mol/A^2"}
-    cutoff = {shifted = "10 A"}
+    [pairs]
+    O-O = {type = "lj", x0 = "3 A", k = "5.9 kJ/mol/A^2", cutoff = {shifted = "10 A"}}
 
 Tail correction
 ~~~~~~~~~~~~~~~
@@ -103,7 +96,7 @@ instantaneous pressure) expressions are at density :math:`\rho`:
 
 In the input, these additional energetic and pressure terms are controlled by
 the ``tail_correction`` keyword, which can be placed either in the ``[global]``
-section, or in any specific ``[[pairs]]`` section.
+section, or in any specific ``[pairs]`` section.
 
 .. code::
 
@@ -112,10 +105,8 @@ section, or in any specific ``[[pairs]]`` section.
     tail_correction = true
 
     # Except for this one.
-    [[pairs]]
-    atoms = ["O", "O"]
-    lj = {x0 = "3 A", k = "5.9 kJ/mol/A^2"}
-    tail_correction = false
+    [pairs]
+    O-O = {type = "lj", x0 = "3 A", k = "5.9 kJ/mol/A^2", tail_correction = false}
 
 Potentials computation
 ----------------------
@@ -125,7 +116,7 @@ with different methods: directly, by shifting at the cutoff distance, using a
 table interpolation, *etc.* This is the purpose of computation. The default way
 is to use the mathematical function corresponding to a potential to compute it.
 To use a different type of computation, the ``computation`` keyword can be used
-in the ``[[pairs]]`` section.
+in the ``[pairs]`` section.
 
 Table interpolation
 -------------------
@@ -141,7 +132,8 @@ interpolation:
 
 .. code::
 
-    [[pairs]]
-    atoms = ["O", "O"]
-    lj = {sigma = "3 A", epsilon = "123 kJ/mol"}
+    [pairs.O-O]
+    type = "lj"
+    sigma = "3 A"
+    epsilon = "123 kJ/mol"
     computation = {table = {max = "8 A", n = 5000}}

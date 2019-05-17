@@ -1,6 +1,5 @@
-***********************
-The ``[input]`` section
-***********************
+``[input]`` section
+*******************
 
 All input files must contain an ``[input]`` section looking like this:
 

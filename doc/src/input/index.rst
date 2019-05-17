@@ -40,14 +40,14 @@ format, a simple and minimalist configuration format based on
     cutoff = "14.0 A"
     tail_correction = true
 
-    [[systems.potentials.pairs]]
-    atoms = ["C", "C"]
-    lj = {sigma = "3.750 A", epsilon = "0.814821 kJ/mol"}
+    [systems.potentials.pairs.C-C]
+    type = "lj"
+    sigma = "3.750 A"
+    epsilon = "0.814 kJ/mol"
     restriction = "InterMolecular"
 
-    [[systems.potentials.bonds]]
-    atoms = ["C", "C"]
-    null = {}
+    [systems.potentials.bonds]
+    C-C = {type = "null"}
 
     # simulations section
     [[simulations]]
@@ -72,7 +72,8 @@ format, a simple and minimalist configuration format based on
 .. toctree::
    :hidden:
 
-   input/index
-   log/index
+   input
+   log
    systems/index
+   interactions/index
    simulations/index

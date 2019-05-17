@@ -15,34 +15,25 @@ main input file:
     cell = 40
 
     # intermolecular potentials
-    [[systems.potentials.pairs]]
-    atoms = ["O", "O"]
-    lj = {sigma = "3.165 A", epsilon = "0.155 kcal/mol"}
-
-    [[systems.potentials.pairs]]
-    atoms = ["H", "H"]
-    null = {}
-
-    [[systems.potentials.pairs]]
-    atoms = ["O", "H"]
-    null = {}
+    [systems.potentials.pairs]
+    O-O = {type = "lj", sigma = "3.165 A", epsilon = "0.155 kcal/mol"}
+    H-H = {type = "null"}
+    O-H = {type = "null"}
 
     # intramolecular potentials
-    [[systems.potentials.bonds]]
-    atoms = ["O", "H"]
-    harmonic = {k = "1059.162 kcal/mol/A^2", x0 = "1.012 A"}
+    [systems.potentials.bonds]
+    O-H = {type = "harmonic", k = "1059.162 kcal/mol/A^2", x0 = "1.012 A"}
 
-    [[systems.potentials.angles]]
-    atoms = ["H", "O", "H"]
-    harmonic = {k = "75.90 kcal/mol/deg^2", x0 = "113.24 deg"}
+    [systems.potentials.angles]
+    H-O-H = {type = "harmonic", k = "75.90 kcal/mol/deg^2", x0 = "113.24 deg"}
 
-    # additional interactions omitted
+    # ... additional interactions omitted
 
 As you can see, there is a lot of bracket notation going on here. First, in
-``[[systems.potentials.xxx]]``, the ``potentials`` key is actually a nested
-table of ``systems`` indicated by the dot notation. Accordingly, ``pairs``,
-``bonds``, ``angles``, etc. are nested tables of ``potentials``. Second,
-``harmonic = {k = "75.90 kcal/mol/deg", x0 = "113.24 deg"}`` is the notation for
+``[systems.potentials.xxx]``, the ``potentials`` key is actually a nested table
+of ``systems`` indicated by the dot notation. Accordingly, ``pairs``, ``bonds``,
+``angles``, etc. are nested tables of ``potentials``. Second, ``{type =
+"harmonic", k = "75.90 kcal/mol/deg", x0 = "113.24 deg"}`` is the notation for
 an inline table.
 
 Input files can get very big and hard to read when you simulate complex systems
@@ -59,4 +50,4 @@ define a separate input file for your interactions like so:
 
 Here, the ``potentials`` key contains a string that is interpreted as the path
 to another input file containing only definitions of interactions. This way, you
-can build your own library of force field files (share them with us!).
+can build your own library of force field files.

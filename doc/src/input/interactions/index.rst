@@ -1,6 +1,5 @@
-############
-Interactions
-############
+Interactions input
+##################
 
 Interactions describe the energies between atoms - or more general - between
 interaction sites. These energies arise due to covalent bonding of atoms to form
@@ -23,10 +22,9 @@ To be more specific, we distinguish between the following contributions:
   energy contributions.
 
 Information about interactions for ``pairs``, ``bonds``, ``angles`` and
-``dihedrals`` are organized as arrays of TOML tables. The ``coulomb`` section
-contains information about the treatment of long-range electrostatic
-interactions and the ``charges`` section defines the partial charges of the
-atoms.
+``dihedrals`` are organized as TOML tables. The ``coulomb`` section contains
+information about the treatment of long-range electrostatic interactions and the
+``charges`` section defines the partial charges of the atoms.
 
 .. toctree::
    :maxdepth: 2

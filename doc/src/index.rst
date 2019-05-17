@@ -1,7 +1,7 @@
 The Lumol user manual
 =====================
 
-.. attention::
+.. note::
 
     Lumol is actively developed and should be considered as alpha
     software. As the code is likely to change so is this documentation.

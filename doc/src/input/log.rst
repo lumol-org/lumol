@@ -1,6 +1,5 @@
-*********************
-The ``[log]`` section
-*********************
+``[log]`` section
+*****************
 
 Lumol sends various logging messages while running a simulation. Some of them
 are informational messages (``charge was set to 1.2 for 132 particles``), others
