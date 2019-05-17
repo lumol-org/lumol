@@ -5,90 +5,33 @@ version = 1
 cutoff = "3 A"
 tail_correction = true
 
-[[pairs]]
-atoms = ["A", "B"]
-lj = {sigma = "3 A", epsilon = "5.9 kJ/mol"}
+[pairs]
+# a 'good' example for each potential type
+A-A = {type = "null"}
+B-B = {type = "lj", sigma = "3 A", epsilon = "5.9 kJ/mol"}
+C-C = {type = "harmonic", x0 = "3 A", k = "5.9 kJ/mol/A^2"}
+D-D = {type = "buckingham", A = "4.2 kJ/mol", C = "5e-6 kJ/mol/A^6", rho = "2.3 A"}
+E-E = {type = "morse", A = "5 A^-1", depth = "25 kJ/mol", x0 = "2.1 A"}
+F-F = {type = "gaussian", A = "8.0 kJ/mol", B = "50.0 A^-2"}
+G-G = {type = "mie", sigma = "3 A", epsilon = "5.9 kJ/mol", n = 12.0, m = 6}
 
-[[pairs]]
-atoms = ["A", "B"]
-tail_correction = false
-harmonic = {x0 = "3 A", k = "5.9 kJ/mol/A^2"}
+# specify other parameters
+AA-AA = {type = "null", computation = {table = {max = "8 A", n = 5000}}}
+BB-BB = {type = "null", restriction = "intermolecular"}
+CC-CC = {type = "null", restriction = "intramolecular"}
+DD-DD = {type = "null", restriction = "exclude12"}
+EE-EE = {type = "null", restriction = "exclude13"}
+FF-FF = {type = "null", restriction = "exclude14"}
+GG-GG = {type = "null", restriction = {scale14 = 0.8}}
 
-[[pairs]]
-atoms = ["A", "B"]
-null = {}
+HH-HH = {type = "null", cutoff = "18 A"}
+II-II = {type = "null", cutoff = {shifted = "18 A"}}
+JJ-JJ = {type = "null", tail_correction = false}
 
-[[pairs]]
-atoms = ["A", "B"]
-buckingham = {A = "4.2 kJ/mol", C = "5e-6 kJ/mol/A^6", rho = "2.3 A"}
-
-[[pairs]]
-atoms = ["A", "B"]
-[pairs.born]
+[pairs.Z-Z]
+type = "born"
 A = "4.2 kJ/mol"
 C = "5e-6 kJ/mol/A^6"
 D = "7.6e-5 kJ/mol/A^8"
 sigma = "3.2 A"
 rho = "2.3 A"
-
-[[pairs]]
-atoms = ["A", "B"]
-morse = {A = "5 A^-1", depth = "25 kJ/mol", x0 = "2.1 A"}
-
-[[pairs]]
-atoms = ["A", "B"]
-gaussian = {A = "8.0 kJ/mol", B = "50.0 A^-2"}
-
-[[pairs]]
-# Table computations
-atoms = ["A", "B"]
-null = {}
-computation = {table = {max = "8 A", n = 5000}}
-
-[[pairs]]
-# Restrictions
-atoms = ["A", "B"]
-null = {}
-restriction = "intermolecular"
-
-[[pairs]]
-# Restrictions
-atoms = ["A", "B"]
-null = {}
-restriction = "intramolecular"
-
-[[pairs]]
-# Restrictions
-atoms = ["A", "B"]
-null = {}
-restriction = "exclude12"
-
-[[pairs]]
-# Restrictions
-atoms = ["A", "B"]
-null = {}
-restriction = "exclude13"
-
-[[pairs]]
-# Restrictions
-atoms = ["A", "B"]
-null = {}
-restriction = "exclude14"
-
-[[pairs]]
-# Restrictions
-atoms = ["A", "B"]
-null = {}
-restriction = {scale14 = 0.8}
-
-[[pairs]]
-# Cutoff
-atoms = ["A", "B"]
-harmonic = {x0 = "3 A", k = "5.9 kJ/mol/A^2"}
-cutoff = "18 A"
-
-[[pairs]]
-# Shifted cutoff treatment
-atoms = ["A", "B"]
-harmonic = {x0 = "3 A", k = "5.9 kJ/mol/A^2"}
-cutoff = {shifted = "18 A"}

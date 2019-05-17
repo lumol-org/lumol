@@ -1,39 +1,26 @@
 [input]
 version = 1
 
-[[pairs]]
-atoms = ["A", "A"]
-harmonic = 4.0
-#^ 'harmonic' potential must be a table
+[pairs]
+A-A = {type = "harmonic", x0 = "3 A"}
+#^ missing 'k' key in harmonic potential
 
 +++
 
 [input]
 version = 1
 
-[[pairs]]
-atoms = ["A", "A"]
-harmonic = {x0 = "3 A"}
-#^ Missing 'k' key in harmonic potential
+[pairs]
+A-A = {type = "harmonic", k = "22 kJ/mol"}
+#^ missing 'x0' key in harmonic potential
 
 +++
 
 [input]
 version = 1
 
-[[pairs]]
-atoms = ["A", "A"]
-harmonic = {k = "22 kJ/mol"}
-#^ Missing 'x0' key in harmonic potential
-
-+++
-
-[input]
-version = 1
-
-[[pairs]]
-atoms = ["A", "A"]
-harmonic = {k = "22 kJ/mol", x0 = false}
+[pairs]
+A-A = {type = "harmonic", k = "22 kJ/mol", x0 = false}
 #^ 'x0' must be a string in harmonic potential
 
 +++
@@ -41,7 +28,6 @@ harmonic = {k = "22 kJ/mol", x0 = false}
 [input]
 version = 1
 
-[[pairs]]
-atoms = ["A", "A"]
-harmonic = {k = 2.2, x0 = "7 A"}
+[pairs]
+A-A = {type = "harmonic", k = 2.2, x0 = "7 A"}
 #^ 'k' must be a string in harmonic potential

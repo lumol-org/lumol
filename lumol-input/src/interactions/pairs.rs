@@ -32,7 +32,7 @@ impl GlobalInformation<'_> {
                 let tail = global.get("tail_correction")
                     .map(|tail| {
                         tail.as_bool().ok_or(
-                            Error::from("The 'tail_correction' section must be a boolean value")
+                            Error::from("the 'tail_correction' section must be a boolean value")
                         )
                     })
                     .map_or(Ok(None), |tail| tail.map(Some))?;
@@ -60,33 +60,28 @@ impl InteractionsInput {
             None => return Ok(()),
         };
 
-        let pairs = pairs.as_array().ok_or(
-            Error::from("The 'pairs' section must be an array")
+        let pairs = pairs.as_table().ok_or(
+            Error::from("the 'pairs' section must be a table")
         )?;
 
-        for pair in pairs {
-            let pair = pair.as_table().ok_or(
-                Error::from("Pair potential entry must be a table")
-            )?;
+        let global = GlobalInformation::read(&self.config)?;
 
-            let atoms = extract::slice("atoms", pair, "pair potential")?;
+        for (key, table) in pairs {
+            let atoms = key.split("-").collect::<Vec<_>>();
             if atoms.len() != 2 {
                 return Err(Error::from(format!(
-                    "Wrong size for 'atoms' array in pair \
-                     potential. Should be 2, is {}",
-                    atoms.len()
+                    "expected two atoms for pair potential, got {} ({:?})", atoms.len(), atoms
                 )));
             }
 
-            let a = atoms[0].as_str().ok_or(
-                Error::from("The first atom name is not a string in pair potential")
-            )?;
-            let b = atoms[1].as_str().ok_or(
-                Error::from("The second atom name is not a string in pair potential")
+            let table = table.as_table().ok_or(
+                Error::from(format!(
+                    "pair potential associated with {} must be a table", key
+                ))
             )?;
 
-            let potential = read_pair_potential(pair)?;
-            let potential = if let Some(computation) = pair.get("computation") {
+            let potential = read_pair_potential(table)?;
+            let potential = if let Some(computation) = table.get("computation") {
                 let computation = computation.as_table().ok_or(
                     Error::from("'computation' section must be a table")
                 )?;
@@ -95,12 +90,11 @@ impl InteractionsInput {
                 potential
             };
 
-            let global = GlobalInformation::read(&self.config)?;
-            let cutoff = match pair.get("cutoff") {
+            let cutoff = match table.get("cutoff") {
                 Some(cutoff) => cutoff,
                 None => {
                     global.cutoff.as_ref().ok_or(
-                        Error::from("Missing 'cutoff' value for pair potential")
+                        Error::from("missing 'cutoff' value for pair potential")
                     )?
                 }
             };
@@ -123,10 +117,10 @@ impl InteractionsInput {
                 _ => return Err(Error::from("'cutoff' must be a string or a table")),
             };
 
-            let tail = pair.get("tail_correction")
+            let tail = table.get("tail_correction")
                 .map(|tail| {
                     tail.as_bool().ok_or(Error::from(
-                        "The 'tail_correction' section must be a boolean value"
+                        "the 'tail_correction' section must be a boolean value"
                     ))
                 })
                 .map_or(Ok(global.tail), |tail| tail.map(Some))?;
@@ -137,11 +131,11 @@ impl InteractionsInput {
                 }
             }
 
-            if let Some(restriction) = read_restriction(pair)? {
+            if let Some(restriction) = read_restriction(table)? {
                 interaction.set_restriction(restriction);
             }
 
-            system.set_pair_potential((a, b), interaction);
+            system.set_pair_potential((atoms[0], atoms[1]), interaction);
         }
         Ok(())
     }
@@ -153,104 +147,51 @@ impl InteractionsInput {
             None => return Ok(()),
         };
 
-        let bonds = bonds.as_array().ok_or(
-            Error::from("The 'bonds' section must be an array")
+        let bonds = bonds.as_table().ok_or(
+            Error::from("the 'pairs' section must be a table")
         )?;
 
-        for bond in bonds {
-            let bond = bond.as_table().ok_or(
-                Error::from("Bond potential entry must be a table")
-            )?;
-
-            let atoms = extract::slice("atoms", bond, "bond potential")?;
+        for (key, table) in bonds {
+            let atoms = key.split("-").collect::<Vec<_>>();
             if atoms.len() != 2 {
                 return Err(Error::from(format!(
-                    "Wrong size for 'atoms' array in bond \
-                     potential. Should be 2, is {}",
-                    atoms.len()
+                    "expected two atoms for bond potential, got {} ({:?})", atoms.len(), atoms
                 )));
             }
 
-            let a = atoms[0].as_str().ok_or(
-                Error::from("The first atom name is not a string in pair potential")
-            )?;
-            let b = atoms[1].as_str().ok_or(
-                Error::from("The second atom name is not a string in pair potential")
+            let table = table.as_table().ok_or(
+                Error::from(format!(
+                    "bond potential associated with {} must be a table", key
+                ))
             )?;
 
-            let potential = read_bond_potential(bond)?;
-            system.set_bond_potential((a, b), potential);
+            let potential = read_bond_potential(table)?;
+            system.set_bond_potential((atoms[0], atoms[1]), potential);
         }
         Ok(())
     }
 }
 
-fn read_pair_potential(pair: &Table) -> Result<Box<dyn PairPotential>, Error> {
-    const KEYWORDS: &[&str] = &[
-        "restriction",
-        "computation",
-        "atoms",
-        "cutoff",
-        "tail_correction",
-    ];
-
-    let potentials = pair.keys().cloned()
-                         .filter(|key| !KEYWORDS.contains(&key.as_ref()))
-                         .collect::<Vec<_>>();
-
-    if potentials.is_empty() {
-        return Err(Error::from("Missing potential type in pair potential"));
-    }
-
-    if potentials.len() > 1 {
-        return Err(Error::from(format!(
-            "Got more than one potential type in pair potential: {}",
-            potentials.join(" and ")
-        )));
-    }
-
-    let key = &*potentials[0];
-    if let Value::Table(ref table) = pair[key] {
-        match key {
-            "null" => Ok(Box::new(NullPotential::from_toml(table)?)),
-            "harmonic" => Ok(Box::new(Harmonic::from_toml(table)?)),
-            "lj" => Ok(Box::new(LennardJones::from_toml(table)?)),
-            "buckingham" => Ok(Box::new(Buckingham::from_toml(table)?)),
-            "born" => Ok(Box::new(BornMayerHuggins::from_toml(table)?)),
-            "morse" => Ok(Box::new(Morse::from_toml(table)?)),
-            "gaussian" => Ok(Box::new(Gaussian::from_toml(table)?)),
-            "mie" => Ok(Box::new(Mie::from_toml(table)?)),
-            other => Err(Error::from(format!("Unknown potential type '{}'", other))),
-        }
-    } else {
-        Err(Error::from(format!("'{}' potential must be a table", key)))
+fn read_pair_potential(table: &Table) -> Result<Box<dyn PairPotential>, Error> {
+    match extract::typ(table, "pair potential")? {
+        "null" => Ok(Box::new(NullPotential::from_toml(table)?)),
+        "harmonic" => Ok(Box::new(Harmonic::from_toml(table)?)),
+        "lj" => Ok(Box::new(LennardJones::from_toml(table)?)),
+        "buckingham" => Ok(Box::new(Buckingham::from_toml(table)?)),
+        "born" => Ok(Box::new(BornMayerHuggins::from_toml(table)?)),
+        "morse" => Ok(Box::new(Morse::from_toml(table)?)),
+        "gaussian" => Ok(Box::new(Gaussian::from_toml(table)?)),
+        "mie" => Ok(Box::new(Mie::from_toml(table)?)),
+        other => Err(Error::from(format!("unknown potential type '{}'", other))),
     }
 }
 
-fn read_bond_potential(pair: &Table) -> Result<Box<dyn BondPotential>, Error> {
-    let potentials = pair.keys().cloned().filter(|k| k != "atoms").collect::<Vec<_>>();
-
-    if potentials.is_empty() {
-        return Err(Error::from("Missing potential type in bond potential"));
-    }
-
-    if potentials.len() > 1 {
-        return Err(Error::from(format!(
-            "Got more than one potential type in bond potential: {}",
-            potentials.join(" and ")
-        )));
-    }
-
-    let key = &*potentials[0];
-    if let Value::Table(ref table) = pair[key] {
-        match key {
-            "null" => Ok(Box::new(NullPotential::from_toml(table)?)),
-            "harmonic" => Ok(Box::new(Harmonic::from_toml(table)?)),
-            "morse" => Ok(Box::new(Morse::from_toml(table)?)),
-            other => Err(Error::from(format!("Unknown potential type '{}'", other))),
-        }
-    } else {
-        Err(Error::from(format!("'{}' potential must be a table", key)))
+fn read_bond_potential(table: &Table) -> Result<Box<dyn BondPotential>, Error> {
+    match extract::typ(table, "bond potential")? {
+        "null" => Ok(Box::new(NullPotential::from_toml(table)?)),
+        "harmonic" => Ok(Box::new(Harmonic::from_toml(table)?)),
+        "morse" => Ok(Box::new(Morse::from_toml(table)?)),
+        other => Err(Error::from(format!("unknown potential type '{}'", other))),
     }
 }
 

@@ -22,7 +22,7 @@ impl Input {
     pub(crate) fn read_nsteps(&self) -> Result<usize, Error> {
         let simulation = self.simulation_table()?;
         let nsteps = simulation.get("nsteps").ok_or(
-            Error::from("Missing 'nsteps' key in simulation")
+            Error::from("missing 'nsteps' key in simulation")
         )?;
 
         let nsteps = nsteps.as_integer().ok_or(
@@ -36,11 +36,11 @@ impl Input {
     pub(crate) fn simulation_table(&self) -> Result<&Table, Error> {
         let simulations = extract::slice("simulations", &self.config, "input file")?;
         if simulations.len() != 1 {
-            return Err(Error::from("Only one simulation is supported in the input"));
+            return Err(Error::from("only one simulation is supported in the input"));
         }
 
         let simulation = simulations[0].as_table().ok_or(
-            Error::from("Simulations should be tables")
+            Error::from("simulations should be tables")
         )?;
 
         return Ok(simulation);

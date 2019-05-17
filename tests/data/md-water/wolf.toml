@@ -5,26 +5,16 @@ version = 1
 cutoff = "14 A"
 
 # f-SPC model of water, using ewald summation for electrostatics
-[[pairs]]
-atoms = ["O", "O"]
-lj = {sigma = "3.16 A", epsilon = "0.155 kcal/mol"}
+[pairs]
+O-O = {type = "lj", sigma = "3.16 A", epsilon = "0.155 kcal/mol"}
+H-H = {type = "harmonic", k = "79.8 kcal/mol/A^2", x0 = "1.633 A", restriction = "IntraMolecular"}
+H-O = {type = "null"}
 
-[[pairs]]
-atoms = ["H", "H"]
-harmonic = {k = "79.8 kcal/mol/A^2", x0 = "1.633 A"}
-restriction = "IntraMolecular"
+[bonds]
+O-H = {type = "harmonic", k = "1054.2 kcal/mol/A^2", x0 = "1.0 A"}
 
-[[pairs]]
-atoms = ["H", "O"]
-null = {}
-
-[[bonds]]
-atoms = ["O", "H"]
-harmonic = {k = "1054.2 kcal/mol/A^2", x0 = "1.0 A"}
-
-[[angles]]
-atoms = ["H", "O", "H"]
-harmonic = {k = "75.9 kcal/mol/rad^2", x0 = "109.5 deg"}
+[angles]
+H-O-H = {type = "harmonic", k = "75.9 kcal/mol/rad^2", x0 = "109.5 deg"}
 
 [coulomb]
 wolf = {cutoff = "8.5 A"}

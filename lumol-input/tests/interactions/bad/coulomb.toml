@@ -4,7 +4,7 @@ version = 1
 [coulomb]
 wolf = {cutoff = "6 A"}
 ewald = {cutoff = "6 A", kmax = 8}
-#^ Got more than one coulombic solver: ewald and wolf
+#^ got more than one coulombic solver: ewald and wolf
 
 +++
 
@@ -58,7 +58,7 @@ version = 1
 
 [coulomb]
 ewald = true
-#^ Coulombic solver 'ewald' must be a table
+#^ coulombic solver 'ewald' must be a table
 
 +++
 
@@ -67,7 +67,7 @@ version = 1
 
 [coulomb]
 wolf = true
-#^ Coulombic solver 'wolf' must be a table
+#^ coulombic solver 'wolf' must be a table
 
 +++
 
@@ -76,7 +76,7 @@ version = 1
 
 [coulomb]
 unknown = {}
-#^ Unknown coulomb solver 'unknown'
+#^ unknown coulomb solver 'unknown'
 
 +++
 

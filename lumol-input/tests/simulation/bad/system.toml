@@ -1,7 +1,7 @@
 [input]
 version = 1
 
-#^ Missing 'systems' key in input file
+#^ missing 'systems' key in input file
 
 [[simulations]]
 nsteps = 1
@@ -44,7 +44,7 @@ version = 1
 
 [[systems]]
 fil = false
-#^ Missing 'file' key in system
+#^ missing 'file' key in system
 
 [[simulations]]
 nsteps = 1
@@ -91,7 +91,7 @@ version = 1
 [[systems]]
 file = "../CO2.xyz"
 cell = [true, false, false]
-#^ Values must be numbers in 'cell' array
+#^ values must be numbers in 'cell' array
 
 
 [[simulations]]
@@ -206,7 +206,7 @@ file = "../CO2.xyz"
 
 [[systems]]
 file = "../CO2.xyz"
-#^ Only one system is supported in input file
+#^ only one system is supported in input file
 
 [[simulations]]
 nsteps = 1

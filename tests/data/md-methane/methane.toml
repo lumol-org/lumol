@@ -4,22 +4,13 @@ version = 1
 [global]
 cutoff = {shifted = "10 A"}
 
-[[pairs]]
-atoms = ["C", "C"]
-lj = {sigma = "3.7 A", epsilon = "0.2981 kcal/mol"}
+[pairs]
+C-C = {type = "lj", sigma = "3.7 A", epsilon = "0.2981 kcal/mol"}
+C-H = {type = "null"}
+H-H = {type = "null"}
 
-[[pairs]]
-atoms = ["C", "H"]
-null = {}
+[bonds]
+C-H = {type = "harmonic", x0 = "1.09 A", k = "390 kcal/mol/A^2"}
 
-[[pairs]]
-atoms = ["H", "H"]
-null = {}
-
-[[bonds]]
-atoms = ["C", "H"]
-harmonic = {x0 = "1.09 A", k = "390 kcal/mol/A^2"}
-
-[[angles]]
-atoms = ["H", "C", "H"]
-harmonic = {x0 = "109.5 deg", k = "70 kcal/mol/rad^2"}
+[angles]
+H-C-H = {type = "harmonic", x0 = "109.5 deg", k = "70 kcal/mol/rad^2"}

@@ -7,17 +7,10 @@ version = 1
 [global]
 cutoff = "5.5 A"
 
-[[pairs]]
-atoms = ["Na", "Cl"]
-lj = {sigma = "3.5545 A", epsilon = "0.04425 kcal/mol"}
-
-[[pairs]]
-atoms = ["Na", "Na"]
-lj = {sigma = "2.497 A", epsilon = "0.07826 kcal/mol"}
-
-[[pairs]]
-atoms = ["Cl", "Cl"]
-lj = {sigma = "4.612 A", epsilon = "0.02502 kcal/mol"}
+[pairs]
+Na-Na = {type = "lj", sigma = "2.497 A", epsilon = "0.07826 kcal/mol"}
+Cl-Cl = {type = "lj", sigma = "4.612 A", epsilon = "0.02502 kcal/mol"}
+Na-Cl = {type = "lj", sigma = "3.5545 A", epsilon = "0.04425 kcal/mol"}
 
 [coulomb]
 ewald = {cutoff = "1 A", kmax = 10}

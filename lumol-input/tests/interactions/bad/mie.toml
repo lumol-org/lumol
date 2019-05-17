@@ -1,0 +1,42 @@
+[input]
+version = 1
+
+[pairs]
+A-A = {type = "mie", sigma = "3 A", epsilon = "5.9 kJ/mol", n = "12.0", m = 6.0}
+#^ 'n' must be a number in Mie potential
+
++++
+
+[input]
+version = 1
+
+[pairs]
+A-A = {type = "mie", sigma = "3 A", epsilon = "5.9 kJ/mol", n = 12.0, m = "6.0"}
+#^ 'm' must be a number in Mie potential
+
++++
+
+[input]
+version = 1
+
+[pairs]
+A-A = {type = "mie", sigma = 3, epsilon = "5.9 kJ/mol", n = 12.0, m = 6.0}
+#^ 'sigma' must be a string in Mie potential
+
++++
+
+[input]
+version = 1
+
+[pairs]
+A-A = {type = "mie", sigma = "3 A", epsilon = 5.9, n = 12.0, m = 6.0}
+#^ 'epsilon' must be a string in Mie potential
+
++++
+
+[input]
+version = 1
+
+[pairs]
+A-A = {type = "mie", epsilon = "5.9 kJ/mol", n = 12.0, m = 6.0}
+#^ missing 'sigma' key in Mie potential

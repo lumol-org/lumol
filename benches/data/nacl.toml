@@ -4,17 +4,10 @@ version = 1
 [global]
 cutoff = "8 A"
 
-[[pairs]]
-atoms = ["Na", "Na"]
-null = {}
-
-[[pairs]]
-atoms = ["Cl", "Cl"]
-null = {}
-
-[[pairs]]
-atoms = ["Na", "Cl"]
-null = {}
+[pairs]
+Na-Na = {type = "null"}
+Cl-Cl = {type = "null"}
+Na-Cl = {type = "null"}
 
 [charges]
 Na = 1.0

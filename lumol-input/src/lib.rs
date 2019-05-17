@@ -71,11 +71,11 @@ pub trait FromTomlWithRefData: Sized {
 
 fn validate(config: &Table) -> Result<(), Error> {
     let input = config.get("input").ok_or(
-        Error::from("Missing 'input' table")
+        Error::from("missing 'input' table")
     )?;
 
     let version = input.get("version").ok_or(
-        Error::from("Missing 'version' key in 'input' table")
+        Error::from("missing 'version' key in 'input' table")
     )?;
 
     let version = version.as_integer().ok_or(
@@ -84,7 +84,7 @@ fn validate(config: &Table) -> Result<(), Error> {
 
     if version != 1 {
         return Err(Error::from(
-            format!("Can only read version 1 of input, got version {}", version),
+            format!("can only read version 1 of input, got version {}", version),
         ));
     }
     Ok(())

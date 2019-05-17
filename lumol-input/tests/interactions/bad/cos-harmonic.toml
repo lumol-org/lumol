@@ -1,39 +1,26 @@
 [input]
 version = 1
 
-[[angles]]
-atoms = ["A", "A", "A"]
-cosine-harmonic = 4.0
-#^ 'cosine-harmonic' potential must be a table
+[angles]
+A-A-A = {type = "cosine-harmonic", x0 = "3 A"}
+#^ missing 'k' key in cosine harmonic potential
 
 +++
 
 [input]
 version = 1
 
-[[angles]]
-atoms = ["A", "A", "A"]
-cosine-harmonic = {x0 = "3 A"}
-#^ Missing 'k' key in cosine harmonic potential
+[angles]
+A-A-A = {type = "cosine-harmonic", k = "22 kJ/mol"}
+#^ missing 'x0' key in cosine harmonic potential
 
 +++
 
 [input]
 version = 1
 
-[[angles]]
-atoms = ["A", "A", "A"]
-cosine-harmonic = {k = "22 kJ/mol"}
-#^ Missing 'x0' key in cosine harmonic potential
-
-+++
-
-[input]
-version = 1
-
-[[angles]]
-atoms = ["A", "A", "A"]
-cosine-harmonic = {k = "22 kJ/mol", x0 = false}
+[angles]
+A-A-A = {type = "cosine-harmonic", k = "22 kJ/mol", x0 = false}
 #^ 'x0' must be a string in cosine harmonic potential
 
 +++
@@ -41,7 +28,6 @@ cosine-harmonic = {k = "22 kJ/mol", x0 = false}
 [input]
 version = 1
 
-[[angles]]
-atoms = ["A", "A", "A"]
-cosine-harmonic = {k = 2.2, x0 = "7 A"}
+[angles]
+A-A-A = {type = "cosine-harmonic", k = 2.2, x0 = "7 A"}
 #^ 'k' must be a string in cosine harmonic potential

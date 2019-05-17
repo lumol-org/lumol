@@ -3,4 +3,4 @@ version = 1
 
 [charges]
 Cn = "he"
-#^ Charges must be numbers
+#^ charges must be numbers

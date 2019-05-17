@@ -15,7 +15,7 @@ impl Input {
             "MolecularDynamics" => Ok(Box::new(MolecularDynamics::from_toml(propagator)?)),
             "MonteCarlo" => Ok(Box::new(MonteCarlo::from_toml(propagator, self.path.clone())?)),
             "Minimization" => Ok(Box::new(Minimization::from_toml(propagator)?)),
-            other => Err(Error::from(format!("Unknown propagator type '{}'", other))),
+            other => Err(Error::from(format!("unknown propagator type '{}'", other))),
         }
     }
 }

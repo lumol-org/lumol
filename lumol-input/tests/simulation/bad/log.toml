@@ -3,7 +3,7 @@ version = 1
 
 [log]
 please_log = true
-#^ Missing 'target' or 'targets' in log section
+#^ missing 'target' or 'targets' in log section
 
 +++
 
@@ -13,7 +13,7 @@ version = 1
 [log]
 target = true
 targets = true
-#^ Can not have both 'target' and 'targets' in the log section
+#^ can not have both 'target' and 'targets' in the log section
 
 +++
 
@@ -60,7 +60,7 @@ version = 1
 [log]
 target = "<stdout>"
 level = "false"
-#^ Unknown logging level 'false'
+#^ unknown logging level 'false'
 
 +++
 
@@ -82,7 +82,7 @@ version = 1
 target = "file.log"
 level = "info"
 verbose = true
-#^ Unknown 'verbose' key in log section
+#^ unknown 'verbose' key in log section
 
 +++
 

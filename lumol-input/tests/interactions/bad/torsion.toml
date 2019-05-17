@@ -1,39 +1,35 @@
 [input]
 version = 1
 
-[[dihedrals]]
-atoms = ["A", "B", "C", "D"]
-torsion = {n = 4, k = "67 kJ/mol"}
-#^ Missing 'delta' key in torsion potential
+[dihedrals]
+A-A-A-A = {type = "torsion", n = 4, k = "67 kJ/mol"}
+#^ missing 'delta' key in torsion potential
 
 +++
 
 [input]
 version = 1
 
-[[dihedrals]]
-atoms = ["A", "B", "C", "D"]
-torsion = {n = 4, delta = "80 deg"}
-#^ Missing 'k' key in torsion potential
+[dihedrals]
+A-A-A-A = {type = "torsion", n = 4, delta = "80 deg"}
+#^ missing 'k' key in torsion potential
 
 +++
 
 [input]
 version = 1
 
-[[dihedrals]]
-atoms = ["A", "B", "C", "D"]
-torsion = {k = "67 kJ/mol", delta = "80 deg"}
-#^ Missing 'n' key in torsion potential
+[dihedrals]
+A-A-A-A = {type = "torsion", k = "67 kJ/mol", delta = "80 deg"}
+#^ missing 'n' key in torsion potential
 
 +++
 
 [input]
 version = 1
 
-[[dihedrals]]
-atoms = ["A", "B", "C", "D"]
-torsion = {n = 4, k = "67 kJ/mol", delta = 80.0}
+[dihedrals]
+A-A-A-A = {type = "torsion", n = 4, k = "67 kJ/mol", delta = 80.0}
 #^ 'delta' must be a string in torsion potential
 
 +++
@@ -41,9 +37,8 @@ torsion = {n = 4, k = "67 kJ/mol", delta = 80.0}
 [input]
 version = 1
 
-[[dihedrals]]
-atoms = ["A", "B", "C", "D"]
-torsion = {n = '4', k = "67 kJ/mol", delta = "80 deg"}
+[dihedrals]
+A-A-A-A = {type = "torsion", n = '4', k = "67 kJ/mol", delta = "80 deg"}
 #^ 'n' must be a positive integer in torsion potential
 
 +++
@@ -51,17 +46,6 @@ torsion = {n = '4', k = "67 kJ/mol", delta = "80 deg"}
 [input]
 version = 1
 
-[[dihedrals]]
-atoms = ["A", "B", "C", "D"]
-torsion = {n = 4, k = 6, delta = "80 deg"}
+[dihedrals]
+A-A-A-A = {type = "torsion", n = 4, k = 6, delta = "80 deg"}
 #^ 'k' must be a string in torsion potential
-
-+++
-
-[input]
-version = 1
-
-[[dihedrals]]
-atoms = ["A", "B", "C", "D"]
-torsion = "foo"
-#^ 'torsion' potential must be a table

@@ -1,9 +1,9 @@
 [input]
-#^ Missing 'version' key in 'input' table
+#^ missing 'version' key in 'input' table
 bla = 4
 
 +++
 
 [input]
-#^ Can only read version 1 of input, got version 42
+#^ can only read version 1 of input, got version 42
 version = 42

@@ -45,7 +45,7 @@ impl Input {
                     "forces" => Box::new(ForcesOutput::from_toml(output)?),
                     "cell" => Box::new(CellOutput::from_toml(output)?),
                     "custom" => Box::new(CustomOutput::from_toml(output)?),
-                    other => return Err(Error::from(format!("Unknown output type '{}'", other))),
+                    other => return Err(Error::from(format!("unknown output type '{}'", other))),
                 };
 
                 result.push((output, frequency));
@@ -59,7 +59,7 @@ impl Input {
 
 fn get_file(config: &Table) -> Result<&str, Error> {
     let file = config.get("file").ok_or(
-        Error::from("Missing 'file' key in output")
+        Error::from("missing 'file' key in output")
     )?;
 
     file.as_str().ok_or(Error::from("'file' must be a string in output"))

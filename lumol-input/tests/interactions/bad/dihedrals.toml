@@ -1,44 +1,42 @@
 [input]
 version = 1
 
-[[dihedrals]]
-atoms = ["A", "A", "A"]
-#^ Wrong size for 'atoms' array in dihedral potential. Should be 4, is 3
+[dihedrals]
+A-A-A = {type = "null"}
+#^ expected four atoms for dihedral potential, got 3 (["A", "A", "A"])
 
 +++
 
 [input]
 version = 1
 
-[[dihedrals]]
-atoms = ["A", "B", "A", "B", "B"]
-#^ Wrong size for 'atoms' array in dihedral potential. Should be 4, is 5
+[dihedrals]
+A-A-A-A-A = {type = "null"}
+#^ expected four atoms for dihedral potential, got 5 (["A", "A", "A", "A", "A"])
 
 +++
 
 [input]
 version = 1
 
-[[dihedrals]]
-atoms = {A=true, B=true, C="C"}
-#^ 'atoms' must be an array in dihedral potential
+[dihedrals]
+A-A-A-A = {}
+#^ missing 'type' key in dihedral potential
 
 +++
 
 [input]
 version = 1
 
-[[dihedrals]]
-atoms = ["A", "A", "A", "A"]
-#^ Missing potential type in dihedral potential
+[dihedrals]
+A-A-A-A = {type = false}
+#^ 'type' key must be a string in dihedral potential
 
 +++
 
 [input]
 version = 1
 
-[[dihedrals]]
-atoms = ["A", "A", "A", "A"]
-null = true
-harmonic = {k = "3 A", x0 = "5.9 kJ/mol"}
-#^ Got more than one potential type in dihedral potential: harmonic and null
+[dihedrals]
+A-A-A-A = {type = "bad potential"}
+#^ unknown potential type 'bad potential'

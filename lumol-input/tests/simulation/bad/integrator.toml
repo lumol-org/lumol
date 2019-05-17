@@ -11,7 +11,7 @@ nsteps = 1
 type = "MolecularDynamics"
 timestep = "1.0 fs"
 integrator = {type = "BerendsenBarostat", press = "10 bar", timestep = 100}
-#^ Missing 'pressure' key in Berendsen barostat
+#^ missing 'pressure' key in Berendsen barostat
 
 +++
 
@@ -45,7 +45,7 @@ nsteps = 1
 type = "MolecularDynamics"
 timestep = "1.0 fs"
 integrator = {type = "BerendsenBarostat", pressure = "10 bar", tau = 100}
-#^ Missing 'timestep' key in Berendsen barostat
+#^ missing 'timestep' key in Berendsen barostat
 
 +++
 
@@ -79,7 +79,7 @@ nsteps = 1
 type = "MolecularDynamics"
 timestep = "1.0 fs"
 integrator = {type = "AnisoBerendsenBarostat", press = "10 bar", timestep = 100}
-#^ Missing 'pressure' key in anisotropic Berendsen barostat
+#^ missing 'pressure' key in anisotropic Berendsen barostat
 
 +++
 
@@ -113,7 +113,7 @@ nsteps = 1
 type = "MolecularDynamics"
 timestep = "1.0 fs"
 integrator = {type = "AnisoBerendsenBarostat", pressure = "10 bar", tau = 100}
-#^ Missing 'timestep' key in anisotropic Berendsen barostat
+#^ missing 'timestep' key in anisotropic Berendsen barostat
 
 +++
 

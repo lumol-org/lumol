@@ -28,7 +28,7 @@ nsteps = 1
 type = "MolecularDynamics"
 timestep = "1.0 fs"
 thermostat = {bla = "foo"}
-#^ Missing 'type' key in thermostat
+#^ missing 'type' key in thermostat
 
 +++
 
@@ -62,7 +62,7 @@ nsteps = 1
 type = "MolecularDynamics"
 timestep = "1.0 fs"
 thermostat = {type = "Berendsen", temp = "300 K", timestep = 100}
-#^ Missing 'temperature' key in Berendsen thermostat
+#^ missing 'temperature' key in Berendsen thermostat
 
 +++
 
@@ -96,7 +96,7 @@ nsteps = 1
 type = "MolecularDynamics"
 timestep = "1.0 fs"
 thermostat = {type = "Berendsen", temperature = "300 K", time = 100}
-#^ Missing 'timestep' key in Berendsen thermostat
+#^ missing 'timestep' key in Berendsen thermostat
 
 +++
 
@@ -130,7 +130,7 @@ nsteps = 1
 type = "MolecularDynamics"
 timestep = "1.0 fs"
 thermostat = {type = "Rescale"}
-#^ Missing 'temperature' key in Berendsen thermostat
+#^ missing 'temperature' key in Berendsen thermostat
 
 +++
 
@@ -181,4 +181,4 @@ nsteps = 1
 type = "MolecularDynamics"
 timestep = "1.0 fs"
 thermostat = {type = "bad", temperature = "300 K", tolerance = 33}
-#^ Unknown thermostat type 'bad'
+#^ unknown thermostat type 'bad'

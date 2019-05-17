@@ -5,25 +5,16 @@ version = 1
 cutoff = "6 A"
 tail_correction = true
 
-[[pairs]]
-atoms = ["O", "O"]
-lj = {sigma = "3.16 A", epsilon = "0.155 kcal/mol"}
+[pairs]
+O-O = {type = "lj", sigma = "3.16 A", epsilon = "0.155 kcal/mol"}
+H-H = {type = "null"}
+O-H = {type = "null"}
 
-[[pairs]]
-atoms = ["H", "H"]
-null = {}
+[bonds]
+O-H = {type = "null"}
 
-[[pairs]]
-atoms = ["H", "O"]
-null = {}
-
-[[bonds]]
-atoms = ["O", "H"]
-null = {}
-
-[[angles]]
-atoms = ["H", "O", "H"]
-null = {}
+[angles]
+H-O-H = {type = "null"}
 
 [coulomb]
 ewald = {cutoff = "6 A", accuracy = 1e-5}

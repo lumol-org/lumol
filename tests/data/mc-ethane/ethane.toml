@@ -3,13 +3,12 @@
 [input]
 version = 1
 
-[[pairs]]
-atoms = ["C", "C"]
+[global]
 cutoff = "8 A"
-lj = {sigma = "3.4 A", epsilon = "0.7 kcal/mol"}
-restriction = "InterMolecular"
 tail_correction = true
 
-[[bonds]]
-atoms = ["C", "C"]
-null = {}
+[pairs]
+C-C = {type = "lj", sigma = "3.4 A", epsilon = "0.7 kcal/mol", restriction = "InterMolecular"}
+
+[bonds]
+C-C = {type = "null"}

@@ -1,21 +1,8 @@
 [input]
 version = 1
 
-[[pairs]]
-atoms = ["A", "A"]
-cutoff = "3 A"
-buckingham = true
-#^ 'buckingham' potential must be a table
-
-+++
-
-[input]
-version = 1
-
-[[pairs]]
-atoms = ["A", "A"]
-cutoff = "3 A"
-buckingham = {A = 34, C = "5e-6 kJ/mol/A^6", rho = "2.3 A"}
+[pairs]
+A-A = {type = "buckingham", A = 34, C = "5e-6 kJ/mol/A^6", rho = "2.3 A"}
 #^ 'A' must be a string in Buckingham potential
 
 +++
@@ -23,10 +10,8 @@ buckingham = {A = 34, C = "5e-6 kJ/mol/A^6", rho = "2.3 A"}
 [input]
 version = 1
 
-[[pairs]]
-atoms = ["A", "A"]
-cutoff = "3 A"
-buckingham = {A = "4.2 kJ/mol", C = 56, rho = "2.3 A"}
+[pairs]
+A-A = {type = "buckingham", A = "4.2 kJ/mol", C = 56, rho = "2.3 A"}
 #^ 'C' must be a string in Buckingham potential
 
 +++
@@ -34,10 +19,8 @@ buckingham = {A = "4.2 kJ/mol", C = 56, rho = "2.3 A"}
 [input]
 version = 1
 
-[[pairs]]
-atoms = ["A", "A"]
-cutoff = "3 A"
-buckingham = {A = "4.2 kJ/mol", C = "5e-6 kJ/mol/A^6", rho = 23}
+[pairs]
+A-A = {type = "buckingham", A = "4.2 kJ/mol", C = "5e-6 kJ/mol/A^6", rho = 23}
 #^ 'rho' must be a string in Buckingham potential
 
 +++
@@ -45,30 +28,24 @@ buckingham = {A = "4.2 kJ/mol", C = "5e-6 kJ/mol/A^6", rho = 23}
 [input]
 version = 1
 
-[[pairs]]
-atoms = ["A", "A"]
-cutoff = "3 A"
-buckingham = {C = "5e-6 kJ/mol/A^6", rho = "2.3 A"}
-#^ Missing 'A' key in Buckingham potential
+[pairs]
+A-A = {type = "buckingham", C = "5e-6 kJ/mol/A^6", rho = "2.3 A"}
+#^ missing 'A' key in Buckingham potential
 
 +++
 
 [input]
 version = 1
 
-[[pairs]]
-atoms = ["A", "A"]
-cutoff = "3 A"
-buckingham = {A = "4.2 kJ/mol", rho = "2.3 A"}
-#^ Missing 'C' key in Buckingham potential
+[pairs]
+A-A = {type = "buckingham", A = "4.2 kJ/mol", rho = "2.3 A"}
+#^ missing 'C' key in Buckingham potential
 
 +++
 
 [input]
 version = 1
 
-[[pairs]]
-atoms = ["A", "A"]
-cutoff = "3 A"
-buckingham = {A = "4.2 kJ/mol", C = "5e-6 kJ/mol/A^6"}
-#^ Missing 'rho' key in Buckingham potential
+[pairs]
+A-A = {type = "buckingham", A = "4.2 kJ/mol", C = "5e-6 kJ/mol/A^6"}
+#^ missing 'rho' key in Buckingham potential

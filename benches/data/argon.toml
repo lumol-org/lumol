@@ -1,8 +1,9 @@
 [input]
 version = 1
 
-[[pairs]]
-atoms = ["Ar", "Ar"]
-lj = {sigma = "3.4 A", epsilon = "1.0 kJ/mol"}
+[global]
 cutoff = "10 A"
 tail_correction = true
+
+[pairs]
+Ar-Ar = {type = "lj", sigma = "3.4 A", epsilon = "1.0 kJ/mol"}

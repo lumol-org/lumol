@@ -42,7 +42,7 @@ file = "../CO2.xyz"
 nsteps = 0
 outputs = [
     {bla = "hey"}
-    #^ Missing 'type' key in output
+    #^ missing 'type' key in output
 ]
 
 [simulations.propagator]
@@ -80,7 +80,7 @@ file = "../CO2.xyz"
 nsteps = 0
 outputs = [
     {type = "Trajectory", fli = "testing"}
-    #^ Missing 'file' key in output
+    #^ missing 'file' key in output
 ]
 
 [simulations.propagator]
@@ -118,7 +118,7 @@ file = "../CO2.xyz"
 nsteps = 0
 outputs = [
     {type = "null"}
-    #^ Unknown output type 'null'
+    #^ unknown output type 'null'
 ]
 
 [simulations.propagator]
@@ -156,7 +156,7 @@ file = "../CO2.xyz"
 nsteps = 0
 outputs = [
     {type = "Custom", file = "custom.dat", custom = "foo"}
-    #^ Missing 'template' key in custom output
+    #^ missing 'template' key in custom output
 ]
 
 [simulations.propagator]
@@ -194,7 +194,7 @@ file = "../CO2.xyz"
 nsteps = 0
 outputs = [
     {type = "Stress", fli = "testing"}
-    #^ Missing 'file' key in output
+    #^ missing 'file' key in output
 ]
 
 [simulations.propagator]
@@ -213,7 +213,7 @@ file = "../CO2.xyz"
 nsteps = 0
 outputs = [
     {type = "Forces", fli = "testing"}
-    #^ Missing 'file' key in output
+    #^ missing 'file' key in output
 ]
 
 [simulations.propagator]

@@ -1,68 +1,63 @@
 [input]
 version = 1
 
-[[pairs]]
-atoms = ["A"]
-#^ Wrong size for 'atoms' array in pair potential. Should be 2, is 1
+[pairs]
+A = {type = "null"}
+#^ expected two atoms for pair potential, got 1 (["A"])
 
 +++
 
 [input]
 version = 1
 
-[[pairs]]
-atoms = ["A", "B", "A"]
-#^ Wrong size for 'atoms' array in pair potential. Should be 2, is 3
+[pairs]
+A-A-A = {type = "null"}
+#^ expected two atoms for pair potential, got 3 (["A", "A", "A"])
 
 +++
 
 [input]
 version = 1
 
-[[pairs]]
-atoms = {A=true, B=true}
-#^ 'atoms' must be an array in pair potential
+[pairs]
+A-A = {}
+#^ missing 'type' key in pair potential
 
 +++
 
 [input]
 version = 1
 
-[[pairs]]
-atoms = ["A", "A"]
-#^ Missing potential type in pair potential
+[pairs]
+A-A = {type = false}
+#^ 'type' key must be a string in pair potential
 
 +++
 
 [input]
 version = 1
 
-[[pairs]]
-atoms = ["A", "A"]
-lj = {sigma = "3 A", epsilon = "5.9 kJ/mol"}
-harmonic = {k = "3 A", x0 = "5.9 kJ/mol"}
-#^ Got more than one potential type in pair potential: harmonic and lj
+[pairs]
+A-A = {type = "bad potential"}
+#^ unknown potential type 'bad potential'
 
 +++
 
 [input]
 version = 1
 
-[[pairs]]
-atoms = ["A", "A"]
-lj = {sigma = "3 A", epsilon = "5.9 kJ/mol"}
-#^ Missing 'cutoff' value for pair potential
+[pairs]
+A-A = {type = "lj", sigma = "3 A", epsilon = "5.9 kJ/mol"}
+#^ missing 'cutoff' value for pair potential
 
 +++
 
 [input]
 version = 1
 
-[[pairs]]
-atoms = ["A", "A"]
-cutoff = 5
+[pairs]
+A-A = {type = "lj", sigma = "3 A", epsilon = "5.9 kJ/mol", cutoff = 5}
 #^ 'cutoff' must be a string or a table
-lj = {sigma = "3 A", epsilon = "5.9 kJ/mol"}
 
 +++
 
@@ -73,9 +68,8 @@ version = 1
 #^ 'cutoff' must be a string or a table
 cutoff = 2
 
-[[pairs]]
-atoms = ["A", "A"]
-lj = {sigma = "3 A", epsilon = "5.9 kJ/mol"}
+[pairs]
+A-A = {type = "lj", sigma = "3 A", epsilon = "5.9 kJ/mol"}
 
 +++
 
@@ -86,9 +80,8 @@ version = 1
 cutoff = {foo = 6}
 #^ 'cutoff' table can only contain 'shifted' key
 
-[[pairs]]
-atoms = ["A", "A"]
-lj = {sigma = "3 A", epsilon = "5.9 kJ/mol"}
+[pairs]
+A-A = {type = "lj", sigma = "3 A", epsilon = "5.9 kJ/mol"}
 
 +++
 
@@ -99,9 +92,8 @@ version = 1
 cutoff = {shifted = 6}
 #^ 'cutoff.shifted' value must be a string
 
-[[pairs]]
-atoms = ["A", "A"]
-lj = {sigma = "3 A", epsilon = "5.9 kJ/mol"}
+[pairs]
+A-A = {type = "lj", sigma = "3 A", epsilon = "5.9 kJ/mol"}
 
 +++
 
@@ -110,11 +102,10 @@ version = 1
 
 [global]
 tail_correction = "false"
-#^ The 'tail_correction' section must be a boolean value
+#^ the 'tail_correction' section must be a boolean value
 
-[[pairs]]
-atoms = ["A", "A"]
-lj = {sigma = "3 A", epsilon = "5.9 kJ/mol"}
+[pairs]
+A-A = {type = "lj", sigma = "3 A", epsilon = "5.9 kJ/mol"}
 
 +++
 
@@ -124,8 +115,6 @@ version = 1
 [global]
 cutoff = "67 A"
 
-[[pairs]]
-atoms = ["A", "A"]
-lj = {sigma = "3 A", epsilon = "5.9 kJ/mol"}
-tail_correction = "true"
-#^ The 'tail_correction' section must be a boolean value
+[pairs]
+A-A = {type = "lj", sigma = "3 A", epsilon = "5.9 kJ/mol", tail_correction = "true"}
+#^ the 'tail_correction' section must be a boolean value

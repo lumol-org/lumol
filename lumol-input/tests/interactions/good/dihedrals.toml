@@ -1,22 +1,9 @@
 [input]
 version = 1
 
-[[dihedrals]]
-atoms = ["A", "B", "C", "D"]
-harmonic = {x0 = "3 A", k = "5.9 kJ/mol/A^2"}
-
-[[dihedrals]]
-atoms = ["A", "B", "C", "D"]
-cosine-harmonic = {k = "67 kJ/mol/deg^2", x0 = "120 deg"}
-
-[[dihedrals]]
-atoms = ["A", "B", "C", "D"]
-null = {}
-
-[[dihedrals]]
-atoms = ["A", "B", "C", "D"]
-torsion = {n = 4, k = "67 kJ/mol", delta = "80 deg"}
-
-[[dihedrals]]
-atoms = ["A", "B", "C", "D"]
-morse = {A = "30 deg^-1", depth = "25 kJ/mol", x0 = "109 deg"}
+[dihedrals]
+A-A-A-A = {type = "null"}
+B-B-B-B = {type = "harmonic", x0 = "3 A", k = "5.9 kJ/mol/A^2"}
+C-C-C-C = {type = "cosine-harmonic", k = "67 kJ/mol/deg^2", x0 = "120 deg"}
+D-D-D-D = {type = "torsion", n = 4, k = "67 kJ/mol", delta = "80 deg"}
+E-E-E-E = {type = "morse", A = "30 deg^-1", depth = "25 kJ/mol", x0 = "109 deg"}
