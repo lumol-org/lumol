@@ -6,10 +6,8 @@ file = "helium-gas.pdb"
 cell = 100
 velocities = {init = "300 K"}
 
-[[systems.potentials.pairs]]
-atoms = ["He", "He"]
-lj = {sigma = "2 A", epsilon = "0.2 kJ/mol"}
-cutoff = "4.5 A"
+[systems.potentials.pairs]
+He-He = {type = "lj", sigma = "2 A", epsilon = "0.2 kJ/mol", cutoff = "4.5 A"}
 
 [[simulations]]
 nsteps = 1_000

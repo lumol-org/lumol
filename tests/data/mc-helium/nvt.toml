@@ -4,11 +4,8 @@ version = 1
 [[systems]]
 file = "helium.pdb"
 
-[[systems.potentials.pairs]]
-atoms = ["He", "He"]
-lj = {sigma = "2 A", epsilon = "0.2 kJ/mol"}
-cutoff = "15 A"
-
+[systems.potentials.pairs]
+He-He = {type = "lj", sigma = "2 A", epsilon = "0.2 kJ/mol", cutoff = "15 A"}
 
 [[simulations]]
 nsteps = 5_000

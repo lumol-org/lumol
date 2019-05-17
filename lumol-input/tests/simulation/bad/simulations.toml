@@ -5,7 +5,7 @@ version = 1
 file = "../CO2.xyz"
 
 [[simulations]]
-#^ Missing 'nsteps' key in simulation
+#^ missing 'nsteps' key in simulation
 
 [simulations.propagator]
 type = "MolecularDynamics"
@@ -37,7 +37,7 @@ file = "../CO2.xyz"
 
 [[simulations]]
 nsteps = 1
-#^ Missing 'propagator' key in simulation
+#^ missing 'propagator' key in simulation
 
 +++
 
@@ -65,7 +65,7 @@ nsteps = 1
 
 [simulations.propagator]
 bla = 4
-#^ Missing 'type' key in propagator
+#^ missing 'type' key in propagator
 
 +++
 
@@ -95,4 +95,4 @@ nsteps = 1
 
 [simulations.propagator]
 type = "null"
-#^ Unknown propagator type 'null'
+#^ unknown propagator type 'null'

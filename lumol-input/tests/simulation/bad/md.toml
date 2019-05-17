@@ -10,7 +10,7 @@ nsteps = 1
 [simulations.propagator]
 type = "MolecularDynamics"
 step = "1 fs"
-#^ Missing 'timestep' key in molecular dynamics propagator
+#^ missing 'timestep' key in molecular dynamics propagator
 
 +++
 
@@ -60,7 +60,7 @@ nsteps = 1
 type = "MolecularDynamics"
 timestep = "1.0 fs"
 integrator = {typ = "BerendsenBarostat"}
-#^ Missing 'type' key in integrator
+#^ missing 'type' key in integrator
 
 +++
 
@@ -94,4 +94,4 @@ nsteps = 1
 type = "MolecularDynamics"
 timestep = "1.0 fs"
 integrator = {type = "null"}
-#^ Unknown integrator 'null'
+#^ unknown integrator 'null'

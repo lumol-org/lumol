@@ -9,7 +9,7 @@ nsteps = 1
 
 [simulations.propagator]
 type = "MonteCarlo"
-#^ Missing 'temperature' key in Monte Carlo propagator
+#^ missing 'temperature' key in Monte Carlo propagator
 
 +++
 
@@ -42,7 +42,7 @@ nsteps = 1
 type = "MonteCarlo"
 temperature = "300 K"
 mo = false
-#^ Missing 'moves' key in Monte Carlo propagator
+#^ missing 'moves' key in Monte Carlo propagator
 
 +++
 

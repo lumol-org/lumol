@@ -69,7 +69,7 @@ impl Input {
         }
 
         if systems.len() > 1 {
-            return Err(Error::from("Only one system is supported in input file"));
+            return Err(Error::from("only one system is supported in input file"));
         }
 
         let system = systems[0].as_table().ok_or(
@@ -164,6 +164,6 @@ fn get_cell_number(value: &Value) -> Result<f64, Error> {
     } else if let Some(value) = value.as_float() {
         Ok(value)
     } else {
-        Err(Error::from("Values must be numbers in 'cell' array"))
+        Err(Error::from("values must be numbers in 'cell' array"))
     }
 }

@@ -14,7 +14,7 @@ impl FromToml for Minimization {
 
         let minimizer: Box<dyn Minimizer> = match extract::typ(minimizer, "minimizer")? {
             "SteepestDescent" => Box::new(SteepestDescent::from_toml(minimizer)?),
-            other => return Err(Error::from(format!("Unknown minimizer '{}'", other))),
+            other => return Err(Error::from(format!("unknown minimizer '{}'", other))),
         };
 
         let tolerance = if let Some(tolerance) = config.get("tolerance") {

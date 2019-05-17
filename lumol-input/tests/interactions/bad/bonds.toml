@@ -1,44 +1,42 @@
 [input]
 version = 1
 
-[[bonds]]
-atoms = ["A"]
-#^ Wrong size for 'atoms' array in bond potential. Should be 2, is 1
+[bonds]
+A = {type = "null"}
+#^ expected two atoms for bond potential, got 1 (["A"])
 
 +++
 
 [input]
 version = 1
 
-[[bonds]]
-atoms = ["A", "B", "A"]
-#^ Wrong size for 'atoms' array in bond potential. Should be 2, is 3
+[bonds]
+A-A-A = {type = "null"}
+#^ expected two atoms for bond potential, got 3 (["A", "A", "A"])
 
 +++
 
 [input]
 version = 1
 
-[[bonds]]
-atoms = {A=true, B=true}
-#^ 'atoms' must be an array in bond potential
+[bonds]
+A-A = {}
+#^ missing 'type' key in bond potential
 
 +++
 
 [input]
 version = 1
 
-[[bonds]]
-atoms = ["A", "A"]
-#^ Missing potential type in bond potential
+[bonds]
+A-A = {type = false}
+#^ 'type' key must be a string in bond potential
 
 +++
 
 [input]
 version = 1
 
-[[bonds]]
-atoms = ["A", "A"]
-lj = {sigma = "3 A", epsilon = "5.9 kJ/mol"}
-harmonic = {k = "3 A", x0 = "5.9 kJ/mol"}
-#^ Got more than one potential type in bond potential: harmonic and lj
+[bonds]
+A-A = {type = "bad potential"}
+#^ unknown potential type 'bad potential'

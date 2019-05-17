@@ -12,7 +12,7 @@ type = "MonteCarlo"
 temperature = "300 K"
 moves = [
     {bla = "ble"}
-    #^ Missing 'type' key in Monte Carlo move
+    #^ missing 'type' key in Monte Carlo move
 ]
 
 +++
@@ -50,7 +50,7 @@ type = "MonteCarlo"
 temperature = "300 K"
 moves = [
     {type = "true"}
-    #^ Unknown Monte Carlo move 'true'
+    #^ unknown Monte Carlo move 'true'
 ]
 
 +++
@@ -69,7 +69,7 @@ type = "MonteCarlo"
 temperature = "300 K"
 moves = [
     {type = "Rotate"}
-    #^ Missing 'delta' key in Rotate move
+    #^ missing 'delta' key in Rotate move
 ]
 
 +++
@@ -145,7 +145,7 @@ type = "MonteCarlo"
 temperature = "300 K"
 moves = [
     {type = "Translate"}
-    #^ Missing 'delta' key in Translate move
+    #^ missing 'delta' key in Translate move
 ]
 
 +++
@@ -221,7 +221,7 @@ type = "MonteCarlo"
 temperature = "300 K"
 moves = [
     {type = "Resize", pressure = "6 A^3"}
-    #^ Missing 'delta' key in Resize move
+    #^ missing 'delta' key in Resize move
 ]
 
 +++
@@ -278,7 +278,7 @@ type = "MonteCarlo"
 temperature = "300 K"
 moves = [
     {type = "Resize", delta = "6 A^3"}
-    #^ Missing 'pressure' key in Resize move
+    #^ missing 'pressure' key in Resize move
 ]
 
 +++

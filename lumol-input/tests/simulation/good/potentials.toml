@@ -11,13 +11,11 @@ velocities = {init = "300 K"}
 [systems.potentials.global]
 cutoff = "10 A"
 
-[[systems.potentials.pairs]]
-atoms = ["C", "O"]
-lj = {sigma = "3 A", epsilon = "5 kJ/mol"}
+[systems.potentials.pairs]
+C-O = {type = "lj", sigma = "3 A", epsilon = "5 kJ/mol"}
 
-[[systems.potentials.pairs]]
-atoms = ["C", "O"]
-harmonic = {x0 = "3 A", k = "5 kJ/mol"}
+[systems.potentials.bonds]
+C-O = {type = "harmonic", x0 = "3 A", k = "5 kJ/mol"}
 
 [systems.potentials.charges]
 C = 0.8

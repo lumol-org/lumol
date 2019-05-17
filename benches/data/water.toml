@@ -4,25 +4,16 @@ version = 1
 [global]
 cutoff = "8 A"
 
-[[pairs]]
-atoms = ["O", "O"]
-null = {}
+[pairs]
+O-O = {type = "null"}
+H-H = {type = "null"}
+O-H = {type = "null"}
 
-[[pairs]]
-atoms = ["H", "H"]
-null = {}
+[bonds]
+O-H = {type = "null"}
 
-[[pairs]]
-atoms = ["O", "H"]
-null = {}
-
-[[bonds]]
-atoms = ["O", "H"]
-null = {}
-
-[[angles]]
-atoms = ["H", "O", "H"]
-null = {}
+[angles]
+H-O-H = {type = "null"}
 
 [charges]
 O = -0.82

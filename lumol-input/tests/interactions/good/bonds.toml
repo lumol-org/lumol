@@ -1,14 +1,7 @@
 [input]
 version = 1
 
-[[bonds]]
-atoms = ["A", "B"]
-harmonic = {x0 = "3 A", k = "5.9 kJ/mol/A^2"}
-
-[[bonds]]
-atoms = ["A", "B"]
-morse = {A = "5 A^-1", depth = "25 kJ/mol", x0 = "2.1 A"}
-
-[[bonds]]
-atoms = ["A", "B"]
-null = {}
+[bonds]
+A-A = {type = "null"}
+B-B = {type = "morse", A = "5 A^-1", depth = "25 kJ/mol", x0 = "2.1 A"}
+C-C = {type = "harmonic", x0 = "3 A", k = "5.9 kJ/mol/A^2"}

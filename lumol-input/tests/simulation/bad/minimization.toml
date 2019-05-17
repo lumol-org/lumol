@@ -10,7 +10,7 @@ nsteps = 1
 [simulations.propagator]
 type = "Minimization"
 algo = "1 fs"
-#^ Missing 'minimizer' key in minimization propagator
+#^ missing 'minimizer' key in minimization propagator
 
 +++
 
@@ -42,7 +42,7 @@ nsteps = 1
 [simulations.propagator]
 type = "Minimization"
 minimizer = {ty = "foo"}
-#^ Missing 'type' key in minimizer
+#^ missing 'type' key in minimizer
 
 +++
 
@@ -74,7 +74,7 @@ nsteps = 1
 [simulations.propagator]
 type = "Minimization"
 minimizer = {type = "foo"}
-#^ Unknown minimizer 'foo'
+#^ unknown minimizer 'foo'
 
 +++
 
@@ -91,7 +91,7 @@ nsteps = 1
 type = "Minimization"
 minimizer = {type = "SteepestDescent"}
 tolerance = {ener = "1e-5 kJ/mol", force2 = "1e-5 kJ^2/mol^2/A^2"}
-#^ Missing 'energy' key in minimization tolerance
+#^ missing 'energy' key in minimization tolerance
 
 +++
 
@@ -125,7 +125,7 @@ nsteps = 1
 type = "Minimization"
 minimizer = {type = "SteepestDescent"}
 tolerance = {energy = "1e-5 kJ^2/mol^2/A^2", forces = "1e-5 kJ^2/mol^2/A^2"}
-#^ Missing 'force2' key in minimization tolerance
+#^ missing 'force2' key in minimization tolerance
 
 +++
 

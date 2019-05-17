@@ -4,11 +4,8 @@ version = 1
 [[systems]]
 file = "argon.pdb"
 
-[[systems.potentials.pairs]]
-atoms = ["Ar", "Ar"]
-lj = {sigma = "3.405 A", epsilon = "1.0 kJ/mol"}
-cutoff = "8 A"
-tail_correction = true
+[systems.potentials.pairs]
+Ar-Ar = {type = "lj", sigma = "3.405 A", epsilon = "1.0 kJ/mol", cutoff = "8 A", tail_correction = true}
 
 [[simulations]]
 nsteps = 1000

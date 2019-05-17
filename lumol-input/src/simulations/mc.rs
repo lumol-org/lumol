@@ -41,7 +41,7 @@ impl FromTomlWithData for MonteCarlo {
                 "Translate" => Box::new(Translate::from_toml(mc_move, root.clone())?),
                 "Rotate" => Box::new(Rotate::from_toml(mc_move, root.clone())?),
                 "Resize" => Box::new(Resize::from_toml(mc_move, root.clone())?),
-                other => return Err(Error::from(format!("Unknown Monte Carlo move '{}'", other))),
+                other => return Err(Error::from(format!("unknown Monte Carlo move '{}'", other))),
             };
 
             match target_acceptance {

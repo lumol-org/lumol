@@ -48,7 +48,7 @@ type = "MolecularDynamics"
 timestep = "1.0 fs"
 controls = [
     {bla = "bla"}
-    #^ Missing 'type' key in control
+    #^ missing 'type' key in control
 ]
 
 +++
@@ -86,7 +86,7 @@ type = "MolecularDynamics"
 timestep = "1.0 fs"
 controls = [
     {type = "null"}
-    #^ Unknown control 'null'
+    #^ unknown control 'null'
 ]
 
 +++

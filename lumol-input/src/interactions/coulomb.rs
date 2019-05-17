@@ -18,13 +18,13 @@ impl InteractionsInput {
             None => return Ok(()),
         };
 
-        let coulomb = coulomb.as_table().ok_or(Error::from("The 'coulomb' section must be a table"))?;
+        let coulomb = coulomb.as_table().ok_or(Error::from("the 'coulomb' section must be a table"))?;
 
         let solvers = coulomb.keys().cloned().filter(|key| key != "restriction").collect::<Vec<_>>();
 
         if solvers.len() != 1 {
             return Err(Error::from(
-                format!("Got more than one coulombic solver: {}", solvers.join(" and ")),
+                format!("got more than one coulombic solver: {}", solvers.join(" and ")),
             ));
         }
 
@@ -36,7 +36,7 @@ impl InteractionsInput {
                     let ewald = Ewald::from_toml(table, &system)?;
                     Box::new(SharedEwald::new(ewald))
                 }
-                other => return Err(Error::from(format!("Unknown coulomb solver '{}'", other))),
+                other => return Err(Error::from(format!("unknown coulomb solver '{}'", other))),
             };
 
             if let Some(restriction) = read_restriction(coulomb)? {
@@ -46,7 +46,7 @@ impl InteractionsInput {
             system.set_coulomb_potential(potential);
             Ok(())
         } else {
-            Err(Error::from(format!("Coulombic solver '{}' must be a table", key)))
+            Err(Error::from(format!("coulombic solver '{}' must be a table", key)))
         }
     }
 
@@ -58,7 +58,7 @@ impl InteractionsInput {
         };
 
         let charges = charges.as_table().ok_or(
-            Error::from("The 'charges' section must be a table")
+            Error::from("the 'charges' section must be a table")
         )?;
 
         let mut total_charge = 0.0;
@@ -67,7 +67,7 @@ impl InteractionsInput {
                 Value::Integer(val) => val as f64,
                 Value::Float(val) => val,
                 _ => {
-                    return Err(Error::from("Charges must be numbers"));
+                    return Err(Error::from("charges must be numbers"));
                 }
             };
 

@@ -84,7 +84,7 @@ impl Input {
             if loggers.get("target").is_some() {
                 if loggers.get("targets").is_some() {
                     return Err(
-                        Error::from("Can not have both 'target' and 'targets' in the log section"),
+                        Error::from("can not have both 'target' and 'targets' in the log section"),
                     );
                 }
 
@@ -119,7 +119,7 @@ impl Input {
                                    .expect("Error in logging initialization");
                 let _ = log4rs::init_config(config);
             } else {
-                return Err(Error::from("Missing 'target' or 'targets' in log section"));
+                return Err(Error::from("missing 'target' or 'targets' in log section"));
             }
         } else {
             setup_default_logger();
@@ -155,7 +155,7 @@ fn read_appender(config: &Table, name: &str) -> Result<Appender, Error> {
     let allowed_keys = ["target", "targets", "level", "append"];
     for key in config.keys() {
         if !allowed_keys.contains(&&**key) {
-            return Err(Error::from(format!("Unknown '{}' key in log section", key)));
+            return Err(Error::from(format!("unknown '{}' key in log section", key)));
         }
     }
 
@@ -169,7 +169,7 @@ fn read_appender(config: &Table, name: &str) -> Result<Appender, Error> {
         "info" => log::LevelFilter::Info,
         "warning" => log::LevelFilter::Warn,
         "error" => log::LevelFilter::Error,
-        other => return Err(Error::from(format!("Unknown logging level '{}'", other))),
+        other => return Err(Error::from(format!("unknown logging level '{}'", other))),
     };
 
     let target = extract::str("target", config, "log target")?;

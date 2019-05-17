@@ -1,18 +1,8 @@
 [input]
 version = 1
 
-[[angles]]
-atoms = ["A", "B", "C"]
-harmonic = {x0 = "80 deg", k = "5.9 kJ/mol/deg^2"}
-
-[[angles]]
-atoms = ["A", "B", "C"]
-cosine-harmonic = {k = "67 kJ/mol/deg^2", x0 = "120 deg"}
-
-[[angles]]
-atoms = ["A", "B", "C"]
-null = {}
-
-[[angles]]
-atoms = ["A", "B", "C"]
-morse = {A = "30 deg^-1", depth = "25 kJ/mol", x0 = "109 deg"}
+[angles]
+A-A-A = {type = "null"}
+B-B-B = {type = "cosine-harmonic", k = "67 kJ/mol/deg^2", x0 = "120 deg"}
+C-C-C = {type = "morse", A = "30 deg^-1", depth = "25 kJ/mol", x0 = "109 deg"}
+D-D-D = {type = "harmonic", x0 = "80 deg", k = "5.9 kJ/mol/deg^2"}
