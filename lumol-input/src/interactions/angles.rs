@@ -22,7 +22,7 @@ impl InteractionsInput {
         )?;
 
         for (key, table) in angles {
-            let atoms = key.split("-").collect::<Vec<_>>();
+            let atoms = key.split('-').collect::<Vec<_>>();
             if atoms.len() != 3 {
                 return Err(Error::from(format!(
                     "expected three atoms for angle potential, got {} ({:?})", atoms.len(), atoms
@@ -53,7 +53,7 @@ impl InteractionsInput {
         )?;
 
         for (key, table) in dihedrals {
-            let atoms = key.split("-").collect::<Vec<_>>();
+            let atoms = key.split('-').collect::<Vec<_>>();
             if atoms.len() != 4 {
                 return Err(Error::from(format!(
                     "expected four atoms for dihedral potential, got {} ({:?})", atoms.len(), atoms

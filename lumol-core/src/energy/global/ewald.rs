@@ -893,7 +893,7 @@ impl SharedEwald {
     /// ```
     /// # use lumol_core::energy::{Ewald, SharedEwald, CoulombicPotential};
     /// let ewald = SharedEwald::new(Ewald::new(12.5, 10, None));
-    /// let boxed: Box<CoulombicPotential> = Box::new(ewald);
+    /// let boxed: Box<dyn CoulombicPotential> = Box::new(ewald);
     /// ```
     pub fn new(ewald: Ewald) -> SharedEwald {
         SharedEwald(RwLock::new(ewald))

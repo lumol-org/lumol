@@ -3,7 +3,7 @@
 
 //! [Chemfiles](https://chemfiles.org/) conversion for Lumol.
 use std::path::Path;
-use std::sync::{Once, ONCE_INIT};
+use std::sync::Once;
 
 use soa_derive::soa_zip;
 use log::warn;
@@ -393,7 +393,7 @@ pub fn read_molecule<P: AsRef<Path>>(path: P) -> Result<Molecule, chemfiles::Err
     return Ok(system.molecule(0).to_owned());
 }
 
-static REDIRECT_CHEMFILES_WARNING: Once = ONCE_INIT;
+static REDIRECT_CHEMFILES_WARNING: Once = Once::new();
 
 fn redirect_chemfiles_warnings() {
     fn warning_callback(message: &str) {
