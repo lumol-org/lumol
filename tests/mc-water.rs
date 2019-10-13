@@ -4,8 +4,8 @@ use lumol::input::Input;
 use lumol::units;
 
 use std::path::Path;
-use std::sync::{Once, ONCE_INIT};
-static START: Once = ONCE_INIT;
+use std::sync::Once;
+static START: Once = Once::new();
 
 mod utils;
 

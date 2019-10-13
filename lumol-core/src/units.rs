@@ -212,25 +212,21 @@ fn tokenize(unit: &str) -> Vec<Token> {
     return tokens;
 }
 
-static MISSING_OPERATOR: &'static str = "Oops, sorry explorator, but you felt \
-                                         in a space-time hole. We are missing an operator here";
+static MISSING_OPERATOR: &str = "missing operator, this should never happen";
 
 /// Create the AST for unit expression using the [Shunting-Yard] algorithm.
 ///
 /// [Shunting-Yard]: https://en.wikipedia.org/wiki/Shunting-yard_algorithm
 #[allow(trivial_casts)]
 fn shunting_yard(tokens: Vec<Token>) -> Result<Vec<Token>, ParseError> {
-    let mut operators = Vec::new();
+    let mut operators = Vec::<Token>::new();
     let mut output = Vec::new();
     for token in tokens {
         match token {
             Token::Value(..) => output.push(token),
             Token::Mul | Token::Div | Token::Pow => {
                 while !operators.is_empty() {
-                    // The cast is useless here, but rustc can't figure out
-                    // the type of the expression after the call to `expect`
-                    let top_operator =
-                        (operators.last().expect(MISSING_OPERATOR) as &Token).clone();
+                    let top_operator = operators.last().expect(MISSING_OPERATOR).clone();
                     // All the operators are left-associative
                     if token.precedence() <= top_operator.precedence() {
                         output.push(operators.pop().expect(MISSING_OPERATOR));

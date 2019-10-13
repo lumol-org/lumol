@@ -528,7 +528,7 @@ mod tests {
             fn log(&self, record: &log::Record<'_>) {
                 if record.level() == log::Level::Warn {
                     let mut message = self.message.lock().unwrap();
-                    write!(&mut *message, "{}\n", record.args()).unwrap();
+                    writeln!(&mut *message, "{}", record.args()).unwrap();
                 }
             }
 

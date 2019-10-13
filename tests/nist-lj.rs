@@ -9,9 +9,8 @@ use lumol::input::Input;
 use lumol::sys::System;
 
 use std::path::Path;
-use std::sync::{Once, ONCE_INIT};
-
-static START: Once = ONCE_INIT;
+use std::sync::Once;
+static START: Once = Once::new();
 
 pub fn get_system(name: &str) -> System {
     let path = Path::new(file!()).parent().unwrap().join("data").join("nist-lj").join(name);

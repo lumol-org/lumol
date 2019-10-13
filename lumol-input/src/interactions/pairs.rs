@@ -67,7 +67,7 @@ impl InteractionsInput {
         let global = GlobalInformation::read(&self.config)?;
 
         for (key, table) in pairs {
-            let atoms = key.split("-").collect::<Vec<_>>();
+            let atoms = key.split('-').collect::<Vec<_>>();
             if atoms.len() != 2 {
                 return Err(Error::from(format!(
                     "expected two atoms for pair potential, got {} ({:?})", atoms.len(), atoms
@@ -152,7 +152,7 @@ impl InteractionsInput {
         )?;
 
         for (key, table) in bonds {
-            let atoms = key.split("-").collect::<Vec<_>>();
+            let atoms = key.split('-').collect::<Vec<_>>();
             if atoms.len() != 2 {
                 return Err(Error::from(format!(
                     "expected two atoms for bond potential, got {} ({:?})", atoms.len(), atoms

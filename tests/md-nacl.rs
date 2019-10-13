@@ -2,8 +2,8 @@
 // Copyright (C) Lumol's contributors — BSD license
 
 //! Testing physical properties of a sodium chloride crystal
-use std::sync::{Once, ONCE_INIT};
-pub static START: Once = ONCE_INIT;
+use std::sync::Once;
+static START: Once = Once::new();
 
 mod utils;
 

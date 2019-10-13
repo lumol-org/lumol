@@ -4,7 +4,7 @@
 //! Atomic masses for all elements
 
 #[allow(clippy::unreadable_literal)]
-static ATOMIC_MASSES: &'static [(&'static str, f64)] = &[
+static ATOMIC_MASSES: [(&str, f64); 118] = [
     ("H", 1.008),
     ("He", 4.002602),
     ("Li", 6.94),
@@ -135,7 +135,7 @@ static ATOMIC_MASSES: &'static [(&'static str, f64)] = &[
 /// assert_eq!(get_atomic_mass("Ow"), None);
 /// ```
 pub fn get_atomic_mass(name: &str) -> Option<f64> {
-    for (symbol, mass) in ATOMIC_MASSES {
+    for (symbol, mass) in ATOMIC_MASSES.iter() {
         if name == *symbol {
             return Some(*mass);
         }
