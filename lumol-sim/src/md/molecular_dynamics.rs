@@ -67,7 +67,7 @@ impl Propagator for MolecularDynamics {
         self.integrator.integrate(system);
 
         if let Some(ref mut thermostat) = self.thermostat {
-            thermostat.control(system);
+            thermostat.apply(system);
         }
 
         for control in &mut self.controls {
