@@ -11,9 +11,12 @@ pub use self::integrators::VelocityVerlet;
 pub use self::integrators::Verlet;
 
 mod controls;
-pub use self::controls::{BerendsenThermostat, RescaleThermostat};
-pub use self::controls::{Control, Thermostat};
+pub use self::controls::Control;
 pub use self::controls::{RemoveRotation, RemoveTranslation, Rewrap};
+
+mod thermostats;
+pub use self::thermostats::Thermostat;
+pub use self::thermostats::{RescaleThermostat, BerendsenThermostat};
 
 mod molecular_dynamics;
 pub use self::molecular_dynamics::MolecularDynamics;
