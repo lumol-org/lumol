@@ -82,7 +82,7 @@ impl BerendsenThermostat {
     /// timestep of `tau` times the integrator timestep.
     pub fn new(temperature: f64, tau: f64) -> BerendsenThermostat {
         assert!(temperature >= 0.0, "The temperature must be positive in thermostats.");
-        assert!(tau >= 0.0, "The timestep must be positive in berendsen thermostat.");
+        assert!(tau >= 1.0, "The timestep must be larger than 1 in berendsen thermostat.");
         BerendsenThermostat {
             temperature: temperature,
             tau: tau,
@@ -168,5 +168,17 @@ mod tests {
     #[should_panic]
     fn negative_temperature_berendsen() {
         let _ = BerendsenThermostat::new(-56.0, 1000.0);
+    }
+
+    #[test]
+    #[should_panic]
+    fn negative_timestep_berendsen() {
+        let _ = BerendsenThermostat::new(56.0, -2.0);
+    }
+
+    #[test]
+    #[should_panic]
+    fn too_small_timestep_berendsen() {
+        let _ = BerendsenThermostat::new(56.0, 0.3);
     }
 }
