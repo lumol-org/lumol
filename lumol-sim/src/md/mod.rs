@@ -33,6 +33,9 @@
 //! - [`RescaleThermostat`](struct.RescaleThermostat.html): basic themostat
 //!   rescaling the velocities of all atoms. This is highly unphysical but can
 //!   be usefull for equilibration;
+//! - [`CSVRThermostat`](struct.CSVRThermostat.html): Canonical Sampling through
+//!   Velocities Rescaling is a well-behaved thermostating algorithm generating
+//!   the expected canonical ensemble distribution of states.
 //! - [`BerendsenThermostat`](struct.BerendsenThermostat.html): berendsen or
 //!   weak-coupling thermostat;
 //!
@@ -69,6 +72,7 @@ pub use self::thermostats::Thermostat;
 
 pub use self::thermostats::RescaleThermostat;
 pub use self::thermostats::BerendsenThermostat;
+pub use self::thermostats::CSVRThermostat;
 
 mod molecular_dynamics;
 pub use self::molecular_dynamics::MolecularDynamics;
