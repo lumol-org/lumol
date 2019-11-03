@@ -1,7 +1,7 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) Lumol's contributors — BSD license
 
-//! Monte Carlo Metropolis algorithms
+//! Metropolis Monte Carlo related algorithms
 mod monte_carlo;
 pub use self::monte_carlo::{MonteCarlo, MonteCarloBuilder};
 
