@@ -26,13 +26,6 @@ pub trait Control {
 /// Remove global translation from the system
 pub struct RemoveTranslation;
 
-impl RemoveTranslation {
-    /// Create a new `RemoveTranslation` control.
-    pub fn new() -> RemoveTranslation {
-        RemoveTranslation
-    }
-}
-
 impl Control for RemoveTranslation {
     fn control(&mut self, system: &mut System) {
         let total_mass = system.particles().mass.iter().sum();
@@ -50,13 +43,6 @@ impl Control for RemoveTranslation {
 
 /// Remove global rotation from the system
 pub struct RemoveRotation;
-
-impl RemoveRotation {
-    /// Create a new `RemoveRotation` control.
-    pub fn new() -> RemoveRotation {
-        RemoveRotation
-    }
-}
 
 impl Control for RemoveRotation {
     fn control(&mut self, system: &mut System) {
@@ -87,15 +73,9 @@ impl Control for RemoveRotation {
 }
 
 /// Rewrap all molecules' centers of mass to lie within the unit cell.
+///
 /// Individual atoms in a molecule may still lie outside of the cell.
 pub struct Rewrap;
-
-impl Rewrap {
-    /// Create a new `RemoveRotation` control.
-    pub fn new() -> Rewrap {
-        Rewrap
-    }
-}
 
 impl Control for Rewrap {
     fn control(&mut self, system: &mut System) {
@@ -120,7 +100,7 @@ mod tests {
         system.particles_mut().velocity[0] = [1.0, 2.0, 0.0].into();
         system.particles_mut().velocity[1] = [1.0, 0.0, 0.0].into();
 
-        RemoveTranslation::new().control(&mut system);
+        RemoveTranslation.control(&mut system);
         assert_eq!(system.particles().velocity[0], Vector3D::new(0.0, 1.0, 0.0));
         assert_eq!(system.particles().velocity[1], Vector3D::new(0.0, -1.0, 0.0));
     }
@@ -134,7 +114,7 @@ mod tests {
         system.particles_mut().velocity[0] = [0.0, 1.0, 0.0].into();
         system.particles_mut().velocity[1] = [0.0, -1.0, 2.0].into();
 
-        RemoveRotation::new().control(&mut system);
+        RemoveRotation.control(&mut system);
         assert_eq!(system.particles().velocity[0], Vector3D::new(0.0, 0.0, 1.0));
         assert_eq!(system.particles().velocity[1], Vector3D::new(0.0, 0.0, 1.0));
     }
@@ -145,7 +125,7 @@ mod tests {
         system.add_molecule(Molecule::new(Particle::with_position("Ag", [0.0, 0.0, 0.0].into())));
         system.add_molecule(Molecule::new(Particle::with_position("Ag", [15.0, 0.0, 0.0].into())));
 
-        Rewrap::new().control(&mut system);
+        Rewrap.control(&mut system);
         assert_eq!(system.particles().position[0], Vector3D::new(0.0, 0.0, 0.0));
         assert_eq!(system.particles().position[1], Vector3D::new(5.0, 0.0, 0.0));
     }

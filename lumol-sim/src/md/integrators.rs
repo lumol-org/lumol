@@ -16,7 +16,9 @@ pub trait Integrator {
     fn integrate(&mut self, system: &mut System);
 }
 
-/// Velocity-Verlet integrator. This one is reversible and symplectic.
+/// Velocity-Verlet integrator.
+///
+/// This integrator is time-reversible and symplectic (volume preserving).
 pub struct VelocityVerlet {
     /// Timestep for the integrator
     timestep: f64,
@@ -67,7 +69,9 @@ impl Integrator for VelocityVerlet {
     }
 }
 
-/// Verlet integrator. This one is reversible and symplectic.
+/// Verlet integrator.
+///
+/// This integrator is time-reversible and symplectic (volume preserving).
 pub struct Verlet {
     /// Timestep for the integrator
     timestep: f64,
@@ -118,7 +122,9 @@ impl Integrator for Verlet {
     }
 }
 
-/// Leap-frog integrator. This one is reversible and symplectic.
+/// Leap-frog integrator.
+///
+/// This integrator is time-reversible and symplectic (volume preserving).
 pub struct LeapFrog {
     /// Timestep for the integrator
     timestep: f64,
@@ -166,8 +172,9 @@ impl Integrator for LeapFrog {
 /// from the DL_POLY source code.
 const WATER_COMPRESSIBILITY: f64 = 7372.0;
 
-/// Berendsen barostat integrator based on velocity-Verlet. This one neither
-/// reversible nor symplectic.
+/// Berendsen barostat integrator based on velocity-Verlet.
+///
+/// This integrator is **neither** time-reversible nor symplectic.
 pub struct BerendsenBarostat {
     /// Timestep for the integrator
     timestep: f64,
@@ -241,8 +248,9 @@ impl Integrator for BerendsenBarostat {
     }
 }
 
-/// Anisotropic Berendsen barostat integrator based on velocity-Verlet. This one
-/// neither reversible nor symplectic.
+/// Anisotropic Berendsen barostat integrator based on velocity-Verlet.
+///
+/// This integrator is **neither** time-reversible nor symplectic.
 pub struct AnisoBerendsenBarostat {
     /// Timestep for the integrator
     timestep: f64,

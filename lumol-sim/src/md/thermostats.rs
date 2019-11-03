@@ -27,6 +27,12 @@ pub trait Thermostat {
 /// tolerance parameter prevent this algorithm from running too often: if
 /// tolerance is 10K and the target temperature is 300K, the algorithm will only
 /// run if the instant temperature is below 290K or above 310K.
+///
+/// **WARNING**: This thermostat does NOT produces a NVT or NPT ensemble. It
+/// will not even produce correct average temperature, except if the rescaling
+/// is done at every step. It can It can still be usefull in the equilibration
+/// of a system at a given temperature before an actual simulation. A good
+/// alternative is the CSVR thermostat, which produces correct ensemble.
 pub struct RescaleThermostat {
     /// Target temperature
     temperature: f64,
@@ -62,13 +68,22 @@ impl Thermostat for RescaleThermostat {
     }
 }
 
-/// Berendsen thermostat.
+/// Berendsen (or weak coupling) thermostat.
 ///
 /// The Berendsen thermostat sets the simulation temperature by exponentially
 /// relaxing to a desired temperature. A more complete description of this
 /// algorithm can be found in the original article [1].
 ///
-/// [1] H.J.C. Berendsen, et al. J. Chem Phys 81, 3684 (1984); doi: 10.1063/1.448118
+/// **WARNING**: This thermostat does NOT produces a reliable NVT or NPT
+/// ensemble (See [2]). While it produces correct average temperature, it does
+/// not reproduce the fluctuations of said temperature. It can still be usefull,
+/// especialy for the equilibration part of a simulation. Good alternatives
+/// include the CSVR or Nosé-Hoover thermostats (not yet implemented in lumol),
+/// which produce correct ensembles.
+///
+/// [1] Berendsen et al. J. Chem Phys 81, 3684 (1984); doi: 10.1063/1.448118
+///
+/// [2] Braun et al. J. Chem. Theo. Comp. 14, 10 (2018) doi: 10.1021/acs.jctc
 pub struct BerendsenThermostat {
     /// Target temperature
     temperature: f64,

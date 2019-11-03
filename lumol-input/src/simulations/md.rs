@@ -155,7 +155,7 @@ impl FromToml for Alternator<RemoveTranslation> {
         } else {
             1
         };
-        Ok(Alternator::new(every, RemoveTranslation::new()))
+        Ok(Alternator::new(every, RemoveTranslation))
     }
 }
 
@@ -166,7 +166,7 @@ impl FromToml for Alternator<RemoveRotation> {
         } else {
             1
         };
-        Ok(Alternator::new(every, RemoveRotation::new()))
+        Ok(Alternator::new(every, RemoveRotation))
     }
 }
 
@@ -177,6 +177,6 @@ impl FromToml for Alternator<Rewrap> {
         } else {
             1
         };
-        Ok(Alternator::new(every, Rewrap::new()))
+        Ok(Alternator::new(every, Rewrap))
     }
 }
