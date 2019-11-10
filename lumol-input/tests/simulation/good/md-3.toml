@@ -15,3 +15,4 @@ nsteps = 1000000
 type = "MolecularDynamics"
 timestep = "1 fs"
 integrator = {type = "VelocityVerlet"}
+thermostat = {type = "CSVR", temperature = "333 K", timestep = 132.45}

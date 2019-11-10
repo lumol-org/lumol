@@ -27,7 +27,7 @@ Integrators
 
 Integrators are algorithms that propagate the forces acting on the particles to
 compute their motions. The simplest ones performs an NVE integration, but some
-integrators allow to work in different ensembles.  All NVE integrators can be
+integrators allow to work in different ensembles. All NVE integrators can be
 turned into NVT integrators by adding a :ref:`thermostat <md-thermostat>` to the
 simulation. In the input, if the ``integrator`` key is absent, the default
 integrator is a Velocity-Verlet integrator.
@@ -130,6 +130,8 @@ In both cases, the barostat time step is expressed in fraction of the main
 integration time step. Using a main time step of 2 fs and a barostat time step
 of 1000 will yield an effective relaxation time of 2000 fs or 2 ps.
 
+.. _berendsen-barostat: http://www.sklogwiki.org/SklogWiki/index.php/Berendsen_barostat
+
 .. _md-thermostat:
 
 Thermostats
@@ -138,13 +140,35 @@ Thermostats
 Thermostats are algorithms used to maintain the temperature of a system at a
 given value. They are specified in the input by the ``thermostat`` key.
 
+Canonical Sampling through Velocity Rescaling (CSVR)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The CSVR thermostat implement the algorithm in `[Bussi2012]`_. This algorithm
+provides a cheap, efficient and correct thermostat, sampling the right
+dstribution in the canonical (NVT) ensemble. In the input, it is declared with
+the ``CSVR`` thermostat type, a target ``temperature`` value, and a
+``timestep``. The time step control the relaxation rate of this thermostat, and
+is expressed in fraction of the main integration time step.
+
+
+.. code::
+
+    [simulations.propagator]
+    type = "MolecularDynamics"
+    timestep = "1 fs"
+    thermostat = {type = "CSVR", temperature = "400 K", timestep = 100}
+
+
+.. _[Bussi2012]: https://doi.org/10.1063/1.2408420
+
 Berendsen thermostat
 ~~~~~~~~~~~~~~~~~~~~
 
 The Berendsen thermostat is described `here <berendsen-thermostat_>`_, and
 provide a simple exponential relaxation of the temperature to a target value. In
 the input, it is declared with the ``Berendsen`` thermostat type, a target
-``temperature`` value, and a ``timestep``.
+``temperature`` value, and a ``timestep``. The time step is expressed in
+fraction of the main integration time step.
 
 .. code::
 
@@ -153,8 +177,7 @@ the input, it is declared with the ``Berendsen`` thermostat type, a target
     timestep = "1 fs"
     thermostat = {type = "Berendsen", temperature = "400 K", timestep = 100}
 
-The time step is expressed in fraction of the main integration time step, like
-for the Berendsen barostat.
+.. _berendsen-thermostat: http://www.sklogwiki.org/SklogWiki/index.php/Berendsen_thermostat
 
 Rescaling thermostat
 ~~~~~~~~~~~~~~~~~~~~
@@ -199,8 +222,3 @@ defaults to 1).
 -  The ``Rewrap`` control rewraps all molecules' centers of mass to lie within
    the unit cell. Individual atoms in a molecule may still lie outside of the
    cell.
-
-
-
-.. _berendsen-barostat: http://www.sklogwiki.org/SklogWiki/index.php/Berendsen_barostat
-.. _berendsen-thermostat: http://www.sklogwiki.org/SklogWiki/index.php/Berendsen_thermostat

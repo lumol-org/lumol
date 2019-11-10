@@ -3,8 +3,9 @@ The Lumol user manual
 
 .. note::
 
-    Lumol is actively developed and should be considered as alpha
-    software. As the code is likely to change so is this documentation.
+    Lumol is actively developed and should be considered as alpha software.
+
+    As the code is likely to change so is this documentation.
 
 Welcome to the Lumol user manual. In this book we teach you how to use Lumol to
 set up and run classical molecular simulations. We designed Lumol to be
