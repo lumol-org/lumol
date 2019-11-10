@@ -47,6 +47,7 @@ impl FromToml for MolecularDynamics {
             let thermostat: Box<dyn Thermostat> = match extract::typ(thermostat, "thermostat")? {
                 "Berendsen" => Box::new(BerendsenThermostat::from_toml(thermostat)?),
                 "Rescale" => Box::new(RescaleThermostat::from_toml(thermostat)?),
+                "CSVR" => Box::new(CSVRThermostat::from_toml(thermostat)?),
                 other => return Err(Error::from(format!("unknown thermostat type '{}'", other))),
             };
             md.set_thermostat(thermostat);
@@ -132,7 +133,7 @@ impl FromToml for BerendsenThermostat {
 
 impl FromToml for RescaleThermostat {
     fn from_toml(config: &Table) -> Result<RescaleThermostat, Error> {
-        let temperature = extract::str("temperature", config, "Berendsen thermostat")?;
+        let temperature = extract::str("temperature", config, "rescale thermostat")?;
         let temperature = units::from_str(temperature)?;
 
         if let Some(tolerance) = config.get("tolerance") {
@@ -145,6 +146,15 @@ impl FromToml for RescaleThermostat {
         } else {
             Ok(RescaleThermostat::new(temperature))
         }
+    }
+}
+
+impl FromToml for CSVRThermostat {
+    fn from_toml(config: &Table) -> Result<CSVRThermostat, Error> {
+        let temperature = extract::str("temperature", config, "CSVR thermostat")?;
+        let temperature = units::from_str(temperature)?;
+        let tau = extract::number("timestep", config, "CSVR thermostat")?;
+        Ok(CSVRThermostat::new(temperature, tau))
     }
 }
 
