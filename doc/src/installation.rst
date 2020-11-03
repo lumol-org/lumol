@@ -16,7 +16,7 @@ the latest development version with:
 
 .. code-block:: bash
 
-    cargo install --git https://github.com/lumol-org/lumol
+    cargo install --git https://github.com/lumol-org/lumol lumol
 
 This command will download and install lumol in ``~/.cargo/bin/lumol``, where
 ``~`` is your home directory. You may want to add ``~/.cargo/bin`` to your PATH
