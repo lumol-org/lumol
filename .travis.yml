@@ -36,7 +36,7 @@ script:
     - cargo test -p lumol-input --tests -- --test-threads=2
     # Run all tests in release mode
     - cargo test --all --release -- --test-threads=2
-    # Check thet benchmarks compile and run
+    # Check that benchmarks compile and run
     - cargo bench -- --test
     # Check if tutorials compile
     - |
@@ -54,6 +54,7 @@ script:
     - |
       if ${DO_COVERAGE}; then
           for test in $(find target/debug/ -maxdepth 1 -executable -type f); do
+              echo running test $test
               kcov --include-pattern=$(pwd) --exclude-pattern=target --exclude-pattern=tutorials target/kcov $test
           done
           bash <(curl -s https://codecov.io/bash) -s target/kcov
