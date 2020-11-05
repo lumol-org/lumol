@@ -53,8 +53,7 @@ script:
     # Generate and publish coverage
     - |
       if ${DO_COVERAGE}; then
-          for test in $(find target/debug/ -maxdepth 1 -executable -type f); do
-              echo running test $test
+          for test in $(./scripts/ci/list-test-executables.py); do
               kcov --include-pattern=$(pwd) --exclude-pattern=target --exclude-pattern=tutorials target/kcov $test
           done
           bash <(curl -s https://codecov.io/bash) -s target/kcov
