@@ -297,6 +297,7 @@ impl PairInteraction {
 }
 
 #[cfg(test)]
+#[allow(clippy::unreadable_literal)]
 mod tests {
     use super::*;
     use crate::{LennardJones, NullPotential, PairRestriction};

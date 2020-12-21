@@ -2,6 +2,7 @@
 // Copyright (C) 2015-2016 Lumol's contributors — BSD license
 
 use std::ops::{Deref, DerefMut};
+use std::cmp::{max, min};
 
 use soa_derive::soa_zip;
 use log_once::warn_once;
@@ -218,7 +219,7 @@ impl System {
 
     /// Get the coulombic interaction for the system
     pub fn coulomb_potential(&self) -> Option<&dyn CoulombicPotential> {
-        self.interactions.coulomb.as_ref().map(|coulomb| &**coulomb)
+        self.interactions.coulomb.as_deref()
     }
 
     /// Get all global interactions for the system
@@ -413,19 +414,17 @@ impl System {
         let name_j = &self.particles().name[j];
         let name_k = &self.particles().name[k];
         let name_m = &self.particles().name[m];
-        let max_ij = std::cmp::max(name_i, name_j);
-        let max_km = std::cmp::max(name_k, name_m);
 
-        if max_ij == max_km {
-            if std::cmp::min(name_i, name_j) < std::cmp::min(name_k, name_m) {
-                (name_i, name_j, name_k, name_m)
-            } else {
-                (name_m, name_k, name_j, name_i)
-            }
-        } else if max_ij < max_km {
-            (name_i, name_j, name_k, name_m)
-        } else {
-            (name_m, name_k, name_j, name_i)
+        match (max(name_i, name_j), max(name_k, name_m)) {
+            (ij, km) if ij == km => {
+                if min(name_i, name_j) < min(name_k, name_m) {
+                    (name_i, name_j, name_k, name_m)
+                } else {
+                    (name_m, name_k, name_j, name_i)
+                }
+            },
+            (ij, km) if ij < km => (name_i, name_j, name_k, name_m),
+            (_, _) => (name_m, name_k, name_j, name_i),
         }
     }
 }
@@ -552,7 +551,7 @@ mod tests {
 
         system.check();
 
-        static EXPECTED_WARNINGS: &'static str = r#"
+        let expected_warnings = r#"
 no potential defined for the pair ("He", "He")
 no potential defined for the pair ("Ar", "He")
 no potential defined for the pair ("Ar", "Ar")
@@ -565,9 +564,9 @@ no potential defined for the dihedral angle ("Ar", "Ar", "He", "He")
 "#;
 
         let messages = message.lock().unwrap();
-        assert_eq!(EXPECTED_WARNINGS.lines().count(), messages.lines().count());
+        assert_eq!(expected_warnings.lines().count(), messages.lines().count());
         for line in messages.lines() {
-            assert!(EXPECTED_WARNINGS.contains(line));
+            assert!(expected_warnings.contains(line));
         }
     }
 }

@@ -94,19 +94,19 @@ fn berendsen_barostat() {
                                  .join("npt-berendsen-barostat.toml");
     let mut config = Input::new(path).unwrap().read().unwrap();
 
-    let collecter = utils::Collecter::starting_at(4000);
-    let temperatures = collecter.temperatures();
-    let pressures = collecter.pressures();
+    let collector = utils::Collector::starting_at(4000);
+    let temperatures = collector.temperatures();
+    let pressures = collector.pressures();
 
-    config.simulation.add_output(Box::new(collecter));
+    config.simulation.add_output(Box::new(collector));
     config.simulation.run(&mut config.system, config.nsteps);
 
     let expected = units::from(5000.0, "bar").unwrap();
-    let pressure = crate::utils::mean(pressures.clone());
+    let pressure = crate::utils::mean(pressures);
     assert!(f64::abs(pressure - expected) / expected < 5e-2);
 
     let expected = units::from(273.0, "K").unwrap();
-    let temperature = crate::utils::mean(temperatures.clone());
+    let temperature = crate::utils::mean(temperatures);
     assert!(f64::abs(temperature - expected) / expected < 1e-2);
 }
 

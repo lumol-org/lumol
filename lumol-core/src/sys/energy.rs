@@ -143,11 +143,8 @@ impl<'a> EnergyEvaluator<'a> {
     /// Compute the energy of the electrostatic interactions
     #[inline]
     pub fn coulomb(&self) -> f64 {
-        if let Some(coulomb) = self.system.coulomb_potential() {
-            coulomb.energy(self.system)
-        } else {
-            0.0
-        }
+        self.system.coulomb_potential()
+            .map_or(0.0, |coulomb| coulomb.energy(self.system))
     }
 
     /// Compute the energy of the global potentials
@@ -227,6 +224,7 @@ mod tests {
     }
 
     #[test]
+    #[allow(clippy::unreadable_literal)]
     fn pairs() {
         let system = testing_system();
         let evaluator = EnergyEvaluator::new(&system);

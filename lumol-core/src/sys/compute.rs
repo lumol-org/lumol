@@ -591,6 +591,7 @@ mod test {
     }
 
     #[test]
+    #[allow(clippy::unreadable_literal)]
     fn energy_pairs() {
         let system = &test_pairs_system();
         let kinetic = KineticEnergy.compute(system);

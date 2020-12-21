@@ -56,7 +56,8 @@ impl Move {
         if let Some(acceptance) = target_acceptance {
             assert!(
                 0.0 < acceptance && acceptance < 1.0,
-                "The target acceptance ratio has to be a value between 0 and 1"
+                "target acceptance ratio must be between 0 and 1, got {}",
+                acceptance
             )
         }
         self.target_acceptance = target_acceptance;
@@ -164,7 +165,7 @@ impl MonteCarloBuilder {
     /// Create a Monte Carlo propagator at temperature `T`, using the `rng`
     /// random number generator.
     pub fn from_rng(temperature: f64, rng: Box<dyn rand::RngCore>) -> MonteCarloBuilder {
-        assert!(temperature >= 0.0, "Monte Carlo temperature must be positive");
+        assert!(temperature > 0.0, "Monte Carlo temperature must be positive, got {}", temperature);
         MonteCarloBuilder {
             beta: 1.0 / (K_BOLTZMANN * temperature),
             moves: Vec::new(),
@@ -393,21 +394,27 @@ mod tests {
     }
 
     #[test]
-    #[should_panic]
+    #[should_panic(expected = "Monte Carlo temperature must be positive, got -1")]
     fn negative_temperature() {
-        let _ = MonteCarloBuilder::new(-1.0).add(Box::new(DummyMove), 1.0, 1.1);
+        let _ = MonteCarloBuilder::new(-1.0);
     }
 
     #[test]
-    #[should_panic]
+    #[should_panic(expected = "Monte Carlo temperature must be positive, got 0")]
+    fn zero_temperature() {
+        let _ = MonteCarloBuilder::new(0.0);
+    }
+
+    #[test]
+    #[should_panic(expected = "target acceptance ratio must be between 0 and 1, got 1.1")]
     fn too_large_acceptance() {
-        let _ = MonteCarloBuilder::new(100.0).add(Box::new(DummyMove), 1.0, 1.1);
+        MonteCarloBuilder::new(100.0).add(Box::new(DummyMove), 1.0, 1.1);
     }
 
     #[test]
-    #[should_panic]
+    #[should_panic(expected = "target acceptance ratio must be between 0 and 1, got -0.1")]
     fn negative_acceptance() {
-        let _ = MonteCarloBuilder::new(100.0).add(Box::new(DummyMove), 1.0, -0.1);
+        MonteCarloBuilder::new(100.0).add(Box::new(DummyMove), 1.0, -0.1);
     }
 
     #[test]

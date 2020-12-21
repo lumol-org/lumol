@@ -61,7 +61,7 @@ impl Input {
         validate(&config)?;
         Ok(Input {
             path: path,
-            config: config.clone(),
+            config: config,
         })
     }
 

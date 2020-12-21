@@ -50,6 +50,7 @@ impl Output for CellOutput {
 }
 
 #[cfg(test)]
+#[allow(clippy::non_ascii_literal)]
 mod tests {
     use super::*;
     use super::super::tests::test_output;

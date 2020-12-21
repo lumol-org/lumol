@@ -5,7 +5,7 @@ fn main() {
     let mut version = env!("CARGO_PKG_VERSION").to_string();
     if let Ok(output) = Command::new("git").args(&["describe", "--always"]).output() {
         let git = str::from_utf8(&output.stdout).unwrap().trim();
-        version.push_str("-");
+        version.push('-');
         version.push_str(git);
     }
 

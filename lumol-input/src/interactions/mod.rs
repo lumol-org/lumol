@@ -39,7 +39,7 @@ impl InteractionsInput {
     pub fn from_str(string: &str) -> Result<InteractionsInput, Error> {
         let config = parse(string).map_err(|err| Error::TOML(Box::new(err)))?;
         validate(&config)?;
-        return Ok(InteractionsInput::from_toml(config.clone()));
+        return Ok(InteractionsInput::from_toml(config));
     }
 
     /// Read the interactions from a TOML table.

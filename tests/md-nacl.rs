@@ -40,19 +40,19 @@ mod wolf {
                                      .join("npt-wolf-small.toml");
         let mut config = Input::new(path).unwrap().read().unwrap();
 
-        let collecter = crate::utils::Collecter::starting_at(9000);
-        let temperatures = collecter.temperatures();
-        let pressures = collecter.pressures();
+        let collector = crate::utils::Collector::starting_at(9000);
+        let temperatures = collector.temperatures();
+        let pressures = collector.pressures();
 
-        config.simulation.add_output(Box::new(collecter));
+        config.simulation.add_output(Box::new(collector));
         config.simulation.run(&mut config.system, config.nsteps);
 
         let expected = units::from(50000.0, "bar").unwrap();
-        let pressure = crate::utils::mean(pressures.clone());
+        let pressure = crate::utils::mean(pressures);
         assert!(f64::abs(pressure - expected) / expected < 2e-3);
 
         let expected = units::from(273.0, "K").unwrap();
-        let temperature = crate::utils::mean(temperatures.clone());
+        let temperature = crate::utils::mean(temperatures);
         assert!(f64::abs(temperature - expected) / expected < 1e-2);
     }
 }

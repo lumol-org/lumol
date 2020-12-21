@@ -630,7 +630,7 @@ mod tests {
     }
 
     mod iterators {
-        use super::super::*;
+        use super::super::Configuration;
         use super::particle;
         use crate::Molecule;
 

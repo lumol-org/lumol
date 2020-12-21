@@ -412,14 +412,14 @@ mod tests {
     use crate::{Angle, Bond, MoleculeHash};
     use std::io::prelude::*;
 
-    static WATER: &'static str = "3
+    static WATER: &str = "3
 
 O 0.0 0.0 0.0
 H 1.0 0.0 0.0
 H 0.0 1.0 0.0
 ";
 
-    static PROPANE: &'static str = "11
+    static PROPANE: &str = "11
 
 H     -1.306761     0.917434     0.885782
 C     -1.277333     0.278101     0.000000
@@ -434,7 +434,7 @@ H      1.306724     0.917489    -0.885744
 H      2.172669     -0.348524    0.000051
 ";
 
-    static PDB_WATER: &'static str = "
+    static PDB_WATER: &str = "
 CRYST1   28.000   28.000   28.000  90.00  90.00  90.00 P 1           1
 HETATM    1  O   RES X   1       0.000   0.000   0.000  1.00  0.00           O
 HETATM    2  Hw  RES X   2       0.635   0.898   0.000  1.00  0.00           H
@@ -449,6 +449,7 @@ END
 ";
 
     #[test]
+    #[allow(clippy::unreadable_literal)]
     fn read_water() {
         let mut file = tempfile::Builder::new().suffix(".xyz").tempfile().unwrap();
         write!(file, "{}", WATER).unwrap();
@@ -502,6 +503,7 @@ END
     }
 
     #[test]
+    #[allow(clippy::unreadable_literal)]
     fn read_propane() {
         let mut file = tempfile::Builder::new().suffix(".xyz").tempfile().unwrap();
         write!(file, "{}", PROPANE).unwrap();

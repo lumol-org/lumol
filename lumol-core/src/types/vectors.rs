@@ -192,7 +192,7 @@ impl_arithmetic!(
     Vector3D::new(self[0] + other[0], self[1] + other[1], self[2] + other[2])
 );
 
-impl_inplace_arithmetic!(
+impl_in_place_arithmetic!(
     Vector3D, Vector3D, AddAssign, add_assign,
     self, other,
     {self[0] += other[0]; self[1] += other[1]; self[2] += other[2]}
@@ -204,7 +204,7 @@ impl_arithmetic!(
     Vector3D::new(self[0] - other[0], self[1] - other[1], self[2] - other[2])
 );
 
-impl_inplace_arithmetic!(
+impl_in_place_arithmetic!(
     Vector3D, Vector3D, SubAssign, sub_assign,
     self, other,
     {self[0] -= other[0]; self[1] -= other[1]; self[2] -= other[2]}
@@ -227,19 +227,19 @@ impl_arithmetic!(
     Vector3D::new(x, y, z)}
 );
 
-lsh_scal_arithmetic!(
+lsh_scalar_arithmetic!(
     Vector3D, Mul, mul, Vector3D,
     self, other,
     Vector3D::new(self[0] * other, self[1] * other, self[2] * other)
 );
 
-rhs_scal_arithmetic!(
+rhs_scalar_arithmetic!(
     Vector3D, Mul, mul, Vector3D,
     self, other,
     Vector3D::new(self * other[0], self * other[1], self * other[2])
 );
 
-impl_inplace_arithmetic!(
+impl_in_place_arithmetic!(
     Vector3D, f64, MulAssign, mul_assign,
     self, other,
     {
@@ -251,13 +251,13 @@ impl_inplace_arithmetic!(
     }
 );
 
-lsh_scal_arithmetic!(
+lsh_scalar_arithmetic!(
     Vector3D, Div, div, Vector3D,
     self, other,
     Vector3D::new(self[0] / other, self[1] / other, self[2] / other)
 );
 
-impl_inplace_arithmetic!(
+impl_in_place_arithmetic!(
     Vector3D, f64, DivAssign, div_assign,
     self, other,
     {
@@ -332,6 +332,7 @@ impl Default for Vector3D {
 }
 
 #[cfg(test)]
+#[allow(clippy::op_ref)]
 mod tests {
     use crate::{Matrix3, Vector3D};
     use std::f64;
@@ -438,6 +439,7 @@ mod tests {
     }
 
     #[test]
+    #[allow(clippy::unreadable_literal)]
     fn mul() {
         let mut a = Vector3D::new(2.0, 3.5, 4.8);
         let b = 2.0;

@@ -211,18 +211,18 @@ impl Matrix3 {
     /// equals zero.
     pub fn inverse(&self) -> Matrix3 {
         let determinant = self.determinant();
-        assert!(determinant.abs() > 1e-30, "The matrix is not inversible!");
-        let invdet = 1.0 / determinant;
+        assert!(determinant.abs() > 1e-30, "The matrix is not invertible!");
+        let inverse_determinant = 1.0 / determinant;
         let mut res = Matrix3::zero();
-        res[0][0] = (self[1][1] * self[2][2] - self[2][1] * self[1][2]) * invdet;
-        res[0][1] = (self[0][2] * self[2][1] - self[0][1] * self[2][2]) * invdet;
-        res[0][2] = (self[0][1] * self[1][2] - self[0][2] * self[1][1]) * invdet;
-        res[1][0] = (self[1][2] * self[2][0] - self[1][0] * self[2][2]) * invdet;
-        res[1][1] = (self[0][0] * self[2][2] - self[0][2] * self[2][0]) * invdet;
-        res[1][2] = (self[1][0] * self[0][2] - self[0][0] * self[1][2]) * invdet;
-        res[2][0] = (self[1][0] * self[2][1] - self[2][0] * self[1][1]) * invdet;
-        res[2][1] = (self[2][0] * self[0][1] - self[0][0] * self[2][1]) * invdet;
-        res[2][2] = (self[0][0] * self[1][1] - self[1][0] * self[0][1]) * invdet;
+        res[0][0] = (self[1][1] * self[2][2] - self[2][1] * self[1][2]) * inverse_determinant;
+        res[0][1] = (self[0][2] * self[2][1] - self[0][1] * self[2][2]) * inverse_determinant;
+        res[0][2] = (self[0][1] * self[1][2] - self[0][2] * self[1][1]) * inverse_determinant;
+        res[1][0] = (self[1][2] * self[2][0] - self[1][0] * self[2][2]) * inverse_determinant;
+        res[1][1] = (self[0][0] * self[2][2] - self[0][2] * self[2][0]) * inverse_determinant;
+        res[1][2] = (self[1][0] * self[0][2] - self[0][0] * self[1][2]) * inverse_determinant;
+        res[2][0] = (self[1][0] * self[2][1] - self[2][0] * self[1][1]) * inverse_determinant;
+        res[2][1] = (self[2][0] * self[0][1] - self[0][0] * self[2][1]) * inverse_determinant;
+        res[2][2] = (self[0][0] * self[1][1] - self[1][0] * self[0][1]) * inverse_determinant;
         return res;
     }
 
@@ -243,9 +243,9 @@ impl Matrix3 {
     /// assert_eq!(matrix.determinant(), 4.0 * 1.5 * 7.0);
     /// ```
     pub fn determinant(&self) -> f64 {
-        ( self[0][0] * (self[1][1] * self[2][2] - self[2][1] * self[1][2])
+          self[0][0] * (self[1][1] * self[2][2] - self[2][1] * self[1][2])
         - self[0][1] * (self[1][0] * self[2][2] - self[1][2] * self[2][0])
-        + self[0][2] * (self[1][0] * self[2][1] - self[1][1] * self[2][0]))
+        + self[0][2] * (self[1][0] * self[2][1] - self[1][1] * self[2][0])
     }
 
     /// Transpose this matrix into a new matrix
@@ -309,7 +309,7 @@ impl_arithmetic!(
     ])
 );
 
-impl_inplace_arithmetic!(
+impl_in_place_arithmetic!(
     Matrix3, Matrix3, AddAssign, add_assign,
     self, other,
     {
@@ -329,7 +329,7 @@ impl_arithmetic!(
     ])
 );
 
-impl_inplace_arithmetic!(
+impl_in_place_arithmetic!(
     Matrix3, Matrix3, SubAssign, sub_assign,
     self, other,
     {
@@ -363,7 +363,7 @@ impl_arithmetic!(
     }
 );
 
-impl_inplace_arithmetic!(
+impl_in_place_arithmetic!(
     Matrix3, Matrix3, MulAssign, mul_assign,
     self, other,
     {
@@ -398,7 +398,7 @@ impl_arithmetic!(
     }
 );
 
-lsh_scal_arithmetic!(
+lsh_scalar_arithmetic!(
     Matrix3, Mul, mul, Matrix3,
     self, other,
     Matrix3::new([
@@ -408,7 +408,7 @@ lsh_scal_arithmetic!(
     ])
 );
 
-rhs_scal_arithmetic!(
+rhs_scalar_arithmetic!(
     Matrix3, Mul, mul, Matrix3,
     self, other,
     Matrix3::new([
@@ -418,7 +418,7 @@ rhs_scal_arithmetic!(
     ])
 );
 
-impl_inplace_arithmetic!(
+impl_in_place_arithmetic!(
     Matrix3, f64, MulAssign, mul_assign,
     self, other,
     {
@@ -430,7 +430,7 @@ impl_inplace_arithmetic!(
     }
 );
 
-lsh_scal_arithmetic!(
+lsh_scalar_arithmetic!(
     Matrix3, Div, div, Matrix3,
     self, other,
     Matrix3::new([
@@ -440,7 +440,7 @@ lsh_scal_arithmetic!(
     ])
 );
 
-impl_inplace_arithmetic!(
+impl_in_place_arithmetic!(
     Matrix3, f64, DivAssign, div_assign,
     self, other,
     {
@@ -679,6 +679,7 @@ mod tests {
     }
 
     #[test]
+    #[allow(clippy::unreadable_literal)]
     fn mul_vector() {
         let a = Matrix3::new([
             [1.0, 2.0, 3.0],
@@ -770,6 +771,7 @@ mod tests {
     }
 
     #[test]
+    #[allow(clippy::unreadable_literal)]
     fn norm() {
         let matrix = Matrix3::new([
             [1.0, 2.0, 4.0],

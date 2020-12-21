@@ -35,13 +35,13 @@ fn wolf_npt() {
 
     let mut config = Input::new(path).unwrap().read().unwrap();
 
-    let collecter = utils::Collecter::starting_at((config.nsteps - 5_000) as u64);
-    let pressures = collecter.pressures();
+    let collector = utils::Collector::starting_at((config.nsteps - 5_000) as u64);
+    let pressures = collector.pressures();
 
-    config.simulation.add_output(Box::new(collecter));
+    config.simulation.add_output(Box::new(collector));
     config.simulation.run(&mut config.system, config.nsteps);
 
-    let pressure = utils::mean(pressures.clone());
+    let pressure = utils::mean(pressures);
     let expected = units::from(1000.0, "bar").unwrap();
     let tolerance = units::from(800.0, "bar").unwrap();
 
@@ -75,13 +75,13 @@ fn ewald_npt() {
 
     let mut config = Input::new(path).unwrap().read().unwrap();
 
-    let collecter = utils::Collecter::starting_at((config.nsteps - 5_000) as u64);
-    let pressures = collecter.pressures();
+    let collector = utils::Collector::starting_at((config.nsteps - 5_000) as u64);
+    let pressures = collector.pressures();
 
-    config.simulation.add_output(Box::new(collecter));
+    config.simulation.add_output(Box::new(collector));
     config.simulation.run(&mut config.system, config.nsteps);
 
-    let pressure = utils::mean(pressures.clone());
+    let pressure = utils::mean(pressures);
     let expected = units::from(1000.0, "bar").unwrap();
     let tolerance = units::from(800.0, "bar").unwrap();
 

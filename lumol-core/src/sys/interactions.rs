@@ -42,18 +42,16 @@ fn normalize_angle((i, j, k): AngleKind) -> AngleKind {
 /// Normalize dihedral indexes to get a canonical representation
 #[inline]
 fn normalize_dihedral((i, j, k, m): DihedralKind) -> DihedralKind {
-    let max_ij = max(i, j);
-    let max_km = max(k, m);
-    if max_ij == max_km {
-        if min(i, j) < min(k, m) {
-            (i, j, k, m)
-        } else {
-            (m, k, j, i)
-        }
-    } else if max_ij < max_km {
-        (i, j, k, m)
-    } else {
-        (m, k, j, i)
+    match (max(i, j), max(k, m)) {
+        (ij, km) if ij == km => {
+            if min(i, j) < min(k, m) {
+                (i, j, k, m)
+            } else {
+                (m, k, j, i)
+            }
+        },
+        (ij, km) if ij < km => (i, j, k, m),
+        (_, _) => (m, k, j, i),
     }
 }
 
@@ -338,7 +336,7 @@ mod test {
         assert!(interactions.pair((Kind(1), Kind(0))).is_some());
 
         assert!(interactions.pair((Kind(0), Kind(0))).is_none());
-        interactions.set_pair(("A", "A"), pair.clone());
+        interactions.set_pair(("A", "A"), pair);
         assert!(interactions.pair((Kind(0), Kind(0))).is_some());
 
         // 'out of bounds' kinds
@@ -433,7 +431,7 @@ mod test {
         assert_eq!(interactions.maximum_cutoff(), Some(1.0));
 
         // All potentials
-        interactions.set_pair(("A", "B"), pair.clone());
+        interactions.set_pair(("A", "B"), pair);
         assert_eq!(interactions.maximum_cutoff(), Some(10.0));
         interactions.globals.push(Box::new(Wolf::new(15.0)));
         assert_eq!(interactions.maximum_cutoff(), Some(15.0));

@@ -21,12 +21,10 @@ impl Input {
         let file = get_input_path(&self.path, file);
         let mut trajectory = TrajectoryBuilder::new().open(file)?;
 
-        let with_cell = if let Some(cell) = self.read_cell()? {
+        let with_cell = self.read_cell()?.map_or(false, |cell| {
             trajectory.set_cell(&cell);
             true
-        } else {
-            false
-        };
+        });
 
         if config.get("topology").is_some() {
             let topology = extract::str("topology", config, "system")?;
@@ -158,6 +156,7 @@ impl Input {
     }
 }
 
+#[allow(clippy::option_if_let_else)]
 fn get_cell_number(value: &Value) -> Result<f64, Error> {
     if let Some(value) = value.as_integer() {
         Ok(value as f64)

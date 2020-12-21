@@ -178,11 +178,8 @@ impl EnergyCache {
 
         // Bonds / Angles / Dihedrals terms do not change
 
-        let coulomb_delta = if let Some(coulomb) = system.coulomb_potential() {
-            coulomb.move_molecule_cost(system, molecule_id, new_positions)
-        } else {
-            0.0
-        };
+        let coulomb_delta = system.coulomb_potential()
+            .map_or(0.0, |coulomb| coulomb.move_molecule_cost(system, molecule_id, new_positions));
 
         let mut global_delta = 0.0;
         for global in system.global_potentials() {
@@ -408,6 +405,7 @@ mod tests {
     }
 
     #[test]
+    #[allow(clippy::unreadable_literal)]
     fn move_molecule() {
         let mut system = testing_system();
         let mut cache = EnergyCache::new();
@@ -474,7 +472,7 @@ mod tests {
         // move the other molecule
         let old_energy = new_energy;
         let delta = Vector3D::new(-0.9, 0.0, 1.8);
-        let mut new_system = system.clone();
+        let mut new_system = system;
         // translate the center of mass
         for mut molecule in new_system.molecules_mut() {
             for position in molecule.particles_mut().position {
