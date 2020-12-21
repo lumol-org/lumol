@@ -16,12 +16,12 @@ bitflags = "1"
 chemfiles = "0.9"
 lazy_static = "1"
 log-once = "0.3"
-ndarray = "0.12"
+ndarray = "0.14"
 num-traits = "0.2"
 rayon = "1"
 soa_derive = "0.8"
 special = "0.8"
-thread_local = "0.3"
+thread_local = "1"
 
 [dependencies.log]
 version = "0.4"
@@ -29,4 +29,4 @@ features = ["std"]
 
 [dev-dependencies]
 tempfile = "3"
-approx = "0.3"
+approx = "0.4"

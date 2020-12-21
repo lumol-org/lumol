@@ -20,7 +20,7 @@ impl<T: Send + Default + Clone> ThreadLocalVec<T> {
     pub fn with_size(size: usize) -> Self {
         let inner = CachedThreadLocal::new();
         // Set the current thread as owner of the data
-        let _ = inner.get_or(|| Box::new(RefCell::new(vec![T::default(); size])));
+        let _ = inner.get_or(|| RefCell::new(vec![T::default(); size]));
         ThreadLocalVec {
             inner: inner,
             size: size,
@@ -31,7 +31,7 @@ impl<T: Send + Default + Clone> ThreadLocalVec<T> {
     /// it and then borrow it.
     pub fn borrow_mut(&self) -> RefMut<'_, Vec<T>> {
         self.inner
-            .get_or(|| Box::new(RefCell::new(vec![T::default(); self.size])))
+            .get_or(|| RefCell::new(vec![T::default(); self.size]))
             .borrow_mut()
     }
 }
