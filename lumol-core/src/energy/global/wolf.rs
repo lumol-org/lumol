@@ -353,6 +353,7 @@ mod tests {
     }
 
     #[test]
+    #[allow(clippy::unreadable_literal)]
     fn energy() {
         const E_BRUTE_FORCE: f64 = -0.09262397663346732;
 
@@ -473,6 +474,7 @@ mod tests {
         }
 
         #[test]
+        #[allow(clippy::unreadable_literal)]
         fn move_rigid_molecule() {
             let mut system = testing_system();
             let mut wolf = Wolf::new(8.0);

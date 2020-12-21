@@ -123,7 +123,7 @@ macro_rules! impl_arithmetic {
 
 /// Implement operators `@=` for all variations of references for the right-hand
 /// side.
-macro_rules! impl_inplace_arithmetic {
+macro_rules! impl_in_place_arithmetic {
     ($Lhs:ty, $Rhs:ty, $Op:ident, $op:ident, $sel:ident, $other:ident, $res:expr) => (
         impl<'a> $Op<$Rhs> for $Lhs {
             #[inline] fn $op(&mut $sel, $other: $Rhs) {
@@ -147,7 +147,7 @@ macro_rules! impl_inplace_arithmetic {
 
 /// Implement $Lhs -- scalar arithmetic operations for all variation of by
 /// value, by reference and by mutable reference $Lhs.
-macro_rules! lsh_scal_arithmetic {
+macro_rules! lsh_scalar_arithmetic {
     ($Lhs: ty, $Op:ident, $op:ident, $Output:ty, $sel:ident, $other:ident, $res:expr) => (
         impl $Op<f64> for $Lhs {
             type Output = $Output;
@@ -174,7 +174,7 @@ macro_rules! lsh_scal_arithmetic {
 
 /// Implement scalar -- $Rhs arithmetic operations for all variation of by
 /// value, by reference and by mutable reference of $Rhs.
-macro_rules! rhs_scal_arithmetic {
+macro_rules! rhs_scalar_arithmetic {
     ($Rhs:ty, $Op:ident, $op:ident, $Output:ty, $sel:ident, $other:ident, $res:expr) => (
         impl $Op<$Rhs> for f64 {
             type Output = $Output;

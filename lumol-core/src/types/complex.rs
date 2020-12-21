@@ -343,12 +343,10 @@ mod tests {
 
     #[test]
     fn phase() {
-        // Phase is between 0 and 2π
         for &phase in &[-consts::PI, -3.1, -1.5, 0.0, 0.1, 2.0, 3.1] {
             let c = Complex::polar(1.0, phase);
             assert_ulps_eq!(c.phase(), phase);
         }
-
         let c = Complex::polar(1.0, -8.0);
         assert_ulps_eq!(c.phase(), -8.0 + 2.0 * consts::PI);
 

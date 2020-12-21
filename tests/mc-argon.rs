@@ -20,13 +20,13 @@ fn npt() {
 
     let mut config = Input::new(path).unwrap().read().unwrap();
 
-    let collecter = utils::Collecter::starting_at(500);
-    let pressures = collecter.pressures();
+    let collector = utils::Collector::starting_at(500);
+    let pressures = collector.pressures();
 
-    config.simulation.add_output(Box::new(collecter));
+    config.simulation.add_output(Box::new(collector));
     config.simulation.run(&mut config.system, config.nsteps);
 
     let expected = units::from(200.0, "bar").unwrap();
-    let pressure = crate::utils::mean(pressures.clone());
+    let pressure = crate::utils::mean(pressures);
     assert!(f64::abs(pressure - expected) / expected < 1e-2);
 }

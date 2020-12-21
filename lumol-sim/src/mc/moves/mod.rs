@@ -92,7 +92,7 @@ pub trait MCMove {
 /// selected.
 fn select_molecule(system: &System, hash: Option<MoleculeHash>, rng: &mut dyn RngCore) -> Option<usize> {
     if let Some(hash) = hash {
-        // Pick a random molecule with matching moltype
+        // Pick a random molecule with matching molecule type
         let mols = system.molecules()
             .enumerate()
             .filter(|(_, m)| m.hash() == hash)

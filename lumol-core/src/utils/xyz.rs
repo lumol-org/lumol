@@ -35,7 +35,7 @@ pub fn system_from_xyz(content: &str) -> System {
 
     if lines[1].contains("cell:") {
         let cell = lines[1].split("cell:").nth(1).expect("Missing cell size");
-        let cell = cell.split_whitespace().nth(0).expect("Missing cell size");
+        let cell = cell.split_whitespace().next().expect("Missing cell size");
         let cell = UnitCell::cubic(cell.parse().expect("Could not parse float"));
         system.cell = cell;
     }

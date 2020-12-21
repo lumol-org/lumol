@@ -58,15 +58,7 @@ impl fmt::Display for CustomOutputError {
 }
 
 impl error::Error for CustomOutputError {
-    fn description(&self) -> &str {
-        match *self {
-            CustomOutputError::Io(ref err) => err.description(),
-            CustomOutputError::Expr(ref err) => err.description(),
-            CustomOutputError::Custom(ref err) => err,
-        }
-    }
-
-    fn cause(&self) -> Option<&dyn error::Error> {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         match *self {
             CustomOutputError::Io(ref err) => Some(err),
             CustomOutputError::Expr(ref err) => Some(err),
@@ -129,75 +121,8 @@ impl FormatArgs {
         })
     }
 
-    fn get_context<'a>(&self, system: &'a System) -> Context<'a> {
-        let mut context = Context::new();
-        context.set_query(move |name| {
-            // Get unit conversion factor firsts
-            units::CONVERSION_FACTORS.get(name).cloned().or_else(|| {
-                macro_rules! get_particle_data {
-                    ($index: ident, $data: ident) => (
-                        system.particles()
-                              .$data
-                              .get($index)
-                              .cloned()
-                              .unwrap_or_else(|| {
-                                  warn_once!(
-                                      "index out of bound in custom output: \
-                                      index is {}, but we only have {} atoms",
-                                      $index, system.size()
-                                  );
-                                  return num_traits::Zero::zero();
-                              })
-                    );
-                }
-                if name.contains('[') {
-                    // vector data
-                    let (name, index) = parse_index(name);
-                    match name {
-                        // position
-                        "x" => Some(get_particle_data!(index, position)[0]),
-                        "y" => Some(get_particle_data!(index, position)[1]),
-                        "z" => Some(get_particle_data!(index, position)[2]),
-                        // velocity
-                        "vx" => Some(get_particle_data!(index, velocity)[0]),
-                        "vy" => Some(get_particle_data!(index, velocity)[1]),
-                        "vz" => Some(get_particle_data!(index, velocity)[2]),
-                        // other atomic properties
-                        "mass" => Some(get_particle_data!(index, mass)),
-                        "charge" => Some(get_particle_data!(index, charge)),
-                        _ => None,
-                    }
-                } else {
-                    // scalar data
-                    match name {
-                        "step" => Some(system.step as f64),
-                        "pressure" => Some(system.pressure()),
-                        "volume" => Some(system.volume()),
-                        "temperature" => Some(system.temperature()),
-                        "natoms" => Some(system.size() as f64),
-                        "cell.a" => Some(system.cell.a()),
-                        "cell.b" => Some(system.cell.b()),
-                        "cell.c" => Some(system.cell.c()),
-                        "cell.alpha" => Some(system.cell.alpha()),
-                        "cell.beta" => Some(system.cell.beta()),
-                        "cell.gamma" => Some(system.cell.gamma()),
-                        "stress.xx" => Some(system.stress()[0][0]),
-                        "stress.yy" => Some(system.stress()[1][1]),
-                        "stress.zz" => Some(system.stress()[2][2]),
-                        "stress.xy" => Some(system.stress()[0][1]),
-                        "stress.xz" => Some(system.stress()[0][2]),
-                        "stress.yz" => Some(system.stress()[1][2]),
-                        _ => None,
-                    }
-                }
-            })
-        });
-
-        return context;
-    }
-
     fn format(&self, system: &System) -> Result<String, CustomOutputError> {
-        let context = self.get_context(system);
+        let context = get_output_context(system);
         let mut output = String::new();
         for &(ref string, ref expr) in &self.args {
             output.push_str(string);
@@ -207,6 +132,73 @@ impl FormatArgs {
         output.push_str(&self.tail);
         return Ok(output);
     }
+}
+
+fn get_output_context(system: &System) -> Context<'_> {
+    let mut context = Context::new();
+    context.set_query(move |name| {
+        // Get unit conversion factor firsts
+        units::CONVERSION_FACTORS.get(name).cloned().or_else(|| {
+            macro_rules! get_particle_data {
+                ($index: ident, $data: ident) => (
+                    system.particles()
+                          .$data
+                          .get($index)
+                          .cloned()
+                          .unwrap_or_else(|| {
+                              warn_once!(
+                                  "index out of bound in custom output: \
+                                  index is {}, but we only have {} atoms",
+                                  $index, system.size()
+                              );
+                              return num_traits::Zero::zero();
+                          })
+                );
+            }
+            if name.contains('[') {
+                // vector data
+                let (name, index) = parse_index(name);
+                match name {
+                    // position
+                    "x" => Some(get_particle_data!(index, position)[0]),
+                    "y" => Some(get_particle_data!(index, position)[1]),
+                    "z" => Some(get_particle_data!(index, position)[2]),
+                    // velocity
+                    "vx" => Some(get_particle_data!(index, velocity)[0]),
+                    "vy" => Some(get_particle_data!(index, velocity)[1]),
+                    "vz" => Some(get_particle_data!(index, velocity)[2]),
+                    // other atomic properties
+                    "mass" => Some(get_particle_data!(index, mass)),
+                    "charge" => Some(get_particle_data!(index, charge)),
+                    _ => None,
+                }
+            } else {
+                // scalar data
+                match name {
+                    "step" => Some(system.step as f64),
+                    "pressure" => Some(system.pressure()),
+                    "volume" => Some(system.volume()),
+                    "temperature" => Some(system.temperature()),
+                    "natoms" => Some(system.size() as f64),
+                    "cell.a" => Some(system.cell.a()),
+                    "cell.b" => Some(system.cell.b()),
+                    "cell.c" => Some(system.cell.c()),
+                    "cell.alpha" => Some(system.cell.alpha()),
+                    "cell.beta" => Some(system.cell.beta()),
+                    "cell.gamma" => Some(system.cell.gamma()),
+                    "stress.xx" => Some(system.stress()[0][0]),
+                    "stress.yy" => Some(system.stress()[1][1]),
+                    "stress.zz" => Some(system.stress()[2][2]),
+                    "stress.xy" => Some(system.stress()[0][1]),
+                    "stress.xz" => Some(system.stress()[0][2]),
+                    "stress.yz" => Some(system.stress()[1][2]),
+                    _ => None,
+                }
+            }
+        })
+    });
+
+    return context;
 }
 
 /// Get the name and index in a string looking like `name[index]`. Everything

@@ -174,8 +174,8 @@ impl Drop for TestsCleanup {
 fn get_error_message(content: &str) -> String {
     for line in content.lines() {
         let line = line.trim();
-        if line.starts_with("#^ ") {
-            return String::from(&line[3..]);
+        if let Some(message) = line.strip_prefix("#^ ") {
+            return message.into();
         }
     }
 

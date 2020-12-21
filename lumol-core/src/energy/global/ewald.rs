@@ -1079,6 +1079,7 @@ mod tests {
         use approx::{assert_ulps_eq, assert_relative_eq};
 
         #[test]
+        #[allow(clippy::unreadable_literal)]
         fn energy() {
             let system = nacl_pair();
             let ewald = SharedEwald::new(Ewald::new(8.0, 10, None));
@@ -1161,6 +1162,7 @@ mod tests {
         use approx::{assert_ulps_eq, assert_relative_eq};
 
         #[test]
+        #[allow(clippy::unreadable_literal)]
         fn energy() {
             let system = water();
             let mut ewald = SharedEwald::new(Ewald::new(8.0, 10, None));
@@ -1352,7 +1354,8 @@ mod tests {
         type CostCompute = fn (ewald: &SharedEwald, system: &System, molecule: usize, positions: &[Vector3D]) -> f64;
         type EnergyCompute = fn (ewald: &SharedEwald, system: &System) -> f64;
 
-        fn check_cache(mut system: System, ewald: Ewald, compute_energy: EnergyCompute, compute_cost: CostCompute) {
+        #[allow(clippy::unreadable_literal)]
+        let check_cache = |mut system: System, ewald: Ewald, compute_energy: EnergyCompute, compute_cost: CostCompute| {
             let mut ewald = SharedEwald::new(ewald);
             ewald.set_restriction(PairRestriction::InterMolecular);
             ewald.write().precompute(&system.cell);
@@ -1402,7 +1405,7 @@ mod tests {
 
         // Whole energy at once
         check_cache(
-            system.clone(),
+            system,
             Ewald::new(8.0, 10, None),
             |ewald, system| {
                 ewald.energy(system)
@@ -1497,6 +1500,7 @@ mod tests {
             assert_eq!(ewald.kmax, 8);
         }
 
+        #[allow(clippy::unreadable_literal)]
         mod cutoff_9 {
             use super::*;
             use crate::consts::K_BOLTZMANN;
@@ -1716,6 +1720,7 @@ mod tests {
             }
         }
 
+        #[allow(clippy::unreadable_literal)]
         mod cutoff_10 {
             use super::*;
             use crate::consts::K_BOLTZMANN;

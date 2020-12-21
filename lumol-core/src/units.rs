@@ -127,13 +127,13 @@ impl fmt::Display for ParseError {
 }
 
 impl Error for ParseError {
-    fn description(&self) -> &str {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
         match *self {
-            ParseError::Power(ref err) => err.description(),
-            ParseError::Value(ref err) => err.description(),
-            ParseError::ParenthesesMismatch => "Parentheses are not equilibrated.",
-            ParseError::NotFound { .. } => "Unit not found.",
-            ParseError::MalformedExpr(..) => "Malformed expression",
+            ParseError::Power(ref err) => Some(err),
+            ParseError::Value(ref err) => Some(err),
+            ParseError::ParenthesesMismatch |
+            ParseError::NotFound { .. } |
+            ParseError::MalformedExpr(..) => None,
         }
     }
 }

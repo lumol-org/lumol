@@ -4,8 +4,8 @@
 //! Utilities to test the output algorithms
 
 #![cfg(test)]
-use tempfile;
-use self::tempfile::NamedTempFile;
+
+use tempfile::NamedTempFile;
 
 use std::fs::File;
 use std::io::prelude::*;

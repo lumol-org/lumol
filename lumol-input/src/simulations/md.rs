@@ -1,5 +1,7 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) Lumol's contributors — BSD license
+#![allow(clippy::wildcard_imports)]
+
 use toml::value::Table;
 
 use lumol_sim::md::*;

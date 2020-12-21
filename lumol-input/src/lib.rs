@@ -19,6 +19,9 @@
 #![allow(clippy::missing_docs_in_private_items, clippy::module_name_repetitions)]
 #![allow(clippy::new_without_default, clippy::range_plus_one, clippy::filter_map)]
 #![allow(clippy::if_not_else, clippy::redundant_closure_for_method_calls)]
+#![allow(clippy::must_use_candidate)]
+
+#![allow(clippy::missing_errors_doc)]
 
 // deny(warnings) in doc tests
 #![doc(test(attr(deny(warnings))))]

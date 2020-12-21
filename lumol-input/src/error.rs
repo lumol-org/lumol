@@ -72,7 +72,6 @@ impl From<(CustomOutputError, PathBuf)> for Error {
 
 impl fmt::Display for Error {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
-        use std::error::Error as StdError;
         match *self {
             Error::Io(ref err, ref path) => {
                 match err.kind() {
@@ -83,7 +82,7 @@ impl fmt::Display for Error {
                         write!(fmt, "permission to access '{}' denied", path.display())
                     }
                     _ => {
-                        write!(fmt, "error with '{}': {}", path.display(), self.description())
+                        write!(fmt, "error with '{}': {}", path.display(), self)
                     }
                 }
             }
@@ -97,18 +96,7 @@ impl fmt::Display for Error {
 }
 
 impl std::error::Error for Error {
-    fn description(&self) -> &str {
-        match *self {
-            Error::Config(ref err) => err,
-            Error::TOML(ref err) => err.description(),
-            Error::Io(ref err, _) => err.description(),
-            Error::Trajectory(ref err) => err.description(),
-            Error::Unit(ref err) => err.description(),
-            Error::CustomOutput(ref err) => err.description(),
-        }
-    }
-
-    fn cause(&self) -> Option<&dyn std::error::Error> {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         match *self {
             Error::TOML(..) | Error::Config(..) => None,
             Error::Io(ref err, _) => Some(err),

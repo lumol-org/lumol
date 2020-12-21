@@ -11,17 +11,17 @@ use std::sync::RwLock;
 pub type SharedVec = Rc<RwLock<Vec<f64>>>;
 
 /// Collect pressure and temperature of a simulation after a starting step
-pub struct Collecter {
+pub struct Collector {
     start: u64,
     pressures: SharedVec,
     temperatures: SharedVec,
 }
 
-impl Collecter {
-    pub fn starting_at(start: u64) -> Collecter {
+impl Collector {
+    pub fn starting_at(start: u64) -> Collector {
         let pressures = Vec::with_capacity(10_000);
         let temperatures = Vec::with_capacity(10_000);
-        Collecter {
+        Collector {
             start: start,
             pressures: Rc::new(RwLock::new(pressures)),
             temperatures: Rc::new(RwLock::new(temperatures)),
@@ -37,7 +37,7 @@ impl Collecter {
     }
 }
 
-impl Output for Collecter {
+impl Output for Collector {
     fn write(&mut self, system: &System) {
         if system.step < self.start {
             return;

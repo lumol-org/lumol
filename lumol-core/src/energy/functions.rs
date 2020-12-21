@@ -595,6 +595,7 @@ impl PairPotential for Mie {
 
 
 #[cfg(test)]
+#[allow(clippy::unreadable_literal)]
 mod tests {
     use super::*;
     use crate::{PairPotential, Potential};

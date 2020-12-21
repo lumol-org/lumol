@@ -420,6 +420,7 @@ fn angle(u: Vector3D, v: Vector3D) -> f64 {
 }
 
 #[cfg(test)]
+#[allow(clippy::unreadable_literal)]
 mod tests {
     use super::*;
     use std::f64;
@@ -761,6 +762,7 @@ mod tests {
     }
 
     #[test]
+    #[allow(clippy::many_single_char_names)]
     fn dihedral_derivatives() {
         const EPS: f64 = 1e-6;
         let cell = UnitCell::infinite();

@@ -1,7 +1,8 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) Lumol's contributors — BSD license
 
-//! Convert TOML values to Lumol types.
+#![allow(clippy::wildcard_imports)]
+
 use toml::value::Table;
 use log::warn;
 
