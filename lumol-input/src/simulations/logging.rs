@@ -4,7 +4,6 @@ use toml::value::Table;
 
 use log::{self, Record, info};
 
-use log4rs;
 use log4rs::append::Append;
 use log4rs::append::console;
 use log4rs::append::console::ConsoleAppender;
@@ -17,14 +16,12 @@ use crate::Input;
 use crate::error::Error;
 use crate::extract;
 
-type LogError = Box<dyn ::std::error::Error + Sync + Send>;
-
 /// An encoder to configure the output style of logging messages
 #[derive(Debug)]
 struct LogEncoder;
 
 impl Encode for LogEncoder {
-    fn encode(&self, out: &mut dyn Write, record: &Record<'_>) -> Result<(), LogError> {
+    fn encode(&self, out: &mut dyn Write, record: &Record<'_>) -> anyhow::Result<()> {
         match record.level() {
             log::Level::Trace => write!(out, "[trace] ")?,
             log::Level::Debug => write!(out, "[debug] ")?,

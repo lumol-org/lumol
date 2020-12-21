@@ -100,11 +100,11 @@ fn select_molecule(system: &System, hash: Option<MoleculeHash>, rng: &mut dyn Rn
             .collect::<Vec<_>>();
         return mols.choose(rng).cloned();
     } else {
-        let nmols = system.molecules().count();
-        if nmols == 0 {
+        let molecules_count = system.molecules().count();
+        if molecules_count == 0 {
             return None;
         } else {
-            return Some(rng.gen_range(0, nmols));
+            return Some(rng.gen_range(0..molecules_count));
         }
     }
 }

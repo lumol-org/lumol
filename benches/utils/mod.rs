@@ -31,7 +31,7 @@ pub fn get_rng() -> XorShiftRng {
 pub fn move_rigid_molecule(system: &System) -> (usize, Vec<Vector3D>) {
     let mut rng = get_rng();
 
-    let molid = rng.gen_range(0, system.molecules().count());
+    let molid = rng.gen_range(0..system.molecules().count());
     let molecule = system.molecule(molid);
     let delta = Vector3D::new(rng.gen(), rng.gen(), rng.gen());
     let mut positions = Vec::new();
