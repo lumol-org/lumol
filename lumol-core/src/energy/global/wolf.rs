@@ -4,7 +4,7 @@ use std::f64::consts::{PI, FRAC_2_SQRT_PI};
 
 use rayon::prelude::*;
 
-use crate::math::{exp, erfc};
+use crate::math::erfc;
 use crate::consts::FOUR_PI_EPSILON_0;
 use crate::PairRestriction;
 use crate::utils::ThreadLocalVec;
@@ -73,7 +73,7 @@ impl Wolf {
         let alpha_cutoff_2 = alpha_cutoff * alpha_cutoff;
 
         let energy_constant = erfc(alpha_cutoff) / cutoff;
-        let force_constant = erfc(alpha_cutoff) / (cutoff * cutoff) + FRAC_2_SQRT_PI * alpha * exp(-alpha_cutoff_2) / cutoff;
+        let force_constant = erfc(alpha_cutoff) / (cutoff * cutoff) + FRAC_2_SQRT_PI * alpha * f64::exp(-alpha_cutoff_2) / cutoff;
         Wolf {
             alpha: alpha,
             cutoff: cutoff,
@@ -110,7 +110,7 @@ impl Wolf {
         } else {
             let rij2 = rij * rij;
             let alpha_rij = self.alpha * rij;
-            let exp_alpha_rij = exp(-alpha_rij * alpha_rij);
+            let exp_alpha_rij = f64::exp(-alpha_rij * alpha_rij);
             let factor = erfc(alpha_rij) / rij2 + self.alpha * FRAC_2_SQRT_PI * exp_alpha_rij / rij;
             return qiqj * (factor - self.force_constant) / (rij * FOUR_PI_EPSILON_0);
         }

@@ -4,7 +4,6 @@
 use log_once::warn_once;
 
 use crate::{PairPotential, Potential};
-use crate::math::*;
 
 /// Alternative energy and forces computation.
 ///
@@ -123,7 +122,7 @@ impl TableComputation {
 impl Computation for TableComputation {
     fn compute_energy(&self, r: f64) -> f64 {
         debug_assert_eq!(self.energy_table.len(), self.force_table.len());
-        let bin = floor(r / self.delta) as usize;
+        let bin = f64::floor(r / self.delta) as usize;
         if bin < self.energy_table.len() - 1 {
             let dx = r - (bin as f64) * self.delta;
             let slope = (self.energy_table[bin + 1] - self.energy_table[bin]) / self.delta;
@@ -135,7 +134,7 @@ impl Computation for TableComputation {
 
     fn compute_force(&self, r: f64) -> f64 {
         debug_assert_eq!(self.energy_table.len(), self.force_table.len());
-        let bin = floor(r / self.delta) as usize;
+        let bin = f64::floor(r / self.delta) as usize;
         if bin < self.force_table.len() - 1 {
             let dx = r - (bin as f64) * self.delta;
             let slope = (self.force_table[bin + 1] - self.force_table[bin]) / self.delta;

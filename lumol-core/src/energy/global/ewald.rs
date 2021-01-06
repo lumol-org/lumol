@@ -10,7 +10,7 @@ use rayon::prelude::*;
 use log::{warn, info};
 use log_once::warn_once;
 
-use crate::math::{exp, erf, erfc, sqrt};
+use crate::math::{erf, erfc};
 use crate::{Configuration, UnitCell, CellShape};
 use crate::{Matrix3, Vector3D, Array3, Complex};
 use crate::consts::FOUR_PI_EPSILON_0;
@@ -456,12 +456,12 @@ impl Ewald {
             // use a correction for excluded interaction, removing the force
             // from kspace
             qiqj / (FOUR_PI_EPSILON_0 * r * r) * (
-                self.alpha * FRAC_2_SQRT_PI * exp(-self.alpha * self.alpha * r * r)
+                self.alpha * FRAC_2_SQRT_PI * f64::exp(-self.alpha * self.alpha * r * r)
                 - erf(self.alpha * r) / r
             )
         } else {
             qiqj / (FOUR_PI_EPSILON_0 * r * r) * (
-                self.alpha * FRAC_2_SQRT_PI * exp(-self.alpha * self.alpha * r * r)
+                self.alpha * FRAC_2_SQRT_PI * f64::exp(-self.alpha * self.alpha * r * r)
                 + erfc(self.alpha * r) / r
             )
         }
@@ -662,7 +662,7 @@ impl Ewald {
                               .iter()
                               .map(|q| q * q)
                               .sum::<f64>();
-        return -self.alpha / sqrt(PI) * q2 / FOUR_PI_EPSILON_0;
+        return -self.alpha / f64::sqrt(PI) * q2 / FOUR_PI_EPSILON_0;
     }
 }
 

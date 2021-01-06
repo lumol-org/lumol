@@ -7,7 +7,6 @@
 use std::f64;
 use std::f64::consts::PI;
 
-use crate::math::*;
 use crate::{Matrix3, Vector3D};
 
 /// The shape of a cell determine how we will be able to compute the periodic
@@ -81,7 +80,7 @@ impl UnitCell {
 
         let c_x = c * cos_beta;
         let c_y = c * (cos_alpha - cos_beta * cos_gamma) / sin_gamma;
-        let c_z = sqrt(c * c - c_y * c_y - c_x * c_x);
+        let c_z = f64::sqrt(c * c - c_y * c_y - c_x * c_x);
 
         let cell = Matrix3::new([[a, b_x, c_x], [0.0, b_y, c_y], [0.0, 0.0, c_z]]);
 
@@ -143,7 +142,7 @@ impl UnitCell {
         let nb = (c ^ a).normalized();
         let nc = (a ^ b).normalized();
 
-        Vector3D::new(abs(na * a), abs(nb * b), abs(nc * c))
+        Vector3D::new(f64::abs(na * a), f64::abs(nb * b), f64::abs(nc * c))
     }
 
     /// Get the first angle of the cell
@@ -265,15 +264,15 @@ impl UnitCell {
         match self.shape {
             CellShape::Infinite => (),
             CellShape::Orthorhombic => {
-                vect[0] -= floor(vect[0] / self.a()) * self.a();
-                vect[1] -= floor(vect[1] / self.b()) * self.b();
-                vect[2] -= floor(vect[2] / self.c()) * self.c();
+                vect[0] -= f64::floor(vect[0] / self.a()) * self.a();
+                vect[1] -= f64::floor(vect[1] / self.b()) * self.b();
+                vect[2] -= f64::floor(vect[2] / self.c()) * self.c();
             }
             CellShape::Triclinic => {
                 let mut fractional = self.fractional(vect);
-                fractional[0] -= floor(fractional[0]);
-                fractional[1] -= floor(fractional[1]);
-                fractional[2] -= floor(fractional[2]);
+                fractional[0] -= f64::floor(fractional[0]);
+                fractional[1] -= f64::floor(fractional[1]);
+                fractional[2] -= f64::floor(fractional[2]);
                 *vect = self.cartesian(&fractional);
             }
         }
@@ -286,15 +285,15 @@ impl UnitCell {
         match self.shape {
             CellShape::Infinite => (),
             CellShape::Orthorhombic => {
-                vect[0] -= round(vect[0] / self.a()) * self.a();
-                vect[1] -= round(vect[1] / self.b()) * self.b();
-                vect[2] -= round(vect[2] / self.c()) * self.c();
+                vect[0] -= f64::round(vect[0] / self.a()) * self.a();
+                vect[1] -= f64::round(vect[1] / self.b()) * self.b();
+                vect[2] -= f64::round(vect[2] / self.c()) * self.c();
             }
             CellShape::Triclinic => {
                 let mut fractional = self.fractional(vect);
-                fractional[0] -= round(fractional[0]);
-                fractional[1] -= round(fractional[1]);
-                fractional[2] -= round(fractional[2]);
+                fractional[0] -= f64::round(fractional[0]);
+                fractional[1] -= f64::round(fractional[1]);
+                fractional[2] -= f64::round(fractional[2]);
                 *vect = self.cartesian(&fractional);
             }
         }
@@ -328,7 +327,7 @@ impl UnitCell {
         let mut r23 = r3 - r2;
         self.vector_image(&mut r23);
 
-        return acos(r12 * r23 / (r12.norm() * r23.norm()));
+        return f64::acos(r12 * r23 / (r12.norm() * r23.norm()));
     }
 
     /// Get the angle formed by the points at `r1`, `r2` and `r3` using periodic
@@ -350,13 +349,13 @@ impl UnitCell {
         let r23n = r23 / r23_norm;
 
         let cos = r12n * r23n;
-        let sin_inv = 1.0 / sqrt(1.0 - cos * cos);
+        let sin_inv = 1.0 / f64::sqrt(1.0 - cos * cos);
 
         let d1 = sin_inv * (cos * r12n - r23n) / r12_norm;
         let d3 = sin_inv * (cos * r23n - r12n) / r23_norm;
         let d2 = -(d1 + d3);
 
-        return (acos(cos), d1, d2, d3);
+        return (f64::acos(cos), d1, d2, d3);
     }
 
 
@@ -396,7 +395,7 @@ impl UnitCell {
         let u_norm2 = u.norm2();
         let v_norm2 = v.norm2();
         let r23_norm2 = r23.norm2();
-        let r23_norm = sqrt(r23_norm2);
+        let r23_norm = f64::sqrt(r23_norm2);
 
         let d1 = (-r23_norm / u_norm2) * u;
         let d4 = ( r23_norm / v_norm2) * v;
@@ -416,7 +415,7 @@ impl UnitCell {
 fn angle(u: Vector3D, v: Vector3D) -> f64 {
     let un = u.normalized();
     let vn = v.normalized();
-    acos(un * vn)
+    f64::acos(un * vn)
 }
 
 #[cfg(test)]
@@ -608,7 +607,7 @@ mod tests {
         let cell = UnitCell::ortho(3.0, 4.0, 5.0);
         let u = &Vector3D::zero();
         let v = &Vector3D::new(1.0, 2.0, 6.0);
-        assert_eq!(cell.distance(u, v), sqrt(6.0));
+        assert_eq!(cell.distance(u, v), f64::sqrt(6.0));
 
         // Infinite unit cell
         let cell = UnitCell::infinite();
@@ -616,7 +615,7 @@ mod tests {
 
         // Triclinic unit cell
         let cell = UnitCell::triclinic(3.0, 4.0, 5.0, 90.0, 90.0, 90.0);
-        assert_eq!(cell.distance(u, v), sqrt(6.0));
+        assert_eq!(cell.distance(u, v), f64::sqrt(6.0));
     }
 
     #[test]
@@ -709,7 +708,7 @@ mod tests {
 
         let a = Vector3D::new(1.0, 0.0, 0.0);
         let b = Vector3D::zero();
-        let c = Vector3D::new(cos(1.877), sin(1.877), 0.0);
+        let c = Vector3D::new(f64::cos(1.877), f64::sin(1.877), 0.0);
         assert_eq!(cell.angle(&a, &b, &c), 1.877);
     }
 
