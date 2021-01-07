@@ -7,6 +7,8 @@ use std::f64;
 
 use rayon::prelude::*;
 
+use soa_derive::StructOfArray;
+
 use log::{warn, info};
 use log_once::warn_once;
 
@@ -19,7 +21,7 @@ use crate::utils::ThreadLocalVec;
 
 use super::{GlobalPotential, CoulombicPotential, GlobalCache};
 
-/// 3D array with negative indexing on the first dimmension, for use in Ewald
+/// 3D array with negative indexing on the first dimension, for use in Ewald
 /// phase factors.
 ///
 /// # Examples
@@ -96,128 +98,87 @@ pub struct EwaldParameters {
 /// Computing the factors account for the `\vec k = 0` and `k2 > kmax2` cases,
 /// so iterating over the values in these vectors will give all the needed
 /// k-points, and only them.
-///
-/// All the vectors contains the term corresponding to the k-vector indexes in
-/// `self.kvecs`.
-#[derive(Clone, Debug)]
-struct EwaldFactors {
+#[derive(Clone, Debug, StructOfArray)]
+#[soa_derive = "Clone"]
+struct EwaldFactor {
+    /// Index of the vector in k-space
+    index: (isize, isize, isize),
     /// Energetic pre-factor: `4 π / V exp(- k² / (4 α²)) / k²`
-    energy: Vec<f64>,
+    energy: f64,
     /// Electric field/force pre-factor: `8 π / V exp(- k² / (4 α²)) / k² \vec k / k`
-    efield: Vec<Vector3D>,
+    field: Vector3D,
     /// Virial pre-factor: `𝟙 - 2 (1 / k² + 1 / (4 α²)) \vec k ⊗ \vec k / k²`
-    virial: Vec<Matrix3>,
-    /// Indexes in k-space
-    kvecs: Vec<(isize, isize, isize)>,
+    virial: Matrix3,
 }
 
-impl EwaldFactors {
-    /// Create a new empty EwaldFactors
-    pub fn new() -> EwaldFactors {
-        EwaldFactors {
-            energy: Vec::new(),
-            efield: Vec::new(),
-            virial: Vec::new(),
-            kvecs: Vec::new(),
-        }
-    }
+/// Compute the factors for the given `cell` and Ewald `parameters`
+fn compute_ewald_factors(factors: &mut EwaldFactorVec, cell: &UnitCell, parameters: &EwaldParameters) {
 
-    /// Remove any data in the factors
-    fn clear(&mut self) {
-        self.energy.clear();
-        self.efield.clear();
-        self.virial.clear();
-        self.kvecs.clear();
-    }
+    let kmax = parameters.kmax;
+    let kmax3d = 4 * kmax * kmax * kmax + 6 * kmax * kmax + 3 * kmax;
 
-    /// Reserve memory for at leats `size` items
-    fn reserve(&mut self, size: usize) {
-        self.energy.reserve(size);
-        self.efield.reserve(size);
-        self.virial.reserve(size);
-        self.kvecs.reserve(size);
-    }
+    factors.clear();
+    factors.reserve(kmax3d as usize);
 
-    /// Compute the factors for the given `cell` and Ewald `parameters`
-    pub fn compute(&mut self, cell: &UnitCell, parameters: &EwaldParameters) {
-        self.clear();
-        let kmax = parameters.kmax;
-        let kmax3d = 4 * kmax * kmax * kmax + 6 * kmax * kmax + 3 * kmax;
-        self.reserve(kmax3d as usize);
-
-        match cell.shape() {
-            CellShape::Infinite => panic!("Ewald is not defined with infinite unit cell"),
-            CellShape::Orthorhombic => self.compute_ortho(cell, parameters),
-            CellShape::Triclinic => self.compute_triclinic(cell, parameters),
-        }
-    }
-
-    fn compute_ortho(&mut self, cell: &UnitCell, parameters: &EwaldParameters) {
+    match cell.shape() {
+        CellShape::Infinite => panic!("Ewald is not defined with infinite unit cell"),
         // TODO: there is a faster algorithm for orthorhombic cell
-        self.compute_triclinic(cell, parameters);
+        CellShape::Orthorhombic | CellShape::Triclinic => compute_ewald_factors_triclinic(factors, cell, parameters),
     }
+}
 
-    fn compute_triclinic(&mut self, cell: &UnitCell, parameters: &EwaldParameters) {
-        let alpha_sq_inv_fourth = 0.25 / (parameters.alpha * parameters.alpha);
-        let four_pi_v = 4.0 * PI / cell.volume();
+fn compute_ewald_factors_triclinic(factors: &mut EwaldFactorVec, cell: &UnitCell, parameters: &EwaldParameters) {
+    let alpha_sq_inv_fourth = 0.25 / (parameters.alpha * parameters.alpha);
+    let four_pi_v = 4.0 * PI / cell.volume();
 
-        let kmax = parameters.kmax;
-        // k-vectors with a positive `ikx`
-        for ikx in 1..kmax {
-            for iky in -kmax..kmax {
-                for ikz in -kmax..kmax {
-                    let kvec = cell.k_vector([ikx as f64, iky as f64, ikz as f64]);
-                    let k2 = kvec.norm2();
-                    if k2 > parameters.kmax2 {
-                        continue;
-                    }
+    let factor_from_k_vector = |k_vector: Vector3D, k2: f64, index: (isize, isize, isize)| {
+        let energy = four_pi_v * f64::exp(- k2 * alpha_sq_inv_fourth) / k2;
+        let field = 2.0 * energy * k_vector;
+        let virial_factor = -2.0 * (1.0 / k2 + alpha_sq_inv_fourth);
+        let virial = Matrix3::one() + virial_factor * k_vector.tensorial(&k_vector);
+        let virial = energy * virial;
 
-                    self.kvecs.push((ikx, iky, ikz));
-                    let energy_factor = four_pi_v * f64::exp(- k2 * alpha_sq_inv_fourth) / k2;
-                    self.energy.push(energy_factor);
-                    self.efield.push(2.0 * energy_factor * kvec);
-                    let virial_factor = -2.0 * (1.0 / k2 + alpha_sq_inv_fourth);
-                    let virial = Matrix3::one() + virial_factor * kvec.tensorial(&kvec);
-                    self.virial.push(energy_factor * virial);
-                }
-            }
-        }
+        return EwaldFactor { index, energy, field, virial };
+    };
 
-        // k-vectors with `ikx = 0`
-        for iky in 1..kmax {
+    let kmax = parameters.kmax;
+    // k-vectors with a positive `ikx`
+    for ikx in 1..kmax {
+        for iky in -kmax..kmax {
             for ikz in -kmax..kmax {
-                let kvec = cell.k_vector([0.0, iky as f64, ikz as f64]);
-                let k2 = kvec.norm2();
+                let k_vector = cell.k_vector([ikx as f64, iky as f64, ikz as f64]);
+                let k2 = k_vector.norm2();
                 if k2 > parameters.kmax2 {
                     continue;
                 }
 
-                self.kvecs.push((0, iky, ikz));
-                let energy_factor = four_pi_v * f64::exp(- k2 * alpha_sq_inv_fourth) / k2;
-                self.energy.push(energy_factor);
-                self.efield.push(2.0 * energy_factor * kvec);
-                let virial_factor = -2.0 * (1.0 / k2 + alpha_sq_inv_fourth);
-                let virial = Matrix3::one() + virial_factor * kvec.tensorial(&kvec);
-                self.virial.push(energy_factor * virial);
+                factors.push(factor_from_k_vector(k_vector, k2, (ikx, iky, ikz)));
             }
         }
+    }
 
-        // k-vectors with `ikx = 0` and `ikz = 0`
-        for ikz in 1..kmax {
-            let kvec = cell.k_vector([0.0, 0.0, ikz as f64]);
-            let k2 = kvec.norm2();
+    // k-vectors with `ikx = 0`
+    for iky in 1..kmax {
+        for ikz in -kmax..kmax {
+            let k_vector = cell.k_vector([0.0, iky as f64, ikz as f64]);
+            let k2 = k_vector.norm2();
             if k2 > parameters.kmax2 {
                 continue;
             }
 
-            self.kvecs.push((0, 0, ikz));
-            let energy_factor = four_pi_v * f64::exp(- k2 * alpha_sq_inv_fourth) / k2;
-            self.energy.push(energy_factor);
-            self.efield.push(2.0 * energy_factor * kvec);
-            let virial_factor = -2.0 * (1.0 / k2 + alpha_sq_inv_fourth);
-            let virial = Matrix3::one() + virial_factor * kvec.tensorial(&kvec);
-            self.virial.push(energy_factor * virial);
+            factors.push(factor_from_k_vector(k_vector, k2, (0, iky, ikz)));
         }
+    }
+
+    // k-vectors with `ikx = 0` and `ikz = 0`
+    for ikz in 1..kmax {
+        let k_vector = cell.k_vector([0.0, 0.0, ikz as f64]);
+        let k2 = k_vector.norm2();
+        if k2 > parameters.kmax2 {
+            continue;
+        }
+
+        factors.push(factor_from_k_vector(k_vector, k2, (0, 0, ikz)));
     }
 }
 
@@ -268,7 +229,7 @@ pub struct Ewald {
     /// Various Ewald parameters
     parameters: EwaldParameters,
     /// Ewald pre-factors, only depending on the system unit cell
-    factors: EwaldFactors,
+    factors: EwaldFactorVec,
     /// Restriction scheme
     restriction: PairRestriction,
     /// Cached phase factors (e^{i k r})
@@ -276,12 +237,12 @@ pub struct Ewald {
     /// Fourier transform of the electrostatic density (\sum q_i e^{i k r})
     ///
     /// The vector contain the terms corresponding to the k-vectors in
-    /// `self.factors.kvecs`
+    /// `self.factors.index`
     rho: Vec<Complex>,
     /// Caching the allocation for electric field calculation
     ///
     /// This will contain the electric field at each atom
-    efield: Vec<Vector3D>,
+    field: Vec<Vector3D>,
     /// Guard for cache invalidation of `self.factors`
     previous_cell: Option<UnitCell>,
     /// Update the cached quantities
@@ -296,14 +257,13 @@ impl Clone for Ewald {
             restriction: self.restriction,
             eikr: self.eikr.clone(),
             rho: self.rho.clone(),
-            efield: self.efield.clone(),
+            field: self.field.clone(),
             previous_cell: self.previous_cell,
             updater: None,
         }
     }
 }
 
-// direct acces to parameters as `self.<xxx>`
 impl Deref for Ewald {
     type Target = EwaldParameters;
     fn deref(&self) -> &EwaldParameters {
@@ -335,10 +295,10 @@ impl Ewald {
         Ewald {
             parameters: parameters,
             restriction: PairRestriction::None,
-            factors: EwaldFactors::new(),
+            factors: EwaldFactorVec::new(),
             eikr: Ewald3DArray::zeros((0..0, 0, 0)),
             rho: Vec::new(),
-            efield: Vec::new(),
+            field: Vec::new(),
             previous_cell: None,
             updater: None,
         }
@@ -390,7 +350,7 @@ impl Ewald {
         Ewald::new(cutoff, kmax, alpha)
     }
 
-    fn precompute(&mut self, cell: &UnitCell) {
+    fn prepare(&mut self, cell: &UnitCell) {
         if let Some(ref prev_cell) = self.previous_cell {
             if cell == prev_cell {
                 // Do not recompute
@@ -409,12 +369,12 @@ impl Ewald {
         if f64::exp(- self.parameters.alpha * half_min_length) > 0.05 {
             warn_once!(
 "Ewald alpha parameter is too low for this unit cell, energy and forces might be wrong.
-You can manually set alpha to a slighty higher value (current alpha is {})",
+You can manually set alpha to a slightly higher value (current alpha is {})",
                 self.parameters.alpha
             );
         }
 
-        self.factors.compute(cell, &self.parameters);
+        compute_ewald_factors(&mut self.factors, cell, &self.parameters);
     }
 }
 
@@ -426,14 +386,14 @@ impl Ewald {
     #[inline]
     fn real_space_energy_pair(&self, info: RestrictionInfo, qiqj: f64, r: f64) -> f64 {
         assert_eq!(info.scaling, 1.0, "Scaling restriction scheme using Ewald are not implemented");
-        debug_assert!(!(r > self.rc && info.excluded), "excluded atoms are too far appart");
+        debug_assert!(!(r > self.rc && info.excluded), "excluded atoms are too far apart");
         if r > self.rc {
             return 0.0;
         }
 
         if info.excluded {
             // use a correction for excluded interaction, removing the energy
-            // from kspace
+            // from k-space
             - qiqj / FOUR_PI_EPSILON_0 * erf(self.alpha * r) / r
         } else {
             qiqj / FOUR_PI_EPSILON_0 * erfc(self.alpha * r) / r
@@ -447,14 +407,14 @@ impl Ewald {
     #[inline]
     fn real_space_force_pair(&self, info: RestrictionInfo, qiqj: f64, r: f64) -> f64 {
         assert_eq!(info.scaling, 1.0, "Scaling restriction scheme using Ewald are not implemented");
-        debug_assert!(!(r > self.rc && info.excluded), "excluded atoms are too far appart");
+        debug_assert!(!(r > self.rc && info.excluded), "excluded atoms are too far apart");
         if r > self.rc {
             return 0.0;
         }
 
         if info.excluded {
             // use a correction for excluded interaction, removing the force
-            // from kspace
+            // from k-space
             qiqj / (FOUR_PI_EPSILON_0 * r * r) * (
                 self.alpha * FRAC_2_SQRT_PI * f64::exp(-self.alpha * self.alpha * r * r)
                 - erf(self.alpha * r) / r
@@ -535,7 +495,7 @@ impl Ewald {
         });
 
         // At this point all the forces are computed, but the results are
-        // scattered across all thread local Vecs, here we gather them.
+        // scattered across all thread local Vec, here we gather them.
         thread_local_forces.sum_into(forces);
     }
 
@@ -544,7 +504,7 @@ impl Ewald {
         let natoms = configuration.size();
         let charges = configuration.particles().charge;
 
-        let virials = (0..natoms).into_par_iter().map(|i| {
+        let virial = (0..natoms).into_par_iter().map(|i| {
             let qi = charges[i];
             if qi == 0.0 {
                 return Matrix3::zero();
@@ -566,13 +526,13 @@ impl Ewald {
             }
             local_virial
         });
-        return virials.sum();
+        return virial.sum();
     }
 
     /// Real space contribution to the molecular virial
     fn real_space_molecular_virial(&self, configuration: &Configuration) -> Matrix3 {
         let charges = configuration.particles().charge;
-        let virials = configuration.molecules().enumerate().par_bridge().map(|(i, molecule_i)| {
+        let virial = configuration.molecules().enumerate().par_bridge().map(|(i, molecule_i)| {
             let mut local_virial = Matrix3::zero();
             let ri = molecule_i.center_of_mass();
 
@@ -606,7 +566,7 @@ impl Ewald {
             return local_virial;
         });
 
-        return virials.sum();
+        return virial.sum();
      }
 
      fn real_space_move_molecule_cost(
@@ -683,10 +643,10 @@ impl Ewald {
         for spatial in 0..3 {
             let mut k_idx = [0.0, 0.0, 0.0];
             k_idx[spatial] = 1.0;
-            let kvec = configuration.cell.k_vector(k_idx);
+            let k_vector = configuration.cell.k_vector(k_idx);
             for i in 0..natoms {
                 self.eikr[(0, spatial, i)] = Complex::cartesian(1.0, 0.0);
-                self.eikr[(1, spatial, i)] = Complex::polar(1.0, kvec * positions[i]);
+                self.eikr[(1, spatial, i)] = Complex::polar(1.0, k_vector * positions[i]);
                 self.eikr[(-1, spatial, i)] = self.eikr[(1, spatial, i)].conj();
             }
         }
@@ -701,7 +661,7 @@ impl Ewald {
             }
         }
 
-        for &(ikx, iky, ikz) in &self.factors.kvecs {
+        for &(ikx, iky, ikz) in &self.factors.index {
             let mut partial = Complex::zero();
             for i in 0..natoms {
                 let phi = self.eikr[(ikx, 0, i)] *
@@ -714,7 +674,7 @@ impl Ewald {
     }
 
     /// k-space contribution to the energy
-    fn kspace_energy(&mut self, configuration: &Configuration) -> f64 {
+    fn k_space_energy(&mut self, configuration: &Configuration) -> f64 {
         self.eik_dot_r(configuration);
 
         let energy = self.factors.energy
@@ -727,40 +687,40 @@ impl Ewald {
     }
 
     /// k-space contribution to the forces
-    fn kspace_forces(&mut self, configuration: &Configuration, forces: &mut [Vector3D]) {
+    fn k_space_forces(&mut self, configuration: &Configuration, forces: &mut [Vector3D]) {
         assert_eq!(forces.len(), configuration.size());
         self.eik_dot_r(configuration);
 
         let natoms = configuration.size();
-        self.efield.clear();
-        self.efield.resize(natoms, Vector3D::zero());
+        self.field.clear();
+        self.field.resize(natoms, Vector3D::zero());
 
-        let thread_local_efield = ThreadLocalVec::with_size(natoms);
-        self.factors.kvecs
+        let thread_local_field = ThreadLocalVec::with_size(natoms);
+        self.factors.index
             .par_iter()
-            .zip_eq(&self.factors.efield)
+            .zip_eq(&self.factors.field)
             .zip_eq(&self.rho)
             .for_each(|((&(ikx, iky, ikz), factor), rho)| {
-                let mut efield = thread_local_efield.borrow_mut();
+                let mut field = thread_local_field.borrow_mut();
                 for i in 0..natoms {
                     let eikr = self.eikr[(ikx, 0, i)] *
                                self.eikr[(iky, 1, i)] *
                                self.eikr[(ikz, 2, i)];
                     let partial = eikr * rho.conj();
-                    efield[i] += partial.imag() * factor;
+                    field[i] += partial.imag() * factor;
                 }
             });
 
-        thread_local_efield.sum_into(&mut self.efield);
+            thread_local_field.sum_into(&mut self.field);
 
         let charges = configuration.particles().charge;
-        for (force, &charge, field) in zip!(&mut *forces, charges, &self.efield) {
+        for (force, &charge, field) in zip!(&mut *forces, charges, &self.field) {
             *force += charge * field / FOUR_PI_EPSILON_0;
         }
     }
 
     /// k-space contribution to the atomic virial
-    fn kspace_atomic_virial(&mut self, configuration: &Configuration) -> Matrix3 {
+    fn k_space_atomic_virial(&mut self, configuration: &Configuration) -> Matrix3 {
         self.eik_dot_r(configuration);
 
         let virial = self.factors.virial
@@ -773,11 +733,11 @@ impl Ewald {
     }
 
     /// k-space contribution to the molecular virial
-    fn kspace_molecular_virial(&mut self, configuration: &Configuration) -> Matrix3 {
-        let atomic = self.kspace_atomic_virial(configuration);
+    fn k_space_molecular_virial(&mut self, configuration: &Configuration) -> Matrix3 {
+        let atomic = self.k_space_atomic_virial(configuration);
 
         let mut forces = vec![Vector3D::zero(); configuration.size()];
-        self.kspace_forces(configuration, &mut forces);
+        self.k_space_forces(configuration, &mut forces);
 
         let positions = configuration.particles().position;
         let mut correction = Matrix3::zero();
@@ -802,17 +762,17 @@ impl Ewald {
         new_positions: &[Vector3D],
     ) -> Vec<Complex> {
         let molecule = configuration.molecule(molecule_id);
-        let mut new_energyikr = Ewald3DArray::zeros((-self.kmax..(self.kmax + 1), 3, molecule.size()));
+        let mut new_energy_ikr = Ewald3DArray::zeros((-self.kmax..(self.kmax + 1), 3, molecule.size()));
 
         // Do the k=0, 1 cases first
         for spatial in 0..3 {
             let mut k_idx = [0.0, 0.0, 0.0];
             k_idx[spatial] = 1.0;
-            let kvec = configuration.cell.k_vector(k_idx);
+            let k_vector = configuration.cell.k_vector(k_idx);
             for i in 0..molecule.size() {
-                new_energyikr[(0, spatial, i)] = Complex::cartesian(1.0, 0.0);
-                new_energyikr[(1, spatial, i)] = Complex::polar(1.0, kvec * new_positions[i]);
-                new_energyikr[(-1, spatial, i)] = new_energyikr[(1, spatial, i)].conj();
+                new_energy_ikr[(0, spatial, i)] = Complex::cartesian(1.0, 0.0);
+                new_energy_ikr[(1, spatial, i)] = Complex::polar(1.0, k_vector * new_positions[i]);
+                new_energy_ikr[(-1, spatial, i)] = new_energy_ikr[(1, spatial, i)].conj();
             }
         }
 
@@ -820,24 +780,24 @@ impl Ewald {
         for spatial in 0..3 {
             for k in 2..(self.kmax + 1) {
                 for i in 0..molecule.size() {
-                    new_energyikr[(k, spatial, i)] = new_energyikr[(k - 1, spatial, i)] * new_energyikr[(1, spatial, i)];
-                    new_energyikr[(-k, spatial, i)] = new_energyikr[(k, spatial, i)].conj();
+                    new_energy_ikr[(k, spatial, i)] = new_energy_ikr[(k - 1, spatial, i)] * new_energy_ikr[(1, spatial, i)];
+                    new_energy_ikr[(-k, spatial, i)] = new_energy_ikr[(k, spatial, i)].conj();
                 }
             }
         }
 
         let mut delta = Vec::new();
         let charges = configuration.particles().charge;
-        for &(ikx, iky, ikz) in &self.factors.kvecs {
+        for &(ikx, iky, ikz) in &self.factors.index {
             let mut partial = Complex::zero();
             for (i, part_i) in molecule.indexes().enumerate() {
                 let old_phi = self.eikr[(ikx, 0, part_i)] *
                               self.eikr[(iky, 1, part_i)] *
                               self.eikr[(ikz, 2, part_i)];
 
-                let new_phi = new_energyikr[(ikx, 0, i)] *
-                              new_energyikr[(iky, 1, i)] *
-                              new_energyikr[(ikz, 2, i)];
+                let new_phi = new_energy_ikr[(ikx, 0, i)] *
+                              new_energy_ikr[(iky, 1, i)] *
+                              new_energy_ikr[(ikz, 2, i)];
 
                 partial += charges[part_i] * (new_phi - old_phi);
             }
@@ -847,7 +807,7 @@ impl Ewald {
         return delta;
     }
 
-    fn kspace_move_molecule_cost(
+    fn k_space_move_molecule_cost(
         &mut self,
         configuration: &Configuration,
         molecule_id: usize,
@@ -901,16 +861,16 @@ impl SharedEwald {
 
     /// Get read access to the underlying Ewald solver
     fn read(&self) -> RwLockReadGuard<'_, Ewald> {
-        // The lock should never be poisonned, because any panic will unwind
+        // The lock should never be poisoned, because any panic will unwind
         // and finish the simulation.
-        self.0.read().expect("Ewald lock is poisonned")
+        self.0.read().expect("Ewald lock is poisoned")
     }
 
     /// Get write access to the underlying Ewald solver
     fn write(&self) -> RwLockWriteGuard<'_, Ewald> {
-        // The lock should never be poisonned, because any panic will unwind
+        // The lock should never be poisoned, because any panic will unwind
         // and finish the simulation.
-        self.0.write().expect("Ewald lock is poisonned")
+        self.0.write().expect("Ewald lock is poisoned")
     }
 }
 
@@ -927,39 +887,39 @@ impl GlobalPotential for SharedEwald {
 
     fn energy(&self, configuration: &Configuration) -> f64 {
         let mut ewald = self.write();
-        ewald.precompute(&configuration.cell);
+        ewald.prepare(&configuration.cell);
         let real = ewald.real_space_energy(configuration);
         let self_e = ewald.self_energy(configuration);
-        let kspace = ewald.kspace_energy(configuration);
-        return real + self_e + kspace;
+        let k_space = ewald.k_space_energy(configuration);
+        return real + self_e + k_space;
     }
 
     fn forces(&self, configuration: &Configuration, forces: &mut [Vector3D])  {
         assert_eq!(forces.len(), configuration.size());
         let mut ewald = self.write();
-        ewald.precompute(&configuration.cell);
+        ewald.prepare(&configuration.cell);
 
         ewald.real_space_forces(configuration, forces);
         // No self force
-        ewald.kspace_forces(configuration, forces);
+        ewald.k_space_forces(configuration, forces);
     }
 
     fn atomic_virial(&self, configuration: &Configuration) -> Matrix3 {
         let mut ewald = self.write();
-        ewald.precompute(&configuration.cell);
+        ewald.prepare(&configuration.cell);
         let real = ewald.real_space_atomic_virial(configuration);
         // No self virial
-        let kspace = ewald.kspace_atomic_virial(configuration);
-        return real + kspace;
+        let k_space = ewald.k_space_atomic_virial(configuration);
+        return real + k_space;
     }
 
     fn molecular_virial(&self, configuration: &Configuration) -> Matrix3 {
         let mut ewald = self.write();
-        ewald.precompute(&configuration.cell);
+        ewald.prepare(&configuration.cell);
         let real = ewald.real_space_molecular_virial(configuration);
         // No self virial
-        let kspace = ewald.kspace_molecular_virial(configuration);
-        return real + kspace;
+        let k_space = ewald.k_space_molecular_virial(configuration);
+        return real + k_space;
     }
 }
 
@@ -977,11 +937,11 @@ impl GlobalCache for SharedEwald {
         new_positions: &[Vector3D]
     ) -> f64 {
         let mut ewald = self.write();
-        ewald.precompute(&configuration.cell);
+        ewald.prepare(&configuration.cell);
         let real = ewald.real_space_move_molecule_cost(configuration, molecule_id, new_positions);
         /* No self cost */
-        let kspace = ewald.kspace_move_molecule_cost(configuration, molecule_id, new_positions);
-        return real + kspace;
+        let k_space = ewald.k_space_move_molecule_cost(configuration, molecule_id, new_positions);
+        return real + k_space;
     }
 
     fn update(&self) {
@@ -1098,7 +1058,7 @@ mod tests {
         fn real_forces_finite_differences() {
             let mut system = nacl_pair();
             let mut ewald = Ewald::new(8.0, 10, None);
-            ewald.precompute(&system.cell);
+            ewald.prepare(&system.cell);
 
             let e = ewald.real_space_energy(&system);
             let eps = 1e-9;
@@ -1111,19 +1071,19 @@ mod tests {
         }
 
         #[test]
-        fn kspace_forces_finite_differences() {
+        fn k_space_forces_finite_differences() {
             let mut system = nacl_pair();
             // Using a small cutoff to increase the weight of k-space
             let mut ewald = Ewald::new(2.0, 10, None);
-            ewald.precompute(&system.cell);
+            ewald.prepare(&system.cell);
 
-            let e = ewald.kspace_energy(&system);
+            let e = ewald.k_space_energy(&system);
             let eps = 1e-9;
             system.particles_mut().position[0][0] += eps;
 
-            let e1 = ewald.kspace_energy(&system);
+            let e1 = ewald.k_space_energy(&system);
             let mut forces = vec![Vector3D::zero(); 2];
-            ewald.kspace_forces(&system, &mut forces);
+            ewald.k_space_forces(&system, &mut forces);
             assert_relative_eq!((e - e1) / eps, forces[0][0], epsilon=1e-6);
         }
 
@@ -1178,7 +1138,7 @@ mod tests {
             let mut system = water();
             let mut ewald = Ewald::new(8.0, 10, None);
             ewald.restriction = PairRestriction::InterMolecular;
-            ewald.precompute(&system.cell);
+            ewald.prepare(&system.cell);
 
             let mut forces = vec![Vector3D::zero(); 3];
             ewald.real_space_forces(&system, &mut forces);
@@ -1193,20 +1153,20 @@ mod tests {
         }
 
         #[test]
-        fn kspace_forces_finite_differences() {
+        fn k_space_forces_finite_differences() {
             let mut system = water();
             let mut ewald = Ewald::new(8.0, 10, None);
             ewald.restriction = PairRestriction::InterMolecular;
-            ewald.precompute(&system.cell);
+            ewald.prepare(&system.cell);
 
             let mut forces = vec![Vector3D::zero(); 3];
-            ewald.kspace_forces(&system, &mut forces);
+            ewald.k_space_forces(&system, &mut forces);
             let force = forces[0][0];
 
             let eps = 1e-9;
-            let e = ewald.kspace_energy(&system);
+            let e = ewald.k_space_energy(&system);
             system.particles_mut().position[0][0] += eps;
-            let e1 = ewald.kspace_energy(&system);
+            let e1 = ewald.k_space_energy(&system);
 
             assert_relative_eq!((e - e1) / eps, force, epsilon = 1e-6);
         }
@@ -1275,7 +1235,7 @@ mod tests {
             let mut system = water();
             let mut ewald = Ewald::new(8.0, 10, None);
             ewald.restriction = PairRestriction::InterMolecular;
-            ewald.precompute(&system.cell);
+            ewald.prepare(&system.cell);
 
             let eps = 1e-9;
             let virial = ewald.real_space_atomic_virial(&system);
@@ -1283,10 +1243,10 @@ mod tests {
 
             for i in 0..3 {
                 for j in 0..3 {
-                    ewald.precompute(&system.cell);
+                    ewald.prepare(&system.cell);
                     let e = ewald.real_space_energy(&system);
                     scale(&mut system, i, j, eps);
-                    ewald.precompute(&system.cell);
+                    ewald.prepare(&system.cell);
                     let e1 = ewald.real_space_energy(&system);
                     finite_diff[i][j] = (e - e1) / eps;
                 }
@@ -1296,28 +1256,28 @@ mod tests {
         }
 
         #[test]
-        fn kspace_finite_differences() {
+        fn k_space_finite_differences() {
             let mut system = water();
             let mut ewald = Ewald::new(2.0, 10, None);
             ewald.restriction = PairRestriction::InterMolecular;
-            ewald.precompute(&system.cell);
+            ewald.prepare(&system.cell);
 
             let eps = 1e-9;
-            let virial = ewald.kspace_atomic_virial(&system);
+            let virial = ewald.k_space_atomic_virial(&system);
             let mut finite_diff = Matrix3::zero();
 
             for i in 0..3 {
                 for j in 0..3 {
-                    ewald.precompute(&system.cell);
-                    let e = ewald.kspace_energy(&system);
+                    ewald.prepare(&system.cell);
+                    let e = ewald.k_space_energy(&system);
                     scale(&mut system, i, j, eps);
-                    ewald.precompute(&system.cell);
-                    let e1 = ewald.kspace_energy(&system);
+                    ewald.prepare(&system.cell);
+                    let e1 = ewald.k_space_energy(&system);
                     finite_diff[i][j] = (e - e1) / eps;
                 }
             }
 
-            // Make sure the finite_diff matrix is symetric
+            // Make sure the finite_diff matrix is symmetric
             finite_diff = (finite_diff + finite_diff.transposed()) / 2.0;
             assert_relative_eq!(virial, finite_diff, epsilon = 1e-6);
         }
@@ -1358,7 +1318,7 @@ mod tests {
         let check_cache = |mut system: System, ewald: Ewald, compute_energy: EnergyCompute, compute_cost: CostCompute| {
             let mut ewald = SharedEwald::new(ewald);
             ewald.set_restriction(PairRestriction::InterMolecular);
-            ewald.write().precompute(&system.cell);
+            ewald.write().prepare(&system.cell);
 
             let check = ewald.clone();
             // Initialize cached values
@@ -1391,15 +1351,15 @@ mod tests {
             }
         );
 
-        // kspace energy
+        // k-space energy
         check_cache(
             system.clone(),
             Ewald::new(2.0, 10, None),
             |ewald, system| {
-                ewald.write().kspace_energy(system)
+                ewald.write().k_space_energy(system)
             },
             |ewald, system, molecule, positions| {
-                ewald.write().kspace_move_molecule_cost(system, molecule, positions)
+                ewald.write().k_space_move_molecule_cost(system, molecule, positions)
             }
         );
 
@@ -1420,6 +1380,7 @@ mod tests {
     // reference. See `tests/nist-spce.rs` for more information. These tests
     // check values that are not accessible from the outside of lumol-core.
     mod nist {
+        #![allow(clippy::unreadable_literal)]
         use super::*;
 
         use std::path::Path;
@@ -1514,13 +1475,13 @@ mod tests {
                 let alpha = 5.6 / system.cell.a();
                 let mut ewald = Ewald::new(CUTOFF, 5, alpha);
                 ewald.restriction = PairRestriction::InterMolecular;
-                ewald.precompute(&system.cell);
+                ewald.prepare(&system.cell);
 
                 let energy = ewald.real_space_energy(&system) / K_BOLTZMANN;
                 let expected = 2.251086e6;
                 assert_relative_eq!(energy, expected, max_relative = 1e-4);
 
-                let energy = ewald.kspace_energy(&system) / K_BOLTZMANN;
+                let energy = ewald.k_space_energy(&system) / K_BOLTZMANN;
                 let expected = 6.27009e3;
                 assert_relative_eq!(energy, expected, max_relative = 2e-3);
 
@@ -1534,7 +1495,7 @@ mod tests {
                 let system = get_system("spce-1.xyz");
                 let mut ewald = Ewald::new(CUTOFF, 8, 0.364209);
                 ewald.restriction = PairRestriction::InterMolecular;
-                ewald.precompute(&system.cell);
+                ewald.prepare(&system.cell);
 
                 let convert = units::from(1.0, "atm").unwrap() * system.volume();
 
@@ -1546,7 +1507,7 @@ mod tests {
                 ]);
                 assert_relative_eq!(virial, expected, max_relative = 1e-3);
 
-                let virial = ewald.kspace_atomic_virial(&system);
+                let virial = ewald.k_space_atomic_virial(&system);
                 let expected = convert * Matrix3::new([
                     [-124.54878,  5.3873858,   15.093282],
                     [ 5.3873858, -111.92329,  -36.333371],
@@ -1567,13 +1528,13 @@ mod tests {
                 let alpha = 5.6 / system.cell.a();
                 let mut ewald = Ewald::new(CUTOFF, 5, alpha);
                 ewald.restriction = PairRestriction::InterMolecular;
-                ewald.precompute(&system.cell);
+                ewald.prepare(&system.cell);
 
                 let energy = ewald.real_space_energy(&system) / K_BOLTZMANN;
                 let expected = 4.4269e6;
                 assert_relative_eq!(energy, expected, max_relative = 1e-4);
 
-                let energy = ewald.kspace_energy(&system) / K_BOLTZMANN;
+                let energy = ewald.k_space_energy(&system) / K_BOLTZMANN;
                 let expected = 6.03495e3;
                 assert_relative_eq!(energy, expected, max_relative = 5e-3);
 
@@ -1587,7 +1548,7 @@ mod tests {
                 let system = get_system("spce-2.xyz");
                 let mut ewald = Ewald::new(CUTOFF, 8, 0.370036);
                 ewald.restriction = PairRestriction::InterMolecular;
-                ewald.precompute(&system.cell);
+                ewald.prepare(&system.cell);
 
                 let convert = units::from(1.0, "atm").unwrap() * system.volume();
 
@@ -1599,7 +1560,7 @@ mod tests {
                 ]);
                 assert_relative_eq!(virial, expected, max_relative = 1e-3);
 
-                let virial = ewald.kspace_atomic_virial(&system);
+                let virial = ewald.k_space_atomic_virial(&system);
                 let expected = convert * Matrix3::new([
                     [-296.86013, -10.296217, -3.0451399],
                     [-10.296217, -250.90827, -7.9310376],
@@ -1620,13 +1581,13 @@ mod tests {
                 let alpha = 5.6 / system.cell.a();
                 let mut ewald = Ewald::new(CUTOFF, 5, alpha);
                 ewald.restriction = PairRestriction::InterMolecular;
-                ewald.precompute(&system.cell);
+                ewald.prepare(&system.cell);
 
                 let energy = ewald.real_space_energy(&system) / K_BOLTZMANN;
                 let expected = 6.46678e6;
                 assert_relative_eq!(energy, expected, max_relative = 1e-4);
 
-                let energy = ewald.kspace_energy(&system) / K_BOLTZMANN;
+                let energy = ewald.k_space_energy(&system) / K_BOLTZMANN;
                 let expected = 5.24461e3;
                 assert_relative_eq!(energy, expected, max_relative = 2e-3);
 
@@ -1640,7 +1601,7 @@ mod tests {
                 let system = get_system("spce-3.xyz");
                 let mut ewald = Ewald::new(CUTOFF, 8, 0.373403);
                 ewald.restriction = PairRestriction::InterMolecular;
-                ewald.precompute(&system.cell);
+                ewald.prepare(&system.cell);
 
                 let convert = units::from(1.0, "atm").unwrap() * system.volume();
 
@@ -1652,7 +1613,7 @@ mod tests {
                 ]);
                 assert_relative_eq!(virial, expected, max_relative = 1e-3);
 
-                let virial = ewald.kspace_atomic_virial(&system);
+                let virial = ewald.k_space_atomic_virial(&system);
                 let expected = convert * Matrix3::new([
                     [-255.20669,  18.680095, -37.1178  ],
                     [ 18.680095, -275.89451, -5.1062841],
@@ -1673,13 +1634,13 @@ mod tests {
                 let alpha = 5.6 / system.cell.a();
                 let mut ewald = Ewald::new(CUTOFF, 5, alpha);
                 ewald.restriction = PairRestriction::InterMolecular;
-                ewald.precompute(&system.cell);
+                ewald.prepare(&system.cell);
 
                 let energy = ewald.real_space_energy(&system) / K_BOLTZMANN;
                 let expected = 1.07011e7;
                 assert_relative_eq!(energy, expected, max_relative = 1e-4);
 
-                let energy = ewald.kspace_energy(&system) / K_BOLTZMANN;
+                let energy = ewald.k_space_energy(&system) / K_BOLTZMANN;
                 let expected = 7.58785e3;
                 assert_relative_eq!(energy, expected, max_relative = 2e-3);
 
@@ -1693,7 +1654,7 @@ mod tests {
                 let system = get_system("spce-4.xyz");
                 let mut ewald = Ewald::new(CUTOFF, 12, 0.370914);
                 ewald.restriction = PairRestriction::InterMolecular;
-                ewald.precompute(&system.cell);
+                ewald.prepare(&system.cell);
 
                 let convert = units::from(1.0, "atm").unwrap() * system.volume();
 
@@ -1705,7 +1666,7 @@ mod tests {
                 ]);
                 assert_relative_eq!(virial, expected, max_relative = 5e-3);
 
-                let virial = ewald.kspace_atomic_virial(&system);
+                let virial = ewald.k_space_atomic_virial(&system);
                 let expected = convert * Matrix3::new([
                     [ -482.8217, -17.877365,  11.908942],
                     [-17.877365, -465.33957,  3.5274012],
@@ -1734,13 +1695,13 @@ mod tests {
                 let alpha = 5.6 / system.cell.a();
                 let mut ewald = Ewald::new(CUTOFF, 5, alpha);
                 ewald.restriction = PairRestriction::InterMolecular;
-                ewald.precompute(&system.cell);
+                ewald.prepare(&system.cell);
 
                 let energy = ewald.real_space_energy(&system) / K_BOLTZMANN;
                 let expected = 2.251101e6;
                 assert_relative_eq!(energy, expected, max_relative = 1e-4);
 
-                let energy = ewald.kspace_energy(&system) / K_BOLTZMANN;
+                let energy = ewald.k_space_energy(&system) / K_BOLTZMANN;
                 let expected = 6.27009e3;
                 assert_relative_eq!(energy, expected, max_relative = 2e-3);
 
@@ -1754,7 +1715,7 @@ mod tests {
                 let system = get_system("spce-1.xyz");
                 let mut ewald = Ewald::new(CUTOFF, 7, 0.326983);
                 ewald.restriction = PairRestriction::InterMolecular;
-                ewald.precompute(&system.cell);
+                ewald.prepare(&system.cell);
 
                 let convert = units::from(1.0, "atm").unwrap() * system.volume();
 
@@ -1766,7 +1727,7 @@ mod tests {
                 ]);
                 assert_relative_eq!(virial, expected, max_relative = 1e-3);
 
-                let virial = ewald.kspace_atomic_virial(&system);
+                let virial = ewald.k_space_atomic_virial(&system);
                 let expected = convert * Matrix3::new([
                     [-61.298853,  2.0228732,    6.70617],
                     [ 2.0228732, -51.134442,   -26.2246],
@@ -1787,13 +1748,13 @@ mod tests {
                 let alpha = 5.6 / system.cell.a();
                 let mut ewald = Ewald::new(CUTOFF, 5, alpha);
                 ewald.restriction = PairRestriction::InterMolecular;
-                ewald.precompute(&system.cell);
+                ewald.prepare(&system.cell);
 
                 let energy = ewald.real_space_energy(&system) / K_BOLTZMANN;
                 let expected = 4.42703e6;
                 assert_relative_eq!(energy, expected, max_relative = 1e-4);
 
-                let energy = ewald.kspace_energy(&system) / K_BOLTZMANN;
+                let energy = ewald.k_space_energy(&system) / K_BOLTZMANN;
                 let expected = 6.03495e3;
                 assert_relative_eq!(energy, expected, max_relative = 5e-3);
 
@@ -1807,7 +1768,7 @@ mod tests {
                 let system = get_system("spce-2.xyz");
                 let mut ewald = Ewald::new(CUTOFF, 8, 0.332241);
                 ewald.restriction = PairRestriction::InterMolecular;
-                ewald.precompute(&system.cell);
+                ewald.prepare(&system.cell);
 
                 let convert = units::from(1.0, "atm").unwrap() * system.volume();
 
@@ -1819,7 +1780,7 @@ mod tests {
                 ]);
                 assert_relative_eq!(virial, expected, max_relative = 1e-3);
 
-                let virial = ewald.kspace_atomic_virial(&system);
+                let virial = ewald.k_space_atomic_virial(&system);
                 let expected = convert * Matrix3::new([
                     [-171.16013, -7.5200295, -6.7910143],
                     [-7.5200295, -140.58412, -5.5476543],
@@ -1840,13 +1801,13 @@ mod tests {
                 let alpha = 5.6 / system.cell.a();
                 let mut ewald = Ewald::new(CUTOFF, 5, alpha);
                 ewald.restriction = PairRestriction::InterMolecular;
-                ewald.precompute(&system.cell);
+                ewald.prepare(&system.cell);
 
                 let energy = ewald.real_space_energy(&system) / K_BOLTZMANN;
                 let expected = 6.46701e6;
                 assert_relative_eq!(energy, expected, max_relative = 1e-4);
 
-                let energy = ewald.kspace_energy(&system) / K_BOLTZMANN;
+                let energy = ewald.k_space_energy(&system) / K_BOLTZMANN;
                 let expected = 5.24461e3;
                 assert_relative_eq!(energy, expected, max_relative = 2e-3);
 
@@ -1860,7 +1821,7 @@ mod tests {
                 let system = get_system("spce-3.xyz");
                 let mut ewald = Ewald::new(CUTOFF, 8, 0.335278);
                 ewald.restriction = PairRestriction::InterMolecular;
-                ewald.precompute(&system.cell);
+                ewald.prepare(&system.cell);
 
                 let convert = units::from(1.0, "atm").unwrap() * system.volume();
 
@@ -1872,7 +1833,7 @@ mod tests {
                 ]);
                 assert_relative_eq!(virial, expected, max_relative = 1e-3);
 
-                let virial = ewald.kspace_atomic_virial(&system);
+                let virial = ewald.k_space_atomic_virial(&system);
                 let expected = convert * Matrix3::new([
                     [-136.28835,   18.49649, -27.386553],
                     [  18.49649, -155.56804, -15.667645],
@@ -1893,13 +1854,13 @@ mod tests {
                 let alpha = 5.6 / system.cell.a();
                 let mut ewald = Ewald::new(CUTOFF, 5, alpha);
                 ewald.restriction = PairRestriction::InterMolecular;
-                ewald.precompute(&system.cell);
+                ewald.prepare(&system.cell);
 
                 let energy = ewald.real_space_energy(&system) / K_BOLTZMANN;
                 let expected = 1.057604e7;
                 assert_relative_eq!(energy, expected, max_relative = 1e-4);
 
-                let energy = ewald.kspace_energy(&system) / K_BOLTZMANN;
+                let energy = ewald.k_space_energy(&system) / K_BOLTZMANN;
                 let expected = 7.58785e3;
                 assert_relative_eq!(energy, expected, max_relative = 2e-3);
 
@@ -1913,7 +1874,7 @@ mod tests {
                 let system = get_system("spce-4.xyz");
                 let mut ewald = Ewald::new(CUTOFF, 11, 0.333033);
                 ewald.restriction = PairRestriction::InterMolecular;
-                ewald.precompute(&system.cell);
+                ewald.prepare(&system.cell);
 
                 let convert = units::from(1.0, "atm").unwrap() * system.volume();
 
@@ -1925,7 +1886,7 @@ mod tests {
                 ]);
                 assert_relative_eq!(virial, expected, max_relative = 1e-3);
 
-                let virial = ewald.kspace_atomic_virial(&system);
+                let virial = ewald.k_space_atomic_virial(&system);
                 let expected = convert * Matrix3::new([
                     [-288.2612,  -9.676199,  13.775332],
                     [-9.676199, -261.38081,  3.8066323],
