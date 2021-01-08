@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Organizing interactions &#8212; Lumol 0.0.0 documentation</title>
+    <link rel="stylesheet" href="../../_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/lumol.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Non-bonded interactions" href="non_bonded.html" />
+    <link rel="prev" title="Interactions input" href="index.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../../_static/js/jquery-1.11.0.min.js "></script>
+<script type="text/javascript" src="../../_static/js/jquery-fix.js "></script>
+<script type="text/javascript" src="../../_static/bootstrap-3.3.7/js/bootstrap.min.js "></script>
+<script type="text/javascript" src="../../_static/bootstrap-sphinx.js "></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../index.html">
+          Lumol</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.0</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../../index.html">Navigation <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../concepts/index.html">Lumol concepts</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">Input file reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../advanced/index.html">Modifying lumol</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../faq.html">Frequently Asked Questions</a></li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+  <li>
+    <a href="index.html" title="Previous Chapter: Interactions input"><span class="glyphicon glyphicon-chevron-left visible-sm"></span><span class="hidden-sm hidden-tablet">&laquo; Interactions input</span>
+    </a>
+  </li>
+  <li>
+    <a href="non_bonded.html" title="Next Chapter: Non-bonded interactions"><span class="glyphicon glyphicon-chevron-right visible-sm"></span><span class="hidden-sm hidden-tablet">Non-bonded in... &raquo;</span>
+    </a>
+  </li>
+              
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+      <div class="col-md-3">
+        <div id="sidebar" class="bs-sidenav" role="complementary"><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../concepts/index.html">Lumol concepts</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">Input file reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../input.html"><code class="docutils literal notranslate"><span class="pre">[input]</span></code> section</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../log.html"><code class="docutils literal notranslate"><span class="pre">[log]</span></code> section</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../systems/index.html"><code class="docutils literal notranslate"><span class="pre">[[systems]]</span></code> section</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">Interactions input</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Organizing interactions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="non_bonded.html">Non-bonded interactions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="electrostatic.html">Electrostatic interactions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="potentials.html">Available potentials</a></li>
+<li class="toctree-l3"><a class="reference internal" href="restrictions.html">Restrictions</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../simulations/index.html"><code class="docutils literal notranslate"><span class="pre">[[simulations]]</span></code> section</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../advanced/index.html">Modifying lumol</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../faq.html">Frequently Asked Questions</a></li>
+</ul>
+
+<form action="../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+        </div>
+      </div>
+    <div class="body col-md-9 content" role="main">
+      
+  <div class="section" id="organizing-interactions">
+<h1>Organizing interactions<a class="headerlink" href="#organizing-interactions" title="Permalink to this headline">¶</a></h1>
+<p>You can specify interactions between atoms in two ways: either inside the main
+input file or in a separate file. For example take a look at the input file for
+the flexible SPC water model where we put all interactions directly into our
+main input file:</p>
+<div class="code highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="c1"># system configuration: initial positions, topology and cell</span>
+<span class="k">[[systems]]</span>
+<span class="n">file</span> <span class="o">=</span> <span class="s">&quot;data/water.xyz&quot;</span>
+<span class="n">topology</span> <span class="o">=</span> <span class="s">&quot;topology.pdb&quot;</span>
+<span class="n">cell</span> <span class="o">=</span> <span class="mi">40</span>
+
+<span class="c1"># intermolecular potentials</span>
+<span class="k">[systems.potentials.pairs]</span>
+<span class="n">O-O</span> <span class="o">=</span> <span class="p">{</span><span class="n">type</span> <span class="o">=</span> <span class="s">&quot;lj&quot;</span><span class="p">,</span> <span class="n">sigma</span> <span class="o">=</span> <span class="s">&quot;3.165 A&quot;</span><span class="p">,</span> <span class="n">epsilon</span> <span class="o">=</span> <span class="s">&quot;0.155 kcal/mol&quot;</span><span class="p">}</span>
+<span class="n">H-H</span> <span class="o">=</span> <span class="p">{</span><span class="n">type</span> <span class="o">=</span> <span class="s">&quot;null&quot;</span><span class="p">}</span>
+<span class="n">O-H</span> <span class="o">=</span> <span class="p">{</span><span class="n">type</span> <span class="o">=</span> <span class="s">&quot;null&quot;</span><span class="p">}</span>
+
+<span class="c1"># intramolecular potentials</span>
+<span class="k">[systems.potentials.bonds]</span>
+<span class="n">O-H</span> <span class="o">=</span> <span class="p">{</span><span class="n">type</span> <span class="o">=</span> <span class="s">&quot;harmonic&quot;</span><span class="p">,</span> <span class="n">k</span> <span class="o">=</span> <span class="s">&quot;1059.162 kcal/mol/A^2&quot;</span><span class="p">,</span> <span class="n">x0</span> <span class="o">=</span> <span class="s">&quot;1.012 A&quot;</span><span class="p">}</span>
+
+<span class="k">[systems.potentials.angles]</span>
+<span class="n">H-O-H</span> <span class="o">=</span> <span class="p">{</span><span class="n">type</span> <span class="o">=</span> <span class="s">&quot;harmonic&quot;</span><span class="p">,</span> <span class="n">k</span> <span class="o">=</span> <span class="s">&quot;75.90 kcal/mol/deg^2&quot;</span><span class="p">,</span> <span class="n">x0</span> <span class="o">=</span> <span class="s">&quot;113.24 deg&quot;</span><span class="p">}</span>
+
+<span class="c1"># ... additional interactions omitted</span>
+</pre></div>
+</div>
+<p>As you can see, there is a lot of bracket notation going on here. First, in
+<code class="docutils literal notranslate"><span class="pre">[systems.potentials.xxx]</span></code>, the <code class="docutils literal notranslate"><span class="pre">potentials</span></code> key is actually a nested table
+of <code class="docutils literal notranslate"><span class="pre">systems</span></code> indicated by the dot notation. Accordingly, <code class="docutils literal notranslate"><span class="pre">pairs</span></code>, <code class="docutils literal notranslate"><span class="pre">bonds</span></code>,
+<code class="docutils literal notranslate"><span class="pre">angles</span></code>, etc. are nested tables of <code class="docutils literal notranslate"><span class="pre">potentials</span></code>. Second, <code class="docutils literal notranslate"><span class="pre">{type</span> <span class="pre">=</span>
+<span class="pre">&quot;harmonic&quot;,</span> <span class="pre">k</span> <span class="pre">=</span> <span class="pre">&quot;75.90</span> <span class="pre">kcal/mol/deg&quot;,</span> <span class="pre">x0</span> <span class="pre">=</span> <span class="pre">&quot;113.24</span> <span class="pre">deg&quot;}</span></code> is the notation for
+an inline table.</p>
+<p>Input files can get very big and hard to read when you simulate complex systems
+with a large number of different atoms. In these scenarios it may be better to
+define a separate input file for your interactions like so:</p>
+<div class="code highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="k">[[systems]]</span>
+<span class="n">file</span> <span class="o">=</span> <span class="s">&quot;data/water.xyz&quot;</span>
+<span class="n">topology</span> <span class="o">=</span> <span class="s">&quot;topology.pdb&quot;</span>
+<span class="n">cell</span> <span class="o">=</span> <span class="mi">40</span>
+<span class="n">potentials</span> <span class="o">=</span> <span class="s">&quot;water.toml&quot;</span>
+</pre></div>
+</div>
+<p>Here, the <code class="docutils literal notranslate"><span class="pre">potentials</span></code> key contains a string that is interpreted as the path
+to another input file containing only definitions of interactions. This way, you
+can build your own library of force field files.</p>
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+    </p>
+    <p class="pull-left">
+        &copy; Lumol contributors
+    </p>
+    <p class="text-center">
+        Available on <a href="https://github.com/lumol-org/lumol">Github</a>
+    </p>
+  </div>
+</footer>
+
+  </body>
+</html>

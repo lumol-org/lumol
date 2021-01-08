@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Implementation of the potential &#8212; Lumol 0.0.0 documentation</title>
+    <link rel="stylesheet" href="../../_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/lumol.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Frequently Asked Questions" href="../../faq.html" />
+    <link rel="prev" title="Traits used for potentials" href="intro.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../../_static/js/jquery-1.11.0.min.js "></script>
+<script type="text/javascript" src="../../_static/js/jquery-fix.js "></script>
+<script type="text/javascript" src="../../_static/bootstrap-3.3.7/js/bootstrap.min.js "></script>
+<script type="text/javascript" src="../../_static/bootstrap-sphinx.js "></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../index.html">
+          Lumol</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.0</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../../index.html">Navigation <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../concepts/index.html">Lumol concepts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../input/index.html">Input file reference</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">Modifying lumol</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../faq.html">Frequently Asked Questions</a></li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+  <li>
+    <a href="intro.html" title="Previous Chapter: Traits used for potentials"><span class="glyphicon glyphicon-chevron-left visible-sm"></span><span class="hidden-sm hidden-tablet">&laquo; Traits used f...</span>
+    </a>
+  </li>
+  <li>
+    <a href="../../faq.html" title="Next Chapter: Frequently Asked Questions"><span class="glyphicon glyphicon-chevron-right visible-sm"></span><span class="hidden-sm hidden-tablet">Frequently As... &raquo;</span>
+    </a>
+  </li>
+              
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+      <div class="col-md-3">
+        <div id="sidebar" class="bs-sidenav" role="complementary"><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../concepts/index.html">Lumol concepts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../input/index.html">Input file reference</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">Modifying lumol</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">Adding a potential</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="intro.html">Traits used for potentials</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Implementation of the potential</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../faq.html">Frequently Asked Questions</a></li>
+</ul>
+
+<form action="../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+        </div>
+      </div>
+    <div class="body col-md-9 content" role="main">
+      
+  <div class="section" id="implementation-of-the-potential">
+<h1>Implementation of the potential<a class="headerlink" href="#implementation-of-the-potential" title="Permalink to this headline">¶</a></h1>
+<p>We start by creating a new package using <code class="docutils literal notranslate"><span class="pre">cargo</span></code>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>cargo new potential
+<span class="nb">cd</span> potential
+</pre></div>
+</div>
+<p>Open <code class="docutils literal notranslate"><span class="pre">Cargo.toml</span></code> and add the lines</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="o">[</span>dependencies<span class="o">]</span>
+<span class="nv">lumol</span> <span class="o">=</span> <span class="o">{</span><span class="nv">git</span> <span class="o">=</span> <span class="s2">&quot;https://github.com/lumol-org/lumol&quot;</span><span class="o">}</span>
+</pre></div>
+</div>
+<p>to add the <code class="docutils literal notranslate"><span class="pre">lumol</span></code> crate as a dependency to the package. To test if everything
+works, run <code class="docutils literal notranslate"><span class="pre">cargo</span> <span class="pre">build</span></code> and check if an error occurs.</p>
+<div class="section" id="defining-the-struct">
+<h2>Defining the struct<a class="headerlink" href="#defining-the-struct" title="Permalink to this headline">¶</a></h2>
+<p>For the first part of the tutorial, the complete code will be written into the
+<code class="docutils literal notranslate"><span class="pre">lib.rs</span></code> file.</p>
+<p>The energy function of the Mie potential reads</p>
+<div class="math notranslate nohighlight">
+\[u(x) = \varepsilon \frac{n}{n-m} \left(\frac{n}{m}\right)^{\frac{m}{n-m}} \left[ \left( \frac{\sigma}{x}\right)^n - \left( \frac{\sigma}{x}\right)^m \right]\]</div>
+<p>where <span class="math notranslate nohighlight">\(x\)</span> denotes the distance between two interaction sites <span class="math notranslate nohighlight">\(i, j\)</span>,
+with <span class="math notranslate nohighlight">\(x = x_{ij} = | \mathbf{r}_j - \mathbf{r}_i |\)</span>.  The parameters of
+the potential are</p>
+<ul class="simple">
+<li><span class="math notranslate nohighlight">\(n, m\)</span> the repulsive and attractive exponents, respectively,</li>
+<li><span class="math notranslate nohighlight">\(\varepsilon\)</span> the energetic paramater,</li>
+<li><span class="math notranslate nohighlight">\(\sigma\)</span> the particle diameter or structural parameter.</li>
+</ul>
+<p>We start by defining the <code class="docutils literal notranslate"><span class="pre">struct</span></code> for our potential. Add the following lines
+to <code class="docutils literal notranslate"><span class="pre">lib.rs</span></code>:</p>
+<div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="k">use</span><span class="w"> </span><span class="n">lumol</span>::<span class="n">energy</span>::<span class="p">{</span><span class="n">Potential</span><span class="p">,</span><span class="w"> </span><span class="n">PairPotential</span><span class="p">};</span><span class="w"></span>
+
+<span class="cp">#[derive(Clone, Copy)]</span><span class="w"></span>
+<span class="k">pub</span><span class="w"> </span><span class="k">struct</span> <span class="nc">Mie</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="sd">/// Distance constant</span>
+<span class="w">    </span><span class="n">sigma</span>: <span class="kt">f64</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="sd">/// Exponent of repulsive contribution</span>
+<span class="w">    </span><span class="n">n</span>: <span class="kt">f64</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="sd">/// Exponent of attractive contribution</span>
+<span class="w">    </span><span class="n">m</span>: <span class="kt">f64</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="sd">/// Energetic prefactor computed from the exponents and epsilon</span>
+<span class="w">    </span><span class="n">prefactor</span>: <span class="kt">f64</span><span class="p">,</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</pre></div>
+</div>
+<p>In the first two lines we define our imports from <code class="docutils literal notranslate"><span class="pre">Lumol</span></code>, following with our
+<code class="docutils literal notranslate"><span class="pre">Mie</span></code> structure. Notice that we don’t store the <code class="docutils literal notranslate"><span class="pre">epsilon</span></code> value, instead we
+store an energetic prefactor that will make it easier to compute the potential.</p>
+<div class="math notranslate nohighlight">
+\[\text{prefactor} = \varepsilon \frac{n}{n-m} \left(\frac{n}{m}\right)^{m/(n-m)}\]</div>
+<p>Next, we implement a constructor function. That’s usefull in this case since we
+want to compute the prefactor of the potential once before we start our
+simulation.</p>
+<p>In Rust we typically use <code class="docutils literal notranslate"><span class="pre">new</span></code> for the constructors’ name.</p>
+<div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="k">impl</span><span class="w"> </span><span class="n">Mie</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="k">pub</span><span class="w"> </span><span class="k">fn</span> <span class="nf">new</span><span class="p">(</span><span class="n">sigma</span>: <span class="kt">f64</span><span class="p">,</span><span class="w"> </span><span class="n">epsilon</span>: <span class="kt">f64</span><span class="p">,</span><span class="w"> </span><span class="n">n</span>: <span class="kt">f64</span><span class="p">,</span><span class="w"> </span><span class="n">m</span>: <span class="kt">f64</span><span class="p">)</span><span class="w"> </span>-&gt; <span class="nc">Mie</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="n">m</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">            </span><span class="n">panic</span><span class="o">!</span><span class="p">(</span><span class="s">&quot;The repulsive exponent n has to be larger than the attractive exponent m&quot;</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="p">};</span><span class="w"></span>
+<span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="n">prefactor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="p">(</span><span class="n">n</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">m</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="n">n</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">m</span><span class="p">).</span><span class="n">powf</span><span class="p">(</span><span class="n">m</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="p">(</span><span class="n">n</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">m</span><span class="p">))</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">epsilon</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">Mie</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">            </span><span class="n">sigma</span>: <span class="nc">sigma</span><span class="p">,</span><span class="w"></span>
+<span class="w">            </span><span class="n">n</span>: <span class="nc">n</span><span class="p">,</span><span class="w"></span>
+<span class="w">            </span><span class="n">m</span>: <span class="nc">m</span><span class="p">,</span><span class="w"></span>
+<span class="w">            </span><span class="n">prefactor</span>: <span class="nc">prefactor</span><span class="p">,</span><span class="w"></span>
+<span class="w">        </span><span class="p">}</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</pre></div>
+</div>
+<p>Our function takes the parameter set as input, computes the prefactor and
+returns a <code class="docutils literal notranslate"><span class="pre">Mie</span></code> struct. Notice that it panics, for <code class="docutils literal notranslate"><span class="pre">n</span></code> smaller than or equal
+to <code class="docutils literal notranslate"><span class="pre">m</span></code>. The next step is to implement the <code class="docutils literal notranslate"><span class="pre">Potential</span></code> trait for <code class="docutils literal notranslate"><span class="pre">Mie</span></code>.</p>
+</div>
+<div class="section" id="implementing-potential">
+<h2>Implementing <code class="docutils literal notranslate"><span class="pre">Potential</span></code><a class="headerlink" href="#implementing-potential" title="Permalink to this headline">¶</a></h2>
+<p>Add the following lines below the structs implementation.</p>
+<div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="k">impl</span><span class="w"> </span><span class="n">Potential</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">Mie</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="k">fn</span> <span class="nf">energy</span><span class="p">(</span><span class="o">&amp;</span><span class="bp">self</span><span class="p">,</span><span class="w"> </span><span class="n">r</span>: <span class="kt">f64</span><span class="p">)</span><span class="w"> </span>-&gt; <span class="kt">f64</span> <span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="n">sigma_r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="bp">self</span><span class="p">.</span><span class="n">sigma</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">r</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="n">repulsive</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kt">f64</span>::<span class="n">powf</span><span class="p">(</span><span class="n">sigma_r</span><span class="p">,</span><span class="w"> </span><span class="bp">self</span><span class="p">.</span><span class="n">n</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="n">attractive</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kt">f64</span>::<span class="n">powf</span><span class="p">(</span><span class="n">sigma_r</span><span class="p">,</span><span class="w"> </span><span class="bp">self</span><span class="p">.</span><span class="n">m</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="bp">self</span><span class="p">.</span><span class="n">prefactor</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="n">repulsive</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">attractive</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+
+<span class="w">    </span><span class="k">fn</span> <span class="nf">force</span><span class="p">(</span><span class="o">&amp;</span><span class="bp">self</span><span class="p">,</span><span class="w"> </span><span class="n">r</span>: <span class="kt">f64</span><span class="p">)</span><span class="w"> </span>-&gt; <span class="kt">f64</span> <span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="n">sigma_r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="bp">self</span><span class="p">.</span><span class="n">sigma</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">r</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="n">repulsive</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kt">f64</span>::<span class="n">powf</span><span class="p">(</span><span class="n">sigma_r</span><span class="p">,</span><span class="w"> </span><span class="bp">self</span><span class="p">.</span><span class="n">n</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="n">attractive</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kt">f64</span>::<span class="n">powf</span><span class="p">(</span><span class="n">sigma_r</span><span class="p">,</span><span class="w"> </span><span class="bp">self</span><span class="p">.</span><span class="n">m</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="o">-</span><span class="bp">self</span><span class="p">.</span><span class="n">prefactor</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">n</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">repulsive</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="bp">self</span><span class="p">.</span><span class="n">m</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">attractive</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">r</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">energy</span></code> is the implementation of the Mie potential equation shown above.
+<code class="docutils literal notranslate"><span class="pre">force</span></code> is the negative derivative of the energy with respect to the distance,
+<code class="docutils literal notranslate"><span class="pre">r</span></code>. To be more precise, the vectorial force can readily be computed by
+multiplying the result of <code class="docutils literal notranslate"><span class="pre">force</span></code> with the connection vector <span class="math notranslate nohighlight">\(\vec{r}\)</span>.</p>
+<p>The next step is to make our <code class="docutils literal notranslate"><span class="pre">Potential</span></code> usable in Lumol’s algorithms to
+compute non-bonded energies and forces. Therefore, we have to implement the
+<code class="docutils literal notranslate"><span class="pre">PairPotential</span></code> trait.</p>
+</div>
+<div class="section" id="implementing-pairpotential">
+<h2>Implementing <code class="docutils literal notranslate"><span class="pre">PairPotential</span></code><a class="headerlink" href="#implementing-pairpotential" title="Permalink to this headline">¶</a></h2>
+<p>Let’s inspect the <a class="reference external" href="http://lumol.org/lumol/latest/lumol/energy/trait.PairPotential.html">documentation</a>  for <code class="docutils literal notranslate"><span class="pre">PairPotential</span></code>.</p>
+<div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="k">pub</span><span class="w"> </span><span class="k">trait</span><span class="w"> </span><span class="n">PairPotential</span>: <span class="nc">Potential</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">BoxClonePair</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="k">fn</span> <span class="nf">tail_energy</span><span class="p">(</span><span class="o">&amp;</span><span class="bp">self</span><span class="p">,</span><span class="w"> </span><span class="n">cutoff</span>: <span class="kt">f64</span><span class="p">)</span><span class="w"> </span>-&gt; <span class="kt">f64</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="k">fn</span> <span class="nf">tail_virial</span><span class="p">(</span><span class="o">&amp;</span><span class="bp">self</span><span class="p">,</span><span class="w"> </span><span class="n">cutoff</span>: <span class="kt">f64</span><span class="p">)</span><span class="w"> </span>-&gt; <span class="kt">f64</span><span class="p">;</span><span class="w"></span>
+
+<span class="w">    </span><span class="k">fn</span> <span class="nf">virial</span><span class="p">(</span><span class="o">&amp;</span><span class="bp">self</span><span class="p">,</span><span class="w"> </span><span class="n">r</span>: <span class="kp">&amp;</span><span class="nc">Vector3D</span><span class="p">)</span><span class="w"> </span>-&gt; <span class="nc">Matrix3</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">...</span><span class="w"> </span><span class="p">}</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</pre></div>
+</div>
+<p>First, we can see that <code class="docutils literal notranslate"><span class="pre">PairPotential</span></code> enforces the implementation of
+<code class="docutils literal notranslate"><span class="pre">Potential</span></code> which is denoted by <code class="docutils literal notranslate"><span class="pre">pub</span> <span class="pre">trait</span> <span class="pre">PairPotential:</span> <span class="pre">Potential</span> <span class="pre">...</span></code> (we
+ignore <code class="docutils literal notranslate"><span class="pre">BoxClonePair</span></code> for now, as it is automatically implemented for us if we
+implement <code class="docutils literal notranslate"><span class="pre">PairPotential</span></code> manually). That makes sense from a didactive point
+of view since we said that <code class="docutils literal notranslate"><span class="pre">PairPotential</span></code> is a “specialization” of
+<code class="docutils literal notranslate"><span class="pre">Potential</span></code> and furthermore, we can make use of all functions that we had to
+implement for <code class="docutils literal notranslate"><span class="pre">Potential</span></code>.</p>
+<p>There are three functions in the <code class="docutils literal notranslate"><span class="pre">PairPotential</span></code> trait. The first two
+functions start with <code class="docutils literal notranslate"><span class="pre">tail_</span></code>. These are functions to compute long range or
+tail corrections. Often, we introduce a cutoff distance into our potential
+beyond which we set the energy to zero. Doing so we intoduce an error which we
+can account for using a tail correction. We need two of these corrections, one
+for the energy, <code class="docutils literal notranslate"><span class="pre">tail_energy</span></code>, and one for the pressure (which uses
+<code class="docutils literal notranslate"><span class="pre">tail_virial</span></code> under the hood). For a beautiful derivation of tail corrections
+for truncated potentials, <a class="reference external" href="https://engineering.ucsb.edu/~shell/che210d/Simulations_of_bulk_phases.pdf">see here</a>.</p>
+<p>The third function, <code class="docutils literal notranslate"><span class="pre">virial</span></code>, already has its body implemented – we don’t
+have to write an implementation for our potential.</p>
+<p>We will omit the derivation of the formulae for tail corrections here but they
+are computed by solving these equations</p>
+<div class="math notranslate nohighlight">
+\[\text{tail energy} = \int_{r_c}^{\infty} u(r) r^2 \mathrm{d}r\]</div>
+<div class="math notranslate nohighlight">
+\[\text{tail virial} = \int_{r_c}^{\infty} \frac{\partial u(r)}{\partial r} r^3 \mathrm{d}r\]</div>
+<p>The implementation looks like so</p>
+<div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="k">impl</span><span class="w"> </span><span class="n">PairPotential</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">Mie</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="k">fn</span> <span class="nf">tail_energy</span><span class="p">(</span><span class="o">&amp;</span><span class="bp">self</span><span class="p">,</span><span class="w"> </span><span class="n">cutoff</span>: <span class="kt">f64</span><span class="p">)</span><span class="w"> </span>-&gt; <span class="kt">f64</span> <span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="bp">self</span><span class="p">.</span><span class="n">m</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mf">3.0</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="mf">0.0</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="p">};</span><span class="w"></span>
+<span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="n">sigma_rc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="bp">self</span><span class="p">.</span><span class="n">sigma</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">cutoff</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="n">n_3</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="bp">self</span><span class="p">.</span><span class="n">n</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mf">3.0</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="n">m_3</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="bp">self</span><span class="p">.</span><span class="n">m</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mf">3.0</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="n">repulsive</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kt">f64</span>::<span class="n">powf</span><span class="p">(</span><span class="n">sigma_rc</span><span class="p">,</span><span class="w"> </span><span class="n">n_3</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="n">attractive</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kt">f64</span>::<span class="n">powf</span><span class="p">(</span><span class="n">sigma_rc</span><span class="p">,</span><span class="w"> </span><span class="n">m_3</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="o">-</span><span class="bp">self</span><span class="p">.</span><span class="n">prefactor</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="bp">self</span><span class="p">.</span><span class="n">sigma</span><span class="p">.</span><span class="n">powi</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="n">repulsive</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">n_3</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">attractive</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">m_3</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+
+<span class="w">    </span><span class="k">fn</span> <span class="nf">tail_virial</span><span class="p">(</span><span class="o">&amp;</span><span class="bp">self</span><span class="p">,</span><span class="w"> </span><span class="n">cutoff</span>: <span class="kt">f64</span><span class="p">)</span><span class="w"> </span>-&gt; <span class="kt">f64</span> <span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="bp">self</span><span class="p">.</span><span class="n">m</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mf">3.0</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="mf">0.0</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="p">};</span><span class="w"></span>
+<span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="n">sigma_rc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="bp">self</span><span class="p">.</span><span class="n">sigma</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">cutoff</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="n">n_3</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="bp">self</span><span class="p">.</span><span class="n">n</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mf">3.0</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="n">m_3</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="bp">self</span><span class="p">.</span><span class="n">m</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mf">3.0</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="n">repulsive</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kt">f64</span>::<span class="n">powf</span><span class="p">(</span><span class="n">sigma_rc</span><span class="p">,</span><span class="w"> </span><span class="n">n_3</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="n">attractive</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kt">f64</span>::<span class="n">powf</span><span class="p">(</span><span class="n">sigma_rc</span><span class="p">,</span><span class="w"> </span><span class="n">m_3</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="o">-</span><span class="bp">self</span><span class="p">.</span><span class="n">prefactor</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="bp">self</span><span class="p">.</span><span class="n">sigma</span><span class="p">.</span><span class="n">powi</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="n">repulsive</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="bp">self</span><span class="p">.</span><span class="n">n</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">n_3</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">attractive</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="bp">self</span><span class="p">.</span><span class="n">m</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">m_3</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</pre></div>
+</div>
+<p>Note that we cannot correct every kind of energy function. In fact, the
+potential has to be a <em>short ranged</em> potential. For our Mie potential, both the
+exponents have to be larger than 3.0 else our potential will be <em>long ranged</em>
+and the integral that has to be solved to compute the tail corrections diverges.
+We return zero in that case.</p>
+</div>
+<div class="section" id="running-a-simulation">
+<h2>Running a simulation<a class="headerlink" href="#running-a-simulation" title="Permalink to this headline">¶</a></h2>
+<p>That concludes the first part. To test your new and shiny potential, you can run
+a small simulation. You’ll find a minimal Monte Carlo simulation example in the
+<code class="docutils literal notranslate"><span class="pre">tutorials/potential</span></code> directory of the main lumol repository
+where you will also find the <code class="docutils literal notranslate"><span class="pre">src/lib.rs</span></code> file we created in this tutorial.
+You can then run the simulation via</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>cargo run --release
+</pre></div>
+</div>
+<p>Fantastic! You implemented a new potential and ran a simulation with it!</p>
+<p>If you want to share your implementation with other Lumol users only some small
+additional steps are neccessary. We will talk about them in the next part of
+this tutorial (which is not yet written).</p>
+</div>
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+    </p>
+    <p class="pull-left">
+        &copy; Lumol contributors
+    </p>
+    <p class="text-center">
+        Available on <a href="https://github.com/lumol-org/lumol">Github</a>
+    </p>
+  </div>
+</footer>
+
+  </body>
+</html>

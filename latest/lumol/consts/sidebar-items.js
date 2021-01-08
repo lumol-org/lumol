@@ -1,0 +1,1 @@
+initSidebarItems({"constant":[["AVOGADRO_NUMBER","Avogadro number"],["BOHR_RADIUS","Bohr radius"],["FOUR_PI_EPSILON_0","The constant used in Coulomb energy: 4 * π * ϵ0"],["K_BOLTZMANN","Boltzmann constant"]]});

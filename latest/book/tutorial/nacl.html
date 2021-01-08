@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Hello Sodium Chloride &#8212; Lumol 0.0.0 documentation</title>
+    <link rel="stylesheet" href="../_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/lumol.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Molecular dynamics simulation of water" href="water.html" />
+    <link rel="prev" title="Monte Carlo simulation of Argon" href="argon.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../_static/js/jquery-1.11.0.min.js "></script>
+<script type="text/javascript" src="../_static/js/jquery-fix.js "></script>
+<script type="text/javascript" src="../_static/bootstrap-3.3.7/js/bootstrap.min.js "></script>
+<script type="text/javascript" src="../_static/bootstrap-sphinx.js "></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../index.html">
+          Lumol</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.0</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../index.html">Navigation <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../concepts/index.html">Lumol concepts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../input/index.html">Input file reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/index.html">Modifying lumol</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../faq.html">Frequently Asked Questions</a></li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+  <li>
+    <a href="argon.html" title="Previous Chapter: Monte Carlo simulation of Argon"><span class="glyphicon glyphicon-chevron-left visible-sm"></span><span class="hidden-sm hidden-tablet">&laquo; Monte Carlo s...</span>
+    </a>
+  </li>
+  <li>
+    <a href="water.html" title="Next Chapter: Molecular dynamics simulation of water"><span class="glyphicon glyphicon-chevron-right visible-sm"></span><span class="hidden-sm hidden-tablet">Molecular dyn... &raquo;</span>
+    </a>
+  </li>
+              
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+      <div class="col-md-3">
+        <div id="sidebar" class="bs-sidenav" role="complementary"><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Tutorials</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="argon.html">Monte Carlo simulation of Argon</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Hello Sodium Chloride</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#the-input-file-commented">The input file commented</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="water.html">Molecular dynamics simulation of water</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../concepts/index.html">Lumol concepts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../input/index.html">Input file reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/index.html">Modifying lumol</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../faq.html">Frequently Asked Questions</a></li>
+</ul>
+
+<form action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+        </div>
+      </div>
+    <div class="body col-md-9 content" role="main">
+      
+  <div class="section" id="hello-sodium-chloride">
+<h1>Hello Sodium Chloride<a class="headerlink" href="#hello-sodium-chloride" title="Permalink to this headline">¶</a></h1>
+<p>In this example, we will simulate a Sodium Chloride crystal using molecular
+dynamics to propagate the position throughout time. Sodium Chloride adds a
+challenge in simulations because each atom carries a charge.  These charges
+interact with a Coulomb potential which goes to zero as <span class="math notranslate nohighlight">\(1 / r\)</span>. The
+problem is that the cutoff scheme used for pair potentials in most molecular
+simulations can not be used for anything that goes to zero slower than <span class="math notranslate nohighlight">\(1
+/ r^3\)</span>. So we need to use alternative methods to compute the potential for the
+interactions between pairs of charges.</p>
+<p>For this simulation, you will need the following files:</p>
+<ul class="simple">
+<li>the initial configuration <code class="docutils literal notranslate"><span class="pre">nacl.xyz`</span></code></li>
+<li>the input file <code class="docutils literal notranslate"><span class="pre">nacl.toml</span></code></li>
+</ul>
+<p>You can download both files <a class="reference download internal" download="" href="../_downloads/0820ec05f2ad1b716bca2688815ca56c/nacl.zip"><code class="xref download docutils literal notranslate"><span class="pre">here</span></code></a>.</p>
+<p>Again, you can run the simulation which should complete in a minute with <code class="docutils literal notranslate"><span class="pre">lumol</span>
+<span class="pre">nacl.toml</span></code>. This will perform a molecular dynamics simulation of a NaCl crystal
+using electrostatic interactions between atomic charges.</p>
+<div class="section" id="the-input-file-commented">
+<h2>The input file commented<a class="headerlink" href="#the-input-file-commented" title="Permalink to this headline">¶</a></h2>
+<p>We start with the input version again:</p>
+<div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="k">[input]</span>
+<span class="n">version</span> <span class="o">=</span> <span class="mi">1</span>
+</pre></div>
+</div>
+<p>Then we load the system from the <code class="docutils literal notranslate"><span class="pre">nacl.xyz</span></code> file and define the unit cell.</p>
+<div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="k">[[systems]]</span>
+<span class="n">file</span> <span class="o">=</span> <span class="s">&quot;nacl.xyz&quot;</span>
+<span class="n">cell</span> <span class="o">=</span> <span class="mf">22.5608</span>
+</pre></div>
+</div>
+<p>Next, we define our potential. This section is way bigger than the one
+for our previous Lennard-Jones example:</p>
+<div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="k">[systems.potentials.global]</span>
+<span class="n">cutoff</span> <span class="o">=</span> <span class="s">&quot;8 A&quot;</span>
+
+<span class="k">[systems.potentials.charges]</span>
+<span class="n">Na</span> <span class="o">=</span> <span class="mf">1.0</span>
+<span class="n">Cl</span> <span class="o">=</span> <span class="mi">-1</span><span class="mf">.0</span>
+
+<span class="k">[systems.potentials.pairs]</span>
+<span class="n">Na-Na</span> <span class="o">=</span> <span class="p">{</span><span class="n">type</span> <span class="o">=</span> <span class="s">&quot;lj&quot;</span><span class="p">,</span> <span class="n">sigma</span> <span class="o">=</span> <span class="s">&quot;2.497 A&quot;</span><span class="p">,</span> <span class="n">epsilon</span> <span class="o">=</span> <span class="s">&quot;0.07826 kcal/mol&quot;</span><span class="p">}</span>
+<span class="n">Cl-Cl</span> <span class="o">=</span> <span class="p">{</span><span class="n">type</span> <span class="o">=</span> <span class="s">&quot;lj&quot;</span><span class="p">,</span> <span class="n">sigma</span> <span class="o">=</span> <span class="s">&quot;4.612 A&quot;</span><span class="p">,</span> <span class="n">epsilon</span> <span class="o">=</span> <span class="s">&quot;0.02502 kcal/mol&quot;</span><span class="p">}</span>
+<span class="n">Na-Cl</span> <span class="o">=</span> <span class="p">{</span><span class="n">type</span> <span class="o">=</span> <span class="s">&quot;lj&quot;</span><span class="p">,</span> <span class="n">sigma</span> <span class="o">=</span> <span class="s">&quot;3.5545 A&quot;</span><span class="p">,</span> <span class="n">epsilon</span> <span class="o">=</span> <span class="s">&quot;0.04425 kcal/mol&quot;</span><span class="p">}</span>
+
+<span class="k">[systems.potentials.coulomb]</span>
+<span class="n">wolf</span> <span class="o">=</span> <span class="p">{</span><span class="n">cutoff</span> <span class="o">=</span> <span class="s">&quot;8 A&quot;</span><span class="p">}</span>
+</pre></div>
+</div>
+<p>Let’s break it down. First, we define some global values for the interactions:
+setting <code class="docutils literal notranslate"><span class="pre">systems.potentials.global.cutoff</span></code> will use the given cutoff for all
+pair interactions in the system.
+We set the charges of atoms in the <code class="docutils literal notranslate"><span class="pre">systems.potentials.charges</span></code> section.</p>
+<div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="k">[systems.potentials.global]</span>
+<span class="n">cutoff</span> <span class="o">=</span> <span class="s">&quot;8 A&quot;</span>
+
+<span class="k">[systems.potentials.charges]</span>
+<span class="n">Na</span> <span class="o">=</span> <span class="mf">1.0</span>
+<span class="n">Cl</span> <span class="o">=</span> <span class="mi">-1</span><span class="mf">.0</span>
+</pre></div>
+</div>
+<p>Then, we need to define the pair interactions for all possible pair combinations
+in the system, <em>i.e.</em> (Na, Na), (Cl, Cl), and (Na, Cl).</p>
+<div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="k">[systems.potentials.pairs]</span>
+<span class="n">Na-Na</span> <span class="o">=</span> <span class="p">{</span><span class="n">type</span> <span class="o">=</span> <span class="s">&quot;lj&quot;</span><span class="p">,</span> <span class="n">sigma</span> <span class="o">=</span> <span class="s">&quot;2.497 A&quot;</span><span class="p">,</span> <span class="n">epsilon</span> <span class="o">=</span> <span class="s">&quot;0.07826 kcal/mol&quot;</span><span class="p">}</span>
+<span class="n">Cl-Cl</span> <span class="o">=</span> <span class="p">{</span><span class="n">type</span> <span class="o">=</span> <span class="s">&quot;lj&quot;</span><span class="p">,</span> <span class="n">sigma</span> <span class="o">=</span> <span class="s">&quot;4.612 A&quot;</span><span class="p">,</span> <span class="n">epsilon</span> <span class="o">=</span> <span class="s">&quot;0.02502 kcal/mol&quot;</span><span class="p">}</span>
+<span class="n">Na-Cl</span> <span class="o">=</span> <span class="p">{</span><span class="n">type</span> <span class="o">=</span> <span class="s">&quot;lj&quot;</span><span class="p">,</span> <span class="n">sigma</span> <span class="o">=</span> <span class="s">&quot;3.5545 A&quot;</span><span class="p">,</span> <span class="n">epsilon</span> <span class="o">=</span> <span class="s">&quot;0.04425 kcal/mol&quot;</span><span class="p">}</span>
+</pre></div>
+</div>
+<p>Because our system contains charges, we need to use an electrostatic potential
+solver. Here we are going for the <code class="docutils literal notranslate"><span class="pre">Wolf</span></code> solver, with a cutoff of 8 A.
+Note that if we’d chose a cutoff different from the global one defined above,
+we would overwrite the global one <em>for the coulombic interactions</em>.</p>
+<div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="k">[systems.potentials.coulomb]</span>
+<span class="n">wolf</span> <span class="o">=</span> <span class="p">{</span><span class="n">cutoff</span> <span class="o">=</span> <span class="s">&quot;8 A&quot;</span><span class="p">}</span>
+</pre></div>
+</div>
+<p>We can now define the simulation and the outputs for this simulation.
+We are using a molecular dynamics simulation of the NaCl crystal with a
+timestep of 1 fs for integration (this will produce a NVE ensemble).</p>
+<div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="k">[[simulations]]</span>
+<span class="n">nsteps</span> <span class="o">=</span> <span class="mi">5000</span>
+<span class="n">outputs</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">{</span><span class="n">type</span> <span class="o">=</span> <span class="s">&quot;Trajectory&quot;</span><span class="p">,</span> <span class="n">file</span> <span class="o">=</span> <span class="s">&quot;trajectory.xyz&quot;</span><span class="p">,</span> <span class="n">frequency</span> <span class="o">=</span> <span class="mi">10</span><span class="p">}</span>
+<span class="p">]</span>
+
+<span class="k">[simulations.propagator]</span>
+<span class="n">type</span> <span class="o">=</span> <span class="s">&quot;MolecularDynamics&quot;</span>
+<span class="n">timestep</span> <span class="o">=</span> <span class="s">&quot;1 fs&quot;</span>
+</pre></div>
+</div>
+<p>As before, run the simulation via</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>lumol nacl.toml
+</pre></div>
+</div>
+<p>Until now, the force field we used for the system was defined in the same input
+file (in the <code class="docutils literal notranslate"><span class="pre">system.potential</span></code> section) as rest of the simulation settings.
+It can sometimes be interesting to separate the force field from the rest of the
+input, in particular when using the same force-field for multiple simulations.
+In the <a class="reference internal" href="water.html"><span class="doc">next example</span></a>, we will do exactly this.</p>
+</div>
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+    </p>
+    <p class="pull-left">
+        &copy; Lumol contributors
+    </p>
+    <p class="text-center">
+        Available on <a href="https://github.com/lumol-org/lumol">Github</a>
+    </p>
+  </div>
+</footer>
+
+  </body>
+</html>

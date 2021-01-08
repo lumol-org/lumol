@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["Array2","Two dimensional tensors, based on ndarray."],["Array3","Three dimensional tensors, based on ndarray"],["Complex","Complex number, with double precision real and imaginary parts."],["Matrix3","A 3x3 square matrix type."],["Vector3D","A 3-dimensional vector type"]]});

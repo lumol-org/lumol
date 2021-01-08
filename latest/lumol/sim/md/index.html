@@ -1,0 +1,91 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="API documentation for the Rust `md` mod in crate `lumol`."><meta name="keywords" content="rust, rustlang, rust-lang, md"><title>lumol::sim::md - Rust</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled ><script id="default-settings"></script><script src="../../../storage.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="icon" type="image/svg+xml" href="../../../favicon.svg">
+<link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png">
+<link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><!-- Load KaTeX (https://katex.org/) to render equations -->
+
+<link rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.css"
+      integrity="sha384-D+9gmBxUQogRLqvARvNLmA9hS2x//eK1FhVb9PiU86gmcrBrJAQT8okdJ4LMp2uv"
+      crossorigin="anonymous">
+
+<script defer
+        src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.js"
+        integrity="sha384-483A6DwYfKeDa0Q52fJmxFXkcPCFfnXMoXblOkJ4JcA8zATN6Tm78UNL72AKk+0O"
+        crossorigin="anonymous">
+</script>
+
+<script defer
+        src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/contrib/auto-render.min.js"
+        integrity="sha384-yACMu8JWxKzSp/C1YV86pzGiQ/l1YUfE8oPuahJQxzehAjEt2GiQuy/BIvl9KyeF"
+        crossorigin="anonymous"
+        onload="renderMathInElement(document.body, {delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '$', right: '$', display: false}
+        ]});">
+</script>
+
+<style type="text/css">#crate-search{background-image:url("../../../down-arrow.svg");}</style></head><body class="rustdoc mod"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../../lumol/index.html'><div class='logo-container rust-logo'><img src='../../../rust-logo.png' alt='logo'></div></a><p class="location">Module md</p><div class="sidebar-elems"><div class="block items"><ul><li><a href="#structs">Structs</a></li><li><a href="#traits">Traits</a></li></ul></div><p class="location"><a href="../../index.html">lumol</a>::<wbr><a href="../index.html">sim</a></p><script>window.sidebarCurrent = {name: "md", ty: "mod", relpath: "../"};</script><script defer src="../sidebar-items.js"></script></div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu"><img src="../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices" role="menu"></div></div><script src="../../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><span class="help-button">?</span>
+                <a id="settings-menu" href="../../../settings.html"><img src="../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><h1 class="fqn"><span class="out-of-band"><span id="render-detail"><a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class="inner">&#x2212;</span>]</a></span></span><span class="in-band">Module <a href="../../index.html">lumol</a>::<wbr><a href="../index.html">sim</a>::<wbr><a class="mod" href="">md</a></span></h1><div class="docblock"><p>Molecular dynamics related algorithms.</p>
+<p>Each class of algorithms is represented by a <code>trait</code>, and each single method
+is a <code>struct</code> implementing said <code>trait</code>.</p>
+<p>The main entry point is the
+<a href="struct.MolecularDynamics.html"><code>MolecularDynamics</code></a> struct, implementing
+the <a href="../trait.Propagator.html"><code>Propagator</code></a> trait.</p>
+<h1 id="integrator" class="section-header"><a href="#integrator">Integrator</a></h1>
+<p>The core of molecular dynamics simulation happens in an
+<a href="trait.Integrator.html"><code>Integrator</code></a>. The implemented integrators are the
+following:</p>
+<ul>
+<li><a href="struct.Verlet.html"><code>Verlet</code></a>: simple Verlet integrator;</li>
+<li><a href="struct.VelocityVerlet.html"><code>VelocityVerlet</code></a>: simple velocity-Verlet
+integrator;</li>
+<li><a href="struct.LeapFrog.html"><code>LeapFrog</code></a>: Leap-Frog integrator;</li>
+<li><a href="struct.BerendsenBarostat.html"><code>BerendsenBarostat</code></a>: isotropic Berendsen
+barostat coupled to a velocity-Verlet integrator;</li>
+<li><a href="struct.AnisoBerendsenBarostat.html"><code>AnisoBerendsenBarostat</code></a> anisotropic
+Berendsen barostat coupled to a velocity-Verlet integrator</li>
+</ul>
+<h1 id="themostats" class="section-header"><a href="#themostats">Themostats</a></h1>
+<p><a href="trait.Thermostat.html"><code>Thermostat</code></a> are algorihtms used to fix the
+temperature during a simulation. The following implementation are available:</p>
+<ul>
+<li><a href="struct.RescaleThermostat.html"><code>RescaleThermostat</code></a>: basic themostat
+rescaling the velocities of all atoms. This is highly unphysical but can
+be usefull for equilibration;</li>
+<li><a href="struct.CSVRThermostat.html"><code>CSVRThermostat</code></a>: Canonical Sampling through
+Velocities Rescaling is a well-behaved thermostating algorithm generating
+the expected canonical ensemble distribution of states.</li>
+<li><a href="struct.BerendsenThermostat.html"><code>BerendsenThermostat</code></a>: berendsen or
+weak-coupling thermostat;</li>
+</ul>
+<h1 id="control" class="section-header"><a href="#control">Control</a></h1>
+<p><a href="trait.Control.html"><code>Control</code></a> algorihtms group any algorithm modifying the
+system to enforce some type of invariant.</p>
+<ul>
+<li><a href="struct.RemoveTranslation.html"><code>RemoveTranslation</code></a>: remove the global
+translational momentum of a system;</li>
+<li><a href="struct.RemoveRotation.html"><code>RemoveRotation</code></a>: remove the global
+rotational momentum of a system;</li>
+<li><a href="struct.Rewrap.html"><code>Rewrap</code></a>: wrap all atoms from a system inside the
+unit cell;</li>
+</ul>
+</div><h2 id="structs" class="section-header"><a href="#structs">Structs</a></h2>
+<table><tr class="module-item"><td><a class="struct" href="struct.AnisoBerendsenBarostat.html" title="lumol::sim::md::AnisoBerendsenBarostat struct">AnisoBerendsenBarostat</a></td><td class="docblock-short"><p>Anisotropic Berendsen barostat integrator based on velocity-Verlet.</p>
+</td></tr><tr class="module-item"><td><a class="struct" href="struct.BerendsenBarostat.html" title="lumol::sim::md::BerendsenBarostat struct">BerendsenBarostat</a></td><td class="docblock-short"><p>Berendsen barostat integrator based on velocity-Verlet.</p>
+</td></tr><tr class="module-item"><td><a class="struct" href="struct.BerendsenThermostat.html" title="lumol::sim::md::BerendsenThermostat struct">BerendsenThermostat</a></td><td class="docblock-short"><p>Berendsen (or weak coupling) thermostat.</p>
+</td></tr><tr class="module-item"><td><a class="struct" href="struct.CSVRThermostat.html" title="lumol::sim::md::CSVRThermostat struct">CSVRThermostat</a></td><td class="docblock-short"><p>A thermostat using the Canonical Sampling Through Velocities Rescaling
+algorithm.</p>
+</td></tr><tr class="module-item"><td><a class="struct" href="struct.LeapFrog.html" title="lumol::sim::md::LeapFrog struct">LeapFrog</a></td><td class="docblock-short"><p>Leap-frog integrator.</p>
+</td></tr><tr class="module-item"><td><a class="struct" href="struct.MolecularDynamics.html" title="lumol::sim::md::MolecularDynamics struct">MolecularDynamics</a></td><td class="docblock-short"><p>Molecular Dynamics propagator for the simulation.</p>
+</td></tr><tr class="module-item"><td><a class="struct" href="struct.RemoveRotation.html" title="lumol::sim::md::RemoveRotation struct">RemoveRotation</a></td><td class="docblock-short"><p>Remove global rotation from the system</p>
+</td></tr><tr class="module-item"><td><a class="struct" href="struct.RemoveTranslation.html" title="lumol::sim::md::RemoveTranslation struct">RemoveTranslation</a></td><td class="docblock-short"><p>Remove global translation from the system</p>
+</td></tr><tr class="module-item"><td><a class="struct" href="struct.RescaleThermostat.html" title="lumol::sim::md::RescaleThermostat struct">RescaleThermostat</a></td><td class="docblock-short"><p>Velocity rescaling thermostat.</p>
+</td></tr><tr class="module-item"><td><a class="struct" href="struct.Rewrap.html" title="lumol::sim::md::Rewrap struct">Rewrap</a></td><td class="docblock-short"><p>Rewrap all molecules' centers of mass to lie within the unit cell.</p>
+</td></tr><tr class="module-item"><td><a class="struct" href="struct.VelocityVerlet.html" title="lumol::sim::md::VelocityVerlet struct">VelocityVerlet</a></td><td class="docblock-short"><p>Velocity-Verlet integrator.</p>
+</td></tr><tr class="module-item"><td><a class="struct" href="struct.Verlet.html" title="lumol::sim::md::Verlet struct">Verlet</a></td><td class="docblock-short"><p>Verlet integrator.</p>
+</td></tr></table><h2 id="traits" class="section-header"><a href="#traits">Traits</a></h2>
+<table><tr class="module-item"><td><a class="trait" href="trait.Control.html" title="lumol::sim::md::Control trait">Control</a></td><td class="docblock-short"><p>Trait for controlling some parameters in a system during a simulation.</p>
+</td></tr><tr class="module-item"><td><a class="trait" href="trait.Integrator.html" title="lumol::sim::md::Integrator trait">Integrator</a></td><td class="docblock-short"><p>The <code>Integrator</code> trait define integrator interface for molecular dynamics.
+An integrator is an algorithm responsible for propagating the equations of
+motion in the system.</p>
+</td></tr><tr class="module-item"><td><a class="trait" href="trait.Thermostat.html" title="lumol::sim::md::Thermostat trait">Thermostat</a></td><td class="docblock-short"><p>Trait for thermostat algorithms some parameters in a system during a simulation.</p>
+</td></tr></table></section><section id="search" class="content hidden"></section><section class="footer"></section><script>window.rootPath = "../../../";window.currentCrate = "lumol";</script><script src="../../../main.js"></script><script defer src="../../../search-index.js"></script></body></html>

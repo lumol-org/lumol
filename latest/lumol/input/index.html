@@ -1,0 +1,74 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="API documentation for the Rust `input` mod in crate `lumol`."><meta name="keywords" content="rust, rustlang, rust-lang, input"><title>lumol::input - Rust</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled ><script id="default-settings"></script><script src="../../storage.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<link rel="alternate icon" type="image/png" href="../../favicon-16x16.png">
+<link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><!-- Load KaTeX (https://katex.org/) to render equations -->
+
+<link rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.css"
+      integrity="sha384-D+9gmBxUQogRLqvARvNLmA9hS2x//eK1FhVb9PiU86gmcrBrJAQT8okdJ4LMp2uv"
+      crossorigin="anonymous">
+
+<script defer
+        src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.js"
+        integrity="sha384-483A6DwYfKeDa0Q52fJmxFXkcPCFfnXMoXblOkJ4JcA8zATN6Tm78UNL72AKk+0O"
+        crossorigin="anonymous">
+</script>
+
+<script defer
+        src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/contrib/auto-render.min.js"
+        integrity="sha384-yACMu8JWxKzSp/C1YV86pzGiQ/l1YUfE8oPuahJQxzehAjEt2GiQuy/BIvl9KyeF"
+        crossorigin="anonymous"
+        onload="renderMathInElement(document.body, {delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '$', right: '$', display: false}
+        ]});">
+</script>
+
+<style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc mod"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../lumol/index.html'><div class='logo-container rust-logo'><img src='../../rust-logo.png' alt='logo'></div></a><p class="location">Module input</p><div class="sidebar-elems"><div class="block items"><ul><li><a href="#structs">Structs</a></li><li><a href="#enums">Enums</a></li><li><a href="#traits">Traits</a></li><li><a href="#functions">Functions</a></li></ul></div><p class="location"><a href="../index.html">lumol</a></p><script>window.sidebarCurrent = {name: "input", ty: "mod", relpath: "../"};</script><script defer src="../sidebar-items.js"></script></div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices" role="menu"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><span class="help-button">?</span>
+                <a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><h1 class="fqn"><span class="out-of-band"><span id="render-detail"><a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class="inner">&#x2212;</span>]</a></span><a class="srclink" href="../../src/lumol/input.rs.html#4-47" title="goto source code">[src]</a></span><span class="in-band">Module <a href="../index.html">lumol</a>::<wbr><a class="mod" href="">input</a></span></h1><div class="docblock"><p>This module provide a way to build a Lumol simulation using input files.</p>
+<p>Instead of building the <a href="../sys/struct.System.html"><code>System</code></a> and <a href="../sim/struct.Simulation.html"><code>Simulation</code></a> objects by hand before
+being able to use them, this module provides a way to describe the
+simulation and the system in a TOML input file, using a simpler syntax.</p>
+<p>The main entry point is the <code>Input</code> struct, which allow to read a whole
+simulation configuration. The easiest way to run a simulation using Lumol
+is then:</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered">
+<span class="kw">use</span> <span class="ident">lumol</span>::<span class="ident">input</span>::<span class="ident">Input</span>;
+
+<span class="kw">fn</span> <span class="ident">main</span>() {
+    <span class="kw">let</span> <span class="ident">input</span> <span class="op">=</span> <span class="ident">Input</span>::<span class="ident">new</span>(<span class="string">&quot;simulation.toml&quot;</span>).<span class="ident">unwrap</span>();
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">config</span> <span class="op">=</span> <span class="ident">input</span>.<span class="ident">read</span>().<span class="ident">unwrap</span>();
+
+    <span class="ident">config</span>.<span class="ident">simulation</span>.<span class="ident">run</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">config</span>.<span class="ident">system</span>, <span class="ident">config</span>.<span class="ident">nsteps</span>);
+}</pre></div>
+<p>This crate also provide an <a href="struct.InteractionsInput.html"><code>InteractionsInput</code></a> for reading interactions
+from a TOML file. It can be used to set the interactions in a system:</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered">
+<span class="kw">use</span> <span class="ident">lumol</span>::<span class="ident">System</span>;
+<span class="kw">use</span> <span class="ident">lumol</span>::<span class="ident">input</span>::<span class="ident">InteractionsInput</span>;
+
+<span class="kw">fn</span> <span class="ident">main</span>() {
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">system</span> <span class="op">=</span> <span class="ident">System</span>::<span class="ident">new</span>();
+
+    <span class="comment">// ... Build the system by hand</span>
+
+    <span class="comment">// Read the interactions</span>
+    <span class="kw">let</span> <span class="ident">input</span> <span class="op">=</span> <span class="ident">InteractionsInput</span>::<span class="ident">new</span>(<span class="string">&quot;potentials.toml&quot;</span>).<span class="ident">unwrap</span>();
+    <span class="ident">input</span>.<span class="ident">read</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">system</span>).<span class="ident">unwrap</span>();
+}</pre></div>
+</div><h2 id="structs" class="section-header"><a href="#structs">Structs</a></h2>
+<table><tr class="module-item"><td><a class="struct" href="struct.Config.html" title="lumol::input::Config struct">Config</a></td><td class="docblock-short"><p>A configuration about how to run a single simulation. This contains the
+system to simulate, the simulation itself and the number of steps to run
+the simulation.</p>
+</td></tr><tr class="module-item"><td><a class="struct" href="struct.Input.html" title="lumol::input::Input struct">Input</a></td><td class="docblock-short"><p>An input file for Lumol.</p>
+</td></tr><tr class="module-item"><td><a class="struct" href="struct.InteractionsInput.html" title="lumol::input::InteractionsInput struct">InteractionsInput</a></td><td class="docblock-short"><p>Input file for reading interactions</p>
+</td></tr></table><h2 id="enums" class="section-header"><a href="#enums">Enums</a></h2>
+<table><tr class="module-item"><td><a class="enum" href="enum.Error.html" title="lumol::input::Error enum">Error</a></td><td class="docblock-short"><p>Possible causes of error when reading input files</p>
+</td></tr></table><h2 id="traits" class="section-header"><a href="#traits">Traits</a></h2>
+<table><tr class="module-item"><td><a class="trait" href="trait.FromToml.html" title="lumol::input::FromToml trait">FromToml</a></td><td class="docblock-short"><p>Convert a TOML table to a Rust type.</p>
+</td></tr><tr class="module-item"><td><a class="trait" href="trait.FromTomlWithData.html" title="lumol::input::FromTomlWithData trait">FromTomlWithData</a></td><td class="docblock-short"><p>Convert a TOML table and some additional owned data to a Rust type.</p>
+</td></tr><tr class="module-item"><td><a class="trait" href="trait.FromTomlWithRefData.html" title="lumol::input::FromTomlWithRefData trait">FromTomlWithRefData</a></td><td class="docblock-short"><p>Convert a TOML table to a Rust type using information from an additional reference.</p>
+</td></tr></table><h2 id="functions" class="section-header"><a href="#functions">Functions</a></h2>
+<table><tr class="module-item"><td><a class="fn" href="fn.setup_default_logger.html" title="lumol::input::setup_default_logger fn">setup_default_logger</a></td><td class="docblock-short"><p>Setup a default logger to be able to print error messages</p>
+</td></tr></table></section><section id="search" class="content hidden"></section><section class="footer"></section><script>window.rootPath = "../../";window.currentCrate = "lumol";</script><script src="../../main.js"></script><script defer src="../../search-index.js"></script></body></html>

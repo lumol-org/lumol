@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Monte Carlo simulation of Argon &#8212; Lumol 0.0.0 documentation</title>
+    <link rel="stylesheet" href="../_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/lumol.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Hello Sodium Chloride" href="nacl.html" />
+    <link rel="prev" title="Tutorials" href="index.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../_static/js/jquery-1.11.0.min.js "></script>
+<script type="text/javascript" src="../_static/js/jquery-fix.js "></script>
+<script type="text/javascript" src="../_static/bootstrap-3.3.7/js/bootstrap.min.js "></script>
+<script type="text/javascript" src="../_static/bootstrap-sphinx.js "></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../index.html">
+          Lumol</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.0</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../index.html">Navigation <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../concepts/index.html">Lumol concepts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../input/index.html">Input file reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/index.html">Modifying lumol</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../faq.html">Frequently Asked Questions</a></li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+  <li>
+    <a href="index.html" title="Previous Chapter: Tutorials"><span class="glyphicon glyphicon-chevron-left visible-sm"></span><span class="hidden-sm hidden-tablet">&laquo; Tutorials</span>
+    </a>
+  </li>
+  <li>
+    <a href="nacl.html" title="Next Chapter: Hello Sodium Chloride"><span class="glyphicon glyphicon-chevron-right visible-sm"></span><span class="hidden-sm hidden-tablet">Hello Sodium Chloride &raquo;</span>
+    </a>
+  </li>
+              
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+      <div class="col-md-3">
+        <div id="sidebar" class="bs-sidenav" role="complementary"><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Tutorials</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Monte Carlo simulation of Argon</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#input-file-anatomy">Input file anatomy</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="nacl.html">Hello Sodium Chloride</a></li>
+<li class="toctree-l2"><a class="reference internal" href="water.html">Molecular dynamics simulation of water</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../concepts/index.html">Lumol concepts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../input/index.html">Input file reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/index.html">Modifying lumol</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../faq.html">Frequently Asked Questions</a></li>
+</ul>
+
+<form action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+        </div>
+      </div>
+    <div class="body col-md-9 content" role="main">
+      
+  <div class="section" id="monte-carlo-simulation-of-argon">
+<h1>Monte Carlo simulation of Argon<a class="headerlink" href="#monte-carlo-simulation-of-argon" title="Permalink to this headline">¶</a></h1>
+<p>So let’s run out first simulation with Lumol. The easiest system to simulate is
+a Lennard-Jones fluid, which is a good model for noble gas fluids. Here we
+will simulate super-critical argon using the Metropolis Monte Carlo algorithm.</p>
+<p>For this simulation, you will need the following files:</p>
+<ul class="simple">
+<li>the initial configuration <code class="docutils literal notranslate"><span class="pre">argon.xyz</span></code></li>
+<li>the input file <code class="docutils literal notranslate"><span class="pre">argon.toml</span></code></li>
+</ul>
+<p>You can download both files <a class="reference download internal" download="" href="../_downloads/af6dc08b9e320e94517403c400987f4f/argon.zip"><code class="xref download docutils literal notranslate"><span class="pre">here</span></code></a>.</p>
+<p>After extracting the archive, you can run the simulation with <code class="docutils literal notranslate"><span class="pre">lumol</span>
+<span class="pre">argon.toml</span></code>.  The simulation should complete in a few seconds and produce two
+files: <code class="docutils literal notranslate"><span class="pre">energy.dat</span></code> and <code class="docutils literal notranslate"><span class="pre">trajectory.xyz</span></code>.</p>
+<div class="section" id="input-file-anatomy">
+<h2>Input file anatomy<a class="headerlink" href="#input-file-anatomy" title="Permalink to this headline">¶</a></h2>
+<p>The input file is written using the TOML syntax, you can learn more about this
+<a class="reference external" href="https://github.com/toml-lang/toml">syntax here</a>. The file starts with a
+header declaring the version of the input file syntax used, here the version 1:</p>
+<div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="k">[input]</span>
+<span class="n">version</span> <span class="o">=</span> <span class="mi">1</span>
+</pre></div>
+</div>
+<p>Then, we declare which system that we want to simulate in the <code class="docutils literal notranslate"><span class="pre">systems</span></code> array.
+We define this system using an XYZ file for which we also have to provide the
+unit cell size.</p>
+<div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="k">[[systems]]</span>
+<span class="n">file</span> <span class="o">=</span> <span class="s">&quot;argon.xyz&quot;</span>
+<span class="n">cell</span> <span class="o">=</span> <span class="mf">21.65</span>
+</pre></div>
+</div>
+<p>We also need to define the interaction potential between the atoms in the
+system, which we’ll do in the <code class="docutils literal notranslate"><span class="pre">system.potential.pairs</span></code> section.
+Here, we are using a Lennard-Jones potential with a cutoff distance of 10
+Angstrom for all Argon (Ar) pairs.</p>
+<div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="k">[systems.potentials.pairs]</span>
+<span class="n">Ar-Ar</span> <span class="o">=</span> <span class="p">{</span><span class="n">type</span> <span class="o">=</span> <span class="s">&quot;lj&quot;</span><span class="p">,</span> <span class="n">sigma</span> <span class="o">=</span> <span class="s">&quot;3.4 A&quot;</span><span class="p">,</span> <span class="n">epsilon</span> <span class="o">=</span> <span class="s">&quot;1.0 kJ/mol&quot;</span><span class="p">,</span> <span class="n">cutoff</span> <span class="o">=</span> <span class="s">&quot;10 A&quot;</span><span class="p">}</span>
+</pre></div>
+</div>
+<p>Next, we define how we want to simulate our system. For this brief tutorial
+simulating <code class="docutils literal notranslate"><span class="pre">100000</span></code> steps should be enough. We also specify some output:
+the energy is written to <code class="docutils literal notranslate"><span class="pre">energy.dat</span></code> every 100 steps, and the trajectory
+is written to <code class="docutils literal notranslate"><span class="pre">trajectory.xyz</span></code> also every 100 steps.</p>
+<div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="k">[[simulations]]</span>
+<span class="n">nsteps</span> <span class="o">=</span> <span class="mi">100000</span>
+<span class="n">outputs</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">{</span><span class="n">type</span> <span class="o">=</span> <span class="s">&quot;Energy&quot;</span><span class="p">,</span> <span class="n">file</span> <span class="o">=</span> <span class="s">&quot;energy.dat&quot;</span><span class="p">,</span> <span class="n">frequency</span> <span class="o">=</span> <span class="mi">100</span><span class="p">},</span>
+    <span class="p">{</span><span class="n">type</span> <span class="o">=</span> <span class="s">&quot;Trajectory&quot;</span><span class="p">,</span> <span class="n">file</span> <span class="o">=</span> <span class="s">&quot;trajectory.xyz&quot;</span><span class="p">,</span> <span class="n">frequency</span> <span class="o">=</span> <span class="mi">100</span><span class="p">}</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+<p>Finally, we define how to propagate the system from one step to another.
+We are using a Monte Carlo simulation in this tutorial. We need to specify the
+temperature (set to 500 K) and the set of moves that we want to perform to
+change the systems. The only Monte Carlo move in this example is a translation
+for which we set the maximum amplitude (the furthest a particle can be
+translated in a single move) to 1 Angstrom.</p>
+<div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="k">[simulations.propagator]</span>
+<span class="n">type</span> <span class="o">=</span> <span class="s">&quot;MonteCarlo&quot;</span>
+<span class="n">temperature</span> <span class="o">=</span> <span class="s">&quot;500 K&quot;</span>
+<span class="n">moves</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">{</span><span class="n">type</span> <span class="o">=</span> <span class="s">&quot;Translate&quot;</span><span class="p">,</span> <span class="n">delta</span> <span class="o">=</span> <span class="s">&quot;1 A&quot;</span><span class="p">},</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+<p>Wrapping all this together, here is the complete input file:</p>
+<div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="k">[input]</span>
+<span class="n">version</span> <span class="o">=</span> <span class="mi">1</span>
+
+<span class="k">[[systems]]</span>
+<span class="n">file</span> <span class="o">=</span> <span class="s">&quot;argon.xyz&quot;</span>
+<span class="n">cell</span> <span class="o">=</span> <span class="mf">21.65</span>
+
+<span class="k">[systems.potentials.pairs]</span>
+<span class="n">Ar-Ar</span> <span class="o">=</span> <span class="p">{</span><span class="n">type</span> <span class="o">=</span> <span class="s">&quot;lj&quot;</span><span class="p">,</span> <span class="n">sigma</span> <span class="o">=</span> <span class="s">&quot;3.4 A&quot;</span><span class="p">,</span> <span class="n">epsilon</span> <span class="o">=</span> <span class="s">&quot;1.0 kJ/mol&quot;</span><span class="p">,</span> <span class="n">cutoff</span> <span class="o">=</span> <span class="s">&quot;10 A&quot;</span><span class="p">}</span>
+
+<span class="k">[[simulations]]</span>
+<span class="n">nsteps</span> <span class="o">=</span> <span class="mi">100000</span>
+<span class="n">outputs</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">{</span><span class="n">type</span> <span class="o">=</span> <span class="s">&quot;Energy&quot;</span><span class="p">,</span> <span class="n">file</span> <span class="o">=</span> <span class="s">&quot;energy.dat&quot;</span><span class="p">,</span> <span class="n">frequency</span> <span class="o">=</span> <span class="mi">100</span><span class="p">},</span>
+    <span class="p">{</span><span class="n">type</span> <span class="o">=</span> <span class="s">&quot;Trajectory&quot;</span><span class="p">,</span> <span class="n">file</span> <span class="o">=</span> <span class="s">&quot;trajectory.xyz&quot;</span><span class="p">,</span> <span class="n">frequency</span> <span class="o">=</span> <span class="mi">100</span><span class="p">}</span>
+<span class="p">]</span>
+
+<span class="k">[simulations.propagator]</span>
+<span class="n">type</span> <span class="o">=</span> <span class="s">&quot;MonteCarlo&quot;</span>
+<span class="n">temperature</span> <span class="o">=</span> <span class="s">&quot;500 K&quot;</span>
+<span class="n">moves</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">{</span><span class="n">type</span> <span class="o">=</span> <span class="s">&quot;Translate&quot;</span><span class="p">,</span> <span class="n">delta</span> <span class="o">=</span> <span class="s">&quot;1 A&quot;</span><span class="p">},</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+<p>As mentioned above, you can start the simulation using</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>lumol argon.toml
+</pre></div>
+</div>
+<p>So now we know how to run a simulation of a Lennard-Jones fluid. How about we
+add electrostatic interactions in the <a class="reference internal" href="nacl.html"><span class="doc">next example</span></a>?</p>
+</div>
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+    </p>
+    <p class="pull-left">
+        &copy; Lumol contributors
+    </p>
+    <p class="text-center">
+        Available on <a href="https://github.com/lumol-org/lumol">Github</a>
+    </p>
+  </div>
+</footer>
+
+  </body>
+</html>

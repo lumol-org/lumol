@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Interactions input &#8212; Lumol 0.0.0 documentation</title>
+    <link rel="stylesheet" href="../../_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/lumol.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Organizing interactions" href="organisation.html" />
+    <link rel="prev" title="Setting the initial configuration" href="../systems/configuration.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../../_static/js/jquery-1.11.0.min.js "></script>
+<script type="text/javascript" src="../../_static/js/jquery-fix.js "></script>
+<script type="text/javascript" src="../../_static/bootstrap-3.3.7/js/bootstrap.min.js "></script>
+<script type="text/javascript" src="../../_static/bootstrap-sphinx.js "></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../index.html">
+          Lumol</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.0</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../../index.html">Navigation <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../concepts/index.html">Lumol concepts</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">Input file reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../advanced/index.html">Modifying lumol</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../faq.html">Frequently Asked Questions</a></li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+  <li>
+    <a href="../systems/configuration.html" title="Previous Chapter: Setting the initial configuration"><span class="glyphicon glyphicon-chevron-left visible-sm"></span><span class="hidden-sm hidden-tablet">&laquo; Setting the i...</span>
+    </a>
+  </li>
+  <li>
+    <a href="organisation.html" title="Next Chapter: Organizing interactions"><span class="glyphicon glyphicon-chevron-right visible-sm"></span><span class="hidden-sm hidden-tablet">Organizing in... &raquo;</span>
+    </a>
+  </li>
+              
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+      <div class="col-md-3">
+        <div id="sidebar" class="bs-sidenav" role="complementary"><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../concepts/index.html">Lumol concepts</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">Input file reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../input.html"><code class="docutils literal notranslate"><span class="pre">[input]</span></code> section</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../log.html"><code class="docutils literal notranslate"><span class="pre">[log]</span></code> section</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../systems/index.html"><code class="docutils literal notranslate"><span class="pre">[[systems]]</span></code> section</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Interactions input</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="organisation.html">Organizing interactions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="non_bonded.html">Non-bonded interactions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="electrostatic.html">Electrostatic interactions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="potentials.html">Available potentials</a></li>
+<li class="toctree-l3"><a class="reference internal" href="restrictions.html">Restrictions</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../simulations/index.html"><code class="docutils literal notranslate"><span class="pre">[[simulations]]</span></code> section</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../advanced/index.html">Modifying lumol</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../faq.html">Frequently Asked Questions</a></li>
+</ul>
+
+<form action="../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+        </div>
+      </div>
+    <div class="body col-md-9 content" role="main">
+      
+  <div class="section" id="interactions-input">
+<h1>Interactions input<a class="headerlink" href="#interactions-input" title="Permalink to this headline">¶</a></h1>
+<p>Interactions describe the energies between atoms - or more general - between
+interaction sites. These energies arise due to covalent bonding of atoms to form
+molecules, short-range van der Waals or long-range Coulombic energies. To
+describe interactions we use <em>potentials</em> which are functions that take a set of
+parameters and geometrical coordinates (for example distances or angles) as
+input and yield energies and forces. A set of potential functions and parameters
+to describe energies and forces of a molecule is also often called <em>force
+field</em>. We will use the terms interactions and force field interchangeably.</p>
+<p>To be more specific, we distinguish between the following contributions:</p>
+<ul class="simple">
+<li><code class="docutils literal notranslate"><span class="pre">pairs</span></code> are van der Waals interactions between pairs of atoms;</li>
+<li><code class="docutils literal notranslate"><span class="pre">bonds</span></code> describe the energy between bonded atoms;</li>
+<li><code class="docutils literal notranslate"><span class="pre">angles</span></code> and <code class="docutils literal notranslate"><span class="pre">dihedrals</span></code> describe energy contributions due to bending and
+twisting of bonded atoms;</li>
+<li><code class="docutils literal notranslate"><span class="pre">coulomb</span></code> and <code class="docutils literal notranslate"><span class="pre">charges</span></code> describe long-range contributions due to
+electrostatic interactions;</li>
+<li>the <code class="docutils literal notranslate"><span class="pre">global</span></code> section describes additional parameter that apply to all the
+energy contributions.</li>
+</ul>
+<p>Information about interactions for <code class="docutils literal notranslate"><span class="pre">pairs</span></code>, <code class="docutils literal notranslate"><span class="pre">bonds</span></code>, <code class="docutils literal notranslate"><span class="pre">angles</span></code> and
+<code class="docutils literal notranslate"><span class="pre">dihedrals</span></code> are organized as TOML tables. The <code class="docutils literal notranslate"><span class="pre">coulomb</span></code> section contains
+information about the treatment of long-range electrostatic interactions and the
+<code class="docutils literal notranslate"><span class="pre">charges</span></code> section defines the partial charges of the atoms.</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="organisation.html">Organizing interactions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="non_bonded.html">Non-bonded interactions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="non_bonded.html#cutoff-treatment">Cutoff treatment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="non_bonded.html#potentials-computation">Potentials computation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="non_bonded.html#table-interpolation">Table interpolation</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="electrostatic.html">Electrostatic interactions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="electrostatic.html#charge-section">Charge section</a></li>
+<li class="toctree-l2"><a class="reference internal" href="electrostatic.html#ewald-solver">Ewald solver</a></li>
+<li class="toctree-l2"><a class="reference internal" href="electrostatic.html#wolf-solver">Wolf solver</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="potentials.html">Available potentials</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="potentials.html#null-potential">Null potential</a></li>
+<li class="toctree-l2"><a class="reference internal" href="potentials.html#lennard-jones-potential">Lennard-Jones potential</a></li>
+<li class="toctree-l2"><a class="reference internal" href="potentials.html#buckingham-potential">Buckingham potential</a></li>
+<li class="toctree-l2"><a class="reference internal" href="potentials.html#born-mayer-huggins-potential">Born-Mayer-Huggins potential</a></li>
+<li class="toctree-l2"><a class="reference internal" href="potentials.html#harmonic-potential">Harmonic potential</a></li>
+<li class="toctree-l2"><a class="reference internal" href="potentials.html#cosine-harmonic-potential">Cosine-Harmonic potential</a></li>
+<li class="toctree-l2"><a class="reference internal" href="potentials.html#torsion-potential">Torsion potential</a></li>
+<li class="toctree-l2"><a class="reference internal" href="potentials.html#morse-potential">Morse potential</a></li>
+<li class="toctree-l2"><a class="reference internal" href="potentials.html#gaussian-potential">Gaussian potential</a></li>
+<li class="toctree-l2"><a class="reference internal" href="potentials.html#mie-potential">Mie potential</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="restrictions.html">Restrictions</a></li>
+</ul>
+</div>
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+    </p>
+    <p class="pull-left">
+        &copy; Lumol contributors
+    </p>
+    <p class="text-center">
+        Available on <a href="https://github.com/lumol-org/lumol">Github</a>
+    </p>
+  </div>
+</footer>
+
+  </body>
+</html>

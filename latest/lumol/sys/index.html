@@ -1,0 +1,104 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="API documentation for the Rust `sys` mod in crate `lumol`."><meta name="keywords" content="rust, rustlang, rust-lang, sys"><title>lumol::sys - Rust</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled ><script id="default-settings"></script><script src="../../storage.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<link rel="alternate icon" type="image/png" href="../../favicon-16x16.png">
+<link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><!-- Load KaTeX (https://katex.org/) to render equations -->
+
+<link rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.css"
+      integrity="sha384-D+9gmBxUQogRLqvARvNLmA9hS2x//eK1FhVb9PiU86gmcrBrJAQT8okdJ4LMp2uv"
+      crossorigin="anonymous">
+
+<script defer
+        src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.js"
+        integrity="sha384-483A6DwYfKeDa0Q52fJmxFXkcPCFfnXMoXblOkJ4JcA8zATN6Tm78UNL72AKk+0O"
+        crossorigin="anonymous">
+</script>
+
+<script defer
+        src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/contrib/auto-render.min.js"
+        integrity="sha384-yACMu8JWxKzSp/C1YV86pzGiQ/l1YUfE8oPuahJQxzehAjEt2GiQuy/BIvl9KyeF"
+        crossorigin="anonymous"
+        onload="renderMathInElement(document.body, {delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '$', right: '$', display: false}
+        ]});">
+</script>
+
+<style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc mod"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../lumol/index.html'><div class='logo-container rust-logo'><img src='../../rust-logo.png' alt='logo'></div></a><p class="location">Module sys</p><div class="sidebar-elems"><div class="block items"><ul><li><a href="#modules">Modules</a></li><li><a href="#structs">Structs</a></li><li><a href="#enums">Enums</a></li><li><a href="#functions">Functions</a></li></ul></div><p class="location"><a href="../index.html">lumol</a></p><script>window.sidebarCurrent = {name: "sys", ty: "mod", relpath: "../"};</script><script defer src="../sidebar-items.js"></script></div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices" role="menu"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><span class="help-button">?</span>
+                <a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><h1 class="fqn"><span class="out-of-band"><span id="render-detail"><a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class="inner">&#x2212;</span>]</a></span></span><span class="in-band">Module <a href="../index.html">lumol</a>::<wbr><a class="mod" href="">sys</a></span></h1><div class="docblock"><p>Representations of a simulated system</p>
+</div><h2 id="modules" class="section-header"><a href="#modules">Modules</a></h2>
+<table><tr class="module-item"><td><a class="mod" href="compute/index.html" title="lumol::sys::compute mod">compute</a></td><td class="docblock-short"><p>Algorithm to compute physical properties of a System</p>
+</td></tr></table><h2 id="structs" class="section-header"><a href="#structs">Structs</a></h2>
+<table><tr class="module-item"><td><a class="struct" href="struct.Angle.html" title="lumol::sys::Angle struct">Angle</a></td><td class="docblock-short"><p>An <code>Angle</code> formed by the particles at indexes <code>i</code>, <code>j</code> and <code>k</code></p>
+</td></tr><tr class="module-item"><td><a class="struct" href="struct.Bond.html" title="lumol::sys::Bond struct">Bond</a></td><td class="docblock-short"><p>A <code>Bond</code> between the particles at indexes <code>i</code> and <code>j</code></p>
+</td></tr><tr class="module-item"><td><a class="struct" href="struct.BondDistances.html" title="lumol::sys::BondDistances struct">BondDistances</a></td><td class="docblock-short"><p>The <code>BondDistances</code> bitflag encode the topological distance between
+two particles in the molecule, i.e. the number of bonds between the
+particles. Two particles can have multiple bond path lionking them
+(in the case of cyclic molecules), which is why a bit flag is used
+instead of a single distance value.</p>
+</td></tr><tr class="module-item"><td><a class="struct" href="struct.Bonding.html" title="lumol::sys::Bonding struct">Bonding</a></td><td class="docblock-short"><p>The basic building block for a topology. A <code>Bonding</code> contains data about
+the connectivity (bonds, angles, dihedrals) between particles in a single
+molecule.</p>
+</td></tr><tr class="module-item"><td><a class="struct" href="struct.Composition.html" title="lumol::sys::Composition struct">Composition</a></td><td class="docblock-short"><p>The system composition contains the number of particles of each kind
+in the system, as well as the number of molecules of each molecule type.</p>
+</td></tr><tr class="module-item"><td><a class="struct" href="struct.Configuration.html" title="lumol::sys::Configuration struct">Configuration</a></td><td class="docblock-short"><p>The <code>Configuration</code> contains the physical data of the system:</p>
+</td></tr><tr class="module-item"><td><a class="struct" href="struct.Dihedral.html" title="lumol::sys::Dihedral struct">Dihedral</a></td><td class="docblock-short"><p>A <code>Dihedral</code> angle formed by the particles at indexes <code>i</code>, <code>j</code>, <code>k</code> and <code>m</code></p>
+</td></tr><tr class="module-item"><td><a class="struct" href="struct.EnergyCache.html" title="lumol::sys::EnergyCache struct">EnergyCache</a></td><td class="docblock-short"><p>This is a cache for energy computation.</p>
+</td></tr><tr class="module-item"><td><a class="struct" href="struct.EnergyEvaluator.html" title="lumol::sys::EnergyEvaluator struct">EnergyEvaluator</a></td><td class="docblock-short"><p>An helper struct to evaluate energy components of a system.</p>
+</td></tr><tr class="module-item"><td><a class="struct" href="struct.Interactions.html" title="lumol::sys::Interactions struct">Interactions</a></td><td class="docblock-short"><p>The <code>Interaction</code> type hold all data about the potentials in the system.</p>
+</td></tr><tr class="module-item"><td><a class="struct" href="struct.Molecule.html" title="lumol::sys::Molecule struct">Molecule</a></td><td class="docblock-short"><p>A Molecule associate some particles bonded together.</p>
+</td></tr><tr class="module-item"><td><a class="struct" href="struct.MoleculeHash.html" title="lumol::sys::MoleculeHash struct">MoleculeHash</a></td><td class="docblock-short"><p>A molecule hash allow to identify a molecule from its atoms and bonds, and
+to know wether two molecules are the same without checking each atom and
+bond.</p>
+</td></tr><tr class="module-item"><td><a class="struct" href="struct.MoleculeIter.html" title="lumol::sys::MoleculeIter struct">MoleculeIter</a></td><td class="docblock-short"><p>An iterator over all the molecules in a <code>Configuration</code></p>
+</td></tr><tr class="module-item"><td><a class="struct" href="struct.MoleculeIterMut.html" title="lumol::sys::MoleculeIterMut struct">MoleculeIterMut</a></td><td class="docblock-short"><p>A mutable iterator over all the molecules in a <code>Configuration</code></p>
+</td></tr><tr class="module-item"><td><a class="struct" href="struct.MoleculeRef.html" title="lumol::sys::MoleculeRef struct">MoleculeRef</a></td><td class="docblock-short"><p>An analog to [<code>&amp;Molecule</code>] using particles stored elsewhere (in a system or
+an <a href="struct.Molecule.html"><code>Molecule</code></a>).</p>
+</td></tr><tr class="module-item"><td><a class="struct" href="struct.MoleculeRefMut.html" title="lumol::sys::MoleculeRefMut struct">MoleculeRefMut</a></td><td class="docblock-short"><p>An analog to [<code>&amp;mut Molecule</code>] using particles stored elsewhere (in a
+system or an <a href="struct.Molecule.html"><code>Molecule</code></a>).</p>
+</td></tr><tr class="module-item"><td><a class="struct" href="struct.Particle.html" title="lumol::sys::Particle struct">Particle</a></td><td class="docblock-short"><p>The Particle type hold basic data about a particle in the system. It is self
+contained, so that it will be easy to send data between parallels processes.</p>
+</td></tr><tr class="module-item"><td><a class="struct" href="struct.ParticleKind.html" title="lumol::sys::ParticleKind struct">ParticleKind</a></td><td class="docblock-short"><p>A particle kind. Particles with the same name will have the same kind. This
+is used for faster potential lookup.</p>
+</td></tr><tr class="module-item"><td><a class="struct" href="struct.ParticlePtr.html" title="lumol::sys::ParticlePtr struct">ParticlePtr</a></td><td class="docblock-short"><p>An analog of a pointer to
+<a href="struct.Particle.html"><code>Particle</code></a>
+with struct of array layout.</p>
+</td></tr><tr class="module-item"><td><a class="struct" href="struct.ParticlePtrMut.html" title="lumol::sys::ParticlePtrMut struct">ParticlePtrMut</a></td><td class="docblock-short"><p>An analog of a mutable pointer to
+<a href="struct.Particle.html"><code>Particle</code></a>
+with struct of array layout.</p>
+</td></tr><tr class="module-item"><td><a class="struct" href="struct.ParticleRef.html" title="lumol::sys::ParticleRef struct">ParticleRef</a></td><td class="docblock-short"><p>A reference to a
+<a href="struct.Particle.html"><code>Particle</code></a>
+with struct of array layout.</p>
+</td></tr><tr class="module-item"><td><a class="struct" href="struct.ParticleRefMut.html" title="lumol::sys::ParticleRefMut struct">ParticleRefMut</a></td><td class="docblock-short"><p>A mutable reference to a
+<a href="struct.Particle.html"><code>Particle</code></a>
+with struct of array layout.</p>
+</td></tr><tr class="module-item"><td><a class="struct" href="struct.ParticleSlice.html" title="lumol::sys::ParticleSlice struct">ParticleSlice</a></td><td class="docblock-short"><p>A slice of
+<a href="struct.Particle.html"><code>Particle</code></a>
+inside a
+<a href="struct.ParticleVec.html"><code>ParticleVec</code></a>
+.</p>
+</td></tr><tr class="module-item"><td><a class="struct" href="struct.ParticleSliceMut.html" title="lumol::sys::ParticleSliceMut struct">ParticleSliceMut</a></td><td class="docblock-short"><p>A mutable slice of
+<a href="struct.Particle.html"><code>Particle</code></a>
+inside a
+<a href="struct.ParticleVec.html"><code>ParticleVec</code></a>
+.</p>
+</td></tr><tr class="module-item"><td><a class="struct" href="struct.ParticleVec.html" title="lumol::sys::ParticleVec struct">ParticleVec</a></td><td class="docblock-short"><p>An analog to <code>Vec&lt;Particle&gt;
+</code> with Struct of Array (SoA) layout</p>
+</td></tr><tr class="module-item"><td><a class="struct" href="struct.Permutation.html" title="lumol::sys::Permutation struct">Permutation</a></td><td class="docblock-short"><p>The <code>Permutation</code> struct contains the old and new particle index in a
+<code>Configuration</code> after the particles where moved due to a new bond being
+added</p>
+</td></tr><tr class="module-item"><td><a class="struct" href="struct.System.html" title="lumol::sys::System struct">System</a></td><td class="docblock-short"><p>The <code>System</code> type hold all the data about a simulated system.</p>
+</td></tr><tr class="module-item"><td><a class="struct" href="struct.Trajectory.html" title="lumol::sys::Trajectory struct">Trajectory</a></td><td class="docblock-short"><p>A Trajectory is a file containing one or more successive simulation steps.</p>
+</td></tr><tr class="module-item"><td><a class="struct" href="struct.TrajectoryBuilder.html" title="lumol::sys::TrajectoryBuilder struct">TrajectoryBuilder</a></td><td class="docblock-short"><p>A <a href="struct.Trajectory.html"><code>Trajectory</code></a> builder, to set some options
+before opening a trajectory.</p>
+</td></tr><tr class="module-item"><td><a class="struct" href="struct.TrajectoryError.html" title="lumol::sys::TrajectoryError struct">TrajectoryError</a></td><td class="docblock-short"><p>Error type for Chemfiles.</p>
+</td></tr><tr class="module-item"><td><a class="struct" href="struct.UnitCell.html" title="lumol::sys::UnitCell struct">UnitCell</a></td><td class="docblock-short"><p>An <code>UnitCell</code> defines the system physical boundaries.</p>
+</td></tr></table><h2 id="enums" class="section-header"><a href="#enums">Enums</a></h2>
+<table><tr class="module-item"><td><a class="enum" href="enum.CellShape.html" title="lumol::sys::CellShape enum">CellShape</a></td><td class="docblock-short"><p>The shape of a cell determine how we will be able to compute the periodic
+boundaries condition.</p>
+</td></tr><tr class="module-item"><td><a class="enum" href="enum.DegreesOfFreedom.html" title="lumol::sys::DegreesOfFreedom enum">DegreesOfFreedom</a></td><td class="docblock-short"><p>The number of degrees of freedom simulated in a given system</p>
+</td></tr><tr class="module-item"><td><a class="enum" href="enum.OpenMode.html" title="lumol::sys::OpenMode enum">OpenMode</a></td><td class="docblock-short"><p>Possible modes when opening a <a href="struct.Trajectory.html"><code>Trajectory</code></a>.</p>
+</td></tr></table><h2 id="functions" class="section-header"><a href="#functions">Functions</a></h2>
+<table><tr class="module-item"><td><a class="fn" href="fn.get_atomic_mass.html" title="lumol::sys::get_atomic_mass fn">get_atomic_mass</a></td><td class="docblock-short"><p>Get the mass of the element with the given atomic <code>name</code></p>
+</td></tr><tr class="module-item"><td><a class="fn" href="fn.read_molecule.html" title="lumol::sys::read_molecule fn">read_molecule</a></td><td class="docblock-short"><p>Read a the first molecule from the file at <code>path</code>. If no bond information
+exists in the file, bonds are guessed.</p>
+</td></tr></table></section><section id="search" class="content hidden"></section><section class="footer"></section><script>window.rootPath = "../../";window.currentCrate = "lumol";</script><script src="../../main.js"></script><script defer src="../../search-index.js"></script></body></html>

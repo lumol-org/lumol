@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>[log] section &#8212; Lumol 0.0.0 documentation</title>
+    <link rel="stylesheet" href="../_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/lumol.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="[[systems]] section" href="systems/index.html" />
+    <link rel="prev" title="[input] section" href="input.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../_static/js/jquery-1.11.0.min.js "></script>
+<script type="text/javascript" src="../_static/js/jquery-fix.js "></script>
+<script type="text/javascript" src="../_static/bootstrap-3.3.7/js/bootstrap.min.js "></script>
+<script type="text/javascript" src="../_static/bootstrap-sphinx.js "></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../index.html">
+          Lumol</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.0</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../index.html">Navigation <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../concepts/index.html">Lumol concepts</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Input file reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/index.html">Modifying lumol</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../faq.html">Frequently Asked Questions</a></li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+  <li>
+    <a href="input.html" title="Previous Chapter: [input] section"><span class="glyphicon glyphicon-chevron-left visible-sm"></span><span class="hidden-sm hidden-tablet">&laquo; [input] section</span>
+    </a>
+  </li>
+  <li>
+    <a href="systems/index.html" title="Next Chapter: [[systems]] section"><span class="glyphicon glyphicon-chevron-right visible-sm"></span><span class="hidden-sm hidden-tablet">[[systems]] section &raquo;</span>
+    </a>
+  </li>
+              
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+      <div class="col-md-3">
+        <div id="sidebar" class="bs-sidenav" role="complementary"><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../concepts/index.html">Lumol concepts</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Input file reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="input.html"><code class="docutils literal notranslate"><span class="pre">[input]</span></code> section</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#"><code class="docutils literal notranslate"><span class="pre">[log]</span></code> section</a></li>
+<li class="toctree-l2"><a class="reference internal" href="systems/index.html"><code class="docutils literal notranslate"><span class="pre">[[systems]]</span></code> section</a></li>
+<li class="toctree-l2"><a class="reference internal" href="interactions/index.html">Interactions input</a></li>
+<li class="toctree-l2"><a class="reference internal" href="simulations/index.html"><code class="docutils literal notranslate"><span class="pre">[[simulations]]</span></code> section</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/index.html">Modifying lumol</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../faq.html">Frequently Asked Questions</a></li>
+</ul>
+
+<form action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+        </div>
+      </div>
+    <div class="body col-md-9 content" role="main">
+      
+  <div class="section" id="log-section">
+<h1><code class="docutils literal notranslate"><span class="pre">[log]</span></code> section<a class="headerlink" href="#log-section" title="Permalink to this headline">¶</a></h1>
+<p>Lumol sends various logging messages while running a simulation. Some of them
+are informational messages (<code class="docutils literal notranslate"><span class="pre">charge</span> <span class="pre">was</span> <span class="pre">set</span> <span class="pre">to</span> <span class="pre">1.2</span> <span class="pre">for</span> <span class="pre">132</span> <span class="pre">particles</span></code>), others
+are warnings or error message (<code class="docutils literal notranslate"><span class="pre">infinite</span> <span class="pre">energy!</span></code>) and some are for debugging
+purposes.</p>
+<p>By default, Lumol prints all the informational, warning and error messages to
+the standard terminal output. This allows to run the code and redirect the
+output to a specific file in the usual UNIX way: <code class="docutils literal notranslate"><span class="pre">lumol</span> <span class="pre">input.toml</span> <span class="pre">&gt;</span>
+<span class="pre">simulation.log</span></code>.</p>
+<p>Lumol also offers more detailed configuration for logging output, for example if
+you only want to print errors and warnings, and redirect everything else to a
+file. This configuration happens in the <code class="docutils literal notranslate"><span class="pre">[log]</span></code> section of the input file.
+This section can contain either a single output <code class="docutils literal notranslate"><span class="pre">target</span></code>, or multiple
+<code class="docutils literal notranslate"><span class="pre">targets</span></code>.</p>
+<p><strong>Example</strong></p>
+<div class="code highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="c1"># Single log target</span>
+<span class="k">[log]</span>
+<span class="n">target</span> <span class="o">=</span> <span class="s">&quot;lumol.log&quot;</span>
+
+<span class="c1"># Multiple log targets</span>
+<span class="k">[log]</span>
+<span class="n">targets</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">{</span><span class="n">target</span> <span class="o">=</span> <span class="s">&quot;lumol.log&quot;</span><span class="p">},</span>
+    <span class="p">{</span><span class="n">target</span> <span class="o">=</span> <span class="s">&quot;&lt;stdout&gt;&quot;</span><span class="p">,</span> <span class="n">level</span> <span class="o">=</span> <span class="s">&quot;warning&quot;</span><span class="p">}</span>
+<span class="p">]</span>
+
+<span class="c1"># Multiple log targets, alternative syntax</span>
+<span class="k">[[log.targets]]</span>
+<span class="n">target</span> <span class="o">=</span> <span class="s">&quot;lumol.log&quot;</span>
+
+<span class="k">[[log.targets]]</span>
+<span class="n">target</span> <span class="o">=</span> <span class="s">&quot;&lt;stdout&gt;&quot;</span>
+<span class="n">level</span> <span class="o">=</span> <span class="s">&quot;warning&quot;</span>
+</pre></div>
+</div>
+<p>For multiple targets, the <code class="docutils literal notranslate"><span class="pre">targets</span></code> key must be an array of tables (either
+indicated by two brackets, i.e. <code class="docutils literal notranslate"><span class="pre">[[log.targets]]</span></code> or by defining the table
+<code class="docutils literal notranslate"><span class="pre">targets</span> <span class="pre">=</span> <span class="pre">[{target</span> <span class="pre">=</span> <span class="pre">...},</span> <span class="pre">{target</span> <span class="pre">=</span> <span class="pre">...},</span> <span class="pre">...]</span></code>), containing individual
+target configuration with the same syntax as a single target.</p>
+<p>The only required key is the <code class="docutils literal notranslate"><span class="pre">target</span></code> key, identifying where to write the
+messages. It is interpreted as  path to a file, except for the two special cases
+of <code class="docutils literal notranslate"><span class="pre">&lt;stdout&gt;</span></code> and <code class="docutils literal notranslate"><span class="pre">&lt;stderr&gt;</span></code> that are used to write messages to the standard
+terminal output stream or error stream respectively.</p>
+<div class="code highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="c1"># Write all messages to the standard error stream</span>
+<span class="k">[log]</span>
+<span class="n">target</span> <span class="o">=</span> <span class="s">&quot;&lt;stderr&gt;&quot;</span>
+</pre></div>
+</div>
+<p>Optional keys are <code class="docutils literal notranslate"><span class="pre">level</span></code> and <code class="docutils literal notranslate"><span class="pre">append</span></code>. The <code class="docutils literal notranslate"><span class="pre">level</span></code> key controls which
+messages are sent to the specified output and defaults to <code class="docutils literal notranslate"><span class="pre">info</span></code>.  Available
+levels are the following:</p>
+<ul class="simple">
+<li><code class="docutils literal notranslate"><span class="pre">error</span></code>: only error messages;</li>
+<li><code class="docutils literal notranslate"><span class="pre">warning</span></code>: error and warning messages;</li>
+<li><code class="docutils literal notranslate"><span class="pre">info</span></code>: error, warnings and informational messages;</li>
+</ul>
+<p>The <code class="docutils literal notranslate"><span class="pre">debug</span></code> (debug messages) and <code class="docutils literal notranslate"><span class="pre">trace</span></code> (very verbose debug) are also
+available, but mainly intended for developers.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">append</span></code> key is a boolean value (<code class="docutils literal notranslate"><span class="pre">true</span></code> or <code class="docutils literal notranslate"><span class="pre">false</span></code>) only used for
+files, and controls whether to overwrite the file or append new messages at the
+end of an existing file. It defaults to <code class="docutils literal notranslate"><span class="pre">false</span></code>, meaning that the file is
+overwritten by every simulation run.</p>
+<div class="code highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="k">[log]</span>
+<span class="c1"># Use multiple targets</span>
+<span class="n">targets</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="c1"># Print warnings to the standard output stream</span>
+    <span class="p">{</span><span class="n">target</span> <span class="o">=</span> <span class="s">&quot;&lt;stdout&gt;&quot;</span><span class="p">,</span> <span class="n">level</span> <span class="o">=</span> <span class="s">&quot;warning&quot;</span><span class="p">},</span>
+    <span class="c1"># Save all messages to the &#39;lumol.log&#39; file</span>
+    <span class="p">{</span><span class="n">target</span> <span class="o">=</span> <span class="s">&quot;lumol.log&quot;</span><span class="p">},</span>
+    <span class="c1"># Save debug messages to &#39;debug.log&#39;, keeping the file across simulation</span>
+    <span class="c1"># runs.</span>
+    <span class="p">{</span><span class="n">target</span> <span class="o">=</span> <span class="s">&quot;debug.log&quot;</span><span class="p">,</span> <span class="n">level</span> <span class="o">=</span> <span class="s">&quot;debug&quot;</span><span class="p">,</span> <span class="n">append</span> <span class="o">=</span> <span class="n">true</span><span class="p">},</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+    </p>
+    <p class="pull-left">
+        &copy; Lumol contributors
+    </p>
+    <p class="text-center">
+        Available on <a href="https://github.com/lumol-org/lumol">Github</a>
+    </p>
+  </div>
+</footer>
+
+  </body>
+</html>

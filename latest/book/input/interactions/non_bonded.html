@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Non-bonded interactions &#8212; Lumol 0.0.0 documentation</title>
+    <link rel="stylesheet" href="../../_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/lumol.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Electrostatic interactions" href="electrostatic.html" />
+    <link rel="prev" title="Organizing interactions" href="organisation.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../../_static/js/jquery-1.11.0.min.js "></script>
+<script type="text/javascript" src="../../_static/js/jquery-fix.js "></script>
+<script type="text/javascript" src="../../_static/bootstrap-3.3.7/js/bootstrap.min.js "></script>
+<script type="text/javascript" src="../../_static/bootstrap-sphinx.js "></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../index.html">
+          Lumol</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.0</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../../index.html">Navigation <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../concepts/index.html">Lumol concepts</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">Input file reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../advanced/index.html">Modifying lumol</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../faq.html">Frequently Asked Questions</a></li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+  <li>
+    <a href="organisation.html" title="Previous Chapter: Organizing interactions"><span class="glyphicon glyphicon-chevron-left visible-sm"></span><span class="hidden-sm hidden-tablet">&laquo; Organizing in...</span>
+    </a>
+  </li>
+  <li>
+    <a href="electrostatic.html" title="Next Chapter: Electrostatic interactions"><span class="glyphicon glyphicon-chevron-right visible-sm"></span><span class="hidden-sm hidden-tablet">Electrostatic... &raquo;</span>
+    </a>
+  </li>
+              
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+      <div class="col-md-3">
+        <div id="sidebar" class="bs-sidenav" role="complementary"><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../concepts/index.html">Lumol concepts</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">Input file reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../input.html"><code class="docutils literal notranslate"><span class="pre">[input]</span></code> section</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../log.html"><code class="docutils literal notranslate"><span class="pre">[log]</span></code> section</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../systems/index.html"><code class="docutils literal notranslate"><span class="pre">[[systems]]</span></code> section</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">Interactions input</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="organisation.html">Organizing interactions</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Non-bonded interactions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="electrostatic.html">Electrostatic interactions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="potentials.html">Available potentials</a></li>
+<li class="toctree-l3"><a class="reference internal" href="restrictions.html">Restrictions</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../simulations/index.html"><code class="docutils literal notranslate"><span class="pre">[[simulations]]</span></code> section</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../advanced/index.html">Modifying lumol</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../faq.html">Frequently Asked Questions</a></li>
+</ul>
+
+<form action="../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+        </div>
+      </div>
+    <div class="body col-md-9 content" role="main">
+      
+  <div class="section" id="non-bonded-interactions">
+<h1>Non-bonded interactions<a class="headerlink" href="#non-bonded-interactions" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="cutoff-treatment">
+<h2>Cutoff treatment<a class="headerlink" href="#cutoff-treatment" title="Permalink to this headline">¶</a></h2>
+<p>When computing the energy and forces for non-bonded pair interactions, Lumol
+uses a cutoff radius <span class="math notranslate nohighlight">\(r_c\)</span>. This means that the force and energy
+associated with any pair at a distance bigger than <span class="math notranslate nohighlight">\(r_c\)</span> will be zero. We
+can use two different cutoff schemes, presented in the following section.</p>
+<p>In the potentials input file, the cutoff should be specified for all the pairs.
+It can be specified once for all the pairs in the <code class="docutils literal notranslate"><span class="pre">global</span></code> section, and then
+overridden for specific interactions:</p>
+<div class="code highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="c1"># Use a simple cutoff with a radius of 10 A for all pair interactions</span>
+<span class="k">[global]</span>
+<span class="n">cutoff</span> <span class="o">=</span> <span class="s">&quot;10 A&quot;</span>
+
+<span class="k">[pairs]</span>
+<span class="n">A-A</span> <span class="o">=</span> <span class="p">{</span><span class="n">type</span> <span class="o">=</span> <span class="s">&quot;lj&quot;</span><span class="p">,</span> <span class="n">sigma</span> <span class="o">=</span> <span class="s">&quot;3 A&quot;</span><span class="p">,</span> <span class="n">epsilon</span> <span class="o">=</span> <span class="s">&quot;123 kJ/mol&quot;</span><span class="p">}</span>
+<span class="n">B-B</span> <span class="o">=</span> <span class="p">{</span><span class="n">type</span> <span class="o">=</span> <span class="s">&quot;lj&quot;</span><span class="p">,</span> <span class="n">sigma</span> <span class="o">=</span> <span class="s">&quot;3 A&quot;</span><span class="p">,</span> <span class="n">epsilon</span> <span class="o">=</span> <span class="s">&quot;123 kJ/mol&quot;</span><span class="p">}</span>
+
+<span class="c1"># Except for this one, use a shifted cutoff with a radius of 8 A</span>
+<span class="k">[pairs.A-B]</span>
+<span class="n">type</span> <span class="o">=</span> <span class="s">&quot;lj&quot;</span>
+<span class="n">sigma</span> <span class="o">=</span> <span class="s">&quot;3 A&quot;</span>
+<span class="n">epsilon</span> <span class="o">=</span> <span class="s">&quot;123 kJ/mol&quot;</span>
+<span class="n">cutoff</span> <span class="o">=</span> <span class="p">{</span><span class="n">shifted</span> <span class="o">=</span> <span class="s">&quot;8 A&quot;</span><span class="p">}</span>
+</pre></div>
+</div>
+<div class="section" id="simple-cutoff-potential-truncation">
+<h3>Simple cutoff (potential truncation)<a class="headerlink" href="#simple-cutoff-potential-truncation" title="Permalink to this headline">¶</a></h3>
+<p>This scheme just sets the potential <span class="math notranslate nohighlight">\(U(r)\)</span> to zero for any distance bigger
+than <span class="math notranslate nohighlight">\(rc\)</span>:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split} V(r) = \begin{cases}
+    U(r) &amp; r &lt;= rc \\\\
+    0 &amp; r &gt; rc
+\end{cases}\end{split}\]</div>
+<p>To use this potential truncation, we specify a string containing the cutoff
+distance as the <code class="docutils literal notranslate"><span class="pre">cutoff</span></code> value.</p>
+<div class="code highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="k">[global]</span>
+<span class="n">cutoff</span> <span class="o">=</span> <span class="s">&quot;10 A&quot;</span>
+
+<span class="k">[pairs]</span>
+<span class="n">O-O</span> <span class="o">=</span> <span class="p">{</span><span class="n">type</span> <span class="o">=</span> <span class="s">&quot;lj&quot;</span><span class="p">,</span> <span class="n">x0</span> <span class="o">=</span> <span class="s">&quot;3 A&quot;</span><span class="p">,</span> <span class="n">k</span> <span class="o">=</span> <span class="s">&quot;5.9 kJ/mol/A^2&quot;</span><span class="p">,</span> <span class="n">cutoff</span> <span class="o">=</span> <span class="s">&quot;8 A&quot;</span><span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="truncation-with-energy-shift">
+<h3>Truncation with energy shift<a class="headerlink" href="#truncation-with-energy-shift" title="Permalink to this headline">¶</a></h3>
+<p>The potential <span class="math notranslate nohighlight">\(U\)</span> can be additionally shifted to make sure it is
+continuous at <span class="math notranslate nohighlight">\(r = rc\)</span>. This is important for molecular dynamics, where a
+discontinuity means an infinite force in the integration.</p>
+<div class="math notranslate nohighlight">
+\[\begin{split} V(r) = \begin{cases}
+    U(r) - U(rc) &amp; r &lt;= rc \\\\
+    0 &amp; r &gt; rc
+\end{cases}\end{split}\]</div>
+<p>In the input, this uses a table containing the shifted value, which must be a
+string containing the cutoff radius.</p>
+<div class="code highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="k">[global]</span>
+<span class="n">cutoff</span> <span class="o">=</span> <span class="p">{</span><span class="n">shifted</span> <span class="o">=</span> <span class="s">&quot;8 A&quot;</span><span class="p">}</span>
+
+<span class="k">[pairs]</span>
+<span class="n">O-O</span> <span class="o">=</span> <span class="p">{</span><span class="n">type</span> <span class="o">=</span> <span class="s">&quot;lj&quot;</span><span class="p">,</span> <span class="n">x0</span> <span class="o">=</span> <span class="s">&quot;3 A&quot;</span><span class="p">,</span> <span class="n">k</span> <span class="o">=</span> <span class="s">&quot;5.9 kJ/mol/A^2&quot;</span><span class="p">,</span> <span class="n">cutoff</span> <span class="o">=</span> <span class="p">{</span><span class="n">shifted</span> <span class="o">=</span> <span class="s">&quot;10 A&quot;</span><span class="p">}}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="tail-correction">
+<h3>Tail correction<a class="headerlink" href="#tail-correction" title="Permalink to this headline">¶</a></h3>
+<p>Tail corrections (also called long range corrections) are a way to account for
+the error we introduce by cutting off the potential. If the simulated system is
+homogeneous and isotropic beyond the the cutoff (if the pair distribution
+function <span class="math notranslate nohighlight">\(g(r)\)</span> is 1 after the cutoff) we have an expression for the
+corrections we can evaluate. For a potential <span class="math notranslate nohighlight">\(V(r)\)</span> with associated forces
+<span class="math notranslate nohighlight">\(\vec f(r)\)</span>, the missing energy and virial (which is used to compute
+instantaneous pressure) expressions are at density <span class="math notranslate nohighlight">\(\rho\)</span>:</p>
+<div class="math notranslate nohighlight">
+\[U_\text{tail} = 2 \pi \rho \int_{rc}^{+\infty} r^2 V(r) \ dr,\]</div>
+<div class="math notranslate nohighlight">
+\[P_\text{tail} = 2 \pi \rho^2 \int_{rc}^{+\infty} r^2 \vec r \cdot \vec f(r) \ dr.\]</div>
+<p>In the input, these additional energetic and pressure terms are controlled by
+the <code class="docutils literal notranslate"><span class="pre">tail_correction</span></code> keyword, which can be placed either in the <code class="docutils literal notranslate"><span class="pre">[global]</span></code>
+section, or in any specific <code class="docutils literal notranslate"><span class="pre">[pairs]</span></code> section.</p>
+<div class="code highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="c1"># Use tail corrections for every pair interaction</span>
+<span class="k">[global]</span>
+<span class="n">tail_correction</span> <span class="o">=</span> <span class="kc">true</span>
+
+<span class="c1"># Except for this one.</span>
+<span class="k">[pairs]</span>
+<span class="n">O-O</span> <span class="o">=</span> <span class="p">{</span><span class="n">type</span> <span class="o">=</span> <span class="s">&quot;lj&quot;</span><span class="p">,</span> <span class="n">x0</span> <span class="o">=</span> <span class="s">&quot;3 A&quot;</span><span class="p">,</span> <span class="n">k</span> <span class="o">=</span> <span class="s">&quot;5.9 kJ/mol/A^2&quot;</span><span class="p">,</span> <span class="n">tail_correction</span> <span class="o">=</span> <span class="n">false</span><span class="p">}</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="potentials-computation">
+<h2>Potentials computation<a class="headerlink" href="#potentials-computation" title="Permalink to this headline">¶</a></h2>
+<p>The same potential function (Lennard-Jones, Harmonic, <em>etc.</em>) can be computed
+with different methods: directly, by shifting at the cutoff distance, using a
+table interpolation, <em>etc.</em> This is the purpose of computation. The default way
+is to use the mathematical function corresponding to a potential to compute it.
+To use a different type of computation, the <code class="docutils literal notranslate"><span class="pre">computation</span></code> keyword can be used
+in the <code class="docutils literal notranslate"><span class="pre">[pairs]</span></code> section.</p>
+</div>
+<div class="section" id="table-interpolation">
+<h2>Table interpolation<a class="headerlink" href="#table-interpolation" title="Permalink to this headline">¶</a></h2>
+<p>Another way to compute a potential is to compute it on a regularly spaced grid,
+and then to interpolate values for points in the grid. In some cases, this can
+be faster than recomputing the function every time.</p>
+<p>This can be done with the <code class="docutils literal notranslate"><span class="pre">table</span></code> computation, which does a linear
+interpolation in regularly spaced values in the <code class="docutils literal notranslate"><span class="pre">[0,</span> <span class="pre">max)</span></code> segment.  You need
+to provide the <code class="docutils literal notranslate"><span class="pre">max</span></code> value, and the number of points <code class="docutils literal notranslate"><span class="pre">n</span></code> for the
+interpolation:</p>
+<div class="code highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="k">[pairs.O-O]</span>
+<span class="n">type</span> <span class="o">=</span> <span class="s">&quot;lj&quot;</span>
+<span class="n">sigma</span> <span class="o">=</span> <span class="s">&quot;3 A&quot;</span>
+<span class="n">epsilon</span> <span class="o">=</span> <span class="s">&quot;123 kJ/mol&quot;</span>
+<span class="n">computation</span> <span class="o">=</span> <span class="p">{</span><span class="n">table</span> <span class="o">=</span> <span class="p">{</span><span class="n">max</span> <span class="o">=</span> <span class="s">&quot;8 A&quot;</span><span class="p">,</span> <span class="n">n</span> <span class="o">=</span> <span class="mi">5000</span><span class="p">}}</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+    </p>
+    <p class="pull-left">
+        &copy; Lumol contributors
+    </p>
+    <p class="text-center">
+        Available on <a href="https://github.com/lumol-org/lumol">Github</a>
+    </p>
+  </div>
+</footer>
+
+  </body>
+</html>

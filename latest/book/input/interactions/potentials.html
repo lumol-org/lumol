@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Available potentials &#8212; Lumol 0.0.0 documentation</title>
+    <link rel="stylesheet" href="../../_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/lumol.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Restrictions" href="restrictions.html" />
+    <link rel="prev" title="Electrostatic interactions" href="electrostatic.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../../_static/js/jquery-1.11.0.min.js "></script>
+<script type="text/javascript" src="../../_static/js/jquery-fix.js "></script>
+<script type="text/javascript" src="../../_static/bootstrap-3.3.7/js/bootstrap.min.js "></script>
+<script type="text/javascript" src="../../_static/bootstrap-sphinx.js "></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../index.html">
+          Lumol</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.0</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../../index.html">Navigation <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../concepts/index.html">Lumol concepts</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">Input file reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../advanced/index.html">Modifying lumol</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../faq.html">Frequently Asked Questions</a></li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+  <li>
+    <a href="electrostatic.html" title="Previous Chapter: Electrostatic interactions"><span class="glyphicon glyphicon-chevron-left visible-sm"></span><span class="hidden-sm hidden-tablet">&laquo; Electrostatic...</span>
+    </a>
+  </li>
+  <li>
+    <a href="restrictions.html" title="Next Chapter: Restrictions"><span class="glyphicon glyphicon-chevron-right visible-sm"></span><span class="hidden-sm hidden-tablet">Restrictions &raquo;</span>
+    </a>
+  </li>
+              
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+      <div class="col-md-3">
+        <div id="sidebar" class="bs-sidenav" role="complementary"><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../concepts/index.html">Lumol concepts</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">Input file reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../input.html"><code class="docutils literal notranslate"><span class="pre">[input]</span></code> section</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../log.html"><code class="docutils literal notranslate"><span class="pre">[log]</span></code> section</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../systems/index.html"><code class="docutils literal notranslate"><span class="pre">[[systems]]</span></code> section</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">Interactions input</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="organisation.html">Organizing interactions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="non_bonded.html">Non-bonded interactions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="electrostatic.html">Electrostatic interactions</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Available potentials</a></li>
+<li class="toctree-l3"><a class="reference internal" href="restrictions.html">Restrictions</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../simulations/index.html"><code class="docutils literal notranslate"><span class="pre">[[simulations]]</span></code> section</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../advanced/index.html">Modifying lumol</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../faq.html">Frequently Asked Questions</a></li>
+</ul>
+
+<form action="../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+        </div>
+      </div>
+    <div class="body col-md-9 content" role="main">
+      
+  <div class="section" id="available-potentials">
+<h1>Available potentials<a class="headerlink" href="#available-potentials" title="Permalink to this headline">¶</a></h1>
+<p>This section is a list of all the available potentials in Lumol, with the
+associated parameters. All potentials have to provide additional parameters in
+there definition, as a TOML table.</p>
+<p>Using inline tables is the easiest way to do so:</p>
+<div class="code highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="c1"># Additional parameters here are &#39;sigma&#39; and &#39;epsilon&#39;.</span>
+<span class="k">[pairs]</span>
+<span class="n">A-B</span> <span class="o">=</span> <span class="p">{</span><span class="n">type</span> <span class="o">=</span> <span class="s">&quot;lj&quot;</span><span class="p">,</span> <span class="n">sigma</span> <span class="o">=</span> <span class="s">&quot;3 A&quot;</span><span class="p">,</span> <span class="n">epsilon</span> <span class="o">=</span> <span class="s">&quot;123 kJ/mol&quot;</span><span class="p">}</span>
+</pre></div>
+</div>
+<p>Another option is to use a separated TOML table, for example when there are too
+many parameters to fit on a line</p>
+<div class="code highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="k">[pairs.A-B]</span>
+<span class="n">type</span> <span class="o">=</span> <span class="s">&quot;lj&quot;</span>
+<span class="n">sigma</span> <span class="o">=</span> <span class="s">&quot;3 A&quot;</span>
+<span class="n">epsilon</span> <span class="o">=</span> <span class="s">&quot;123 kJ/mol&quot;</span>
+</pre></div>
+</div>
+<p>The same potential can be used for either pairs (at distance <span class="math notranslate nohighlight">\(r\)</span>); or for
+angles (at angle <span class="math notranslate nohighlight">\(\phi\)</span>). In all the formulas, the <span class="math notranslate nohighlight">\(x\)</span> parameter
+represents either a distance or an angle.</p>
+<div class="section" id="null-potential">
+<h2>Null potential<a class="headerlink" href="#null-potential" title="Permalink to this headline">¶</a></h2>
+<p>This potential is always 0, for all values of <span class="math notranslate nohighlight">\(x\)</span>. It should be used to
+remove interactions between atoms in a pair/bond/angle/dihedral that are present
+in the system but should not be interacting.</p>
+<p>This potential can be used by specifying the <code class="docutils literal notranslate"><span class="pre">null</span></code> key with an empty table
+<code class="docutils literal notranslate"><span class="pre">{}</span></code> as value.</p>
+<div class="code highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="k">[pairs]</span>
+<span class="n">O-O</span> <span class="o">=</span> <span class="p">{</span><span class="n">type</span> <span class="o">=</span> <span class="s">&quot;null&quot;</span><span class="p">,</span> <span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="lennard-jones-potential">
+<h2>Lennard-Jones potential<a class="headerlink" href="#lennard-jones-potential" title="Permalink to this headline">¶</a></h2>
+<p>The Lennard-Jones potential is a classical potential for pair interactions
+expressed as:</p>
+<div class="math notranslate nohighlight">
+\[ V(x) = 4 \epsilon \left[\left(\frac{\sigma}{x}\right)^{12} -
+\left(\frac{\sigma}{x}\right)^6\right].\]</div>
+<p>The Lennard-Jones potential is defined using the <code class="docutils literal notranslate"><span class="pre">lj</span></code> key. The parameters are
+<code class="docutils literal notranslate"><span class="pre">sigma</span></code> (<span class="math notranslate nohighlight">\(\sigma\)</span>) and <code class="docutils literal notranslate"><span class="pre">epsilon</span></code> (<span class="math notranslate nohighlight">\(\epsilon\)</span>), which should be
+provided as strings.</p>
+<div class="code highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="k">[pairs]</span>
+<span class="n">O-O</span> <span class="o">=</span> <span class="p">{</span><span class="n">type</span> <span class="o">=</span> <span class="s">&quot;lj&quot;</span><span class="p">,</span> <span class="n">sigma</span> <span class="o">=</span> <span class="s">&quot;3.16 A&quot;</span><span class="p">,</span> <span class="n">epsilon</span> <span class="o">=</span> <span class="s">&quot;0.155 kcal/mol&quot;</span><span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="buckingham-potential">
+<h2>Buckingham potential<a class="headerlink" href="#buckingham-potential" title="Permalink to this headline">¶</a></h2>
+<p>The Buckingham potential is a potential for pair interactions expressed as:</p>
+<div class="math notranslate nohighlight">
+\[V(x) = A \exp(-r / \rho) - \frac{C}{r^6}.\]</div>
+<p>The potential type keyword is <code class="docutils literal notranslate"><span class="pre">buckingham</span></code>, and the parameters <code class="docutils literal notranslate"><span class="pre">A</span></code>, <code class="docutils literal notranslate"><span class="pre">rho</span></code>
+(<span class="math notranslate nohighlight">\(\rho\)</span>) and <code class="docutils literal notranslate"><span class="pre">C</span></code> should be provided as strings.</p>
+<div class="code highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="k">[pairs]</span>
+<span class="n">C-C</span> <span class="o">=</span> <span class="p">{</span><span class="n">type</span> <span class="o">=</span> <span class="s">&quot;buckingham&quot;</span><span class="p">,</span> <span class="n">A</span> <span class="o">=</span> <span class="s">&quot;40 kJ/mol&quot;</span><span class="p">,</span> <span class="n">C</span> <span class="o">=</span> <span class="s">&quot;120e-6 kJ/mol/A^6&quot;</span><span class="p">,</span> <span class="n">rho</span> <span class="o">=</span> <span class="s">&quot;3.0 A&quot;</span><span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="born-mayer-huggins-potential">
+<h2>Born-Mayer-Huggins potential<a class="headerlink" href="#born-mayer-huggins-potential" title="Permalink to this headline">¶</a></h2>
+<p>The Born-Mayer-Huggins potential is a potential for pair interactions, used in
+particular for halide alkali. Its expression is:</p>
+<div class="math notranslate nohighlight">
+\[ V(x) = A
+\exp\left(\frac{\sigma -r}{\rho}\right) - \frac{C}{r^6} + \frac{D}{r^8}.\]</div>
+<p>The potential type keyword is <code class="docutils literal notranslate"><span class="pre">born</span></code>, and the parameters <code class="docutils literal notranslate"><span class="pre">A</span></code>, <code class="docutils literal notranslate"><span class="pre">C</span></code>, <code class="docutils literal notranslate"><span class="pre">D</span></code>,
+<code class="docutils literal notranslate"><span class="pre">sigma</span></code> (<span class="math notranslate nohighlight">\(\sigma\)</span>) and <code class="docutils literal notranslate"><span class="pre">rho</span></code> (<span class="math notranslate nohighlight">\(\rho\)</span>) should be provided as
+strings.</p>
+<div class="code highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="k">[pairs.Li-Li]</span>
+<span class="n">type</span> <span class="o">=</span> <span class="s">&quot;born&quot;</span>
+<span class="n">A</span> <span class="o">=</span> <span class="s">&quot;40 kJ/mol&quot;</span>
+<span class="n">C</span> <span class="o">=</span> <span class="s">&quot;120e-6 kJ/mol/A^6&quot;</span>
+<span class="n">D</span> <span class="o">=</span> <span class="s">&quot;23e-6 kJ/mol/A^8&quot;</span>
+<span class="n">rho</span> <span class="o">=</span> <span class="s">&quot;3.0 A&quot;</span>
+<span class="n">sigma</span> <span class="o">=</span> <span class="s">&quot;2.2 A&quot;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="harmonic-potential">
+<h2>Harmonic potential<a class="headerlink" href="#harmonic-potential" title="Permalink to this headline">¶</a></h2>
+<p>The Harmonic potential is usually used for intramolecular interactions such as
+bonds, angles or dihedrals. It is expressed as:</p>
+<div class="math notranslate nohighlight">
+\[V(x) = \frac 12 k \ (x - x_0)^2\]</div>
+<p>The potential type keyword is <code class="docutils literal notranslate"><span class="pre">harmonic</span></code>, and the parameters are <code class="docutils literal notranslate"><span class="pre">k</span></code> and
+<code class="docutils literal notranslate"><span class="pre">x0</span></code>, provided as strings.</p>
+<div class="code highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="k">[bonds]</span>
+<span class="n">O-H</span> <span class="o">=</span> <span class="p">{</span><span class="n">type</span> <span class="o">=</span> <span class="s">&quot;harmonic&quot;</span><span class="p">,</span> <span class="n">k</span> <span class="o">=</span> <span class="s">&quot;1054.2 kcal/mol/A^2&quot;</span><span class="p">,</span> <span class="n">x0</span> <span class="o">=</span> <span class="s">&quot;1.0 A&quot;</span><span class="p">}</span>
+
+<span class="k">[angles]</span>
+<span class="n">H-O-H</span> <span class="o">=</span> <span class="p">{</span><span class="n">type</span> <span class="o">=</span> <span class="s">&quot;harmonic&quot;</span><span class="p">,</span> <span class="n">k</span> <span class="o">=</span> <span class="s">&quot;75.9 kcal/mol/rad^2&quot;</span><span class="p">,</span> <span class="n">x0</span> <span class="o">=</span> <span class="s">&quot;109.5 deg&quot;</span><span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="cosine-harmonic-potential">
+<h2>Cosine-Harmonic potential<a class="headerlink" href="#cosine-harmonic-potential" title="Permalink to this headline">¶</a></h2>
+<p>This potential is usually used for angles and dihedral angles interactions,
+because it presents a <span class="math notranslate nohighlight">\(2\pi\)</span> periodicity. It is expressed as:</p>
+<div class="math notranslate nohighlight">
+\[ V(x) = \frac 12
+k \ (\cos x - \cos x_0)^2\]</div>
+<p>The potential type keyword is <code class="docutils literal notranslate"><span class="pre">cosine-harmonic</span></code>, and the parameters <code class="docutils literal notranslate"><span class="pre">k</span></code> and
+<code class="docutils literal notranslate"><span class="pre">x0</span></code> should be provided as strings.</p>
+<div class="code highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="k">[angles]</span>
+<span class="n">H-C-H</span> <span class="o">=</span> <span class="p">{</span><span class="n">type</span> <span class="o">=</span> <span class="s">&quot;cosine-harmonic&quot;</span><span class="p">,</span> <span class="n">k</span> <span class="o">=</span> <span class="s">&quot;67 kJ/mol&quot;</span><span class="p">,</span> <span class="n">x0</span> <span class="o">=</span> <span class="s">&quot;120 deg&quot;</span><span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="torsion-potential">
+<h2>Torsion potential<a class="headerlink" href="#torsion-potential" title="Permalink to this headline">¶</a></h2>
+<p>This potential is usually used for dihedral interactions. It is expressed as:</p>
+<div class="math notranslate nohighlight">
+\[V(x) = k \ (1 + \cos(n x - \delta))\]</div>
+<p>The potential type keyword is <code class="docutils literal notranslate"><span class="pre">torsion</span></code>, and the parameters <code class="docutils literal notranslate"><span class="pre">k</span></code> and
+<code class="docutils literal notranslate"><span class="pre">delta</span></code> (<span class="math notranslate nohighlight">\(\delta\)</span>) should be provided as strings, and <code class="docutils literal notranslate"><span class="pre">n</span></code> should be
+provided as an integer.</p>
+<div class="code highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="k">[dihedrals]</span>
+<span class="n">C-C-C-C</span> <span class="o">=</span> <span class="p">{</span><span class="n">type</span> <span class="o">=</span> <span class="s">&quot;torsion&quot;</span><span class="p">,</span> <span class="n">k</span> <span class="o">=</span> <span class="s">&quot;40 kJ/mol&quot;</span><span class="p">,</span> <span class="n">delta</span> <span class="o">=</span> <span class="s">&quot;120 deg&quot;</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="mi">4</span><span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="morse-potential">
+<h2>Morse potential<a class="headerlink" href="#morse-potential" title="Permalink to this headline">¶</a></h2>
+<p>This potential is usually used for intramolecular interaction such as bonds,
+angles or dihedrals. It is a better approximation for the vibrational structure
+of the molecule than the Harmonic potential. It is expressed as:</p>
+<div class="math notranslate nohighlight">
+\[V(x) = \text{depth} \times (1 - \exp(- A (x - x_0))^2\]</div>
+<p>The potential type keyword is <code class="docutils literal notranslate"><span class="pre">morse</span></code>, and the parameters <code class="docutils literal notranslate"><span class="pre">A</span></code>, <code class="docutils literal notranslate"><span class="pre">x0</span></code> and
+<code class="docutils literal notranslate"><span class="pre">depth</span></code> should be provided as strings.</p>
+<div class="code highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="k">[pairs]</span>
+<span class="n">A-B</span> <span class="o">=</span> <span class="p">{</span><span class="n">type</span> <span class="o">=</span> <span class="s">&quot;morse&quot;</span><span class="p">,</span> <span class="n">depth</span> <span class="o">=</span> <span class="s">&quot;40 kJ/mol&quot;</span><span class="p">,</span> <span class="n">A</span> <span class="o">=</span> <span class="s">&quot;2.0 A^-1&quot;</span><span class="p">,</span> <span class="n">x0</span> <span class="o">=</span> <span class="s">&quot;1.3 A&quot;</span><span class="p">}</span>
+</pre></div>
+</div>
+<p>For angles and dihedral angles, <code class="docutils literal notranslate"><span class="pre">x0</span></code> and <code class="docutils literal notranslate"><span class="pre">A</span></code> should be provided in angle
+units:</p>
+<div class="code highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="k">[pairs]</span>
+<span class="n">A-B</span> <span class="o">=</span> <span class="p">{</span><span class="n">type</span> <span class="o">=</span> <span class="s">&quot;morse&quot;</span><span class="p">,</span> <span class="n">depth</span> <span class="o">=</span> <span class="s">&quot;40 kJ/mol&quot;</span><span class="p">,</span> <span class="n">A</span> <span class="o">=</span> <span class="s">&quot;2.0 rad^-1&quot;</span><span class="p">,</span> <span class="n">x0</span> <span class="o">=</span> <span class="s">&quot;109.7 deg&quot;</span><span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="gaussian-potential">
+<h2>Gaussian potential<a class="headerlink" href="#gaussian-potential" title="Permalink to this headline">¶</a></h2>
+<p>This potential is usually used to describe energy wells and is expressed as:</p>
+<div class="math notranslate nohighlight">
+\[V(r) = -A \exp(-B r^2)\]</div>
+<p>The potential type keyword is <code class="docutils literal notranslate"><span class="pre">gaussian</span></code>, and the parameters <code class="docutils literal notranslate"><span class="pre">A</span></code> (well
+depth) and <code class="docutils literal notranslate"><span class="pre">B</span></code> (well width) should be provided as strings. <code class="docutils literal notranslate"><span class="pre">B</span></code> has to be
+positive.</p>
+<div class="code highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="k">[pairs]</span>
+<span class="n">A-B</span> <span class="o">=</span> <span class="p">{</span><span class="n">type</span> <span class="o">=</span> <span class="s">&quot;gaussian&quot;</span><span class="p">,</span> <span class="n">A</span> <span class="o">=</span> <span class="s">&quot;8.0 kJ/mol&quot;</span><span class="p">,</span> <span class="n">B</span> <span class="o">=</span> <span class="s">&quot;0.2 A^-2&quot;</span><span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="mie-potential">
+<h2>Mie potential<a class="headerlink" href="#mie-potential" title="Permalink to this headline">¶</a></h2>
+<p>The Mie potential is a classical potential for pair interactions
+expressed as:</p>
+<div class="math notranslate nohighlight">
+\[V(r) = \frac{n}{n-m} \left(\frac{n}{m}\right)^{m/(n-m)}\epsilon
+\left[ \left( \frac{\sigma}{r}\right)^n - \left( \frac{\sigma}{r}\right)^m \right]\]</div>
+<p>The potential type keyword is <code class="docutils literal notranslate"><span class="pre">mie</span></code> and the parameters are <code class="docutils literal notranslate"><span class="pre">sigma</span></code>
+(<span class="math notranslate nohighlight">\(\sigma\)</span>), the particle diameter, and <code class="docutils literal notranslate"><span class="pre">epsilon</span></code> (<span class="math notranslate nohighlight">\(\epsilon\)</span>), the
+energetic parameter, which should be provided as strings (with units).  The
+repulsive exponent <code class="docutils literal notranslate"><span class="pre">n</span></code> and the attractive exponent <code class="docutils literal notranslate"><span class="pre">m</span></code> should be provided as
+numbers. The repulsive exponent <code class="docutils literal notranslate"><span class="pre">n</span></code> has to be larger than the attractive
+exponent <code class="docutils literal notranslate"><span class="pre">m</span></code>.</p>
+<div class="code highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="k">[pairs]</span>
+<span class="n">A-B</span> <span class="o">=</span> <span class="p">{</span><span class="n">type</span> <span class="o">=</span> <span class="s">&quot;mie&quot;</span><span class="p">,</span> <span class="n">sigma</span> <span class="o">=</span> <span class="s">&quot;3 A&quot;</span><span class="p">,</span> <span class="n">epsilon</span> <span class="o">=</span> <span class="s">&quot;5.9 kJ/mol&quot;</span><span class="p">,</span> <span class="n">n</span> <span class="o">=</span> <span class="mf">12.0</span><span class="p">,</span> <span class="n">m</span> <span class="o">=</span> <span class="mf">6.0</span><span class="p">}</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+    </p>
+    <p class="pull-left">
+        &copy; Lumol contributors
+    </p>
+    <p class="text-center">
+        Available on <a href="https://github.com/lumol-org/lumol">Github</a>
+    </p>
+  </div>
+</footer>
+
+  </body>
+</html>

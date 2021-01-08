@@ -1,0 +1,101 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="API documentation for the Rust `energy` mod in crate `lumol`."><meta name="keywords" content="rust, rustlang, rust-lang, energy"><title>lumol::energy - Rust</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled ><script id="default-settings"></script><script src="../../storage.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<link rel="alternate icon" type="image/png" href="../../favicon-16x16.png">
+<link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><!-- Load KaTeX (https://katex.org/) to render equations -->
+
+<link rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.css"
+      integrity="sha384-D+9gmBxUQogRLqvARvNLmA9hS2x//eK1FhVb9PiU86gmcrBrJAQT8okdJ4LMp2uv"
+      crossorigin="anonymous">
+
+<script defer
+        src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.js"
+        integrity="sha384-483A6DwYfKeDa0Q52fJmxFXkcPCFfnXMoXblOkJ4JcA8zATN6Tm78UNL72AKk+0O"
+        crossorigin="anonymous">
+</script>
+
+<script defer
+        src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/contrib/auto-render.min.js"
+        integrity="sha384-yACMu8JWxKzSp/C1YV86pzGiQ/l1YUfE8oPuahJQxzehAjEt2GiQuy/BIvl9KyeF"
+        crossorigin="anonymous"
+        onload="renderMathInElement(document.body, {delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '$', right: '$', display: false}
+        ]});">
+</script>
+
+<style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc mod"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../lumol/index.html'><div class='logo-container rust-logo'><img src='../../rust-logo.png' alt='logo'></div></a><p class="location">Module energy</p><div class="sidebar-elems"><div class="block items"><ul><li><a href="#structs">Structs</a></li><li><a href="#enums">Enums</a></li><li><a href="#traits">Traits</a></li></ul></div><p class="location"><a href="../index.html">lumol</a></p><script>window.sidebarCurrent = {name: "energy", ty: "mod", relpath: "../"};</script><script defer src="../sidebar-items.js"></script></div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices" role="menu"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><span class="help-button">?</span>
+                <a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><h1 class="fqn"><span class="out-of-band"><span id="render-detail"><a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class="inner">&#x2212;</span>]</a></span></span><span class="in-band">Module <a href="../index.html">lumol</a>::<wbr><a class="mod" href="">energy</a></span></h1><div class="docblock"><p>Interaction potentials for energy and forces computations</p>
+<h1 id="potentials" class="section-header"><a href="#potentials">Potentials</a></h1>
+<p>In classical simulations, the total energy of a system is separated as a
+sum containing terms from the non-bonded pairs, the bonds, the angles, the
+dihedral angles in the system; and the electrostatic interactions.</p>
+<p>Potentials are used to compute the interaction energy in a system. They are
+represented by a <a href="trait.Potential.html"><code>Potential</code></a> trait, used to compute the force
+and the energy of interaction. In order to add a new potential to lumol,
+one has to implement the Potential trait, and then indicate how the
+potential can be used. This is done by implementing one or more of the
+potentials marker traits:</p>
+<ul>
+<li><a href="trait.PairPotential.html"><code>PairPotential</code></a> for non-bonded two body interactions;</li>
+<li><a href="trait.BondPotential.html"><code>BondPotential</code></a> for covalent bonds interactions;</li>
+<li><a href="trait.AnglePotential.html"><code>AnglePotential</code></a> for covalent angles interactions;</li>
+<li><a href="trait.DihedralPotential.html"><code>DihedralPotential</code></a> for covalent dihedral angles
+interactions.</li>
+</ul>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered">
+<span class="kw">use</span> <span class="ident">lumol_core</span>::<span class="ident">energy</span>::{<span class="ident">Potential</span>, <span class="ident">PairPotential</span>, <span class="ident">DihedralPotential</span>};
+
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>)]</span>
+<span class="kw">struct</span> <span class="ident">OnePotential</span>;
+
+<span class="comment">// OnePotential is a potential</span>
+<span class="kw">impl</span> <span class="ident">Potential</span> <span class="kw">for</span> <span class="ident">OnePotential</span> {
+    <span class="kw">fn</span> <span class="ident">energy</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="kw">_</span>: <span class="ident">f64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {<span class="number">1.0</span>}
+    <span class="kw">fn</span> <span class="ident">force</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="kw">_</span>: <span class="ident">f64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {<span class="number">0.0</span>}
+}
+
+<span class="comment">// It can be used for pair and dihedral potentials, but not for angles or</span>
+<span class="comment">// bonds.</span>
+<span class="kw">impl</span> <span class="ident">PairPotential</span> <span class="kw">for</span> <span class="ident">OnePotential</span> {
+    <span class="comment">/* some code omitted */</span>
+}
+<span class="kw">impl</span> <span class="ident">DihedralPotential</span> <span class="kw">for</span> <span class="ident">OnePotential</span> {}</pre></div>
+<h1 id="global-and-coulombic-potentials" class="section-header"><a href="#global-and-coulombic-potentials">Global and Coulombic potentials</a></h1>
+<p>Global potentials are potentials that have an effect on the whole system at
+once. They are defined by implementing the <a href="../../lumol/trait.GlobalPotential.html" title="GlobalPotential"><code>GlobalPotential</code></a>
+<a href="trait.GlobalPotential.html">GlobalPotential</a> trait. <a href="trait.CoulombicPotential.html"><code>CoulombicPotential</code></a> are a
+specific version of global potentials used to compute electrostatic
+interactions.</p>
+</div><h2 id="structs" class="section-header"><a href="#structs">Structs</a></h2>
+<table><tr class="module-item"><td><a class="struct" href="struct.BornMayerHuggins.html" title="lumol::energy::BornMayerHuggins struct">BornMayerHuggins</a></td><td class="docblock-short"><p>Born-Mayer-Huggins potential.</p>
+</td></tr><tr class="module-item"><td><a class="struct" href="struct.Buckingham.html" title="lumol::energy::Buckingham struct">Buckingham</a></td><td class="docblock-short"><p>Buckingham potential.</p>
+</td></tr><tr class="module-item"><td><a class="struct" href="struct.CosineHarmonic.html" title="lumol::energy::CosineHarmonic struct">CosineHarmonic</a></td><td class="docblock-short"><p>Cosine harmonic potential.</p>
+</td></tr><tr class="module-item"><td><a class="struct" href="struct.Ewald.html" title="lumol::energy::Ewald struct">Ewald</a></td><td class="docblock-short"><p>Ewald summation for coulombic interactions.</p>
+</td></tr><tr class="module-item"><td><a class="struct" href="struct.Gaussian.html" title="lumol::energy::Gaussian struct">Gaussian</a></td><td class="docblock-short"><p>Gaussian potential.</p>
+</td></tr><tr class="module-item"><td><a class="struct" href="struct.Harmonic.html" title="lumol::energy::Harmonic struct">Harmonic</a></td><td class="docblock-short"><p>Harmonic potential.</p>
+</td></tr><tr class="module-item"><td><a class="struct" href="struct.LennardJones.html" title="lumol::energy::LennardJones struct">LennardJones</a></td><td class="docblock-short"><p>Lennard-Jones potential.</p>
+</td></tr><tr class="module-item"><td><a class="struct" href="struct.Mie.html" title="lumol::energy::Mie struct">Mie</a></td><td class="docblock-short"><p>Mie potential.</p>
+</td></tr><tr class="module-item"><td><a class="struct" href="struct.Morse.html" title="lumol::energy::Morse struct">Morse</a></td><td class="docblock-short"><p>Morse potential</p>
+</td></tr><tr class="module-item"><td><a class="struct" href="struct.NullPotential.html" title="lumol::energy::NullPotential struct">NullPotential</a></td><td class="docblock-short"><p>No-op potential.</p>
+</td></tr><tr class="module-item"><td><a class="struct" href="struct.PairInteraction.html" title="lumol::energy::PairInteraction struct">PairInteraction</a></td><td class="docblock-short"><p>A non-bonded interaction between two particle.</p>
+</td></tr><tr class="module-item"><td><a class="struct" href="struct.RestrictionInfo.html" title="lumol::energy::RestrictionInfo struct">RestrictionInfo</a></td><td class="docblock-short"><p>Restriction information attached to a pair of <code>Particles</code> in a <code>System</code>.</p>
+</td></tr><tr class="module-item"><td><a class="struct" href="struct.SharedEwald.html" title="lumol::energy::SharedEwald struct">SharedEwald</a></td><td class="docblock-short"><p>Thread-sade wrapper around Ewald implementing <code>CoulombicPotential</code>.</p>
+</td></tr><tr class="module-item"><td><a class="struct" href="struct.TableComputation.html" title="lumol::energy::TableComputation struct">TableComputation</a></td><td class="docblock-short"><p>Computation of a potential using tabulated values.</p>
+</td></tr><tr class="module-item"><td><a class="struct" href="struct.Torsion.html" title="lumol::energy::Torsion struct">Torsion</a></td><td class="docblock-short"><p>Torsion potential.</p>
+</td></tr><tr class="module-item"><td><a class="struct" href="struct.Wolf.html" title="lumol::energy::Wolf struct">Wolf</a></td><td class="docblock-short"><p>Wolf summation for coulombic interactions.</p>
+</td></tr></table><h2 id="enums" class="section-header"><a href="#enums">Enums</a></h2>
+<table><tr class="module-item"><td><a class="enum" href="enum.BondPath.html" title="lumol::energy::BondPath enum">BondPath</a></td><td class="docblock-short"><p>Shortest bond path between two particles in a system</p>
+</td></tr><tr class="module-item"><td><a class="enum" href="enum.PairRestriction.html" title="lumol::energy::PairRestriction enum">PairRestriction</a></td><td class="docblock-short"><p>Possible restrictions on the pair interactions.</p>
+</td></tr></table><h2 id="traits" class="section-header"><a href="#traits">Traits</a></h2>
+<table><tr class="module-item"><td><a class="trait" href="trait.AnglePotential.html" title="lumol::energy::AnglePotential trait">AnglePotential</a></td><td class="docblock-short"><p>Marker trait for potentials that can be used for molecular angles.</p>
+</td></tr><tr class="module-item"><td><a class="trait" href="trait.BondPotential.html" title="lumol::energy::BondPotential trait">BondPotential</a></td><td class="docblock-short"><p>Marker trait for potentials that can be used for molecular bonds.</p>
+</td></tr><tr class="module-item"><td><a class="trait" href="trait.Computation.html" title="lumol::energy::Computation trait">Computation</a></td><td class="docblock-short"><p>Alternative energy and forces computation.</p>
+</td></tr><tr class="module-item"><td><a class="trait" href="trait.CoulombicPotential.html" title="lumol::energy::CoulombicPotential trait">CoulombicPotential</a></td><td class="docblock-short"><p>Electrostatic potential solver.</p>
+</td></tr><tr class="module-item"><td><a class="trait" href="trait.DihedralPotential.html" title="lumol::energy::DihedralPotential trait">DihedralPotential</a></td><td class="docblock-short"><p>Marker trait for potentials that can be used for molecular dihedral angles.</p>
+</td></tr><tr class="module-item"><td><a class="trait" href="trait.GlobalCache.html" title="lumol::energy::GlobalCache trait">GlobalCache</a></td><td class="docblock-short"><p>Energetic cache for global potentials.</p>
+</td></tr><tr class="module-item"><td><a class="trait" href="trait.GlobalPotential.html" title="lumol::energy::GlobalPotential trait">GlobalPotential</a></td><td class="docblock-short"><p>A potential acting on the whole <a href="../sys/struct.System.html">System</a> at once.</p>
+</td></tr><tr class="module-item"><td><a class="trait" href="trait.PairPotential.html" title="lumol::energy::PairPotential trait">PairPotential</a></td><td class="docblock-short"><p>Marker trait for potentials that can be used for non-bonded two body
+interactions.</p>
+</td></tr><tr class="module-item"><td><a class="trait" href="trait.Potential.html" title="lumol::energy::Potential trait">Potential</a></td><td class="docblock-short"><p>A potential for force and energy computations.</p>
+</td></tr></table></section><section id="search" class="content hidden"></section><section class="footer"></section><script>window.rootPath = "../../";window.currentCrate = "lumol";</script><script src="../../main.js"></script><script defer src="../../search-index.js"></script></body></html>
