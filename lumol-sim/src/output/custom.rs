@@ -49,9 +49,9 @@ impl From<String> for CustomOutputError {
 impl fmt::Display for CustomOutputError {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
         match *self {
-            CustomOutputError::Io(ref err) => write!(fmt, "{}", err)?,
-            CustomOutputError::Expr(ref err) => write!(fmt, "{}", err)?,
-            CustomOutputError::Custom(ref err) => write!(fmt, "{}", err)?,
+            CustomOutputError::Io(ref err) => write!(fmt, "{err}")?,
+            CustomOutputError::Expr(ref err) => write!(fmt, "{err}")?,
+            CustomOutputError::Custom(ref err) => write!(fmt, "{err}")?,
         }
         Ok(())
     }
@@ -124,7 +124,7 @@ impl FormatArgs {
     fn format(&self, system: &System) -> Result<String, CustomOutputError> {
         let context = get_output_context(system);
         let mut output = String::new();
-        for &(ref string, ref expr) in &self.args {
+        for (string, expr) in &self.args {
             output.push_str(string);
             let value = expr.eval(&context)?;
             output.push_str(&value.to_string());
@@ -138,7 +138,7 @@ fn get_output_context(system: &System) -> Context<'_> {
     let mut context = Context::new();
     context.set_query(move |name| {
         // Get unit conversion factor firsts
-        units::CONVERSION_FACTORS.get(name).cloned().or_else(|| {
+        units::CONVERSION_FACTORS.get(name).copied().or_else(|| {
             macro_rules! get_particle_data {
                 ($index: ident, $data: ident) => (
                     system.particles()

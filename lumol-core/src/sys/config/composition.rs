@@ -100,7 +100,7 @@ impl Composition {
     /// ```
     pub fn particles(&self, kind: ParticleKind) -> usize {
         let i = kind.0 as usize;
-        return self.particles.get(i).cloned().unwrap_or(0);
+        return self.particles.get(i).copied().unwrap_or(0);
     }
 
     /// Get an iterator over the particles kind and count
@@ -120,7 +120,7 @@ impl Composition {
     /// assert_eq!(iter.next(), Some((ParticleKind(10), 1)));
     /// assert_eq!(iter.next(), None);
     /// ```
-    pub fn all_particles<'a>(&'a self) -> impl Iterator<Item = (ParticleKind, usize)> + 'a {
+    pub fn all_particles(&self) -> impl Iterator<Item = (ParticleKind, usize)> + '_ {
         self.particles
             .iter()
             .enumerate()
@@ -205,7 +205,7 @@ impl Composition {
     /// assert_eq!(composition.molecules(ar), 0);
     /// ```
     pub fn molecules(&self, hash: MoleculeHash) -> usize {
-        self.molecules.get(&hash).cloned().unwrap_or(0)
+        self.molecules.get(&hash).copied().unwrap_or(0)
     }
 
     /// Get an iterator over the molecules hashes and count
@@ -227,7 +227,7 @@ impl Composition {
     /// assert_eq!(iter.next(), Some((ar, 1)));
     /// assert_eq!(iter.next(), None);
     /// ```
-    pub fn all_molecules<'a>(&'a self) -> impl Iterator<Item = (MoleculeHash, usize)> + 'a {
+    pub fn all_molecules(&self) -> impl Iterator<Item = (MoleculeHash, usize)> + '_ {
         self.molecules
             .iter()
             .filter(|(_, n)| **n != 0)

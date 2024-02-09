@@ -45,7 +45,7 @@ impl Output for CellOutput {
             system.cell.alpha(),
             system.cell.beta(),
             system.cell.gamma()
-        )
+        );
     }
 }
 

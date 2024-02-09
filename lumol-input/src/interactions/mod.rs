@@ -83,7 +83,7 @@ fn read_restriction(config: &Table) -> Result<Option<PairRestriction>, Error> {
                 "exclude13" => Ok(Some(PairRestriction::Exclude13)),
                 "exclude14" => Ok(Some(PairRestriction::Exclude14)),
                 "scale14" => Err(Error::from("'scale14' restriction must be a table")),
-                other => Err(Error::from(format!("Unknown restriction '{}'", other))),
+                other => Err(Error::from(format!("Unknown restriction '{other}'"))),
             }
         }
         Value::Table(ref restriction) => {

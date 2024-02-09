@@ -82,15 +82,15 @@ impl fmt::Display for Error {
                         write!(fmt, "permission to access '{}' denied", path.display())
                     }
                     _ => {
-                        write!(fmt, "error with '{}': {}", path.display(), self)
+                        write!(fmt, "error with '{}': {}", path.display(), err)
                     }
                 }
             }
-            Error::Trajectory(ref err) => write!(fmt, "{}", err),
-            Error::TOML(ref err) => write!(fmt, "{}", err),
-            Error::Config(ref err) => write!(fmt, "{}", err),
-            Error::Unit(ref err) => write!(fmt, "{}", err),
-            Error::CustomOutput(ref err) => write!(fmt, "{}", err),
+            Error::Trajectory(ref err) => write!(fmt, "{err}"),
+            Error::TOML(ref err) => write!(fmt, "{err}"),
+            Error::Config(ref err) => write!(fmt, "{err}"),
+            Error::Unit(ref err) => write!(fmt, "{err}"),
+            Error::CustomOutput(ref err) => write!(fmt, "{err}"),
         }
     }
 }

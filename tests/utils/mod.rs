@@ -22,7 +22,7 @@ impl Collector {
         let pressures = Vec::with_capacity(10_000);
         let temperatures = Vec::with_capacity(10_000);
         Collector {
-            start: start,
+            start,
             pressures: Rc::new(RwLock::new(pressures)),
             temperatures: Rc::new(RwLock::new(temperatures)),
         }

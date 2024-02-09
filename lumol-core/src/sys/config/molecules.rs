@@ -170,7 +170,7 @@ impl<'a> Deref for MoleculeRef<'a> {
     type Target = Bonding;
 
     fn deref(&self) -> &Self::Target {
-        &self.bonding
+        self.bonding
     }
 }
 
@@ -193,7 +193,7 @@ impl<'a> MoleculeRefMut<'a> {
     /// Borrow `self` as a `MoleculeRef`.
     pub fn as_ref(&self) -> MoleculeRef<'_> {
         MoleculeRef {
-            bonding: &self.bonding,
+            bonding: self.bonding,
             particles: self.particles.as_ref(),
         }
     }
@@ -208,12 +208,12 @@ impl<'a> MoleculeRefMut<'a> {
         // Explicity re-borrow all the fiels, as ParticleSliceMut can not be
         // copied
         ParticleSliceMut {
-            name: &mut self.particles.name,
-            mass: &mut self.particles.mass,
-            kind: &mut self.particles.kind,
-            charge: &mut self.particles.charge,
-            position: &mut self.particles.position,
-            velocity: &mut self.particles.velocity,
+            name: self.particles.name,
+            mass: self.particles.mass,
+            kind: self.particles.kind,
+            charge: self.particles.charge,
+            position: self.particles.position,
+            velocity: self.particles.velocity,
         }
     }
 
@@ -233,7 +233,7 @@ impl<'a> Deref for MoleculeRefMut<'a> {
     type Target = Bonding;
 
     fn deref(&self) -> &Self::Target {
-        &self.bonding
+        self.bonding
     }
 }
 
@@ -341,6 +341,6 @@ mod tests {
 
         assert_eq!(molecule.particles().position[0], Vector3D::new(3.0, 0.0, 0.0));
         assert_eq!(molecule.particles().position[1], Vector3D::new(5.0, 0.0, 0.0));
-        assert_eq!(molecule.center_of_mass(), Vector3D::new(4.0, 0.0, 0.0))
+        assert_eq!(molecule.center_of_mass(), Vector3D::new(4.0, 0.0, 0.0));
     }
 }

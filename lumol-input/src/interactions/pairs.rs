@@ -55,10 +55,7 @@ impl GlobalInformation<'_> {
 impl InteractionsInput {
     /// Read the "pairs" section from the potential configuration.
     pub(crate) fn read_pairs(&self, system: &mut System) -> Result<(), Error> {
-        let pairs = match self.config.get("pairs") {
-            Some(pairs) => pairs,
-            None => return Ok(()),
-        };
+        let Some(pairs) = self.config.get("pairs") else { return Ok(()) };
 
         let pairs = pairs.as_table().ok_or(
             Error::from("the 'pairs' section must be a table")
@@ -76,7 +73,7 @@ impl InteractionsInput {
 
             let table = table.as_table().ok_or(
                 Error::from(format!(
-                    "pair potential associated with {} must be a table", key
+                    "pair potential associated with {key} must be a table"
                 ))
             )?;
 
@@ -127,7 +124,7 @@ impl InteractionsInput {
 
             if let Some(use_tail) = tail {
                 if use_tail {
-                    interaction.enable_tail_corrections()
+                    interaction.enable_tail_corrections();
                 }
             }
 
@@ -142,10 +139,7 @@ impl InteractionsInput {
 
     /// Read the "bonds" section from the potential configuration.
     pub(crate) fn read_bonds(&self, system: &mut System) -> Result<(), Error> {
-        let bonds = match self.config.get("bonds") {
-            Some(bonds) => bonds,
-            None => return Ok(()),
-        };
+        let Some(bonds) = self.config.get("bonds") else { return Ok(()) };
 
         let bonds = bonds.as_table().ok_or(
             Error::from("the 'pairs' section must be a table")
@@ -161,7 +155,7 @@ impl InteractionsInput {
 
             let table = table.as_table().ok_or(
                 Error::from(format!(
-                    "bond potential associated with {} must be a table", key
+                    "bond potential associated with {key} must be a table"
                 ))
             )?;
 
@@ -182,7 +176,7 @@ fn read_pair_potential(table: &Table) -> Result<Box<dyn PairPotential>, Error> {
         "morse" => Ok(Box::new(Morse::from_toml(table)?)),
         "gaussian" => Ok(Box::new(Gaussian::from_toml(table)?)),
         "mie" => Ok(Box::new(Mie::from_toml(table)?)),
-        other => Err(Error::from(format!("unknown potential type '{}'", other))),
+        other => Err(Error::from(format!("unknown potential type '{other}'"))),
     }
 }
 
@@ -191,7 +185,7 @@ fn read_bond_potential(table: &Table) -> Result<Box<dyn BondPotential>, Error> {
         "null" => Ok(Box::new(NullPotential::from_toml(table)?)),
         "harmonic" => Ok(Box::new(Harmonic::from_toml(table)?)),
         "morse" => Ok(Box::new(Morse::from_toml(table)?)),
-        other => Err(Error::from(format!("unknown potential type '{}'", other))),
+        other => Err(Error::from(format!("unknown potential type '{other}'"))),
     }
 }
 
@@ -202,7 +196,7 @@ fn read_pair_computation(computation: &Table, potential: Box<dyn PairPotential>)
 
     match computation.keys().map(|s| s.as_ref()).next() {
         Some("table") => Ok(Box::new(TableComputation::from_toml(computation, potential)?)),
-        Some(other) => Err(Error::from(format!("Unknown computation type '{}'", other))),
+        Some(other) => Err(Error::from(format!("Unknown computation type '{other}'"))),
         None => unreachable!(),
     }
 }

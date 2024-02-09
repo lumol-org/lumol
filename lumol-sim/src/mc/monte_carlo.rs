@@ -58,7 +58,7 @@ impl Move {
                 0.0 < acceptance && acceptance < 1.0,
                 "target acceptance ratio must be between 0 and 1, got {}",
                 acceptance
-            )
+            );
         }
         self.target_acceptance = target_acceptance;
     }
@@ -271,7 +271,7 @@ impl Propagator for MonteCarlo {
                             "the molecules with hash {:?} are not simulated by \
                              this set of Monte Carlo moves",
                             hash
-                        )
+                        );
                     }
                 }
                 DegreesOfFreedom::Molecules
@@ -282,7 +282,7 @@ impl Propagator for MonteCarlo {
     fn setup(&mut self, system: &System) {
         self.cache.init(system);
         for mc_move in &mut self.moves {
-            mc_move.mcmove.setup(system)
+            mc_move.mcmove.setup(system);
         }
     }
 

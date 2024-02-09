@@ -127,9 +127,9 @@ impl Computation for TableComputation {
             let dx = r - (bin as f64) * self.delta;
             let slope = (self.energy_table[bin + 1] - self.energy_table[bin]) / self.delta;
             return self.energy_table[bin] + dx * slope;
-        } else {
-            return 0.0;
         }
+
+        return 0.0;
     }
 
     fn compute_force(&self, r: f64) -> f64 {
@@ -139,9 +139,9 @@ impl Computation for TableComputation {
             let dx = r - (bin as f64) * self.delta;
             let slope = (self.force_table[bin + 1] - self.force_table[bin]) / self.delta;
             return self.force_table[bin] + dx * slope;
-        } else {
-            return 0.0;
         }
+
+        return 0.0;
     }
 }
 

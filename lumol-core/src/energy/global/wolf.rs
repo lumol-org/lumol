@@ -245,7 +245,7 @@ impl GlobalPotential for Wolf {
 
         // At this point all the forces are computed, but the results are
         // scattered across all thread local Vecs, here we gather them.
-        thread_local_forces.sum_into(forces)
+        thread_local_forces.sum_into(forces);
     }
 
     fn atomic_virial(&self, configuration: &Configuration) -> Matrix3 {
@@ -409,7 +409,7 @@ mod tests {
             let new_cell = system.cell.scale(scaling);
 
             for position in system.particles_mut().position {
-                *position = new_cell.cartesian(&old_cell.fractional(&position));
+                *position = new_cell.cartesian(&old_cell.fractional(position));
             }
             system.cell = new_cell;
         }

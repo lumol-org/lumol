@@ -33,7 +33,7 @@ impl FromToml for MolecularDynamics {
                 "Verlet" => Box::new(Verlet::from_toml(integrator, timestep)?),
                 "VelocityVerlet" => Box::new(VelocityVerlet::from_toml(integrator, timestep)?),
                 "LeapFrog" => Box::new(LeapFrog::from_toml(integrator, timestep)?),
-                other => return Err(Error::from(format!("unknown integrator '{}'", other))),
+                other => return Err(Error::from(format!("unknown integrator '{other}'"))),
             };
 
             md = MolecularDynamics::from_integrator(integrator);
@@ -50,7 +50,7 @@ impl FromToml for MolecularDynamics {
                 "Berendsen" => Box::new(BerendsenThermostat::from_toml(thermostat)?),
                 "Rescale" => Box::new(RescaleThermostat::from_toml(thermostat)?),
                 "CSVR" => Box::new(CSVRThermostat::from_toml(thermostat)?),
-                other => return Err(Error::from(format!("unknown thermostat type '{}'", other))),
+                other => return Err(Error::from(format!("unknown thermostat type '{other}'"))),
             };
             md.set_thermostat(thermostat);
         }
@@ -73,7 +73,7 @@ impl FromToml for MolecularDynamics {
                         Box::new(Alternator::<RemoveRotation>::from_toml(control)?)
                     }
                     "Rewrap" => Box::new(Alternator::<Rewrap>::from_toml(control)?),
-                    other => return Err(Error::from(format!("unknown control '{}'", other))),
+                    other => return Err(Error::from(format!("unknown control '{other}'"))),
                 };
                 md.add_control(control);
             }

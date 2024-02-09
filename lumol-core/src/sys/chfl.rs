@@ -349,7 +349,7 @@ impl Trajectory {
     /// assert_eq!(system.cell, UnitCell::cubic(10.0));
     /// ```
     pub fn set_cell(&mut self, cell: &UnitCell) {
-        self.0.set_cell(&cell.into())
+        self.0.set_cell(&cell.into());
     }
 
     /// Set the topology associated with this trajectory by reading the first
@@ -452,7 +452,7 @@ END
     #[allow(clippy::unreadable_literal)]
     fn read_water() {
         let mut file = tempfile::Builder::new().suffix(".xyz").tempfile().unwrap();
-        write!(file, "{}", WATER).unwrap();
+        write!(file, "{WATER}").unwrap();
 
         let molecule = read_molecule(file.path()).unwrap();
 
@@ -479,7 +479,7 @@ END
     #[test]
     fn read_pdb_water() {
         let mut file = tempfile::Builder::new().suffix(".pdb").tempfile().unwrap();
-        write!(file, "{}", PDB_WATER).unwrap();
+        write!(file, "{PDB_WATER}").unwrap();
 
         let system = TrajectoryBuilder::new()
             .open(&file).unwrap()
@@ -506,7 +506,7 @@ END
     #[allow(clippy::unreadable_literal)]
     fn read_propane() {
         let mut file = tempfile::Builder::new().suffix(".xyz").tempfile().unwrap();
-        write!(file, "{}", PROPANE).unwrap();
+        write!(file, "{PROPANE}").unwrap();
 
         let molecule = read_molecule(file.path()).unwrap();
 

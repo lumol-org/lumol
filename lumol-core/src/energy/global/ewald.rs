@@ -26,7 +26,7 @@ use super::{GlobalPotential, CoulombicPotential, GlobalCache};
 ///
 /// # Examples
 ///
-///  ```no-run
+///  ```ignore
 ///  let array = Ewald3DArray::zeros((-6..5, 8, 2));
 ///
 ///  // Negative numbers are allowed for indexing into the array, as long as
@@ -315,7 +315,7 @@ impl Ewald {
         } else if accuracy < 0.0 {
             panic!("accuracy can not be negative in Ewald");
         } else if accuracy > 1.0 {
-            warn!("accuracy is bigger than 1 in Ewald::with_precision")
+            warn!("accuracy is bigger than 1 in Ewald::with_precision");
         }
 
         // Compute squared total charge
@@ -950,7 +950,7 @@ impl GlobalCache for SharedEwald {
             let mut updater = None;
             ::std::mem::swap(&mut updater, &mut ewald.updater);
             let updater = updater.unwrap();
-            updater(&mut *ewald);
+            updater(&mut ewald);
         }
     }
 }
@@ -1006,7 +1006,7 @@ mod tests {
         use crate::UnitCell;
 
         #[test]
-        #[should_panic]
+        #[should_panic(expected="Ewald is not defined with infinite unit cell")]
         fn infinite_cell() {
             let mut system = nacl_pair();
             system.cell = UnitCell::infinite();
@@ -1015,19 +1015,19 @@ mod tests {
         }
 
         #[test]
-        #[should_panic]
+        #[should_panic(expected="the cutoff can not be negative in Ewald")]
         fn negative_cutoff() {
             let _ = Ewald::new(-8.0, 10, None);
         }
 
         #[test]
-        #[should_panic]
+        #[should_panic(expected="alpha can not be negative in Ewald")]
         fn negative_alpha() {
             let _ = Ewald::new(8.0, 10, -45.2);
         }
 
         #[test]
-        #[should_panic]
+        #[should_panic(expected="kmax can not be 0 in Ewald")]
         fn kmax_null() {
             let _ = Ewald::new(8.0, 0, None);
         }
@@ -1207,7 +1207,7 @@ mod tests {
             let new_cell = system.cell.scale(scaling);
 
             for position in system.particles_mut().position {
-                *position = new_cell.cartesian(&old_cell.fractional(&position));
+                *position = new_cell.cartesian(&old_cell.fractional(position));
             }
             system.cell = new_cell;
         }
@@ -1412,7 +1412,7 @@ mod tests {
                 match particle.name.as_ref() {
                     "H" => *particle.charge = 0.42380,
                     "O" => *particle.charge = -2.0 * 0.42380,
-                    other => panic!("Unknown particle name: {}", other),
+                    other => panic!("Unknown particle name: {other}"),
                 }
             }
 
@@ -1518,7 +1518,7 @@ mod tests {
                 let ewald = SharedEwald::new(ewald);
                 let energy = ewald.energy(&system);
                 let virial = ewald.atomic_virial(&system).trace();
-                assert_relative_eq!(energy, virial, max_relative = 1e-3)
+                assert_relative_eq!(energy, virial, max_relative = 1e-3);
             }
 
             #[test]
@@ -1571,7 +1571,7 @@ mod tests {
                 let ewald = SharedEwald::new(ewald);
                 let energy = ewald.energy(&system);
                 let virial = ewald.atomic_virial(&system).trace();
-                assert_relative_eq!(energy, virial, max_relative = 1e-3)
+                assert_relative_eq!(energy, virial, max_relative = 1e-3);
             }
 
             #[test]
@@ -1624,7 +1624,7 @@ mod tests {
                 let ewald = SharedEwald::new(ewald);
                 let energy = ewald.energy(&system);
                 let virial = ewald.atomic_virial(&system).trace();
-                assert_relative_eq!(energy, virial, max_relative = 1e-3)
+                assert_relative_eq!(energy, virial, max_relative = 1e-3);
             }
 
             #[test]
@@ -1677,7 +1677,7 @@ mod tests {
                 let ewald = SharedEwald::new(ewald);
                 let energy = ewald.energy(&system);
                 let virial = ewald.atomic_virial(&system).trace();
-                assert_relative_eq!(energy, virial, max_relative = 1e-3)
+                assert_relative_eq!(energy, virial, max_relative = 1e-3);
             }
         }
 
@@ -1738,7 +1738,7 @@ mod tests {
                 let ewald = SharedEwald::new(ewald);
                 let energy = ewald.energy(&system);
                 let virial = ewald.atomic_virial(&system).trace();
-                assert_relative_eq!(energy, virial, max_relative = 1e-3)
+                assert_relative_eq!(energy, virial, max_relative = 1e-3);
             }
 
             #[test]
@@ -1791,7 +1791,7 @@ mod tests {
                 let ewald = SharedEwald::new(ewald);
                 let energy = ewald.energy(&system);
                 let virial = ewald.atomic_virial(&system).trace();
-                assert_relative_eq!(energy, virial, max_relative = 1e-3)
+                assert_relative_eq!(energy, virial, max_relative = 1e-3);
             }
 
             #[test]
@@ -1844,7 +1844,7 @@ mod tests {
                 let ewald = SharedEwald::new(ewald);
                 let energy = ewald.energy(&system);
                 let virial = ewald.atomic_virial(&system).trace();
-                assert_relative_eq!(energy, virial, max_relative = 1e-3)
+                assert_relative_eq!(energy, virial, max_relative = 1e-3);
             }
 
             #[test]
@@ -1897,7 +1897,7 @@ mod tests {
                 let ewald = SharedEwald::new(ewald);
                 let energy = ewald.energy(&system);
                 let virial = ewald.atomic_virial(&system).trace();
-                assert_relative_eq!(energy, virial, max_relative = 1e-3)
+                assert_relative_eq!(energy, virial, max_relative = 1e-3);
             }
         }
     }

@@ -4,13 +4,13 @@
 use std::cell::{RefCell, RefMut};
 use std::ops::AddAssign;
 
-use thread_local::CachedThreadLocal;
+use thread_local::ThreadLocal;
 
 /// A collection of vectors, one by thread using this struct. All the vectors
 /// are wrapped in `RefCell` to ensure mutability of the values. The thread
 /// creating the `ThreadLocalVec` will get faster access to the underlying data.
 pub struct ThreadLocalVec<T> where T: Send {
-    inner: CachedThreadLocal<RefCell<Vec<T>>>,
+    inner: ThreadLocal<RefCell<Vec<T>>>,
     size: usize
 }
 
@@ -18,7 +18,7 @@ impl<T: Send + Default + Clone> ThreadLocalVec<T> {
     /// Create a new `ThreadLocalVec` with the given size, initializing the
     /// values with `T::default`.
     pub fn with_size(size: usize) -> Self {
-        let inner = CachedThreadLocal::new();
+        let inner = ThreadLocal::new();
         // Set the current thread as owner of the data
         let _ = inner.get_or(|| RefCell::new(vec![T::default(); size]));
         ThreadLocalVec {

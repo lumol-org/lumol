@@ -15,7 +15,7 @@ struct Cleaner {
 impl Cleaner {
     fn new(files: Vec<&'static str>) -> Cleaner {
         Cleaner {
-            files: files
+            files
         }
     }
 }

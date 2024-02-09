@@ -180,7 +180,7 @@ impl Bonding {
     pub fn translate_by(&mut self, delta: isize) {
         if delta < 0 {
             // We should not create negative indexes
-            assert!((delta.abs() as usize) < self.start());
+            assert!(delta.unsigned_abs() < self.start());
         }
 
         // The wrapping_add are necessary here, and produce the right result,

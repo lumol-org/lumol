@@ -135,7 +135,7 @@ static ATOMIC_MASSES: [(&str, f64); 118] = [
 /// assert_eq!(get_atomic_mass("Ow"), None);
 /// ```
 pub fn get_atomic_mass(name: &str) -> Option<f64> {
-    for (symbol, mass) in ATOMIC_MASSES.iter() {
+    for (symbol, mass) in &ATOMIC_MASSES {
         if name == *symbol {
             return Some(*mass);
         }

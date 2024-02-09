@@ -72,7 +72,7 @@ mod tests {
         test_output(
             |path| Box::new(TrajectoryOutput::with_format(path, "XYZ").unwrap()),
             "2
-            Written by the chemfiles library
+            Properties=species:S:1:pos:R:3 Lattice=\"10 0 0 0 10 0 0 0 10\"
             F 0 0 0
             F 1.3 0 0
             ",

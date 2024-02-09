@@ -429,19 +429,19 @@ mod tests {
     use approx::{assert_ulps_eq, assert_relative_eq};
 
     #[test]
-    #[should_panic]
+    #[should_panic(expected="Cell lengths must be positive")]
     fn negative_cubic() {
         let _ = UnitCell::cubic(-4.0);
     }
 
     #[test]
-    #[should_panic]
+    #[should_panic(expected="Cell lengths must be positive")]
     fn negative_ortho() {
         let _ = UnitCell::ortho(3.0, 0.0, -5.0);
     }
 
     #[test]
-    #[should_panic]
+    #[should_panic(expected="Cell lengths must be positive")]
     fn negative_triclinic() {
         let _ = UnitCell::triclinic(3.0, 0.0, -5.0, 90.0, 90.0, 90.0);
     }
@@ -552,7 +552,7 @@ mod tests {
     }
 
     #[test]
-    #[should_panic]
+    #[should_panic(expected="can not scale infinite cells")]
     fn scale_infinite() {
         let cell = UnitCell::infinite();
         let _ = cell.scale(2.0 * Matrix3::one());
@@ -569,7 +569,7 @@ mod tests {
     }
 
     #[test]
-    #[should_panic]
+    #[should_panic(expected="can not scale infinite cells")]
     fn scale_mut_infinite() {
         let mut cell = UnitCell::infinite();
         cell.scale_mut(2.0 * Matrix3::one());

@@ -77,7 +77,7 @@ impl MCMove for Translate {
                     "Changing the maximal displacement for Translate, \
                      because the interactions cutoff is too low."
                 );
-                self.delta = max
+                self.delta = max;
             }
         }
     }
@@ -122,7 +122,7 @@ impl MCMove for Translate {
         // Move molecule such that its center-of-mass is inside the simulation
         // cell. Note that particles of the molecule may still be outside the
         // cell, but that is not important.
-        molecule.wrap(&cell)
+        molecule.wrap(&cell);
     }
 
     fn restore(&mut self, _: &mut System) {

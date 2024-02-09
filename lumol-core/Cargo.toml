@@ -6,7 +6,7 @@ documentation = "https://lumol.org/"
 repository = "https://github.com/lumol-org/lumol"
 readme = "../README.md"
 license = "BSD-3-Clause"
-edition = "2018"
+edition = "2021"
 
 [lib]
 bench = false
@@ -15,7 +15,7 @@ bench = false
 bitflags = "1"
 chemfiles = "0.10"
 lazy_static = "1"
-log-once = "0.3"
+log-once = "0.4"
 ndarray = "0.14"
 num-traits = "0.2"
 rayon = "1"

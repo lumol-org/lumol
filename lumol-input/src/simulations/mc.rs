@@ -43,7 +43,7 @@ impl FromTomlWithData for MonteCarlo {
                 "Translate" => Box::new(Translate::from_toml(mc_move, root.clone())?),
                 "Rotate" => Box::new(Rotate::from_toml(mc_move, root.clone())?),
                 "Resize" => Box::new(Resize::from_toml(mc_move, root.clone())?),
-                other => return Err(Error::from(format!("unknown Monte Carlo move '{}'", other))),
+                other => return Err(Error::from(format!("unknown Monte Carlo move '{other}'"))),
             };
 
             match target_acceptance {
@@ -52,13 +52,13 @@ impl FromTomlWithData for MonteCarlo {
                         return Err(Error::from(
                             "No 'update_frequency' found. Please specify 'update_frequency' in combination with 'target_acceptance'",
                         ));
-                    } else if ta < 0.0 || ta > 1.0 {
+                    } else if !(0.0..=1.0).contains(&ta) {
                         return Err(
                             Error::from("'target_acceptance' has to be between 0.0 and 1.0"),
                         );
-                    } else {
-                        builder.add(mc_move, frequency, ta)
                     }
+
+                    builder.add(mc_move, frequency, ta);
                 }
                 None => builder.add(mc_move, frequency, None),
             }

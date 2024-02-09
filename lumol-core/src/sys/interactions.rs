@@ -93,7 +93,7 @@ impl Interactions {
     /// Get the existing kind associated with `name` or create a new one
     pub(crate) fn get_kind(&mut self, name: &str) -> ParticleKind {
         if let Some(&kind) = self.kinds.get(name) {
-            return kind;
+            kind
         } else {
             let kind = ParticleKind(self.kinds.len() as u32);
             let _ = self.kinds.insert(String::from(name), kind);
@@ -177,8 +177,7 @@ impl Interactions {
 
         // Go through global interactions, return maximum cutoff
         let global_cutoff = self.globals.iter()
-                                .map(|i| i.cutoff())
-                                .filter_map(|rc| rc)
+                                .filter_map(|i| i.cutoff())
                                 .fold(f64::NAN, f64::max);
 
         let mut maximum_cutoff = f64::max(global_cutoff, coulomb_cutoff);

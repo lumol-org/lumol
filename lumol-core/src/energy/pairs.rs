@@ -290,9 +290,9 @@ impl PairInteraction {
         if self.tail {
             let tensor = Matrix3::one() / 3.0;
             return self.potential.tail_virial(self.cutoff) * tensor;
-        } else {
-            return Matrix3::zero();
         }
+
+        return Matrix3::zero();
     }
 }
 

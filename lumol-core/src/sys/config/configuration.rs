@@ -478,7 +478,8 @@ impl<'a> Iterator for MoleculeIter<'a> {
                 slice
             };
             debug_assert!(self.ptr.name <= self.end.name);
-            return Some(MoleculeRef::new(bonding, slice));
+
+            Some(MoleculeRef::new(bonding, slice))
         } else {
             None
         }
@@ -506,7 +507,8 @@ impl<'a> DoubleEndedIterator for MoleculeIter<'a> {
                 ParticleSlice::from_raw_parts(self.end, len)
             };
             debug_assert!(self.ptr.name <= self.end.name);
-            return Some(MoleculeRef::new(bonding, slice));
+
+            Some(MoleculeRef::new(bonding, slice))
         } else {
             None
         }
@@ -537,7 +539,8 @@ impl<'a> Iterator for MoleculeIterMut<'a> {
                 slice
             };
             debug_assert!(self.ptr.name <= self.end.name);
-            return Some(MoleculeRefMut::new(bonding, slice));
+
+            Some(MoleculeRefMut::new(bonding, slice))
         } else {
             None
         }
@@ -565,7 +568,8 @@ impl<'a> DoubleEndedIterator for MoleculeIterMut<'a> {
                 ParticleSliceMut::from_raw_parts_mut(self.end, len)
             };
             debug_assert!(self.ptr.name <= self.end.name);
-            return Some(MoleculeRefMut::new(bonding, slice));
+
+            Some(MoleculeRefMut::new(bonding, slice))
         } else {
             None
         }

@@ -45,7 +45,7 @@ impl<T> AsMut<T> for Alternator<T> {
 impl<T: Control> Control for Alternator<T> {
     fn control(&mut self, system: &mut System) {
         if self.can_run() {
-            self.as_mut().control(system)
+            self.as_mut().control(system);
         }
     }
 }

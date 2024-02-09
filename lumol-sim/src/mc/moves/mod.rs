@@ -98,13 +98,14 @@ fn select_molecule(system: &System, hash: Option<MoleculeHash>, rng: &mut dyn Rn
             .filter(|(_, m)| m.hash() == hash)
             .map(|(i, _)| i)
             .collect::<Vec<_>>();
-        return mols.choose(rng).cloned();
+
+        mols.choose(rng).copied()
     } else {
         let molecules_count = system.molecules().count();
         if molecules_count == 0 {
-            return None;
+            None
         } else {
-            return Some(rng.gen_range(0..molecules_count));
+            Some(rng.gen_range(0..molecules_count))
         }
     }
 }

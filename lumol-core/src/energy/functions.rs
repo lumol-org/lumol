@@ -466,9 +466,7 @@ pub struct Gaussian {
 impl Gaussian {
     /// Create a new `Gaussian` potential with a depth of `a` and a width of `b`
     pub fn new(a: f64, b: f64) -> Gaussian {
-        if b <= 0.0 {
-            panic!("\"b\" has to be positive in Gaussian potential")
-        }
+        assert!(b > 0.0, "\"b\" has to be positive in Gaussian potential");
         Gaussian { a: a, b: b }
     }
 }
@@ -540,9 +538,7 @@ pub struct Mie {
 impl Mie {
     /// Return Mie potential.
     pub fn new(sigma: f64, epsilon: f64, n: f64, m: f64) -> Mie {
-        if m >= n {
-            panic!("The repulsive exponent n has to be larger than the attractive exponent m")
-        };
+        assert!(m < n, "The repulsive exponent n has to be larger than the attractive exponent m");
         let prefac = n / (n - m) * (n / m).powf(m / (n - m)) * epsilon;
         Mie {
             sigma: sigma,

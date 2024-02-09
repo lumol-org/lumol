@@ -341,7 +341,7 @@ impl Compute for MolecularVirial {
                         warn_once!(
                             "Ignoring non null bond potential ({}, {}) in molecular virial",
                             name_i, name_j
-                        )
+                        );
                     }
                 }
             }
@@ -629,7 +629,7 @@ mod test {
     }
 
     #[test]
-    #[should_panic]
+    #[should_panic(expected="Can not compute virial for infinite cell")]
     fn virial_infinite_cell() {
         let _ = Virial.compute(&System::new());
     }
@@ -662,7 +662,7 @@ mod test {
     }
 
     #[test]
-    #[should_panic]
+    #[should_panic(expected="assertion failed: self.temperature >= 0.0")]
     fn pressure_at_temperature_negative_temperature() {
         let system = &test_pairs_system();
         let pressure = PressureAtTemperature { temperature: -4.0 };
@@ -670,7 +670,7 @@ mod test {
     }
 
     #[test]
-    #[should_panic]
+    #[should_panic(expected="Can not compute pressure for infinite cell")]
     fn pressure_at_temperature_infinite_cell() {
         let pressure = PressureAtTemperature { temperature: -4.0 };
         let _ = pressure.compute(&System::new());
@@ -711,7 +711,7 @@ mod test {
     }
 
     #[test]
-    #[should_panic]
+    #[should_panic(expected="assertion failed: self.temperature >= 0.0")]
     fn stress_at_temperature_negative_temperature() {
         let system = &test_pairs_system();
         let stress = StressAtTemperature { temperature: -4.0 };
@@ -719,7 +719,7 @@ mod test {
     }
 
     #[test]
-    #[should_panic]
+    #[should_panic(expected="Can not compute stress for infinite cell")]
     fn stress_at_temperature_infinite_cell() {
         let stress = StressAtTemperature { temperature: 300.0 };
         let _ = stress.compute(&System::new());
@@ -747,7 +747,7 @@ mod test {
     }
 
     #[test]
-    #[should_panic]
+    #[should_panic(expected="Can not compute stress for infinite cell")]
     fn stress_infinite_cell() {
         let _ = Stress.compute(&System::new());
     }
@@ -764,7 +764,7 @@ mod test {
     }
 
     #[test]
-    #[should_panic]
+    #[should_panic(expected="Can not compute pressure for infinite cell")]
     fn pressure_infinite_cell() {
         let _ = Pressure.compute(&System::new());
     }

@@ -45,7 +45,7 @@ impl Input {
                     "forces" => Box::new(ForcesOutput::from_toml(output)?),
                     "cell" => Box::new(CellOutput::from_toml(output)?),
                     "custom" => Box::new(CustomOutput::from_toml(output)?),
-                    other => return Err(Error::from(format!("unknown output type '{}'", other))),
+                    other => return Err(Error::from(format!("unknown output type '{other}'"))),
                 };
 
                 result.push((output, frequency));

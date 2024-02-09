@@ -7,7 +7,6 @@
 //! In most of Monte Carlo moves, only a very small subset of the system changes.
 //! We can use that property to remove the need of recomputing most of the
 //! energy components, by storing them and providing update callbacks.
-use std::mem;
 
 use crate::System;
 use crate::{Array2, Vector3D};
@@ -117,7 +116,7 @@ impl EnergyCache {
     /// Update the cache after a call to a `EnergyCache::*_cost` function or
     /// `EnergyCache::unused`.
     pub fn update(&mut self, system: &mut System) {
-        let updater = mem::replace(&mut self.updater, None);
+        let updater = self.updater.take();
         if let Some(updater) = updater {
             updater(self, system);
         } else {
@@ -133,7 +132,7 @@ impl EnergyCache {
     pub fn unused(&mut self) {
         self.updater = Some(Box::new(|cache, system| {
             cache.init(system);
-        }))
+        }));
     }
 }
 
@@ -460,7 +459,7 @@ mod tests {
         let mut new_system = system.clone();
         // translate the center of mass
         for position in new_system.molecule_mut(0).particles_mut().position {
-            *position += delta
+            *position += delta;
         }
         let cost = cache.move_all_molecules_cost(&new_system);
         let new_energy = new_system.potential_energy();

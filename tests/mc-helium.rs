@@ -31,5 +31,5 @@ fn perfect_gas() {
     let pv = pressure * volume;
     let nkt = config.system.size() as f64 * K_BOLTZMANN * temperature;
     let msg = format!("{} {}", f64::abs(pv - nkt), f64::abs(pv - nkt) / pv);
-    assert!(f64::abs(pv - nkt) / pv < 2e-2, msg);
+    assert!(f64::abs(pv - nkt) / pv < 2e-2, "{}", msg);
 }

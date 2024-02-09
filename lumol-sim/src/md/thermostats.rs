@@ -214,46 +214,46 @@ impl Thermostat for CSVRThermostat {
 mod tests {
     use super::*;
 
-    // The actual thermostating part is tested in lumol-sim/tests/thermostats.rs
+    // The actual thermostat code is tested in lumol-sim/tests/thermostats.rs
 
     #[test]
-    #[should_panic]
+    #[should_panic(expected="The temperature must be positive in thermostats.")]
     fn negative_temperature_rescale() {
         let _ = RescaleThermostat::new(-56.0);
     }
 
     #[test]
-    #[should_panic]
+    #[should_panic(expected="The temperature must be positive in thermostats.")]
     fn negative_temperature_berendsen() {
         let _ = BerendsenThermostat::new(-56.0, 1000.0);
     }
 
     #[test]
-    #[should_panic]
+    #[should_panic(expected="The timestep must be larger than 1 in berendsen thermostat.")]
     fn negative_timestep_berendsen() {
         let _ = BerendsenThermostat::new(56.0, -2.0);
     }
 
     #[test]
-    #[should_panic]
+    #[should_panic(expected="The timestep must be larger than 1 in berendsen thermostat.")]
     fn too_small_timestep_berendsen() {
         let _ = BerendsenThermostat::new(56.0, 0.3);
     }
 
     #[test]
-    #[should_panic]
+    #[should_panic(expected="The temperature must be positive in thermostats.")]
     fn negative_temperature_csvr() {
         let _ = CSVRThermostat::new(-56.0, 1000.0);
     }
 
     #[test]
-    #[should_panic]
+    #[should_panic(expected="The timestep must be larger than 1 in CSVR thermostat.")]
     fn negative_timestep_csvr() {
         let _ = CSVRThermostat::new(56.0, -2.0);
     }
 
     #[test]
-    #[should_panic]
+    #[should_panic(expected="The timestep must be larger than 1 in CSVR thermostat.")]
     fn too_small_timestep_csvr() {
         let _ = CSVRThermostat::new(56.0, 0.3);
     }

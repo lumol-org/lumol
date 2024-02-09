@@ -51,15 +51,14 @@ impl MCMove for Resize {
 
     fn setup(&mut self, system: &System) {
         // check if the cell is infinite
-        if system.cell.is_infinite() {
-            panic!("Cannot use `Resize` move with infinite simulation cell.")
-        }
+        assert!(!system.cell.is_infinite(), "cannot use `Resize` move with infinite simulation cell");
 
         // Get the largest cutoff of all intermolecular interactions in the
         // system.
-        self.maximum_cutoff = system.maximum_cutoff()
+        self.maximum_cutoff = system.maximum_cutoff();
     }
 
+    #[allow(clippy::manual_assert)]
     fn prepare(&mut self, system: &mut System, rng: &mut dyn RngCore) -> bool {
         let delta = self.range.sample(rng);
 
@@ -117,7 +116,7 @@ impl MCMove for Resize {
 
     fn restore(&mut self, system: &mut System) {
         // Exchange configurations
-        mem::swap(&mut **system, &mut self.previous)
+        mem::swap(&mut **system, &mut self.previous);
     }
 
     fn update_amplitude(&mut self, scaling_factor: Option<f64>) {

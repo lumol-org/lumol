@@ -69,7 +69,7 @@ impl Simulation {
     pub fn run(&mut self, system: &mut System, nsteps: usize) {
         match self.propagator.temperature_strategy() {
             TemperatureStrategy::External(temperature) => {
-                system.simulated_temperature(Some(temperature))
+                system.simulated_temperature(Some(temperature));
             }
             TemperatureStrategy::Velocities => system.simulated_temperature(None),
             TemperatureStrategy::None => {}

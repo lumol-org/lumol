@@ -146,7 +146,7 @@ mod tests {
             for j in 0..10 {
                 let path = system.bond_path(i, j);
                 let info = restriction.information(path);
-                assert_eq!(info.excluded, false);
+                assert!(!info.excluded);
                 assert_eq!(info.scaling, 1.0);
             }
         }
@@ -192,14 +192,14 @@ mod tests {
         }
 
         // Bonds
-        assert_eq!(restriction.information(system.bond_path(0, 1)).excluded, true);
-        assert_eq!(restriction.information(system.bond_path(1, 2)).excluded, true);
-        assert_eq!(restriction.information(system.bond_path(7, 8)).excluded, true);
+        assert!(restriction.information(system.bond_path(0, 1)).excluded);
+        assert!(restriction.information(system.bond_path(1, 2)).excluded);
+        assert!(restriction.information(system.bond_path(7, 8)).excluded);
 
         // Not excluded
-        assert_eq!(restriction.information(system.bond_path(0, 8)).excluded, false);
-        assert_eq!(restriction.information(system.bond_path(0, 3)).excluded, false);
-        assert_eq!(restriction.information(system.bond_path(8, 2)).excluded, false);
+        assert!(!restriction.information(system.bond_path(0, 8)).excluded);
+        assert!(!restriction.information(system.bond_path(0, 3)).excluded);
+        assert!(!restriction.information(system.bond_path(8, 2)).excluded);
     }
 
     #[test]
@@ -214,18 +214,18 @@ mod tests {
         }
 
         // Bonds
-        assert_eq!(restriction.information(system.bond_path(0, 1)).excluded, true);
-        assert_eq!(restriction.information(system.bond_path(7, 6)).excluded, true);
+        assert!(restriction.information(system.bond_path(0, 1)).excluded);
+        assert!(restriction.information(system.bond_path(7, 6)).excluded);
 
         // Angles
-        assert_eq!(restriction.information(system.bond_path(0, 2)).excluded, true);
-        assert_eq!(restriction.information(system.bond_path(1, 3)).excluded, true);
-        assert_eq!(restriction.information(system.bond_path(7, 9)).excluded, true);
+        assert!(restriction.information(system.bond_path(0, 2)).excluded);
+        assert!(restriction.information(system.bond_path(1, 3)).excluded);
+        assert!(restriction.information(system.bond_path(7, 9)).excluded);
 
         // Not excluded
-        assert_eq!(restriction.information(system.bond_path(4, 5)).excluded, false);
-        assert_eq!(restriction.information(system.bond_path(0, 3)).excluded, false);
-        assert_eq!(restriction.information(system.bond_path(8, 2)).excluded, false);
+        assert!(!restriction.information(system.bond_path(4, 5)).excluded);
+        assert!(!restriction.information(system.bond_path(0, 3)).excluded);
+        assert!(!restriction.information(system.bond_path(8, 2)).excluded);
     }
 
     #[test]
@@ -240,23 +240,23 @@ mod tests {
         }
 
         // Bonds
-        assert_eq!(restriction.information(system.bond_path(0, 1)).excluded, true);
-        assert_eq!(restriction.information(system.bond_path(7, 6)).excluded, true);
+        assert!(restriction.information(system.bond_path(0, 1)).excluded);
+        assert!(restriction.information(system.bond_path(7, 6)).excluded);
 
         // Angles
-        assert_eq!(restriction.information(system.bond_path(0, 2)).excluded, true);
-        assert_eq!(restriction.information(system.bond_path(1, 3)).excluded, true);
-        assert_eq!(restriction.information(system.bond_path(7, 9)).excluded, true);
+        assert!(restriction.information(system.bond_path(0, 2)).excluded);
+        assert!(restriction.information(system.bond_path(1, 3)).excluded);
+        assert!(restriction.information(system.bond_path(7, 9)).excluded);
 
         // Dihedrals
-        assert_eq!(restriction.information(system.bond_path(0, 3)).excluded, true);
-        assert_eq!(restriction.information(system.bond_path(1, 4)).excluded, true);
-        assert_eq!(restriction.information(system.bond_path(6, 9)).excluded, true);
+        assert!(restriction.information(system.bond_path(0, 3)).excluded);
+        assert!(restriction.information(system.bond_path(1, 4)).excluded);
+        assert!(restriction.information(system.bond_path(6, 9)).excluded);
 
         // Not excluded
-        assert_eq!(restriction.information(system.bond_path(4, 5)).excluded, false);
-        assert_eq!(restriction.information(system.bond_path(0, 4)).excluded, false);
-        assert_eq!(restriction.information(system.bond_path(8, 2)).excluded, false);
+        assert!(!restriction.information(system.bond_path(4, 5)).excluded);
+        assert!(!restriction.information(system.bond_path(0, 4)).excluded);
+        assert!(!restriction.information(system.bond_path(8, 2)).excluded);
     }
 
     #[test]
@@ -275,22 +275,22 @@ mod tests {
         }
 
         // Bonds
-        assert_eq!(restriction.information(system.bond_path(0, 1)).excluded, true);
-        assert_eq!(restriction.information(system.bond_path(7, 6)).excluded, true);
+        assert!(restriction.information(system.bond_path(0, 1)).excluded);
+        assert!(restriction.information(system.bond_path(7, 6)).excluded);
 
         // Angles
-        assert_eq!(restriction.information(system.bond_path(0, 2)).excluded, true);
-        assert_eq!(restriction.information(system.bond_path(1, 3)).excluded, true);
-        assert_eq!(restriction.information(system.bond_path(7, 9)).excluded, true);
+        assert!(restriction.information(system.bond_path(0, 2)).excluded);
+        assert!(restriction.information(system.bond_path(1, 3)).excluded);
+        assert!(restriction.information(system.bond_path(7, 9)).excluded);
 
         // Dihedrals are not excluded, just scaled
-        assert_eq!(restriction.information(system.bond_path(0, 3)).excluded, false);
-        assert_eq!(restriction.information(system.bond_path(1, 4)).excluded, false);
-        assert_eq!(restriction.information(system.bond_path(6, 9)).excluded, false);
+        assert!(!restriction.information(system.bond_path(0, 3)).excluded);
+        assert!(!restriction.information(system.bond_path(1, 4)).excluded);
+        assert!(!restriction.information(system.bond_path(6, 9)).excluded);
 
         // Not excluded
-        assert_eq!(restriction.information(system.bond_path(4, 5)).excluded, false);
-        assert_eq!(restriction.information(system.bond_path(0, 4)).excluded, false);
-        assert_eq!(restriction.information(system.bond_path(8, 2)).excluded, false);
+        assert!(!restriction.information(system.bond_path(4, 5)).excluded);
+        assert!(!restriction.information(system.bond_path(0, 4)).excluded);
+        assert!(!restriction.information(system.bond_path(8, 2)).excluded);
     }
 }

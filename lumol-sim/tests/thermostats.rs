@@ -28,7 +28,8 @@ fn testing_system() -> System {
     velocities.init(&mut system);
 
     assert_ulps_eq!(system.temperature(), 300.0, epsilon = 1e-9);
-    return system;
+
+    system
 }
 
 #[test]

@@ -120,8 +120,8 @@ impl fmt::Display for ParseError {
             ParseError::Power(ref err) => err.fmt(f),
             ParseError::Value(ref err) => err.fmt(f),
             ParseError::ParenthesesMismatch => write!(f, "Parentheses are not equilibrated."),
-            ParseError::NotFound { ref unit } => write!(f, "Unit '{}' not found.", unit),
-            ParseError::MalformedExpr(ref err) => write!(f, "Malformed expression: {}", err),
+            ParseError::NotFound { ref unit } => write!(f, "Unit '{unit}' not found."),
+            ParseError::MalformedExpr(ref err) => write!(f, "Malformed expression: {err}"),
         }
     }
 }
@@ -239,13 +239,13 @@ fn shunting_yard(tokens: Vec<Token>) -> Result<Vec<Token>, ParseError> {
             Token::LParen => operators.push(token),
             Token::RParen => {
                 while !operators.is_empty() && operators.last() != Some(&Token::LParen) {
-                    output.push(operators.pop().expect(MISSING_OPERATOR))
+                    output.push(operators.pop().expect(MISSING_OPERATOR));
                 }
                 if operators.is_empty() || operators.last() != Some(&Token::LParen) {
                     return Err(ParseError::ParenthesesMismatch);
-                } else {
-                    let _ = operators.pop();
                 }
+
+                let _ = operators.pop();
             }
         }
     }
@@ -295,7 +295,7 @@ impl UnitExpr {
         } else {
             let remaining = stream.iter().map(|t| t.as_str()).collect::<Vec<_>>().join(" ");
             return Err(ParseError::MalformedExpr(
-                format!("remaining values after the end of the unit: {}", remaining),
+                format!("remaining values after the end of the unit: {remaining}"),
             ));
         }
     }
@@ -314,19 +314,19 @@ fn read_expr(stream: &mut Vec<Token>) -> Result<UnitExpr, ParseError> {
             }
             Token::Mul => {
                 let rhs = read_expr(stream).map_err(|err| {
-                    ParseError::MalformedExpr(format!("Error in unit at the right of '*': {}", err))
+                    ParseError::MalformedExpr(format!("Error in unit at the right of '*': {err}"))
                 })?;
                 let lhs = read_expr(stream).map_err(|err| {
-                    ParseError::MalformedExpr(format!("Error in unit at the left of '*': {}", err))
+                    ParseError::MalformedExpr(format!("Error in unit at the left of '*': {err}"))
                 })?;
                 Ok(UnitExpr::Mul(Box::new(lhs), Box::new(rhs)))
             }
             Token::Div => {
                 let rhs = read_expr(stream).map_err(|err| {
-                    ParseError::MalformedExpr(format!("Error in unit at the right of '/': {}", err))
+                    ParseError::MalformedExpr(format!("Error in unit at the right of '/': {err}"))
                 })?;
                 let lhs = read_expr(stream).map_err(|err| {
-                    ParseError::MalformedExpr(format!("Error in unit at the left of '/': {}", err))
+                    ParseError::MalformedExpr(format!("Error in unit at the left of '/': {err}"))
                 })?;
                 Ok(UnitExpr::Div(Box::new(lhs), Box::new(rhs)))
             }
@@ -349,7 +349,7 @@ fn read_expr(stream: &mut Vec<Token>) -> Result<UnitExpr, ParseError> {
                     }
                 };
                 let expr = read_expr(stream).map_err(|err| {
-                    ParseError::MalformedExpr(format!("Error in unit at the left of '*': {}", err))
+                    ParseError::MalformedExpr(format!("Error in unit at the left of '*': {err}"))
                 })?;
                 Ok(UnitExpr::Pow(Box::new(expr), pow))
             }

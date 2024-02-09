@@ -1,5 +1,7 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) Lumol's contributors — BSD license
+#![allow(clippy::iter_without_into_iter)]
+
 use std::fmt;
 use soa_derive::StructOfArray;
 

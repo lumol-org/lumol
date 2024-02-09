@@ -27,7 +27,7 @@ fn main() {
         let message = if let Some(message) = playload.downcast_ref::<&str>() {
             message
         } else if let Some(message) = playload.downcast_ref::<String>() {
-            &*message
+            message
         } else {
             "<no message>"
         };

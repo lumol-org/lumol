@@ -208,6 +208,7 @@ impl Integrator for BerendsenBarostat {
         self.accelerations = vec![Vector3D::zero(); system.size()];
     }
 
+    #[allow(clippy::manual_assert)]
     fn integrate(&mut self, system: &mut System) {
         let dt = self.timestep;
 
@@ -291,6 +292,7 @@ impl Integrator for AnisoBerendsenBarostat {
         self.accelerations = vec![Vector3D::zero(); system.size()];
     }
 
+    #[allow(clippy::manual_assert)]
     fn integrate(&mut self, system: &mut System) {
         let dt = self.timestep;
 

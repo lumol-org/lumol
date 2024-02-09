@@ -1,6 +1,8 @@
 // Lumol, an extensible molecular simulation engine
 // Copyright (C) Lumol's contributors — BSD license
 
+#![allow(clippy::needless_doctest_main)]
+
 //! This module provide a way to build a Lumol simulation using input files.
 //!
 //! Instead of building the [`System`] and [`Simulation`] objects by hand before

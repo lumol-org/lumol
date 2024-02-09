@@ -43,8 +43,8 @@ impl Encode for LogEncoder {
             log::Level::Trace | log::Level::Debug => {
                 if let Some(file) = record.file() {
                     match record.line() {
-                        Some(line) => write!(out, " [from {}:{}]", file, line)?,
-                        None => write!(out, " [from {}]", file)?,
+                        Some(line) => write!(out, " [from {file}:{line}]")?,
+                        None => write!(out, " [from {file}]")?,
                     }
                 }
             }
@@ -152,7 +152,7 @@ fn read_appender(config: &Table, name: &str) -> Result<Appender, Error> {
     let allowed_keys = ["target", "targets", "level", "append"];
     for key in config.keys() {
         if !allowed_keys.contains(&&**key) {
-            return Err(Error::from(format!("unknown '{}' key in log section", key)));
+            return Err(Error::from(format!("unknown '{key}' key in log section")));
         }
     }
 
@@ -166,7 +166,7 @@ fn read_appender(config: &Table, name: &str) -> Result<Appender, Error> {
         "info" => log::LevelFilter::Info,
         "warning" => log::LevelFilter::Warn,
         "error" => log::LevelFilter::Error,
-        other => return Err(Error::from(format!("unknown logging level '{}'", other))),
+        other => return Err(Error::from(format!("unknown logging level '{other}'"))),
     };
 
     let target = extract::str("target", config, "log target")?;

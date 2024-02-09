@@ -12,10 +12,7 @@ use crate::extract;
 impl InteractionsInput {
     /// Read the "angles" section from the potential configuration.
     pub(crate) fn read_angles(&self, system: &mut System) -> Result<(), Error> {
-        let angles = match self.config.get("angles") {
-            Some(angles) => angles,
-            None => return Ok(()),
-        };
+        let Some(angles) = self.config.get("angles") else { return Ok(()) };
 
         let angles = angles.as_table().ok_or(
             Error::from("the 'angles' section must be a table")
@@ -31,7 +28,7 @@ impl InteractionsInput {
 
             let table = table.as_table().ok_or(
                 Error::from(format!(
-                    "angle potential associated with {} must be a table", key
+                    "angle potential associated with {key} must be a table"
                 ))
             )?;
 
@@ -43,10 +40,7 @@ impl InteractionsInput {
 
     /// Read the "dihedrals" section from the potential configuration.
     pub(crate) fn read_dihedrals(&self, system: &mut System) -> Result<(), Error> {
-        let dihedrals = match self.config.get("dihedrals") {
-            Some(dihedrals) => dihedrals,
-            None => return Ok(()),
-        };
+        let Some(dihedrals) = self.config.get("dihedrals") else { return Ok(()) };
 
         let dihedrals = dihedrals.as_table().ok_or(
             Error::from("the 'dihedrals' section must be a table")
@@ -62,7 +56,7 @@ impl InteractionsInput {
 
             let table = table.as_table().ok_or(
                 Error::from(format!(
-                    "dihedral potential associated with {} must be a table", key
+                    "dihedral potential associated with {key} must be a table"
                 ))
             )?;
 
@@ -79,7 +73,7 @@ fn read_angle_potential(table: &Table) -> Result<Box<dyn AnglePotential>, Error>
         "harmonic" => Ok(Box::new(Harmonic::from_toml(table)?)),
         "cosine-harmonic" => Ok(Box::new(CosineHarmonic::from_toml(table)?)),
         "morse" => Ok(Box::new(Morse::from_toml(table)?)),
-        other => Err(Error::from(format!("unknown potential type '{}'", other))),
+        other => Err(Error::from(format!("unknown potential type '{other}'"))),
     }
 }
 
@@ -90,6 +84,6 @@ fn read_dihedral_potential(table: &Table) -> Result<Box<dyn DihedralPotential>, 
         "cosine-harmonic" => Ok(Box::new(CosineHarmonic::from_toml(table)?)),
         "torsion" => Ok(Box::new(Torsion::from_toml(table)?)),
         "morse" => Ok(Box::new(Morse::from_toml(table)?)),
-        other => Err(Error::from(format!("unknown potential type '{}'", other))),
+        other => Err(Error::from(format!("unknown potential type '{other}'"))),
     }
 }

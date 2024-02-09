@@ -7,8 +7,8 @@
 #![warn(unused_qualifications, unused_results, rust_2018_idioms)]
 // Clippy configuration
 #![warn(clippy::all, clippy::pedantic)]
-// Not embed software, integer and float arithmeric are allowed
-#![allow(clippy::float_arithmetic, clippy::integer_arithmetic, clippy::indexing_slicing)]
+// Not embed software, integer and float arithmetic are allowed
+#![allow(clippy::float_arithmetic, clippy::indexing_slicing)]
 // Cast issues
 #![allow(clippy::cast_possible_truncation, clippy::cast_precision_loss)]
 #![allow(clippy::cast_sign_loss, clippy::cast_possible_wrap)]
@@ -17,9 +17,9 @@
 #![allow(clippy::use_self, clippy::redundant_field_names, clippy::or_fun_call)]
 #![allow(clippy::needless_return, clippy::needless_range_loop, clippy::doc_markdown)]
 #![allow(clippy::missing_docs_in_private_items, clippy::module_name_repetitions)]
-#![allow(clippy::new_without_default, clippy::range_plus_one, clippy::filter_map)]
+#![allow(clippy::new_without_default, clippy::range_plus_one, clippy::missing_panics_doc)]
 #![allow(clippy::if_not_else, clippy::redundant_closure_for_method_calls)]
-#![allow(clippy::must_use_candidate)]
+#![allow(clippy::must_use_candidate, clippy::return_self_not_must_use)]
 
 #![allow(clippy::missing_errors_doc)]
 
@@ -88,7 +88,7 @@ fn validate(config: &Table) -> Result<(), Error> {
 
     if version != 1 {
         return Err(Error::from(
-            format!("can only read version 1 of input, got version {}", version),
+            format!("can only read version 1 of input, got version {version}"),
         ));
     }
     Ok(())

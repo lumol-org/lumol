@@ -118,6 +118,7 @@ impl System {
     }
 
     /// Set the pair interaction `potential` for atoms with types `i` and `j`
+    #[allow(clippy::manual_assert)]
     pub fn set_pair_potential(&mut self, (i, j): (&str, &str), potential: PairInteraction) {
         if self.cell.lengths().iter().any(|&d| 0.5 * d < potential.cutoff()) {
             panic!(
@@ -126,12 +127,12 @@ impl System {
                 the cutoff."
             );
         }
-        self.interactions.set_pair((i, j), potential)
+        self.interactions.set_pair((i, j), potential);
     }
 
     /// Set the bond interaction `potential` for atoms with types `i` and `j`
     pub fn set_bond_potential(&mut self, (i, j): (&str, &str), potential: Box<dyn BondPotential>) {
-        self.interactions.set_bond((i, j), potential)
+        self.interactions.set_bond((i, j), potential);
     }
 
     /// Set the angle interaction `potential` for atoms with types `i`, `j`, and `k`
@@ -140,7 +141,7 @@ impl System {
         (i, j, k): (&str, &str, &str),
         potential: Box<dyn AnglePotential>,
     ) {
-        self.interactions.set_angle((i, j, k), potential)
+        self.interactions.set_angle((i, j, k), potential);
     }
 
     /// Set the dihedral angle interaction `potential` for atoms with types
@@ -150,10 +151,11 @@ impl System {
         (i, j, k, m): (&str, &str, &str, &str),
         potential: Box<dyn DihedralPotential>,
     ) {
-        self.interactions.set_dihedral((i, j, k, m), potential)
+        self.interactions.set_dihedral((i, j, k, m), potential);
     }
 
     /// Set the coulombic interaction for all pairs to `potential`
+    #[allow(clippy::manual_assert)]
     pub fn set_coulomb_potential(&mut self, potential: Box<dyn CoulombicPotential>) {
         if let Some(cutoff) = potential.cutoff() {
             if self.cell.lengths().iter().any(|&d| 0.5 * d < cutoff) {
@@ -319,7 +321,7 @@ impl System {
 impl System {
     /// Check the system before running a simulation
     pub fn check(&self) {
-        self.check_potentials()
+        self.check_potentials();
     }
 
     fn check_potentials(&self) {
@@ -448,7 +450,7 @@ mod tests {
     use crate::{System, Molecule, Particle, ParticleKind};
 
     #[test]
-    #[should_panic]
+    #[should_panic(expected="External temperature must be positive")]
     fn negative_simulated_temperature() {
         let mut system = System::new();
         system.simulated_temperature(Some(-1.0));
