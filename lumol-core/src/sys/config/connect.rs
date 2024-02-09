@@ -145,6 +145,7 @@ bitflags! {
     /// particles. Two particles can have multiple bond path lionking them
     /// (in the case of cyclic molecules), which is why a bit flag is used
     /// instead of a single distance value.
+    #[derive(Debug, Clone, Copy)]
     pub struct BondDistances: u8 {
         /// The particles are separated by one bond
         const ONE   = 0b0001;

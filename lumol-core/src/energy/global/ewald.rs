@@ -99,7 +99,7 @@ pub struct EwaldParameters {
 /// so iterating over the values in these vectors will give all the needed
 /// k-points, and only them.
 #[derive(Clone, Debug, StructOfArray)]
-#[soa_derive = "Clone"]
+#[soa_derive(Clone)]
 struct EwaldFactor {
     /// Index of the vector in k-space
     index: (isize, isize, isize),

@@ -5,15 +5,19 @@ use std::fmt;
 use backtrace::Backtrace;
 use chrono::Duration;
 use chrono::offset::Local;
-use clap::{App, ArgMatches};
+use clap::{Command, Arg, ArgMatches};
 use log::{info, error};
 
 use lumol::input::Input;
 
-fn parse_args<'a>() -> ArgMatches<'a> {
-    App::new("lumol").version(lumol::VERSION)
+fn parse_args() -> ArgMatches {
+    Command::new("lumol").version(lumol::VERSION)
                      .about("An extensible molecular simulation engine")
-                     .args_from_usage("<input.toml>      'Simulation input file'")
+                     .arg(
+                        Arg::new("input.toml")
+                            .required(true)
+                            .help("Simulation input file")
+                     )
                      .get_matches()
 }
 
@@ -38,7 +42,7 @@ fn main() {
 
     let args = parse_args();
 
-    let input = args.value_of("input.toml").unwrap();
+    let input = args.get_one::<String>("input.toml").unwrap();
     let input = match Input::new(input) {
         Ok(input) => input,
         Err(err) => {

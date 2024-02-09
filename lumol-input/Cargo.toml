@@ -15,7 +15,7 @@ bench = false
 [dependencies]
 lumol-core = {path = "../lumol-core"}
 lumol-sim = {path = "../lumol-sim"}
-toml = "0.5"
+toml = "0.8"
 log = "0.4"
 anyhow = "1"
 
@@ -29,7 +29,7 @@ features = ["console_appender", "file_appender", "threshold_filter"]
 [dev-dependencies]
 walkdir = "2"
 rustc-test = "0.3"
-env_logger = "0.8"
+env_logger = "0.11"
 
 [[test]]
 name = "input"

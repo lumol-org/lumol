@@ -19,9 +19,9 @@ rand_xorshift = "0.3"
 log = "0.4"
 log-once = "0.4"
 caldyn = "0.4"
-soa_derive = "0.8"
+soa_derive = "0.13"
 num-traits = "0.2"
 
 [dev-dependencies]
 tempfile = "3"
-approx = "0.4"
+approx = "0.5"
