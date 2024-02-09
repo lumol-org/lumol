@@ -47,29 +47,29 @@ impl From<chemfiles::Frame> for System {
         let mut system = System::with_cell(cell);
 
         for (i, position) in frame.positions().iter().enumerate() {
-            let mut particle = Particle::from(&*frame.atom(i as u64));
+            let mut particle = Particle::from(&*frame.atom(i));
             particle.position = Vector3D::from(*position);
 
             system.add_molecule(Molecule::new(particle));
         }
 
 
-        if frame.has_velocities() {
-            for (i, velocity) in frame.velocities().iter().enumerate() {
+        if let Some(velocities) = frame.velocities() {
+            for (i, velocity) in velocities.iter().enumerate() {
                 system.particles_mut().velocity[i] = Vector3D::from(*velocity);
             }
         }
 
         let mut bonds = frame.topology().bonds();
         while let Some(bond) = bonds.pop() {
-            let permutations = system.add_bond(bond[0] as usize, bond[1] as usize);
+            let permutations = system.add_bond(bond[0], bond[1]);
             apply_particle_permutation(&mut bonds, &permutations);
         }
         return system;
     }
 }
 
-fn apply_particle_permutation(bonds: &mut Vec<[u64; 2]>, permutations: &[Permutation]) {
+fn apply_particle_permutation(bonds: &mut Vec<[usize; 2]>, permutations: &[Permutation]) {
     for bond in bonds {
         // Search for a permutation applying to the first atom of the bond. We
         // need to stop just after the first permutations is found, because we
@@ -77,16 +77,16 @@ fn apply_particle_permutation(bonds: &mut Vec<[u64; 2]>, permutations: &[Permuta
         // If we do not stop after the first match, then all indexes in 1-3
         // range will become 4.
         for permutation in permutations {
-            if bond[0] == permutation.old as u64 {
-                bond[0] = permutation.new as u64;
+            if bond[0] == permutation.old {
+                bond[0] = permutation.new;
                 break;
             }
         }
 
         // Now we look for permutations applying to the second atom of the bond
         for permutation in permutations {
-            if bond[1] == permutation.old as u64 {
-                bond[1] = permutation.new as u64;
+            if bond[1] == permutation.old {
+                bond[1] = permutation.new;
                 break;
             }
         }
@@ -121,8 +121,8 @@ impl<'a> From<&'a UnitCell> for chemfiles::UnitCell {
 impl<'a> From<&'a System> for chemfiles::Frame {
     fn from(system: &'a System) -> chemfiles::Frame {
         let mut frame = chemfiles::Frame::new();
-        frame.resize(system.size() as u64);
-        frame.set_step(system.step as u64);
+        frame.resize(system.size());
+        frame.set_step(system.step as usize);
 
         for (position, chfl_position) in soa_zip!(system.particles(), [position], frame.positions_mut()) {
             *chfl_position = **position;
@@ -134,13 +134,13 @@ impl<'a> From<&'a System> for chemfiles::Frame {
         }
 
         let mut topology = chemfiles::Topology::new();
-        for particle in system.particles().iter() {
+        for particle in system.particles() {
             topology.add_atom(&particle.into());
         }
 
         for molecule in system.molecules() {
             for bond in molecule.bonds() {
-                topology.add_bond(bond.i() as u64, bond.j() as u64);
+                topology.add_bond(bond.i(), bond.j());
             }
         }
 

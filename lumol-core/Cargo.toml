@@ -13,7 +13,7 @@ bench = false
 
 [dependencies]
 bitflags = "1"
-chemfiles = "0.9"
+chemfiles = "0.10"
 lazy_static = "1"
 log-once = "0.3"
 ndarray = "0.14"
